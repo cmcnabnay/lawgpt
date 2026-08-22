@@ -64,6 +64,25 @@ function extFromContentTypeOrTitle(contentType, title){
   return m ? m[1].toLowerCase() : "bin";
 }
 
+// Canvas course names come through as long, semester-stamped titles (e.g.
+// "2026FA LAW5406 10692 - Civil Procedure"), but documents/ has been
+// reorganized to use short, stable slugs instead. Match on a keyword in the
+// scraped name so re-imports keep landing in the folder the user actually
+// renamed things to, rather than recreating the old long-form folder.
+const COURSE_FOLDER_ALIASES = [
+  { match: /civil procedure/i, folder: "civil_procedure" },
+  { match: /lawyering skills/i, folder: "lawyering_skills_and_strategies" },
+  { match: /contracts/i, folder: "contracts" },
+  { match: /torts/i, folder: "torts" },
+];
+
+function resolveCourseFolderName(courseName, courseId){
+  for (const { match, folder } of COURSE_FOLDER_ALIASES){
+    if (match.test(courseName || "")) return folder;
+  }
+  return sanitizeForFs(courseName || `Course ${courseId}`) || `Course ${courseId}`;
+}
+
 // Strips characters that are unsafe/awkward in filenames or folder names on
 // most filesystems, and caps the length so titles pulled from Canvas (which
 // can be long) don't blow past filesystem limits.
@@ -231,7 +250,7 @@ router.post("/scrape", async (req, res) => {
       const crumb = $("#crumb_courses, .ic-app-crumbs li a").last().text().trim();
       if (crumb) courseName = crumb;
     }
-    const courseFolderName = sanitizeForFs(courseName || `Course ${courseId}`) || `Course ${courseId}`;
+    const courseFolderName = resolveCourseFolderName(courseName, courseId);
 
     const links = [];
     $(".context_module_item").each((_, el) => {
