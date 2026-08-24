@@ -42,6 +42,17 @@
   .app.sidebar-collapsed{
     --sidebar-w: 0px;
   }
+  /* The Notes and Database tabs have their own page-specific left banner
+     (Reading Reports / Tables) -- while either is open, that banner replaces
+     the standard docket sidebar entirely rather than sitting beside it. */
+  .app.hide-app-sidebar{
+    --sidebar-w: 0px;
+  }
+  .app.hide-app-sidebar .sidebar{
+    opacity:0;
+    pointer-events:none;
+    border-right-color:transparent;
+  }
 
   /* ---------- SIDEBAR ---------- */
   .sidebar{
@@ -1195,7 +1206,7 @@ pre code {
 }
 .schedule-reading-row{
   display:flex;
-  align-items:center;
+  align-items:flex-start;
   gap:10px;
   padding:8px 0;
   border-top:1px solid var(--hairline);
@@ -1207,6 +1218,10 @@ pre code {
   line-height:1.5;
   color:var(--text-light);
   min-width:0;
+  /* Torts' reading text is a multi-line week outline (see TORTS_SCHEDULE);
+     pre-line preserves those line breaks without affecting the other
+     courses' single-line reading text, which has none to preserve. */
+  white-space:pre-line;
 }
 .schedule-page-badge{
   flex:0 1 auto;
@@ -1533,7 +1548,18 @@ pre code {
   min-width:0;
   min-height:0;
   display:flex;
+  flex-direction:column;
   padding:28px 32px 32px;
+}
+/* Persistent control row above the notes-wrap -- stays put whether the
+   right side is open or closed, so Table/Chat are always reachable even
+   when the report is showing full-width/centered (see .notes-wrap below). */
+.notes-toolbar{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex:0 0 auto;
+  margin-bottom:14px;
 }
 .notes-wrap{
   max-width:820px;
@@ -1542,17 +1568,80 @@ pre code {
   display:flex;
   flex-direction:column;
   min-height:0;
+  flex:1;
 }
-.notes-report-panel{
-  flex:0 0 auto;
+/* Notes tab only: applied once Table or Chat is opened (see
+   setNotesRightView in the Notes tab script) -- splits the reading report
+   and the requested panel into two columns instead of one centered one. */
+.notes-wrap-split{
+  max-width:none;
+  margin:0;
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+  gap:22px;
+}
+.notes-col-left{
   display:flex;
   flex-direction:column;
-  max-height:48vh;
+  gap:18px;
+  min-width:0;
+  min-height:0;
+  height:100%;
+}
+.notes-col-left-empty{
+  margin:0;
+  font-size:13px;
+  line-height:1.6;
+  color:var(--text-muted);
+}
+.notes-report-panel{
+  flex:1;
+  min-height:0;
+  display:flex;
+  flex-direction:column;
   background:var(--ink-2);
   border:1px solid var(--brass-dim);
   border-radius:var(--radius);
-  margin-bottom:18px;
 }
+/* Right column: only exists in the DOM's visible flow once Table or Chat
+   has been opened -- closing it (the ✕ button) collapses .notes-wrap back
+   to a single, centered column and the report takes the full page. */
+.notes-col-right{
+  display:flex;
+  flex-direction:column;
+  min-width:0;
+  min-height:0;
+  height:100%;
+}
+.notes-right-tab-btn{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:12px;
+  font-weight:600;
+  letter-spacing:0.03em;
+  padding:8px 18px;
+  border-radius:var(--radius);
+  cursor:pointer;
+  border:1px solid var(--hairline);
+  background:none;
+  color:var(--text-muted);
+}
+.notes-right-tab-btn:hover{ border-color:var(--brass-dim); color:var(--brass); }
+.notes-right-tab-btn.active{ background:var(--brass); color:var(--ink); border-color:var(--brass); }
+.notes-right-close-btn{
+  width:30px;
+  height:30px;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border:1px solid var(--hairline);
+  background:none;
+  color:var(--text-muted);
+  cursor:pointer;
+  font-size:12px;
+  margin-left:2px;
+}
+.notes-right-close-btn:hover{ border-color:var(--brass-dim); color:var(--brass); }
 .notes-report-head{
   display:flex;
   align-items:center;
@@ -1598,6 +1687,8 @@ pre code {
 .notes-report-actions button:disabled{ opacity:0.55; cursor:default; }
 .notes-report-actions button.primary{ background:var(--brass); color:var(--ink); border-color:var(--brass); }
 .notes-report-body{
+  flex:1;
+  min-height:0;
   padding:16px 18px;
   overflow-y:auto;
   font-size:13px;
@@ -1607,6 +1698,83 @@ pre code {
 .notes-report-body p{ margin:0 0 12px; }
 .notes-report-body p:last-child{ margin-bottom:0; }
 .notes-report-body ul, .notes-report-body ol{ margin:0 0 12px; padding-left:20px; }
+
+/* Follow-up chat, scoped to whichever Reading Report is open (see
+   currentReport.chat / renderNotesChat in the Notes tab script). */
+.notes-chat-panel{
+  flex:1;
+  min-height:0;
+  display:flex;
+  flex-direction:column;
+  background:var(--ink-2);
+  border:1px solid var(--hairline);
+  border-radius:var(--radius);
+  overflow:hidden;
+}
+.notes-chat-head{
+  flex:0 0 auto;
+  padding:10px 16px;
+  border-bottom:1px solid var(--hairline);
+}
+.notes-chat-messages{
+  flex:1;
+  min-height:0;
+  overflow-y:auto;
+  padding:14px 16px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+.notes-chat-empty{
+  font-size:12px;
+  line-height:1.6;
+  color:var(--text-muted);
+}
+.notes-chat-msg{
+  font-size:13px;
+  line-height:1.6;
+  padding:8px 12px;
+  border-radius:var(--radius);
+  max-width:88%;
+  white-space:pre-wrap;
+}
+.notes-chat-msg.user{
+  align-self:flex-end;
+  background:var(--ink-3);
+  color:var(--text-light);
+}
+.notes-chat-msg.assistant{
+  align-self:flex-start;
+  background:none;
+  border:1px solid var(--hairline);
+  color:var(--text-light);
+}
+.notes-chat-msg.pending{ color:var(--text-muted); font-style:italic; }
+.notes-chat-msg.failed{ border-color:var(--oxblood); color:#c9855a; }
+.notes-chat-input-row{
+  flex:0 0 auto;
+  display:flex;
+  align-items:flex-end;
+  gap:8px;
+  padding:10px 14px;
+  border-top:1px solid var(--hairline);
+}
+.notes-chat-input{
+  flex:1;
+  resize:none;
+  min-height:36px;
+  max-height:160px;
+  background:var(--ink-3);
+  border:1px solid var(--hairline);
+  border-radius:var(--radius);
+  color:var(--text-light);
+  padding:8px 10px;
+  font-family:'Inter',sans-serif;
+  font-size:13px;
+  line-height:1.5;
+}
+.notes-chat-input:focus{ outline:none; border-color:var(--brass-dim); }
+
 .notes-head{
   display:flex;
   align-items:baseline;
@@ -1646,6 +1814,8 @@ pre code {
 }
 .notes-head-btn:hover{ border-color:var(--brass-dim); color:var(--brass); }
 .notes-head-btn:disabled{ opacity:0.55; cursor:default; }
+.notes-head-btn.primary{ background:var(--brass); color:var(--ink); border-color:var(--brass); }
+.notes-head-btn.primary:hover{ color:var(--ink); }
 .notes-textarea{
   flex:1;
   min-height:0;
@@ -1661,6 +1831,167 @@ pre code {
   line-height:1.7;
 }
 .notes-textarea:focus{ outline:none; border-color:var(--brass-dim); }
+
+.case-form{
+  flex:1;
+  min-height:0;
+  display:flex;
+  flex-direction:column;
+}
+.case-form-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:14px;
+  flex-wrap:wrap;
+}
+.case-form-head-actions{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex:0 0 auto;
+  flex-wrap:wrap;
+}
+.case-brief-select{
+  background:var(--ink-2);
+  border:1px solid var(--hairline);
+  color:var(--text-light);
+  padding:6px 10px;
+  border-radius:var(--radius);
+  font-family:'IBM Plex Mono',monospace;
+  font-size:12px;
+  max-width:200px;
+}
+.case-brief-select:focus{ outline:none; border-color:var(--brass-dim); }
+.case-form-scroll{
+  flex:1;
+  min-height:0;
+  overflow-y:auto;
+  padding-right:4px;
+}
+.case-form-empty{
+  font-size:13px;
+  color:var(--text-muted);
+  margin:0;
+}
+.case-form-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:14px;
+}
+.case-field{ display:flex; flex-direction:column; }
+.case-field-wide{ grid-column:1 / -1; }
+.case-field span{
+  font-size:11px;
+  text-transform:uppercase;
+  letter-spacing:0.04em;
+  color:var(--text-muted);
+  margin-bottom:6px;
+}
+.case-field input[type="text"],
+.case-field textarea,
+.case-field select{
+  width:100%;
+  background:var(--ink-2);
+  border:1px solid var(--hairline);
+  color:var(--text-light);
+  padding:10px 12px;
+  border-radius:var(--radius);
+  font-family:'IBM Plex Mono',monospace;
+  font-size:13px;
+  line-height:1.6;
+  resize:vertical;
+}
+.case-field textarea{ min-height:64px; }
+.case-field input:focus, .case-field textarea:focus, .case-field select:focus{ outline:none; border-color:var(--brass-dim); }
+.case-form-actions{
+  display:flex;
+  justify-content:flex-end;
+  gap:10px;
+  margin-top:16px;
+  flex:0 0 auto;
+}
+.case-form-actions button{
+  font-size:11.5px;
+  font-weight:600;
+  padding:8px 16px;
+  border-radius:var(--radius);
+  cursor:pointer;
+  white-space:nowrap;
+  border:1px solid var(--hairline);
+  background:none;
+  color:var(--text-light);
+}
+.case-form-actions button:hover{ border-color:var(--brass-dim); color:var(--brass); }
+.case-form-actions button.primary{ background:var(--brass); color:var(--ink); border-color:var(--brass); }
+.case-form-actions button.primary:hover{ color:var(--ink); }
+.case-form-actions button:disabled{ opacity:0.55; cursor:default; }
+
+.database-table-item{
+  display:block;
+  width:100%;
+  text-align:left;
+  background:none;
+  border:none;
+  border-left:2px solid transparent;
+  color:var(--text-light);
+  padding:8px 16px;
+  font-family:'IBM Plex Mono',monospace;
+  font-size:12.5px;
+  cursor:pointer;
+}
+.database-table-item:hover{ background:var(--ink-3); }
+.database-table-item.active{ background:var(--ink-3); border-left-color:var(--brass); color:var(--brass); }
+.db-sql-textarea{
+  width:100%;
+  min-height:110px;
+  resize:vertical;
+  background:var(--ink-2);
+  border:1px solid var(--hairline);
+  border-radius:var(--radius);
+  color:var(--text-light);
+  padding:14px 16px;
+  font-family:'IBM Plex Mono',monospace;
+  font-size:13px;
+  line-height:1.6;
+  margin-bottom:12px;
+  flex:0 0 auto;
+}
+.db-sql-textarea:focus{ outline:none; border-color:var(--brass-dim); }
+.db-results{
+  flex:1;
+  min-height:0;
+  overflow:auto;
+  border:1px solid var(--hairline);
+  border-radius:var(--radius);
+  background:var(--ink-2);
+}
+.db-results table{
+  width:100%;
+  border-collapse:collapse;
+  font-family:'IBM Plex Mono',monospace;
+  font-size:12.5px;
+}
+.db-results th, .db-results td{
+  border:1px solid var(--hairline);
+  padding:6px 10px;
+  text-align:left;
+  white-space:pre-wrap;
+  vertical-align:top;
+}
+.db-results th{
+  background:var(--ink-3);
+  color:var(--brass);
+  position:sticky;
+  top:0;
+}
+.db-results-empty, .db-results-error, .db-results-info{
+  padding:14px 16px;
+  font-size:13px;
+  color:var(--text-muted);
+}
+.db-results-error{ color:#c9855a; }
 </style>
 </head>
 <body>
@@ -1752,6 +2083,7 @@ pre code {
       <button class="view-tab" id="tabSchedule" data-view="schedule">Schedule</button>
       <button class="view-tab" id="tabDocuments" data-view="documents">Documents</button>
       <button class="view-tab" id="tabNotes" data-view="notes">Notes</button>
+      <button class="view-tab" id="tabDatabase" data-view="database">Database</button>
       <button class="settings-gear-btn" id="settingsGearBtn" aria-label="Settings" title="API key settings">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z" stroke="currentColor" stroke-width="1.5"/>
@@ -1928,13 +2260,14 @@ pre code {
             <option value="kotlin">Kotlin (.kt)</option>
             <option value="perl">Perl (.pl)</option>
             <option value="lua">Lua (.lua)</option>
+            <option value="assembly">Assembly (.asm)</option>
           </select>
         </div>
 
         <button class="compile-btn" id="newDocBtn" title="Start a new, blank document">New</button>
         <button class="compile-btn" id="openDocBtn" title="Open a .doc, .docx, .odt, .ods, .pdf, .html/.txt file, or a file previously compiled by LawGPT">Open &#8613;</button>
         <input type="file" id="openDocInput" style="display:none"
-          accept=".doc,.docx,.odt,.ods,.pdf,.html,.htm,.txt,.py,.js,.ts,.c,.cpp,.java,.cs,.go,.rs,.rb,.php,.sh,.swift,.kt,.pl,.lua">
+          accept=".doc,.docx,.odt,.ods,.pdf,.html,.htm,.txt,.py,.js,.ts,.c,.cpp,.java,.cs,.go,.rs,.rb,.php,.sh,.swift,.kt,.pl,.lua,.asm">
         <button class="compile-btn" id="compileDocBtn" title="Compile the document and preview the generated source">Compile</button>
         <button class="save-btn" id="saveDocBtn" title="Save back to the file this document was opened/saved from. If it hasn't been saved yet, this behaves like Download.">Save</button>
         <button class="download-btn" id="downloadDocBtn" title="Download the compiled document (choose the name and folder)">Download &#8681;</button>
@@ -1970,9 +2303,10 @@ pre code {
     <div class="schedule-view" id="scheduleView" style="display:none;">
       <div class="schedule-wrap">
         <div class="schedule-course-switch" id="scheduleCourseSwitch">
-          <button type="button" class="schedule-course-btn active" data-course="civpro">Civil Procedure (35179)</button>
-          <button type="button" class="schedule-course-btn" data-course="lss">Lawyering Skills &amp; Strategies (34778)</button>
+          <button type="button" class="schedule-course-btn active" data-course="civpro">Civil Procedure</button>
+          <button type="button" class="schedule-course-btn" data-course="lss">Lawyering Skills &amp; Strategies</button>
           <button type="button" class="schedule-course-btn" data-course="contracts">Contracts</button>
+          <button type="button" class="schedule-course-btn" data-course="torts">Torts</button>
         </div>
         <div class="schedule-note" id="scheduleNote"></div>
         <div id="scheduleBody"></div>
@@ -2016,29 +2350,84 @@ pre code {
         <div class="notes-sidebar-list" id="notesSidebarList"></div>
       </aside>
       <div class="notes-main">
+        <div class="notes-toolbar">
+          <button type="button" class="notes-right-tab-btn" id="notesRightTableBtn">Table</button>
+          <button type="button" class="notes-right-tab-btn" id="notesRightChatBtn">Chat</button>
+          <button type="button" class="notes-right-close-btn" id="notesRightCloseBtn" style="display:none;" aria-label="Close" title="Close">&#10005;</button>
+        </div>
+        <div class="notes-wrap" id="notesWrap">
+          <div class="notes-col-left">
+            <p class="notes-col-left-empty" id="notesColLeftEmpty">Open a saved Reading Report from the sidebar, or click "Notes" on a reading in the Schedule tab to generate one.</p>
+            <div class="notes-report-panel" id="notesReportPanel" style="display:none;">
+              <div class="notes-report-head">
+                <div class="notes-report-head-text">
+                  <div class="notes-report-title" id="notesReportTitle"></div>
+                  <div class="notes-report-source" id="notesReportSource" style="display:none;"></div>
+                </div>
+                <div class="notes-report-actions">
+                  <button type="button" id="notesReportOpenEditorBtn" title="Open this AI-generated report in the Draft &amp; Compile editor">Open in Editor</button>
+                  <button type="button" class="primary" id="notesReportSaveBtn">Save</button>
+                  <button type="button" id="notesReportDeleteBtn" style="display:none;">Delete</button>
+                  <button type="button" id="notesReportCloseBtn" aria-label="Close report" title="Close">&#10005;</button>
+                </div>
+              </div>
+              <div class="notes-report-body" id="notesReportBody"></div>
+            </div>
+          </div>
+          <div class="notes-col-right" id="notesColRight" style="display:none;">
+            <div class="case-form" id="caseForm" style="display:none;">
+              <div class="case-form-head">
+                <div class="notes-title">Table<span id="caseFormLabel"></span></div>
+                <div class="case-form-head-actions">
+                  <select class="case-brief-select" id="dbTableSelect" title="Table to add rows to"></select>
+                  <select class="case-brief-select" id="dbRowSelect" title="Load an existing row" style="display:none;">
+                    <option value="">+ New row</option>
+                  </select>
+                  <button type="button" class="notes-head-btn" id="caseBriefFillBtn" title="Fill these fields from the Reading Report open above" style="display:none;">Fill from Report</button>
+                  <div class="notes-save-status" id="caseBriefStatus"></div>
+                </div>
+              </div>
+              <div class="case-form-scroll">
+                <div class="case-form-grid" id="caseFormGrid"></div>
+                <p class="case-form-empty" id="caseFormEmptyNote" style="display:none;">Open a Reading Report above to view or edit its case brief.</p>
+              </div>
+              <div class="case-form-actions">
+                <button type="button" id="caseBriefDeleteBtn" style="display:none;">Delete</button>
+                <button type="button" class="primary" id="caseBriefSaveBtn">Save Row</button>
+              </div>
+            </div>
+            <div class="notes-chat-panel" id="notesChatPanel" style="display:none;">
+              <div class="notes-chat-head">
+                <div class="notes-title" style="font-size:14px;">Ask about these notes</div>
+              </div>
+              <div class="notes-chat-messages" id="notesChatMessages"></div>
+              <div class="notes-chat-input-row">
+                <textarea class="notes-chat-input" id="notesChatInput" rows="1" placeholder="Ask a follow-up question about this reading…" spellcheck="false"></textarea>
+                <button type="button" class="notes-head-btn primary" id="notesChatSendBtn">Ask</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="notes-view" id="databaseView" style="display:none;">
+      <aside class="notes-sidebar" id="databaseSidebar">
+        <div class="notes-sidebar-label">Tables</div>
+        <div class="notes-sidebar-empty" id="databaseTableListEmpty" style="display:none;">No tables found.</div>
+        <div class="notes-sidebar-list" id="databaseTableList"></div>
+      </aside>
+      <div class="notes-main">
         <div class="notes-wrap">
-          <div class="notes-report-panel" id="notesReportPanel" style="display:none;">
-            <div class="notes-report-head">
-              <div class="notes-report-head-text">
-                <div class="notes-report-title" id="notesReportTitle"></div>
-                <div class="notes-report-source" id="notesReportSource" style="display:none;"></div>
-              </div>
-              <div class="notes-report-actions">
-                <button type="button" class="primary" id="notesReportSaveBtn">Save</button>
-                <button type="button" id="notesReportDeleteBtn" style="display:none;">Delete</button>
-                <button type="button" id="notesReportCloseBtn" aria-label="Close report" title="Close">&#10005;</button>
-              </div>
-            </div>
-            <div class="notes-report-body" id="notesReportBody"></div>
-          </div>
           <div class="notes-head">
-            <div class="notes-title">Notes<span id="notesMatterLabel"></span></div>
+            <div class="notes-title">SQL Editor</div>
             <div class="notes-head-actions">
-              <div class="notes-save-status" id="notesSaveStatus"></div>
-              <button type="button" class="notes-head-btn" id="notesOpenEditorBtn" title="Open these notes in the Draft &amp; Compile editor">Open in Editor</button>
+              <div class="notes-save-status" id="dbQueryStatus"></div>
+              <button type="button" class="notes-head-btn primary" id="dbRunBtn">Run Query</button>
             </div>
           </div>
-          <textarea class="notes-textarea" id="notesTextarea" placeholder="Notes for this matter — saved automatically as you type..." spellcheck="true"></textarea>
+          <textarea class="db-sql-textarea" id="dbSqlInput" placeholder="select * from cases limit 50;" spellcheck="false"></textarea>
+          <div class="db-results" id="dbResults"></div>
         </div>
       </div>
     </div>
@@ -2592,12 +2981,14 @@ document.getElementById("sidebarToggle").addEventListener("click", toggleSidebar
 document.getElementById("sidebarCollapseBtn").addEventListener("click", toggleSidebar);
 document.getElementById("sidebarCloseBtn").addEventListener("click", toggleSidebar);
 attachChipListeners();
-if (loadState()){
-  renderDocket();
-  renderChat();
-} else {
-  createMatter();
-}
+// Don't auto-create (and thus auto-persist) an empty "Untitled Matter" just
+// because there's nothing to restore — that made every fresh page load look
+// like it had "saved" a blank chat. A matter is only created lazily, the
+// moment the user actually sends a first message (see sendMessage()) or
+// clicks "New Matter" explicitly.
+loadState();
+renderDocket();
+renderChat();
 
 // ====== VIEW TAB SWITCHING ======
 function setView(view){
@@ -2606,22 +2997,30 @@ function setView(view){
   const scheduleView = document.getElementById("scheduleView");
   const documentsView = document.getElementById("documentsView");
   const notesView = document.getElementById("notesView");
+  const databaseView = document.getElementById("databaseView");
   const tabChat = document.getElementById("tabChat");
   const tabEditor = document.getElementById("tabEditor");
   const tabSchedule = document.getElementById("tabSchedule");
   const tabDocuments = document.getElementById("tabDocuments");
   const tabNotes = document.getElementById("tabNotes");
+  const tabDatabase = document.getElementById("tabDatabase");
 
   chatView.style.display = "none";
   editorView.style.display = "none";
   scheduleView.style.display = "none";
   documentsView.style.display = "none";
   notesView.style.display = "none";
+  databaseView.style.display = "none";
   tabChat.classList.remove("active");
   tabEditor.classList.remove("active");
   tabSchedule.classList.remove("active");
   tabDocuments.classList.remove("active");
   tabNotes.classList.remove("active");
+  tabDatabase.classList.remove("active");
+
+  // The Notes and Database tabs show their own left banner (Reading Reports
+  // / Tables) in place of the standard docket sidebar.
+  document.querySelector(".app").classList.toggle("hide-app-sidebar", view === "notes" || view === "database");
 
   if (view === "editor"){
     editorView.style.display = "flex";
@@ -2639,6 +3038,11 @@ function setView(view){
     notesView.style.display = "flex";
     tabNotes.classList.add("active");
     renderNotes();
+    loadDbTables();
+  } else if (view === "database"){
+    databaseView.style.display = "flex";
+    tabDatabase.classList.add("active");
+    loadDbTables();
   } else {
     chatView.style.display = "flex";
     tabChat.classList.add("active");
@@ -2649,86 +3053,462 @@ document.getElementById("tabEditor").addEventListener("click", () => setView("ed
 document.getElementById("tabSchedule").addEventListener("click", () => setView("schedule"));
 document.getElementById("tabDocuments").addEventListener("click", () => setView("documents"));
 document.getElementById("tabNotes").addEventListener("click", () => setView("notes"));
+document.getElementById("tabDatabase").addEventListener("click", () => setView("database"));
 
 
-// ====== NOTES ======
-// The notes textarea is contextual: when a reading report is open
-// (currentReport set — see the READING REPORTS section below), it reads and
-// writes that report's own notes (report.notes), so each saved reading
-// report keeps its own unique notes box — selecting a different report in
-// the sidebar swaps in that report's notes instead. With no report open, it
-// falls back to the active matter's general notes (matter.notes), as
-// before. Either way, notes ride along with the rest of the docket in
-// localStorage — no separate storage key needed.
-let notesSaveTimer = null;
+// ====== ROW EDITOR (Notes tab) ======
+// Structured row editor for any table in Supabase's public schema, via the
+// local proxy's generic /api/db/:table routes (see lawgpt-proxy/server.js)
+// -- the Supabase key never reaches this page. Tables and their columns are
+// discovered live (dbTables, loaded by loadDbTables()), not hardcoded. Every
+// table -- "cases" included -- is a plain freestanding editor with a picker
+// for existing rows and its primary key typed in like any other field. The
+// "cases" table additionally gets a "Fill from Report" button (see
+// caseBriefFillBtn below) that parses whichever Reading Report is open into
+// the form as a starting point -- including its own title as a default case
+// name -- but the user can always type a case name by hand instead.
+let dbTables = [];
+let dbSelectedTable = null;
+let dbRowsCache = [];
+let currentCaseId = null; // the loaded row's primary-key value; null for a new/unsaved row
 
 function renderNotes(){
   renderReportPanel();
 }
 
-function setNotesSaveStatus(text){
-  document.getElementById("notesSaveStatus").textContent = text;
+function setCaseBriefStatus(text){
+  const el = document.getElementById("caseBriefStatus");
+  if (el) el.textContent = text;
 }
 
-// Keeps the notes textarea (and its label/placeholder/enabled state) in
-// sync with whichever context is active — called from renderReportPanel()
-// so every place that already re-renders the report panel also refreshes
-// this.
-function syncNotesTextarea(){
-  const textarea = document.getElementById("notesTextarea");
-  const label = document.getElementById("notesMatterLabel");
-  const openBtn = document.getElementById("notesOpenEditorBtn");
-  if (!textarea || !label) return;
+function prettifyColumnName(name){
+  return String(name).replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+}
 
-  if (currentReport){
-    label.textContent = " — " + [currentReport.classLabel, currentReport.title].filter(Boolean).join(" · ");
-    textarea.value = currentReport.notes || "";
-    textarea.disabled = false;
-    textarea.placeholder = "Your notes on this reading — saved automatically as you type...";
-    setNotesSaveStatus("");
-  } else {
-    const matter = getActiveMatter();
-    label.textContent = matter ? " — " + matter.title : "";
-    textarea.value = matter ? (matter.notes || "") : "";
-    textarea.disabled = !matter;
-    textarea.placeholder = "Notes for this matter — saved automatically as you type...";
-    setNotesSaveStatus(matter ? "" : "Open or create a matter to take notes.");
+function getSelectedTableInfo(){
+  return dbTables.find(t => t.name === dbSelectedTable) || null;
+}
+
+// Per-table overrides for the generic row editor below -- lets a table
+// display its fields in a specific order and under a friendlier label than
+// prettifyColumnName's mechanical underscore-to-title-case would produce.
+// Any column not listed in `order` still shows up (appended at the end), so
+// this degrades gracefully if the table gains a column this isn't updated
+// for.
+const TABLE_FIELD_CONFIG = {
+  cases: {
+    order: ["case", "course", "facts", "procedural_posture", "issue", "holding", "rule", "reasoning", "plantiff_arguments", "defendant_arguments", "disposition", "importance"],
+    labels: {
+      procedural_posture: "Procedural Posture",
+      plantiff_arguments: "Plaintiff's/Appellee's Arguments",
+      defendant_arguments: "Defendant/Appellant's Arguments"
+    }
+  }
+};
+
+// Builds the field grid from a table's actual columns (excludeColumns lets
+// the "cases" case hide the primary key field, since it's driven by the
+// open report instead of typed in directly).
+function renderCaseFormFields(tableInfo, excludeColumns){
+  const grid = document.getElementById("caseFormGrid");
+  grid.innerHTML = "";
+  if (!tableInfo) return;
+  const exclude = new Set(excludeColumns || []);
+  const config = TABLE_FIELD_CONFIG[tableInfo.name];
+  const byName = new Map(tableInfo.columns.map(c => [c.name, c]));
+  const columns = config
+    ? config.order.map(name => byName.get(name)).filter(Boolean)
+        .concat(tableInfo.columns.filter(c => !config.order.includes(c.name)))
+    : tableInfo.columns;
+  columns.forEach(col => {
+    if (exclude.has(col.name)) return;
+    const isCourse = col.name === "course";
+    const label = document.createElement("label");
+    label.className = "case-field" + (col.isPrimaryKey || isCourse ? "" : " case-field-wide");
+    const span = document.createElement("span");
+    const displayName = (config && config.labels && config.labels[col.name]) || prettifyColumnName(col.name);
+    span.textContent = displayName + (col.isPrimaryKey ? " (key)" : "");
+    label.appendChild(span);
+    let field;
+    if (isCourse){
+      field = document.createElement("select");
+      field.appendChild(new Option("Select course…", ""));
+      Object.values(CASE_COURSE_LABELS).forEach(courseLabel => field.appendChild(new Option(courseLabel, courseLabel)));
+    } else {
+      field = document.createElement(col.isPrimaryKey ? "input" : "textarea");
+      if (col.isPrimaryKey) field.type = "text";
+    }
+    field.id = "cf_" + col.name;
+    label.appendChild(field);
+    grid.appendChild(label);
+  });
+}
+
+function getCaseFormValues(tableInfo){
+  const values = {};
+  if (!tableInfo) return values;
+  tableInfo.columns.forEach(col => {
+    const el = document.getElementById("cf_" + col.name);
+    if (el) values[col.name] = el.value;
+  });
+  return values;
+}
+
+// Generic setter: fills whatever "cf_*" fields are currently rendered,
+// regardless of which table/columns that happens to be.
+function setCaseFormValues(values){
+  document.querySelectorAll('#caseFormGrid [id^="cf_"]').forEach(el => {
+    const field = el.id.slice(3);
+    el.value = (values && values[field] != null) ? values[field] : "";
+  });
+}
+
+const CASE_COURSE_LABELS = { civpro: "Civil Procedure", contracts: "Contracts", lss: "Lawyering Skills & Strategies", torts: "Torts" };
+
+// Refreshes the table dropdown from Supabase. Called whenever the Notes or
+// Database tab is opened (both share this same cache/dropdown), not on
+// every render.
+async function loadDbTables(){
+  try{
+    const res = await fetch(PROXY_ORIGIN + "/api/db/tables");
+    const data = await res.json();
+    dbTables = res.ok && Array.isArray(data) ? data : [];
+  } catch(e){
+    dbTables = [];
   }
 
-  if (openBtn) openBtn.disabled = textarea.disabled;
+  const select = document.getElementById("dbTableSelect");
+  if (select){
+    const preserve = dbSelectedTable;
+    select.innerHTML = "";
+    dbTables.forEach(t => {
+      const opt = document.createElement("option");
+      opt.value = t.name;
+      opt.textContent = t.name;
+      select.appendChild(opt);
+    });
+    dbSelectedTable = (preserve && dbTables.some(t => t.name === preserve))
+      ? preserve
+      : (dbTables.some(t => t.name === "cases") ? "cases" : (dbTables[0] ? dbTables[0].name : null));
+    select.value = dbSelectedTable || "";
+  }
+  onDbTableChanged();
+  populateDatabaseTableList();
 }
 
-document.getElementById("notesTextarea").addEventListener("input", (e) => {
-  if (currentReport){
-    currentReport.notes = e.target.value;
-    setNotesSaveStatus("Saving\u2026");
-    clearTimeout(notesSaveTimer);
-    notesSaveTimer = setTimeout(() => {
-      persistState();
-      setNotesSaveStatus("Saved");
-    }, 400);
+document.getElementById("dbTableSelect").addEventListener("change", (e) => {
+  dbSelectedTable = e.target.value;
+  onDbTableChanged();
+});
+
+// Refreshes the "load an existing row" dropdown for whichever table is
+// selected, from Supabase.
+async function loadDbRows(tableInfo){
+  try{
+    const res = await fetch(PROXY_ORIGIN + "/api/db/" + encodeURIComponent(tableInfo.name));
+    const data = await res.json();
+    dbRowsCache = res.ok && Array.isArray(data) ? data : [];
+  } catch(e){
+    dbRowsCache = [];
+  }
+  const select = document.getElementById("dbRowSelect");
+  if (!select) return;
+  const pk = tableInfo.primaryKey[0];
+  const previewCols = tableInfo.columns.filter(c => c.name !== pk).slice(0, 1).map(c => c.name);
+  select.innerHTML = '<option value="">+ New row</option>';
+  dbRowsCache.forEach(row => {
+    const opt = document.createElement("option");
+    const key = pk ? row[pk] : null;
+    opt.value = key != null ? String(key) : "";
+    opt.textContent = [pk ? row[pk] : null, ...previewCols.map(c => row[c])].filter(v => v != null && v !== "").join(" — ") || "(empty row)";
+    select.appendChild(opt);
+  });
+}
+
+document.getElementById("dbRowSelect").addEventListener("change", (e) => {
+  const tableInfo = getSelectedTableInfo();
+  const key = e.target.value;
+  if (!tableInfo || !key){
+    currentCaseId = null;
+    setCaseFormValues({});
+    document.getElementById("caseBriefDeleteBtn").style.display = "none";
+    setCaseBriefStatus("");
+    return;
+  }
+  const pk = tableInfo.primaryKey[0];
+  const found = dbRowsCache.find(r => String(r[pk]) === key);
+  if (!found) return;
+  currentCaseId = key;
+  setCaseFormValues(found);
+  document.getElementById("caseBriefDeleteBtn").style.display = "inline-block";
+  setCaseBriefStatus("");
+});
+
+document.getElementById("caseBriefSaveBtn").addEventListener("click", async () => {
+  const tableInfo = getSelectedTableInfo();
+  if (!tableInfo) return;
+
+  const btn = document.getElementById("caseBriefSaveBtn");
+  const values = getCaseFormValues(tableInfo);
+  const singlePk = tableInfo.primaryKey.length === 1 ? tableInfo.primaryKey[0] : null;
+
+  if (singlePk && (!values[singlePk] || !values[singlePk].trim())){
+    setCaseBriefStatus(`Give a value for "${singlePk}" before saving.`);
     return;
   }
 
-  const matter = getActiveMatter();
-  if (!matter) return;
-  matter.notes = e.target.value;
-  setNotesSaveStatus("Saving\u2026");
-  clearTimeout(notesSaveTimer);
-  notesSaveTimer = setTimeout(() => {
-    persistState();
-    setNotesSaveStatus("Saved");
-  }, 400);
+  btn.disabled = true;
+  setCaseBriefStatus("Saving…");
+  try{
+    const res = await fetch(PROXY_ORIGIN + "/api/db/" + encodeURIComponent(tableInfo.name), {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(values)
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error((data && data.error && (data.error.message || JSON.stringify(data.error))) || "Save failed.");
+
+    if (singlePk){
+      currentCaseId = data[singlePk];
+      await loadDbRows(tableInfo);
+      const rowSelect = document.getElementById("dbRowSelect");
+      if (rowSelect) rowSelect.value = String(currentCaseId);
+      document.getElementById("caseBriefDeleteBtn").style.display = "inline-block";
+    }
+    setCaseBriefStatus("Saved.");
+  } catch(err){
+    setCaseBriefStatus("Couldn't save: " + err.message);
+  } finally {
+    btn.disabled = false;
+  }
 });
 
-// Sends whatever's in the notes box right now over to the Draft & Compile
-// editor (as plain text, one paragraph per line) so it can be formatted,
-// printed, or exported like any other document.
-document.getElementById("notesOpenEditorBtn").addEventListener("click", () => {
-  const textarea = document.getElementById("notesTextarea");
-  if (textarea.disabled) return;
-  loadPlainTextIntoEditor(textarea.value || "");
-  setView("editor");
+document.getElementById("caseBriefDeleteBtn").addEventListener("click", async () => {
+  const tableInfo = getSelectedTableInfo();
+  if (!tableInfo || !currentCaseId) return;
+  if (!confirm(`Delete this row (${tableInfo.primaryKey[0]} = "${currentCaseId}")? This can't be undone.`)) return;
+  try{
+    const res = await fetch(PROXY_ORIGIN + "/api/db/" + encodeURIComponent(tableInfo.name) + "/" + encodeURIComponent(currentCaseId), { method: "DELETE" });
+    if (!res.ok){
+      const data = await res.json().catch(() => null);
+      throw new Error((data && data.error && (data.error.message || JSON.stringify(data.error))) || "Delete failed.");
+    }
+    currentCaseId = null;
+    setCaseFormValues({});
+    await loadDbRows(tableInfo);
+    const rowSelect = document.getElementById("dbRowSelect");
+    if (rowSelect) rowSelect.value = "";
+    document.getElementById("caseBriefDeleteBtn").style.display = "none";
+    setCaseBriefStatus("Deleted.");
+  } catch(err){
+    setCaseBriefStatus("Couldn't delete: " + err.message);
+  }
+});
+
+// Best-effort extraction of the case-brief fields out of a generated
+// Reading Report's markdown (matching the section headings the
+// NOTES_PROMPT_* templates actually use: "## Facts", "# 10. POLICY AND
+// COMPETING ARGUMENTS", a bare "**Importance**" line, etc). This is a
+// starting point to review and correct by hand, not a guarantee — templates
+// differ, and a couple of fields (Policy, Importance) don't map cleanly onto
+// every one of them.
+function parseCaseFieldsFromReport(text){
+  const lines = String(text || "").split("\n");
+  const atx = /^#{1,4}\s+(.+?)\s*$/;
+  const boldOnly = /^\*\*(.+?)\*\*:?\s*$/;
+  const headings = [];
+
+  lines.forEach((line, i) => {
+    const trimmed = line.trim();
+    let m = atx.exec(trimmed);
+    let headingText = m ? m[1] : null;
+    if (headingText == null){
+      m = boldOnly.exec(trimmed);
+      headingText = m ? m[1] : null;
+    }
+    if (headingText == null) return;
+    const norm = headingText.replace(/^\d+\.\s*/, "").replace(/:$/, "").trim().toLowerCase();
+    headings.push({ norm, line: i });
+  });
+
+  const bodyFor = (candidates) => {
+    for (const h of headings){
+      if (candidates.includes(h.norm)){
+        const startLine = h.line + 1;
+        const next = headings.find(x => x.line > h.line);
+        const endLine = next ? next.line : lines.length;
+        return lines.slice(startLine, endLine).join("\n").trim();
+      }
+    }
+    return "";
+  };
+
+  return {
+    facts: bodyFor(["facts"]),
+    procedural_posture: bodyFor(["procedural posture"]),
+    issue: bodyFor(["issue"]),
+    holding: bodyFor(["holding"]),
+    rule: bodyFor(["rule", "rule(s)"]),
+    reasoning: bodyFor(["reasoning", "court's reasoning"]),
+    plantiff_arguments: bodyFor(["plaintiff's/appellee's arguments", "plaintiff's / appellee's argument", "plaintiff's/appellee's argument"]),
+    defendant_arguments: bodyFor(["defendant/appellant's arguments", "defendant's / appellant's argument", "defendant's/appellant's argument"]),
+    disposition: bodyFor(["disposition"]),
+    importance: bodyFor(["importance", "what i need to know"])
+  };
+}
+
+// Fills the form from whichever Reading Report is open -- a starting point
+// to review and correct, not a save. Only ever shown for the "cases" table
+// (see onDbTableChanged), but the case name it fills in (the report's own
+// title) is just a default: it lands in a normal, editable "Case" field, so
+// typing a different name before saving is fine.
+document.getElementById("caseBriefFillBtn").addEventListener("click", () => {
+  if (dbSelectedTable !== "cases") return;
+  if (!currentReport || !currentReport.content){
+    setCaseBriefStatus("Open a Reading Report above first.");
+    return;
+  }
+  if (currentCaseId && !confirm("This will overwrite the form with fields parsed from the open report. Continue?")) return;
+  const parsed = parseCaseFieldsFromReport(currentReport.content);
+  parsed.case = currentReport.title;
+  parsed.course = CASE_COURSE_LABELS[currentReport.course] || currentReport.course || "";
+  setCaseFormValues(parsed);
+  setCaseBriefStatus("Filled from report — review before saving.");
+});
+
+// Reconfigures the row editor for whichever table is selected. Called both
+// when the table dropdown changes and from renderReportPanel() (via
+// syncCaseForm) so opening/closing a Reading Report also refreshes whether
+// "Fill from Report" is usable.
+function onDbTableChanged(){
+  const tableInfo = getSelectedTableInfo();
+  const label = document.getElementById("caseFormLabel");
+  const fillBtn = document.getElementById("caseBriefFillBtn");
+  const rowSelect = document.getElementById("dbRowSelect");
+  const emptyNote = document.getElementById("caseFormEmptyNote");
+  const grid = document.getElementById("caseFormGrid");
+  const actions = document.querySelector(".case-form-actions");
+
+  if (!tableInfo){
+    grid.innerHTML = "";
+    return;
+  }
+
+  rowSelect.style.display = "inline-block";
+  fillBtn.style.display = dbSelectedTable === "cases" ? "inline-block" : "none";
+  fillBtn.disabled = !currentReport;
+  grid.style.display = "grid";
+  actions.style.display = "flex";
+  emptyNote.style.display = "none";
+  if (label) label.textContent = "";
+  renderCaseFormFields(tableInfo, []);
+  currentCaseId = null;
+  setCaseFormValues({});
+  document.getElementById("caseBriefDeleteBtn").style.display = "none";
+  setCaseBriefStatus("");
+  loadDbRows(tableInfo);
+}
+
+// Called from renderReportPanel() so opening/closing/switching a Reading
+// Report keeps the "Fill from Report" button's enabled state current even
+// while the cases table is already selected.
+function syncCaseForm(){
+  const fillBtn = document.getElementById("caseBriefFillBtn");
+  if (!fillBtn) return;
+  fillBtn.disabled = !currentReport;
+}
+
+// ====== DATABASE TAB (raw SQL editor) ======
+// Shares dbTables (loaded by loadDbTables()) with the Notes tab's row
+// editor. Queries run through the proxy's /api/db/query route, which calls
+// a Postgres function (exec_sql) the user creates once via the Supabase SQL
+// editor -- see the setup instructions given alongside this feature.
+function populateDatabaseTableList(){
+  const list = document.getElementById("databaseTableList");
+  const empty = document.getElementById("databaseTableListEmpty");
+  if (!list) return;
+  list.innerHTML = "";
+  empty.style.display = dbTables.length ? "none" : "block";
+  dbTables.forEach(t => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "database-table-item";
+    btn.textContent = t.name;
+    btn.addEventListener("click", () => {
+      document.getElementById("dbSqlInput").value = `select * from "${t.name}" limit 50;`;
+      runDbQuery();
+    });
+    list.appendChild(btn);
+  });
+}
+
+function renderDbResults(data){
+  const el = document.getElementById("dbResults");
+  if (data && Array.isArray(data.rows)){
+    if (!data.rows.length){
+      el.innerHTML = '<div class="db-results-empty">Query ran successfully — no rows returned.</div>';
+      return;
+    }
+    const columns = Object.keys(data.rows[0]);
+    const escape = (v) => {
+      if (v == null) return "";
+      const s = typeof v === "object" ? JSON.stringify(v) : String(v);
+      return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    };
+    let html = "<table><thead><tr>" + columns.map(c => `<th>${escape(c)}</th>`).join("") + "</tr></thead><tbody>";
+    data.rows.forEach(row => {
+      html += "<tr>" + columns.map(c => `<td>${escape(row[c])}</td>`).join("") + "</tr>";
+    });
+    html += "</tbody></table>";
+    el.innerHTML = html;
+  } else if (data && typeof data.rows_affected === "number"){
+    el.innerHTML = `<div class="db-results-info">${data.rows_affected} row(s) affected.</div>`;
+  } else {
+    el.innerHTML = '<div class="db-results-info">Query ran successfully.</div>';
+  }
+}
+
+async function runDbQuery(){
+  const btn = document.getElementById("dbRunBtn");
+  const statusEl = document.getElementById("dbQueryStatus");
+  const query = document.getElementById("dbSqlInput").value.trim();
+  const resultsEl = document.getElementById("dbResults");
+  if (!query){
+    statusEl.textContent = "Type a query first.";
+    return;
+  }
+  btn.disabled = true;
+  statusEl.textContent = "Running…";
+  resultsEl.innerHTML = "";
+  try{
+    const res = await fetch(PROXY_ORIGIN + "/api/db/query", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ query })
+    });
+    const data = await res.json();
+    if (!res.ok){
+      const msg = (data && data.error && (data.error.message || JSON.stringify(data.error))) || "Query failed.";
+      resultsEl.innerHTML = `<div class="db-results-error">${msg.replace(/&/g,"&amp;").replace(/</g,"&lt;")}</div>`;
+      statusEl.textContent = "";
+      return;
+    }
+    renderDbResults(data);
+    statusEl.textContent = "";
+  } catch(err){
+    resultsEl.innerHTML = `<div class="db-results-error">${err.message}</div>`;
+    statusEl.textContent = "";
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+document.getElementById("dbRunBtn").addEventListener("click", runDbQuery);
+document.getElementById("dbSqlInput").addEventListener("keydown", (e) => {
+  if ((e.metaKey || e.ctrlKey) && e.key === "Enter"){
+    e.preventDefault();
+    runDbQuery();
+  }
 });
 
 
@@ -2737,6 +3517,12 @@ document.getElementById("notesOpenEditorBtn").addEventListener("click", () => {
 // a freshly generated report (currentReport.id is null until Saved), or a
 // previously saved one loaded from the sidebar (currentReport.id set).
 let currentReport = null;
+
+// Which of the Notes tab's right-column panels is showing, if either --
+// null (neither; the placeholder shows instead), "table", or "chat". Both
+// stay hidden until the user asks for one via the Table/Chat buttons (see
+// setNotesRightView below).
+let notesRightView = null;
 
 // Calls the proxy's /api/chat directly (not through a matter's chat thread)
 // so the reading report doesn't show up in — or get treated as part of —
@@ -2764,10 +3550,12 @@ async function generateReadingReport({ course, classLabel, title, prompt, docume
   const source = describeDocumentSource(documentIds);
   currentReport = {
     id: null, course, classLabel, title, source,
+    documentIds: documentIds || [],
     content: "Generating your reading report\u2026",
     createdAt: new Date().toISOString(),
     loading: true,
-    notes: ""
+    notes: "",
+    chat: []
   };
   renderReportPanel();
 
@@ -2783,14 +3571,16 @@ async function generateReadingReport({ course, classLabel, title, prompt, docume
       const errMsg = (data && data.error && data.error.message) ? data.error.message : "Request failed.";
       throw new Error(errMsg);
     }
-    currentReport = { id: null, course, classLabel, title, source, content: extractText(data), createdAt: new Date().toISOString(), notes: currentReport.notes || "" };
+    currentReport = { id: null, course, classLabel, title, source, documentIds: documentIds || [], content: extractText(data), createdAt: new Date().toISOString(), notes: currentReport.notes || "", chat: [] };
   } catch(err){
     currentReport = {
       id: null, course, classLabel, title, source,
+      documentIds: documentIds || [],
       content: "Couldn't generate this report: " + err.message,
       createdAt: new Date().toISOString(),
       failed: true,
-      notes: currentReport.notes || ""
+      notes: currentReport.notes || "",
+      chat: []
     };
   } finally {
     if (btn){ btn.disabled = false; btn.textContent = "Notes"; }
@@ -2800,7 +3590,11 @@ async function generateReadingReport({ course, classLabel, title, prompt, docume
 
 function renderReportPanel(){
   renderReportSidebar();
-  syncNotesTextarea();
+  syncCaseForm();
+  renderNotesChat();
+
+  const leftEmpty = document.getElementById("notesColLeftEmpty");
+  if (leftEmpty) leftEmpty.style.display = currentReport ? "none" : "block";
 
   const panel = document.getElementById("notesReportPanel");
   if (!currentReport){
@@ -2829,6 +3623,7 @@ function renderReportPanel(){
   saveBtn.textContent = currentReport.id ? "Saved \u2713" : "Save";
   saveBtn.disabled = Boolean(currentReport.id) || Boolean(currentReport.loading);
   document.getElementById("notesReportDeleteBtn").style.display = currentReport.id ? "inline-block" : "none";
+  document.getElementById("notesReportOpenEditorBtn").disabled = Boolean(currentReport.loading) || Boolean(currentReport.failed);
 }
 
 function renderReportSidebar(){
@@ -2878,6 +3673,22 @@ function renderReportSidebar(){
   });
 }
 
+// Sends the AI-generated report itself (currentReport.content) into the
+// Draft & Compile editor, rendered with the same paragraph/code-block
+// formatting formatContent() gives it in the chat and report views.
+document.getElementById("notesReportOpenEditorBtn").addEventListener("click", () => {
+  if (!currentReport || currentReport.loading || currentReport.failed) return;
+  loadFormattedTextIntoEditor(currentReport.content);
+  document.getElementById("docTitle").value =
+    [currentReport.classLabel, currentReport.title].filter(Boolean).join(" — ") || "Untitled Document";
+  savedFileHandle = null;
+  savedFileLang = null;
+  savedFileExt = null;
+  updateDocPlaceholder();
+  syncToolbarState();
+  setView("editor");
+});
+
 document.getElementById("notesReportSaveBtn").addEventListener("click", () => {
   if (!currentReport || currentReport.id || currentReport.loading) return;
   reportCounter++;
@@ -2901,6 +3712,137 @@ document.getElementById("notesReportCloseBtn").addEventListener("click", () => {
   renderReportPanel();
 });
 
+// ====== NOTES FOLLOW-UP CHAT ======
+// A small chat thread scoped to whichever Reading Report is open, so the
+// user can ask follow-up questions without leaving the Notes tab. Goes
+// through the same /api/chat route as everything else, passing the report's
+// own documentIds along so the model sees the same attached source
+// document(s) the report itself was generated from -- not just the notes
+// text. History lives on the report object itself (currentReport.chat), so
+// it round-trips through Save/persistState like the rest of the report, and
+// resets automatically whenever currentReport is swapped for a different
+// (or no) report.
+function buildNotesChatInput(report, question){
+  const history = (report.chat || [])
+    .filter(m => !m.failed)
+    .map(m => (m.role === "user" ? "Q: " : "A: ") + m.content)
+    .join("\n\n");
+  return [
+    "You are answering a follow-up question about a set of law-school reading notes generated earlier from the attached document(s). " +
+      "Use the attached document(s) as your source of truth, and the notes below only for context on what's already been covered. " +
+      "If the attached material doesn't address the question, say so rather than guessing.",
+    "",
+    "## Reading Notes",
+    report.content || "(no notes content)",
+    history ? "\n## Conversation so far\n" + history : "",
+    "\n## New Question\n" + question
+  ].filter(Boolean).join("\n");
+}
+
+function renderNotesChat(){
+  const panel = document.getElementById("notesChatPanel");
+  if (!panel) return; // Notes tab markup not in the DOM yet
+
+  if (notesRightView !== "chat" || !currentReport){
+    panel.style.display = "none";
+    return;
+  }
+  panel.style.display = "flex";
+
+  const list = document.getElementById("notesChatMessages");
+  const chat = currentReport.chat || [];
+  list.innerHTML = "";
+  if (!chat.length && !currentReport.chatPending){
+    list.innerHTML = '<div class="notes-chat-empty">Ask a follow-up question about this reading — the model will use the same attached document(s) as context.</div>';
+  } else {
+    chat.forEach(m => {
+      const div = document.createElement("div");
+      div.className = "notes-chat-msg " + (m.role === "user" ? "user" : "assistant") + (m.failed ? " failed" : "");
+      div.textContent = m.content;
+      list.appendChild(div);
+    });
+    if (currentReport.chatPending){
+      const div = document.createElement("div");
+      div.className = "notes-chat-msg assistant pending";
+      div.textContent = "Thinking…";
+      list.appendChild(div);
+    }
+  }
+  list.scrollTop = list.scrollHeight;
+
+  const sendBtn = document.getElementById("notesChatSendBtn");
+  if (sendBtn) sendBtn.disabled = Boolean(currentReport.loading || currentReport.chatPending);
+}
+
+async function sendNotesChatMessage(){
+  const input = document.getElementById("notesChatInput");
+  const question = input.value.trim();
+  if (!question || !currentReport || currentReport.loading || currentReport.chatPending) return;
+
+  if (!currentReport.chat) currentReport.chat = [];
+  currentReport.chat.push({ role: "user", content: question });
+  input.value = "";
+  autoGrow(input);
+  currentReport.chatPending = true;
+  renderNotesChat();
+
+  try{
+    const model = document.getElementById("modelSelect").value;
+    const res = await fetch(PROXY_ORIGIN + "/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model,
+        input: buildNotesChatInput(currentReport, question),
+        documentIds: currentReport.documentIds || []
+      })
+    });
+    const data = await res.json();
+    if (!res.ok){
+      const errMsg = (data && data.error && data.error.message) ? data.error.message : "Request failed.";
+      throw new Error(errMsg);
+    }
+    currentReport.chat.push({ role: "assistant", content: extractText(data) });
+  } catch(err){
+    currentReport.chat.push({ role: "assistant", content: "Couldn't get an answer: " + err.message, failed: true });
+  } finally {
+    currentReport.chatPending = false;
+    renderNotesChat();
+    persistState();
+  }
+}
+
+document.getElementById("notesChatSendBtn").addEventListener("click", sendNotesChatMessage);
+document.getElementById("notesChatInput").addEventListener("keydown", (e) => {
+  if (e.key === "Enter" && !e.shiftKey){
+    e.preventDefault();
+    sendNotesChatMessage();
+  }
+});
+document.getElementById("notesChatInput").addEventListener("input", (e) => autoGrow(e.target));
+
+// Switches the Notes tab's right column between the Table (row-editor) and
+// Chat panels -- only one (or neither, at first) is ever visible. Table
+// visibility is just this one toggle since onDbTableChanged() never touches
+// #caseForm's own display; Chat's visibility is decided inside
+// renderNotesChat() itself (gated on notesRightView), so re-render it here
+// too rather than setting its display directly.
+function setNotesRightView(view){
+  notesRightView = view;
+  document.getElementById("notesWrap").classList.toggle("notes-wrap-split", Boolean(view));
+  document.getElementById("notesColRight").style.display = view ? "flex" : "none";
+  document.getElementById("notesRightCloseBtn").style.display = view ? "flex" : "none";
+  document.getElementById("notesRightTableBtn").classList.toggle("active", view === "table");
+  document.getElementById("notesRightChatBtn").classList.toggle("active", view === "chat");
+  document.getElementById("caseForm").style.display = view === "table" ? "flex" : "none";
+  renderNotesChat();
+}
+// Clicking whichever button is already open closes it (the report goes back
+// to full-width/centered); clicking the other one switches straight over.
+document.getElementById("notesRightTableBtn").addEventListener("click", () => setNotesRightView(notesRightView === "table" ? null : "table"));
+document.getElementById("notesRightChatBtn").addEventListener("click", () => setNotesRightView(notesRightView === "chat" ? null : "chat"));
+document.getElementById("notesRightCloseBtn").addEventListener("click", () => setNotesRightView(null));
+
 
 // ====== DOCUMENTS (Canvas imports) ======
 // Lists what's currently stored on the local proxy server (document-store.js,
@@ -2916,7 +3858,7 @@ let documentsCache = [];
 // for a .pptx or image Canvas file the editor can't render).
 const EDITOR_OPENABLE_EXTS = new Set([
   "docx", "doc", "odt", "ods", "pdf", "html", "htm", "txt",
-  "py", "js", "ts", "c", "cpp", "java", "cs", "go", "rs", "rb", "php", "sh", "swift", "kt", "pl", "lua"
+  "py", "js", "ts", "c", "cpp", "java", "cs", "go", "rs", "rb", "php", "sh", "swift", "kt", "pl", "lua", "asm"
 ]);
 
 function getDocFileExt(doc){
@@ -3160,16 +4102,18 @@ Start with a concise explanation of:
 
 ### 2. RULES AND LEGAL PRINCIPLES
 
-Identify every important legal rule or principle.
+Identify every important legal rule or principle. State every rule using exactly this format:
 
-For each rule:
+**Rule [citation/section, or a short descriptive name if the source doesn't cite one]**
 
-* State the rule clearly in your own words
-* Identify any elements or requirements
-* Identify exceptions, limitations, or qualifications
-* Explain when the rule applies
-* Explain what facts would cause the rule to apply or not apply
-* Distinguish the rule from related rules when useful
+- **Source:** Restatement / UCC / case holding / textbook narrative — say which, and cite the specific provision, case, or passage it comes from.
+- **Statement:** State the rule in one or two sentences. Preserve any qualifying language the source uses — don't flatten a qualifier like "materially different" into "different," or otherwise simplify away a distinction the source drew deliberately.
+- **Legal Question:** What legal question does the rule answer?
+- **Requirements:** Break the rule into its component parts. If the source states it as a single element rather than a multi-part test, say so rather than forcing it into a list.
+- **Application:** How the rule actually gets used in practice — what question a court or party invokes it to answer, and what triggers reliance on it.
+- **Exceptions:** Anything that narrows the rule, carves out a category, or states when it does not apply. Pull this from comments, caveats, or surrounding text, not just the black-letter statement.
+
+Also distinguish the rule from related rules when useful.
 
 Do not omit a rule simply because it appears obvious.
 
@@ -3177,16 +4121,20 @@ When the reading gives a rule through a case rather than stating it explicitly, 
 
 ### 3. CASES
 
-For every case, create a separate case brief containing:
+For every case, create a separate case brief containing exactly these fields, in exactly this order:
 
 **Case name**
+
+**Course**
+
+* Name the course this reading belongs to, if that's apparent from context.
 
 **Facts**
 
 * Include only legally significant facts.
 * Do not omit facts that matter to the court's reasoning.
 
-**Procedural posture**
+**Procedural Posture**
 
 * What happened in the lower court?
 * What is the current court reviewing or deciding?
@@ -3209,13 +4157,17 @@ For every case, create a separate case brief containing:
 * Identify the facts the court considered important.
 * Identify competing arguments when the opinion discusses them.
 
+**Plaintiff's/Appellee's Arguments**
+
+* What did this party argue, and what facts or rule did they rely on?
+
+**Defendant/Appellant's Arguments**
+
+* What did this party argue, and what facts or rule did they rely on?
+
 **Disposition**
 
 * What did the court ultimately do?
-
-**Policy**
-
-* Identify important policy considerations, if any.
 
 **Importance**
 
@@ -3256,7 +4208,7 @@ If the reading contains examples or hypotheticals, explain:
 * The result
 * Why the example matters
 
-If useful, create a small number of additional hypothetical examples to illustrate difficult rules, but clearly label anything you create yourself as an AI-created hypothetical.
+If useful, create a small number of additional hypothetical examples to illustrate difficult rules, but clearly label anything you create yourself with the heading **Added Hypothetical (not in the reading):**.
 
 ### 7. POLICY AND COMPETING ARGUMENTS
 
@@ -3314,8 +4266,11 @@ Do NOT:
 * Invent rules
 * Attribute arguments to a court that the court did not make
 * Treat dicta as the holding
-* Treat an AI inference as something explicitly stated by the text
+* Treat your own inference as something explicitly stated by the text
 * Fill gaps with outside law unless I specifically ask you to
+* Discuss any case, rule, or example that is not actually present in the attached reading, even if it is a well-known case on the same general topic
+* Open the response with introductory filler ("Sure!", "Here are your notes", "Certainly!", etc.) — start directly with the notes content
+* Refer to yourself as an AI, a language model, or an assistant anywhere in the notes
 
 If something is unclear from the reading, say so.
 
@@ -3377,6 +4332,10 @@ Include:
 - Date
 - Judge/authoring judge if stated
 
+## Course
+
+Name the course this reading belongs to, if that's apparent from context.
+
 ## Facts
 
 Identify only the legally significant facts.
@@ -3433,23 +4392,22 @@ Give the holding in one or two clear sentences first, then explain it if necessa
 
 ## Rule
 
-Identify every important legal rule the court uses.
+Identify every important legal rule the court uses. State every rule using exactly this format:
 
-For each rule:
+**Rule [citation/section, or a short descriptive name if the opinion doesn't cite one]**
 
-- State it clearly in your own words
-- Identify the source of the rule if the opinion identifies it
-- Identify elements or requirements
-- Identify exceptions
-- Identify qualifications
-- Identify when the rule applies
-- Identify what facts trigger or avoid the rule
+- **Source:** Restatement / UCC / case holding / textbook narrative — here this will normally be a case holding (this case or the precedent it relies on); name the case if the opinion identifies one.
+- **Statement:** State the rule in one or two sentences. Preserve any qualifying language the opinion uses — don't flatten a qualifier like "materially different" into "different," or otherwise simplify away a distinction the court drew deliberately.
+- **Legal Question:** What legal question does the rule answer?
+- **Requirements:** Break the rule into its component parts. If the opinion states it as a single element rather than a multi-part test, say so rather than forcing it into a list.
+- **Application:** How the rule actually gets used in practice — what question a court or party invokes it to answer, and what triggers reliance on it.
+- **Exceptions:** Anything that narrows the rule, carves out a category, or states when it does not apply. Pull this from concurrences, caveats, or surrounding discussion, not just the black-letter statement.
 
 If the rule comes from precedent, identify the precedent and explain how the current court uses it.
 
 If the court distinguishes between two different standards, make that distinction explicit.
 
-## Court's Reasoning
+## Reasoning
 
 This is one of the MOST IMPORTANT sections.
 
@@ -3467,17 +4425,13 @@ Do not merely say "the court applied the rule."
 
 Explain HOW the court applied it.
 
-## Parties' Arguments
-
-Separate the arguments of each side.
-
-### Plaintiff's / Appellee's Argument
+## Plaintiff's/Appellee's Arguments
 
 - What did this party argue?
 - What rule or interpretation did they rely on?
 - What facts did they emphasize?
 
-### Defendant's / Appellant's Argument
+## Defendant/Appellant's Arguments
 
 - What did this party argue?
 - What rule or interpretation did they rely on?
@@ -3499,6 +4453,10 @@ Examples:
 - Denied summary judgment
 
 Explain what the disposition means for the parties.
+
+## Importance
+
+Explain why this case appears in the assigned reading and what I should learn from it.
 
 # 3. PROCEDURAL DOCTRINE
 
@@ -3785,8 +4743,11 @@ DO NOT:
 - Treat dicta as the holding
 - Treat an inference as an explicit holding
 - Add outside law without labeling it
+- Discuss any case, rule, or example that is not actually present in the attached reading, even if it is a well-known case on the same general topic
 - "Correct" the court based on what you think the law should be
 - Fill missing or unclear portions of the opinion with assumptions
+- Open the response with introductory filler ("Sure!", "Here are your notes", "Certainly!", etc.) — start directly with the notes content
+- Refer to yourself as an AI, a language model, or an assistant anywhere in the notes
 
 If the text is unclear, incomplete, garbled, or ambiguous, explicitly say:
 
@@ -3867,7 +4828,18 @@ Identify important:
 - Distinctions
 - Legal terminology
 
-Give a brief explanation of each.
+For any legal rule, state it using exactly this format:
+
+**Rule [citation/section, or a short descriptive name if the reading doesn't cite one]**
+
+- **Source:** Restatement / UCC / case holding / textbook narrative — say which, and cite the specific provision, case, or passage it comes from.
+- **Statement:** State the rule in one or two sentences. Preserve any qualifying language the source uses — don't flatten a qualifier like "materially different" into "different," or otherwise simplify away a distinction the source drew deliberately.
+- **Legal Question:** What legal question does the rule answer?
+- **Requirements:** Break the rule into its component parts. If the source states it as a single element rather than a multi-part test, say so rather than forcing it into a list.
+- **Application:** How the rule actually gets used in practice — what question a court or party invokes it to answer, and what triggers reliance on it.
+- **Exceptions:** Anything that narrows the rule, carves out a category, or states when it does not apply. Pull this from comments, caveats, or surrounding text, not just the black-letter statement.
+
+For doctrines, principles, distinctions, and terminology, give a brief explanation of each.
 
 Do not explain basic concepts at unnecessary length.
 
@@ -3925,6 +4897,9 @@ Do not:
 - Attribute an argument to the author that the author does not make
 - Treat an inference as something explicitly stated in the reading
 - Add outside law without clearly labeling it
+- Discuss any case, rule, or example that is not actually present in the attached reading, even if it is a well-known case on the same general topic
+- Open the response with introductory filler ("Sure!", "Here are your notes", "Certainly!", etc.) — start directly with the notes content
+- Refer to yourself as an AI, a language model, or an assistant anywhere in the notes
 
 If something is unclear, say so.
 
@@ -3960,16 +4935,16 @@ The purpose of these notes is to help me quickly understand and remember the leg
 
 ## 1. RULES
 
-For every Restatement section, UCC provision, or other legal rule in the assigned reading:
+For every Restatement section, UCC provision, or other legal rule in the assigned reading, state it using exactly this format:
 
-**Rule [citation/section number]**
+**Rule [citation/section, or a descriptive name if uncited]**
 
-- State the rule clearly in plain English.
-- Then explain what the rule actually means.
-- Identify the legal question the rule answers.
-- Identify any elements, requirements, conditions, exceptions, or limitations stated in the provision.
-- Explain when the rule applies.
-- Explain when it does NOT apply, if the reading indicates this.
+- **Source:** Restatement / UCC / case holding / textbook narrative — say which, and cite the specific section or provision.
+- **Statement:** State the rule in one or two sentences. Preserve any qualifying language the source uses — don't flatten a qualifier like "materially different" into "different," or otherwise simplify away a distinction the source drew deliberately.
+- **Legal Question:** What legal question does the rule answer?
+- **Requirements:** Break the rule into its component parts. If the source states it as a single element rather than a multi-part test, say so rather than forcing it into a list.
+- **Application:** How the rule actually gets used in practice — what question a court or party invokes it to answer, and what triggers reliance on it.
+- **Exceptions:** Anything that narrows the rule, carves out a category, or states when it does not apply. Pull this from comments, caveats, or surrounding text, not just the black-letter statement.
 
 Preserve the terminology used by the source.
 
@@ -3994,29 +4969,7 @@ For each distinction, briefly explain the difference and why it matters.
 
 Only include distinctions actually supported by the assigned reading or necessary to understand the rule.
 
-## 3. ELEMENTS / REQUIREMENTS
-
-Where a rule has multiple requirements, break them down into a numbered list.
-
-For example:
-
-**Rule:**
-
-...
-
-**Requirements:**
-
-1. ...
-2. ...
-3. ...
-
-**Result if satisfied:**
-
-...
-
-Make the structure easy to memorize.
-
-## 4. EXAMPLES
+## 3. EXAMPLES
 
 Give a short, simple hypothetical illustrating each major rule.
 
@@ -4028,11 +4981,11 @@ Facts → Application of rule → Result
 
 Clearly label examples that you create as:
 
-**AI-CREATED HYPOTHETICAL**
+**Added Hypothetical (not in the reading)**
 
 Do not create complicated hypotheticals. The purpose is simply to make the rule easier to understand.
 
-## 5. IMPORTANT TERMS
+## 4. IMPORTANT TERMS
 
 Identify important Contracts terminology appearing in the reading.
 
@@ -4044,7 +4997,7 @@ For each term:
 
 Keep definitions concise.
 
-## 6. HOW THE RULES FIT TOGETHER
+## 5. HOW THE RULES FIT TOGETHER
 
 Briefly explain how the rules in the assigned reading relate to one another.
 
@@ -4052,7 +5005,7 @@ If one rule qualifies, modifies, or follows from another rule, point that out.
 
 Do NOT force connections that the reading does not support.
 
-## 7. CLASS / SOCRATIC QUESTIONS
+## 6. CLASS / SOCRATIC QUESTIONS
 
 Create 3–5 questions a Contracts professor could reasonably ask based on these readings.
 
@@ -4066,7 +5019,7 @@ Focus on questions such as:
 
 Give a concise answer immediately after each question.
 
-## 8. WHAT I NEED TO KNOW
+## 7. WHAT I NEED TO KNOW
 
 End with a short section titled:
 
@@ -4098,6 +5051,9 @@ Do NOT:
 - Omit important qualifications
 - Treat an example as a rule
 - Present your own inference as though it were stated in the source
+- Discuss any case, rule, or example that is not actually present in the attached documents, even if it is a well-known case on the same general topic
+- Open the response with introductory filler ("Sure!", "Here are your notes", "Certainly!", etc.) — start directly with the notes content
+- Refer to yourself as an AI, a language model, or an assistant anywhere in the notes
 
 If you explain something using general Contracts knowledge that is not contained in the assigned reading, clearly label it:
 
@@ -4129,6 +5085,9 @@ const LSS_SCHEDULE = [{"week": "WEEK 1", "classes": [{"date": "August 25", "clas
 ;
 
 const CONTRACTS_SCHEDULE = [{"classLabel": "Class 1", "topic": "Introduction to Contracts", "readings": [{"text": "Read the Syllabus.", "pages": ""}, {"text": "Read CB pp. 1-34.", "pages": "CB pp 1-34"}, {"text": "R2 §§1, 2, 4, 17(1), 20, 153. Compare § 20 with § 153.", "pages": "R2 §§1, 2, 4, 17(1), 20, 153"}]}, {"classLabel": "Class 2", "topic": "Mutual Assent: Lucy v. Zehmer", "readings": [{"text": "Lucy v. Zehmer, 84 S.E.2d 516 (Va. 1954). The case will be e-mailed to you.", "pages": "Emailed"}]}, {"classLabel": "Class 3", "topic": "Timing Issues: Offer & Acceptance", "readings": [{"text": "Timing Issues: Offer & Acceptance, CB pp. 35-51 (class discussion will focus on Lonegran and the notes).", "pages": "CB pp 35-51"}, {"text": "R2 §§ 24, 26, and 36.", "pages": "R2 §§ 24, 26, and 36"}]}, {"classLabel": "Class 4", "topic": "Offer & Acceptance (continued)", "readings": [{"text": "O&A continued: CB pp. 52-66 (Cook, Sateriale).", "pages": "CB pp 52-66"}, {"text": "R2 §§ 45, 25.", "pages": "R2 §§ 45, 25"}, {"text": "Also read Izadi v. Machado Gus Ford, 550 So. 2d 1135 (1989) (case will be e-mailed).", "pages": "Emailed"}]}, {"classLabel": "Class 5", "topic": "Other Mutual Assent Issues", "readings": [{"text": "Other Mutual Assent issues: Harlow & Jones, 424 F. Supp. 770 (will be emailed to you).", "pages": "Emailed"}, {"text": "UCC §§ 2-204(1), 2-207(3).", "pages": "UCC §§ 2-204(1), 2-207(3)"}, {"text": "CB pp. 68-85 (Walker).", "pages": "CB pp 68-85"}]}, {"classLabel": "Class 6", "topic": "Consideration", "readings": [{"text": "Consideration: CB pp. 87-93; 102-106; 215-217 (Hamer, Kirksey, Dougherty).", "pages": "CB pp 87-93; CB pp 102-106; CB pp 215-217"}]}, {"classLabel": "Class 7", "topic": "Consideration (continued): Plowman & Dohrmann", "readings": [{"text": "CB pp. 108-115 (Plowman and Dohrmann) (skip note 2 on p. 113).", "pages": "CB pp 108-115"}, {"text": "Dohrmann will be e-mailed to you.", "pages": "Emailed"}]}, {"classLabel": "Class 8", "topic": "Consideration (continued): Batsakis v. Demotsis", "readings": [{"text": "Batsakis v. Demotsis, 226 S.W.2d 673 (1949) (case will be e-mailed).", "pages": "Emailed"}]}, {"classLabel": "Class 9", "topic": "Promissory Estoppel", "readings": [{"text": "Promissory Estoppel: Read Wright v. Newman, 467 S.E.2d 533 (case will be e-mailed).", "pages": "Emailed"}, {"text": "Read Greiner v. Greiner, 293 P. 759 (case will be e-mailed).", "pages": "Emailed"}, {"text": "CB pp. 217-225 (Harvey).", "pages": "CB pp 217-225"}]}, {"classLabel": "Class 10", "topic": "Promissory Estoppel (continued): King & Katz", "readings": [{"text": "Read CB pp. 224-243.", "pages": "CB pp 224-243"}, {"text": "Class will focus on King and Katz.", "pages": ""}]}, {"classLabel": "Class 11", "topic": "Promissory Estoppel (continued): Aceves", "readings": [{"text": "CB pp. 243-253.", "pages": "CB pp 243-253"}, {"text": "Class will focus on Aceves.", "pages": ""}]}, {"classLabel": "Class 12", "topic": "Firm Offers: Baird & Drennan", "readings": [{"text": "CB pp. 263-273.", "pages": "CB pp 263-273"}, {"text": "R2 §§ 45, 87(2), and 90.", "pages": "R2 §§ 45, 87(2), and 90"}, {"text": "Class will focus on Baird and Drennan.", "pages": ""}]}, {"classLabel": "Class 13", "topic": "Berryman & Pop's", "readings": [{"text": "CB pp. 255-263 and 273-282.", "pages": "CB pp 255-263; CB pp 273-282"}, {"text": "Class will focus on Berryman and Pop's.", "pages": ""}]}, {"classLabel": "Class 14", "topic": "Electronic Contracting", "readings": [{"text": "Electronic Contracting, CB pp. 181-208.", "pages": "CB pp 181-208"}]}, {"classLabel": "Class 15", "topic": "Restitution in the Absence of Agreement", "readings": [{"text": "Restitution in the absence of agreement. CB pp. 286-317 (Commerce, Pelo).", "pages": "CB pp 286-317"}]}, {"classLabel": "Class 16", "topic": "Promissory Restitution", "readings": [{"text": "Promissory Restitution, CB pp. 317-330 (Mills, Webb).", "pages": "CB pp 317-330"}]}, {"classLabel": "Class 17", "topic": "Statute of Frauds", "readings": [{"text": "Statute of Frauds. CB pp. 335-370 (Crabtree, Beaver, Rice. Skip Problem 4-1).", "pages": "CB pp 335-370"}]}, {"classLabel": "Class 18", "topic": "Statute of Frauds (continued): Hart", "readings": [{"text": "Statute of Frauds: CB pp. 373-382 (Hart).", "pages": "CB pp 373-382"}]}, {"classLabel": "Class 19", "topic": "Practice Exam", "readings": [{"text": "Take practice exam. We will go over it the following class.", "pages": ""}]}, {"classLabel": "Class 20", "topic": "Implied Promises & Warranties", "readings": [{"text": "Implied Promises: CB pp. 485-496 (Wood, Leibel); 496-517 (Morin).", "pages": "CB pp 485-496; CB pp 496-517"}, {"text": "Warranties, CB pp. 551-552.", "pages": "CB pp 551-552"}]}, {"classLabel": "Class 21", "topic": "Good Faith (continued)", "readings": [{"text": "Good Faith continued: CB pp. 519-545 (Locke, Geysen).", "pages": "CB pp 519-545"}]}, {"classLabel": "Class 22", "topic": "Parol Evidence Rule: Ambiguity Determination", "readings": [{"text": "Parol Evidence Rule: The Ambiguity Determination. CB pp. 387-406.", "pages": "CB pp 387-406"}]}, {"classLabel": "Class 23", "topic": "Ambiguity Prong of the PER", "readings": [{"text": "Ambiguity Prong of the PER: CB pp. 441-455 (skip notes 1 and 5 on pp. 451, 453) (Taylor).", "pages": "CB pp 441-455"}, {"text": "Contextualist Methodology: CB pp. 406-418 (Frigaliment).", "pages": "CB pp 406-418"}]}, {"classLabel": "Class 24", "topic": "Whose Meaning?", "readings": [{"text": "Whose Meaning? CB pp. 418-429 (Joyner, C & J Fertilizer).", "pages": "CB pp 418-429"}, {"text": "Joyner will be e-mailed to you.", "pages": "Emailed"}]}, {"classLabel": "Class 25", "topic": "Integration Prong of the PER: Mitchill v. Lath", "readings": [{"text": "Integration Prong of the PER; Read Mitchill v. Lath, 160 N.E. 646 (1928). CB pp. 430-441, and note 1, p. 451 (Thompson).", "pages": "CB pp 430-441"}]}, {"classLabel": "Class 26", "topic": "Integration (continued): Sherrod & Nanakuli", "readings": [{"text": "Integration continued. CB pp. 454-475 (Sherrod and Nanakuli).", "pages": "CB pp 454-475"}]}, {"classLabel": "Class 27", "topic": "Express Conditions", "readings": [{"text": "Express Conditions: CB pp. 825-850 (Oppenheimer, J&A Realty).", "pages": "CB pp 825-850"}]}, {"classLabel": "Class 28", "topic": "Implied or Constructive Conditions", "readings": [{"text": "Implied or Constructive Conditions: CB pp. 850-863 (Jacob & Youngs).", "pages": "CB pp 850-863"}]}, {"classLabel": "Class 29", "topic": "Implied or Constructive Conditions (continued)", "readings": [{"text": "Implied or Constructive Conditions: CB pp. 863-879 (Sackett, Truman & Flatt).", "pages": "CB pp 863-879"}]}, {"classLabel": "Class 30", "topic": "Defenses and Excuses", "readings": [{"text": "Defenses and Excuses. CB pp. 575-605 (Dodson, Sparrow, Totem Marine).", "pages": "CB pp 575-605"}]}, {"classLabel": "Class 31", "topic": "Undue Influence, Misrepresentation & Nondisclosure", "readings": [{"text": "Undue Influence, Misrepresentation and Nondisclosure: CB pp. 606-632 (Odorizzi, Martinez-Gonzalez).", "pages": "CB pp 606-632"}, {"text": "CB pp. 632-657 (Syester, Hill).", "pages": "CB pp 632-657"}]}, {"classLabel": "Class 32", "topic": "Unconscionability and Public Policy", "readings": [{"text": "Unconscionability and Public Policy: CB pp. 661-677, 706-740 (Williams, Valley Medical and P.M. v. T.B.).", "pages": "CB pp 661-677; CB pp 706-740"}]}, {"classLabel": "Class 33", "topic": "Mistake", "readings": [{"text": "Mistake: CB pp. 743-768 (Lewanee).", "pages": "CB pp 743-768"}]}, {"classLabel": "Class 34", "topic": "Mistake: Changed Circumstances", "readings": [{"text": "Mistake: Changed Circumstances: CB pp. 768-791 (Hemlock, Mel Frank).", "pages": "CB pp 768-791"}]}, {"classLabel": "Class 35", "topic": "Changed Agreements / Modifications", "readings": [{"text": "Changed Agreements/Modifications: CB pp. 791-821 (Alaska Packers, Kelsey-Hayes and Brookside Farms).", "pages": "CB pp 791-821"}]}, {"classLabel": "Class 36", "topic": "Expectation Damages: Calculations", "readings": [{"text": "Expectation Damages: Calculations. CB pp. 893-922.", "pages": "CB pp 893-922"}]}, {"classLabel": "Class 37", "topic": "Restrictions on Recovery", "readings": [{"text": "Restrictions on Recovery: CB pp. 922-941.", "pages": "CB pp 922-941"}]}, {"classLabel": "Class 38", "topic": "Restrictions on Recovery (continued)", "readings": [{"text": "Restrictions on Recovery, cont'd: CB pp. 941-966.", "pages": "CB pp 941-966"}]}, {"classLabel": "Class 39", "topic": "UCC Remedies", "readings": [{"text": "UCC Remedies: CB pp. 992-1000.", "pages": "CB pp 992-1000"}]}, {"classLabel": "Class 40", "topic": "Alternatives to Expectation Damages", "readings": [{"text": "Alternatives to Expectation Damages: CB pp. 1021-1062.", "pages": "CB pp 1021-1062"}]}, {"classLabel": "Class 41", "topic": "Practice Assignment: Standard Lease Form", "readings": [{"text": "Practice Assignment: Spot the issues with the standard lease form (will be e-mailed).", "pages": "Emailed"}]}, {"classLabel": "Class 42", "topic": "Review & Final Exam", "readings": [{"text": "Review and hand out Final Exam.", "pages": ""}]}]
+;
+
+const TORTS_SCHEDULE = [{"classLabel":"Week 1","topic":"Introduction & Intentional Torts","readings":[{"text":"Introduction\nThe Aims of Tort Law\nAdaptability to New Situations\nRobertson v. Rochester Box\nThe History of Tort Law\nThe Forms of Action: Scott v. Shepard\nWhat does it mean to be responsible?\nThe Modern Landscape\nIntentional Torts\nIntention: Beauchamp v. Dow Chem.; Wagner v. State","pages":"pp. 1-40"}]},{"classLabel":"Week 2","topic":"Intentional Torts, Continued","readings":[{"text":"Battery: Leichtman v. WLW Jacor Comms., Inc\nAssault: Dickens v. Puryear\nTransferred Intent & Participation Liability: Singer v. Marx; Halberstam v. Welsh\nFalse Imprisonment: McCann v. Wal-Mart Stores, Inc.; Fojtic v. Charter Medical Corp.\nTrespass to Land: John Larkin, Inc. v. Marceau\nTrespass to Chattel & Conversion\nNOTE: We are skipping the materials on Intentional Infliction of Emotional Distress.\nDefenses\nConsent: Hellriegel v. Tholl; Reavis v. Slominski\nSelf Defense: Silas v. Bowen","pages":"pp. 40-88; 114-142"}]},{"classLabel":"Week 3","topic":"Intentional Torts & Negligence (Breach)","readings":[{"text":"Intentional Torts Continued\nDefenses, Cont.\nDefense of Property: Brown v. Martinez\nDiscipline\nNecessity: Ploof v. Putnam; Vincent v. Lake Erie Transportation Co.\nNegligence\nHistorical Development: Brown v. Kendall\nThe Prima Facie Case of Negligence\nThe Standard of Care: Vaughan v. Menlove; Delair v. McAdoo\nVariations on the Standard of Care: Goss v. Allen; Creasy v. Rusk; Haley v. London Elec.\nThe Calculus of Risk: Barker v. City of Philadelphia","pages":"pp. 142-206"}]},{"classLabel":"Week 4","topic":"Negligence (Breach)","readings":[{"text":"The Calculus of Risk Continued: U.S. v. Carroll Towing; Pitre v. Employers Liability Assurance Corp.\nEstablishing the Standard of Care: the Function of Judge and Jury: Baltimore & Ohio Railroad Co. v. Goodman; Pokora v. Wabash Railway Co.\nEstablishing the Standard of Care by Deference to the Legislature – Negligence per se: Martin v. Herzog; Tedla v. Ellman; Barnum v. Williams; Perry v. S.N.\nProof of Negligence – Custom and Expert Testimony\nCustom: Dempsey v. Addison Crane\nMalpractice: Shilkret v. Annapolis Emergency Hosp. Assn.; Helling v. Carey","pages":"pp. 206-277"}]},{"classLabel":"Week 5","topic":"Negligence (Breach) & Negligence (Duty)","readings":[{"text":"Negligence (Breach)\nMalpractice, continued: Miller v. Kennedy\nCircumstantial Evidence – Res Ipsa Loquitor: Byrne v. Boadle; Morejon v. Rais Construction Co.; Swiney v. Malone Freight Lines Inc.; Ybarra v. Spangard\nNegligence (Duty)\nWhat is Duty and How Do Courts Decide?\nFoundational Duty Rules: Thompson v. Kaczinski; Brown v. Kerr; Palsgraf v. Long Island R.R – Part 1","pages":"pp. 278-349"}]},{"classLabel":"Week 6","topic":"Negligence (Duty)","readings":[{"text":"Affirmative Duties to Warn or Rescue: Price v. E.I Dupont de Nemours & Co.; Grimes v. Kennedy Krieger Institute, Inc.; Farwell v. Keaton; Maldonado v. Southern Pacific; Thompson v. County of Alameda; Uhr v. East Greenbush Central School Dist.\nNo Duty Based on Public Policy: Strauss v. Belle Realty Co.; Graff v. Beard","pages":"pp. 349-424"}]},{"classLabel":"Week 7","topic":"Negligence (Duty)","readings":[{"text":"Landowner Liability: Cochran v. Burger King, Inc.; Nelson v. Freeland; Bennett v. Stanley; Posecai v. Wal-Mart\nImmunities (I will give a lecture on the various types of Immunities you should skim the material.)\nSpecial Duties Based on Type of Harm\nEmotional Harm: Falzone v. Busch; Portee v. Jaffee; Catsouras v. California Highway Patrol; Boyles v. Kerr\nWrongful Life/Birth (We will skip over these materials. I will say a few words about these torts.)\nEconomic Harm: Aiken v. Debow","pages":"pp. 424-463; 505-540; 560-577"}]},{"classLabel":"Week 8","topic":"Causation & Scope of Liability","readings":[{"text":"Cause in Fact\nGeneral Principles\nEstablishing Causation -- Sufficiency of the Evidence: Stubbs v. City of Rochester, Daly v. Bergstedt; General Electric v Joiner; Matsuyama v Birnbaum\nMultiple Causes and Defendants: Kingston v. Chicago & Northwest Railway Co.; Summers v. Tice; Sindell v. Abbott Laboratories\nScope of Liability\nIntroduction\nFoundational Cases: In Re Polemis; Palsgraf v. Long Island R.R. Part II","pages":"pp. 579-653"}]},{"classLabel":"Week 9","topic":"Scope of Liability & Plaintiff's Conduct","readings":[{"text":"Scope of Liability Continued\nFoundational Cases Continued: Wagon Mound I\nApplication in Newer Cases: Hughes v. Lord Advocate; Doughty v. Turner Mfg.; In re Kinsman; Wagon Mound II\nIntervening Cause: Latzel v. Bartek; Brauer v. N.Y. Central & Hutson River R.R.\nPlaintiff's Conduct\nContributory Negligence: Butterfield v. Forrester","pages":"pp. 653-725"}]},{"classLabel":"Week 10","topic":"Plaintiff's Conduct, Apportionment & Strict Liability","readings":[{"text":"Plaintiff's Conduct and Apportionment\nComparative Negligence: Hoffman v. Jones; Bradley v. Appalachian Power Co.\nAssumption of the Risk: La Frenz v. Lake County Fair Board; Jones v. Three Rivers Management Corp.; Herod v. Grant; Auckenthaler v. Grundmeyer\nAvoidable Consequences, Mitigation of Damages\nMultiple Parties\nVicarious Liability: Wong-Leong v. Hawaiian Independent Refinery, Inc.; Jones v. Healthsouth Treasure Valley Hospital\nImputed Contributory Negligence\nApportionment, Joint & Several Liability and Contribution: Walt Disney World Co. v. Wood\nStrict Liability\nAnimals: Duren v. Kunkel","pages":"pp. 725-822"}]},{"classLabel":"Week 11","topic":"Strict Liability; Products Liability","readings":[{"text":"Strict Liability Continued\nDangerous Activities (Origins): Fletcher v. Rylands; Rylands v. Fletcher\nAbnormally Dangerous Activities: Loose v. Buchannan; Klein v. Pyrodyne; Indiana Harbor Belt v. American Cynamid; Foster v. Preston Mill\nThe Coase Theorem\nProducts Liability\nNegligence – Destroying the Privity Barrier: MacPherson v. Buick Motor Co.\nBreach of Warranty\nStrict Liability in Torts: Greenman v. Yuba Power Products, Inc.","pages":"pp. 822-905"}]},{"classLabel":"Week 12","topic":"Products Liability Continued","readings":[{"text":"The Concept of Defect in Products Liability today\nManufacturing Defects: Smoot v. Mazda Motors\nDesign Defects: Branham v. Ford Motor Co.; Riley v. Becton Dickson\nWarning Defects: Lewis v. Sea Ray Boats, Inc.; Burke v. Spartanics Ltd.; Feldman v. Lederle Labs.\nDefendants and Interests Covered by Products Liability\nDefenses\nPlaintiff's Behavior","pages":"pp. 905-995"}]},{"classLabel":"Week 13","topic":"Products Liability Continued and Nuisance","readings":[{"text":"Products Liability Continued\nPre-Emption: Bates v. Dow Agrosciences LLC\nCompliance with Regulations\nProducts Liability in Other Countries\nNuisance\nNOTE: We will do as much of the nuisance chapter as time permits. If we run short of time, we will move on to the damages chapter.\nOverview (also reread the Larkin case on page 79)\nPrivate Nuisance: Crosstex North Texas Pipeline v. Gardiner; Impellizerri v. Jamesville Federated Church\nRemedies: Boomer v. Atlantic Cement Co.\nPublic Nuisance: State v. Lead Industries Association\nPrivate Enforcement of a Public Nuisance: Graceland Corp. v. Consolidated Laundries Corp.","pages":"pp. 996-1058"}]},{"classLabel":"Week 14","topic":"Damages","readings":[{"text":"Categories of Compensatory Damages: Seffert v. Los Angeles Transit Lines; Wainwright v. Fontenot; McDougald v. Garber\nIndirect Non-fatal Injury to Others (spousal and parent-child consortium): Roberts v. Williamson\nDamages in Death-Related Tort Claims: Green v. Bittner\nAttorney Fees and Contingency Fee.","pages":"pp. 1059-1149"}]}]
 ;
 
 let scheduleActiveCourse = "civpro";
@@ -4194,6 +5153,16 @@ function classifyContractsReading(text, pagesRaw){
   return "none";
 }
 
+// Torts' "Pages" cell is always a casebook page range straight from the
+// syllabus ("pp. 1-40", or "pp. 40-88; 114-142" for a week spanning more
+// than one range) -- every week is a textbook reading, so this only checks
+// that a page range is actually present.
+function classifyTortsReading(text, pagesRaw){
+  const p = (pagesRaw || "").trim();
+  if (/^pp\.?\s*\d/i.test(p)) return "textbook";
+  return "none";
+}
+
 // Classifies one LSS assignment-list line into: "task" (something done
 // physically — bring an item, attend/sign up for an event — rather than
 // material to read or work to turn in), "assignment" (work to complete or
@@ -4232,6 +5201,8 @@ function renderSchedule(){
     renderCivProSchedule(body);
   } else if (scheduleActiveCourse === "contracts"){
     renderContractsSchedule(body);
+  } else if (scheduleActiveCourse === "torts"){
+    renderTortsSchedule(body);
   } else {
     renderLSSSchedule(body);
   }
@@ -4418,6 +5389,67 @@ function renderContractsSchedule(body){
         btn.className = "schedule-notes-btn";
         btn.textContent = "Notes";
         btn.addEventListener("click", (e) => generateContractsNotes(cls, r, kind, e.currentTarget));
+        row.appendChild(btn);
+      }
+
+      card.appendChild(row);
+    });
+
+    body.appendChild(card);
+  });
+}
+
+// One card per week (see TORTS_SCHEDULE): a "Textbook" kind badge, plus the
+// week's own page range as a second badge -- shown directly rather than via
+// appendDocMatchBadge's file lookup, since there's no per-reading file
+// naming convention for Torts to match against yet (only the syllabus
+// itself is in documents/torts/).
+function renderTortsSchedule(body){
+  body.innerHTML = "";
+  TORTS_SCHEDULE.forEach(cls => {
+    const card = document.createElement("div");
+    card.className = "schedule-class-card";
+
+    const head = document.createElement("div");
+    head.className = "schedule-class-head";
+    if (cls.classLabel){
+      const lbl = document.createElement("span");
+      lbl.className = "schedule-class-label";
+      lbl.textContent = cls.classLabel;
+      head.appendChild(lbl);
+    }
+    if (cls.topic){
+      const t = document.createElement("span");
+      t.className = "schedule-class-topic";
+      t.textContent = cls.topic;
+      head.appendChild(t);
+    }
+    card.appendChild(head);
+
+    cls.readings.forEach(r => {
+      const row = document.createElement("div");
+      row.className = "schedule-reading-row";
+
+      const text = document.createElement("div");
+      text.className = "schedule-reading-text";
+      text.textContent = r.text;
+      row.appendChild(text);
+
+      const kind = classifyTortsReading(r.text, r.pages);
+      appendKindBadge(row, kind);
+      if (r.pages){
+        const pagesBadge = document.createElement("span");
+        pagesBadge.className = "schedule-page-badge";
+        pagesBadge.textContent = r.pages;
+        row.appendChild(pagesBadge);
+      }
+
+      if (kind === "textbook"){
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "schedule-notes-btn";
+        btn.textContent = "Notes";
+        btn.addEventListener("click", (e) => generateTortsNotes(cls, r, kind, e.currentTarget));
         row.appendChild(btn);
       }
 
@@ -4621,10 +5653,31 @@ function findLocalPageMatches(pagesStr){
   return matches;
 }
 
+// Like normalizePageToken, but for Torts specifically: files under
+// documents/torts/ get saved sometimes as "pp 1-40.txt" and sometimes as
+// just "40-88.txt" (no "pp" at all), while the syllabus-derived schedule
+// data always carries the "pp. " prefix -- stripping it from both sides
+// before comparing means either filename convention matches.
+function normalizeTortsPageToken(str){
+  return normalizePageToken(str).replace(/^pp\.?/i, "");
+}
+
+function findLocalTortsPageMatches(pagesStr){
+  const tokens = String(pagesStr || "").split(/;\s*/).map(normalizeTortsPageToken).filter(Boolean);
+  if (!tokens.length) return [];
+
+  const matches = [];
+  for (const token of tokens){
+    const doc = documentsCache.find(d => normalizeTortsPageToken(d.title) === token);
+    if (doc) matches.push(doc);
+  }
+  return matches;
+}
+
 function generateCivProNotes(cls, reading, kind, btn){
   const classHeader = cls.classLabel + (cls.date ? " (" + cls.date + ")" : "") + (cls.topic ? " — " + cls.topic : "");
 
-  const generalFallback = `Using your general knowledge of this case/rule/topic (if you recognize it) and the surrounding context of a 1L Civil Procedure course, draft a short reading note I can use before class:\n1. A brief summary of what this reading likely covers and why it's assigned at this point in the course.\n2. The key doctrinal point(s) a student should be able to state afterward.\n3. 3-5 questions to test myself against once I've actually done the reading.\n\nBe explicit about your confidence level, and flag anything you're not sure about, since I haven't given you the actual reading.`;
+  const generalFallback = `Using your general knowledge of this case/rule/topic (if you recognize it) and the surrounding context of a 1L Civil Procedure course, draft a short reading note I can use before class:\n1. A brief summary of what this reading likely covers and why it's assigned at this point in the course.\n2. The key doctrinal point(s) a student should be able to state afterward.\n3. 3-5 questions to test myself against once I've actually done the reading.\n\nBe explicit about your confidence level, and flag anything you're not sure about, since I haven't given you the actual reading. Do not open the response with introductory filler ("Sure!", "Here are your notes", etc.) — start directly with the content. Do not refer to yourself as an AI, a language model, or an assistant.`;
 
   const run = async () => {
     let sourceNote;
@@ -4671,7 +5724,7 @@ function generateCivProNotes(cls, reading, kind, btn){
 function generateContractsNotes(cls, reading, kind, btn){
   const classHeader = cls.classLabel + (cls.topic ? " — " + cls.topic : "");
 
-  const generalFallback = (rangeLabel) => `Using your general knowledge of this case/rule/topic (if you recognize it) and the surrounding context of a 1L Contracts course, draft a short reading note I can use before class:\n1. A brief summary of what this reading likely covers and why it's assigned at this point in the course.\n2. The key doctrinal point(s) a student should be able to state afterward.\n3. 3-5 questions to test myself against once I've actually done the reading.\n\nBe explicit about your confidence level, and flag anything you're not sure about, since I haven't given you the actual ${rangeLabel}.`;
+  const generalFallback = (rangeLabel) => `Using your general knowledge of this case/rule/topic (if you recognize it) and the surrounding context of a 1L Contracts course, draft a short reading note I can use before class:\n1. A brief summary of what this reading likely covers and why it's assigned at this point in the course.\n2. The key doctrinal point(s) a student should be able to state afterward.\n3. 3-5 questions to test myself against once I've actually done the reading.\n\nBe explicit about your confidence level, and flag anything you're not sure about, since I haven't given you the actual ${rangeLabel}. Do not open the response with introductory filler ("Sure!", "Here are your notes", etc.) — start directly with the content. Do not refer to yourself as an AI, a language model, or an assistant.`;
 
   const run = async () => {
     let sourceNote;
@@ -4715,6 +5768,51 @@ function generateContractsNotes(cls, reading, kind, btn){
   run();
 }
 
+function generateTortsNotes(cls, reading, kind, btn){
+  const classHeader = cls.classLabel + (cls.topic ? " — " + cls.topic : "");
+
+  const generalFallback = `Using your general knowledge of the topics and cases in the syllabus outline above (if you recognize them) and the surrounding context of a 1L Torts course, draft a short reading note I can use before class:\n1. A brief summary of what this reading likely covers and why it's assigned at this point in the course.\n2. The key doctrinal point(s) a student should be able to state afterward.\n3. 3-5 questions to test myself against once I've actually done the reading.\n\nBe explicit about your confidence level, and flag anything you're not sure about, since I haven't given you the actual reading. Do not open the response with introductory filler ("Sure!", "Here are your notes", etc.) — start directly with the content. Do not refer to yourself as an AI, a language model, or an assistant.`;
+
+  const run = async () => {
+    let sourceNote;
+    let instructions;
+    let documentIds = [];
+
+    const matches = findLocalTortsPageMatches(reading.pages);
+    if (matches.length){
+      documentIds = matches.map(m => m.id);
+      sourceNote = `The assigned pages are Christie, et al., Cases and Materials on The Law of Torts, 6th ed., ${reading.pages}. The reading text for ${matches.length > 1 ? "these page ranges is" : "this page range is"} attached below in full.`;
+      instructions = getNotesPrompt("textbook");
+    } else {
+      sourceNote = `The assigned pages are Christie, et al., Cases and Materials on The Law of Torts, 6th ed., ${reading.pages}. I couldn't find a local file matching this page range in the documents/torts folder, so I don't have the text of those pages loaded, and you won't either.`;
+      instructions = generalFallback;
+    }
+
+    // reading.text is this week's full syllabus outline (every topic and
+    // case the professor listed under it, not just page numbers) -- passing
+    // it along, and telling the model explicitly to work through all of it,
+    // is what fixes a real failure mode: given only the attached pages, the
+    // model would brief whichever case it happened to notice first (e.g.
+    // Robertson v. Rochester Box) and stop, silently skipping the rest of
+    // the week's cases even though they're in the same attached reading.
+    const prompt = `I'm prepping for Torts, ${classHeader}.\n\n` +
+      `Syllabus outline for this week (the topics and cases this assignment is organized around):\n${reading.text}\n\n` +
+      `${sourceNote}\n\n` +
+      `Treat the outline above as a checklist of what to look for in the attached reading, not a script of its exact wording. Under the CASES section, find and brief every single case named in the outline that actually appears in the attached text — do not stop after the first one you notice. If a case named in the outline isn't in the attached pages, leave it out rather than inventing facts for it.\n\n${instructions}`;
+
+    await generateReadingReport({
+      course: "torts",
+      classLabel: cls.classLabel,
+      title: cls.topic || reading.text,
+      prompt,
+      documentIds,
+      btn
+    });
+  };
+
+  run();
+}
+
 function generateLSSNotes(cls, assignment, kind, btn){
   const classHeader = cls.classLabel + (cls.date ? " (" + cls.date + ")" : "") + (cls.topic ? " — " + cls.topic : "");
 
@@ -4732,7 +5830,7 @@ function generateLSSNotes(cls, assignment, kind, btn){
       sourceNote = kind === "textbook"
         ? `Most LSS readings come from the BLW (Becoming a Legal Writer) textbook, which is physical-only and hasn't been integrated into this app, or reference Canvas materials I couldn't find a match for among what's been imported (either it hasn't been imported yet, or the local proxy server isn't running), so I don't have the actual text loaded for this assignment.`
         : `I couldn't find a matching document among the materials imported into this app (either it hasn't been imported yet via the Canvas importer, or the local proxy server isn't running), so I don't have the actual text loaded for this assignment.`;
-      instructions = `Using whatever is identifiable in that line (chapter/section/page citation, case name, topic, instructions) and your general knowledge of legal writing pedagogy${kind === "case" ? " and the case(s) named, if you recognize them" : ""}, help me prepare:\n1. What this assignment is likely asking me to read, do, or bring to class.\n2. The key skill or concept it's probably teaching, based on the chapter/topic referenced.\n3. Anything time-sensitive or easy to miss in how it's worded (deadlines, "bring to class," Canvas modules, etc.).\n\nBe explicit about anything you can't know without the actual materials, since I haven't given them to you.`;
+      instructions = `Using whatever is identifiable in that line (chapter/section/page citation, case name, topic, instructions) and your general knowledge of legal writing pedagogy${kind === "case" ? " and the case(s) named, if you recognize them" : ""}, help me prepare:\n1. What this assignment is likely asking me to read, do, or bring to class.\n2. The key skill or concept it's probably teaching, based on the chapter/topic referenced.\n3. Anything time-sensitive or easy to miss in how it's worded (deadlines, "bring to class," Canvas modules, etc.).\n\nBe explicit about anything you can't know without the actual materials, since I haven't given them to you. Do not open the response with introductory filler ("Sure!", "Here are your notes", etc.) — start directly with the content. Do not refer to yourself as an AI, a language model, or an assistant.`;
     }
 
     const prompt = `I'm prepping for Lawyering Skills & Strategies, ${classHeader}. Here is one line from the assignment list for that class:\n\n"${assignment}"\n\n${sourceNote}\n\n${instructions}`;
@@ -4775,7 +5873,8 @@ const LANG_META = {
   swift:      { ext: "swift", label: "Swift" },
   kotlin:     { ext: "kt",  label: "Kotlin" },
   perl:       { ext: "pl",  label: "Perl" },
-  lua:        { ext: "lua", label: "Lua" }
+  lua:        { ext: "lua", label: "Lua" },
+  assembly:   { ext: "asm", label: "Assembly" }
 };
 
 const ESC_CHAR = String.fromCharCode(27);
@@ -4784,7 +5883,7 @@ const ESC_CHAR = String.fromCharCode(27);
 // UTF-8 bytes (needs proper multi-byte decoding) or raw Unicode code points
 // (one number per character, decode with String.fromCodePoint). This must
 // mirror the choices made in buildPythonSource/buildCSource/etc. above.
-const BYTE_MODE_LANGS = new Set(["c", "cpp", "ruby", "php", "bash", "perl", "lua"]);
+const BYTE_MODE_LANGS = new Set(["c", "cpp", "ruby", "php", "bash", "perl", "lua", "assembly"]);
 
 function extToLang(ext){
   const entry = Object.entries(LANG_META).find(([, meta]) => meta.ext === ext);
@@ -4792,16 +5891,17 @@ function extToLang(ext){
 }
 
 // Finds the longest contiguous run of "pure number" lines in a source file —
-// i.e. lines containing only digits, commas, and whitespace. Every one of
-// the 16 compiled-language templates embeds its byte/code-point table this
-// way (see formatNumbersCommaSeparated / formatNumbersSpaceSeparated above),
-// so this works language-agnostically without needing to know that
-// language's specific array/bracket syntax.
+// i.e. lines containing only digits, commas, and whitespace (Assembly's
+// db-per-line table rows are also accepted, via an optional leading
+// db/dw/dd token). Every one of the 17 compiled-language templates embeds
+// its byte/code-point table this way (see formatNumbersCommaSeparated /
+// formatNumbersSpaceSeparated above), so this works language-agnostically
+// without needing to know that language's specific array/bracket syntax.
 function extractByteOrCodeArrayGeneric(sourceText){
   const lines = sourceText.split("\n");
   const isNumberLine = (line) => {
     const trimmed = line.trim();
-    return trimmed.length > 0 && /^[0-9,\s]+,?$/.test(trimmed) && /\d/.test(trimmed);
+    return trimmed.length > 0 && /^(?:db|dw|dd)?\s*[0-9,\s]+,?$/i.test(trimmed) && /\d/.test(trimmed);
   };
   let bestStart = -1, bestEnd = -1, curStart = -1;
   for (let i = 0; i <= lines.length; i++){
@@ -4838,7 +5938,7 @@ function decodeNumericArray(nums, mode){
 }
 
 // True end-to-end reverse compile: locate the embedded byte/code-point
-// table in a compiled source file (any of the 16 languages) and decode it
+// table in a compiled source file (any of the 17 languages) and decode it
 // back into the plain text that was originally compiled. Returns null if
 // no such table can be found (i.e. this isn't a file LawGPT compiled).
 function decompileSourceFile(sourceText, ext){
@@ -4947,14 +6047,32 @@ function plainTextToHtml(text){
   const htmlParts = [];
   const isBorderLine = (l) => /^\s*\+[-+]+\+\s*$/.test(l);
   const isTableLine = (l) => isBorderLine(l) || /^\s*\|.*\|\s*$/.test(l);
+  const isPageBreakStart = (l) => /^\f-+$/.test(l);
   const bulletRe = /^(\s*)- (.*)$/;
   const numberRe = /^(\s*)\d+\.\s(.*)$/;
+  // A line that can't start any special block (table/bullet/number/page
+  // break) and isn't blank -- i.e. a candidate to keep flowing into the
+  // paragraph or list item above it.
+  const isPlainContinuation = (l) => l.trim() !== "" && !isTableLine(l) && !bulletRe.test(l) && !numberRe.test(l) && !isPageBreakStart(l);
 
   let i = 0;
   while (i < lines.length){
     const line = lines[i];
 
     if (line.trim() === ""){ i++; continue; }
+
+    // composeDocumentText's "PAGE BREAK" banner (blank, "\f"+dashes, the
+    // centered label, dashes, blank) -- the blank lines around it are
+    // already skipped above, so just consume the banner itself. Page
+    // splits are otherwise purely overflow-driven (see reflowPagesNow), so
+    // dropping this is enough to let the content re-paginate on its own
+    // instead of showing the banner as literal text.
+    if (isPageBreakStart(line)){
+      i++;
+      if (i < lines.length && lines[i].trim() === "PAGE BREAK") i++;
+      if (i < lines.length && /^-+$/.test(lines[i].trim())) i++;
+      continue;
+    }
 
     if (isBorderLine(line)){
       let j = i;
@@ -4973,9 +6091,17 @@ function plainTextToHtml(text){
       let j = i;
       const items = [];
       let m;
-      while (j < lines.length && (m = bulletRe.exec(lines[j]))){
-        items.push(runsToInlineHtml(parseAnsiRuns(m[2])));
-        j++;
+      while (j < lines.length){
+        m = bulletRe.exec(lines[j]);
+        if (m){
+          items.push(runsToInlineHtml(parseAnsiRuns(m[2])));
+          j++;
+        } else if (isPlainContinuation(lines[j])){
+          // Word-wrap gave this line no "- " marker of its own -- it's the
+          // wrapped tail of the item above, not a new paragraph.
+          items[items.length - 1] += " " + runsToInlineHtml(parseAnsiRuns(lines[j].trim()));
+          j++;
+        } else break;
       }
       htmlParts.push("<ul>" + items.map(t => `<li>${t}</li>`).join("") + "</ul>");
       i = j;
@@ -4987,9 +6113,15 @@ function plainTextToHtml(text){
       let j = i;
       const items = [];
       let m;
-      while (j < lines.length && (m = numberRe.exec(lines[j]))){
-        items.push(runsToInlineHtml(parseAnsiRuns(m[2])));
-        j++;
+      while (j < lines.length){
+        m = numberRe.exec(lines[j]);
+        if (m){
+          items.push(runsToInlineHtml(parseAnsiRuns(m[2])));
+          j++;
+        } else if (isPlainContinuation(lines[j])){
+          items[items.length - 1] += " " + runsToInlineHtml(parseAnsiRuns(lines[j].trim()));
+          j++;
+        } else break;
       }
       htmlParts.push("<ol>" + items.map(t => `<li>${t}</li>`).join("") + "</ol>");
       i = j;
@@ -5007,9 +6139,36 @@ function plainTextToHtml(text){
       if (Math.abs(leadSpaces - expectedCenter) <= 1) alignAttr = ' style="text-align:center"';
       else if (Math.abs(leadSpaces - expectedRight) <= 1) alignAttr = ' style="text-align:right"';
     }
-    const inner = runsToInlineHtml(parseAnsiRuns(content));
-    htmlParts.push(`<div${alignAttr}>${inner || "<br>"}</div>`);
-    i++;
+    if (alignAttr){
+      // Centered/right-aligned lines are individually re-indented per line
+      // by renderLine, so they're always their own standalone line -- never
+      // merge these with neighbors.
+      const inner = runsToInlineHtml(parseAnsiRuns(content));
+      htmlParts.push(`<div${alignAttr}>${inner || "<br>"}</div>`);
+      i++;
+      continue;
+    }
+
+    // Plain left-aligned text: composeDocumentText hard-wraps every
+    // paragraph to OUTPUT_WIDTH with no marker distinguishing "wrapped
+    // continuation of this paragraph" from "the next paragraph starts here"
+    // -- both just land as consecutive same-indent lines. Merging every run
+    // of them back into one flowing paragraph is what lets it reflow to the
+    // full page width again; the cost is that two back-to-back paragraphs
+    // compiled with no blank line between them come back as one paragraph.
+    let j = i;
+    const parts = [];
+    while (j < lines.length){
+      const l = lines[j];
+      if (!isPlainContinuation(l)) break;
+      const lm = /^(\s*)(.*)$/.exec(l);
+      if (lm[1].length !== leadSpaces) break;
+      if (lm[1].length > 0 && lm[1].length % 4 !== 0) break; // a differently-aligned line, handled above
+      parts.push(runsToInlineHtml(parseAnsiRuns(lm[2])));
+      j++;
+    }
+    htmlParts.push(`<div>${parts.join(" ") || "<br>"}</div>`);
+    i = j;
   }
 
   return htmlParts.join("");
@@ -5210,7 +6369,11 @@ class ReducingGlyphAssemblyStrategy implements GlyphAssemblyStrategy {
 }
 
 class DocumentAssemblyEngine {
-  constructor(private readonly strategy: GlyphAssemblyStrategy) {}
+  private readonly strategy: GlyphAssemblyStrategy;
+
+  constructor(strategy: GlyphAssemblyStrategy) {
+    this.strategy = strategy;
+  }
 
   render(): string {
     return this.strategy.assemble(CodePointRepository.codePoints());
@@ -5369,7 +6532,8 @@ int main() {
 `;
 }
 
-function buildJavaSource(text){
+function buildJavaSource(text, className){
+  const cls = className || "Main";
   const codes = toCodePoints(text);
   const block = formatNumbersCommaSeparated(codes, 12, "        ");
   return `import java.util.ArrayList;
@@ -5437,7 +6601,7 @@ final class DocumentCompilerFacade {
     }
 }
 
-public class Main {
+public class ${cls} {
     public static void main(String[] args) {
         new DocumentCompilerFacade().execute();
     }
@@ -6015,7 +7179,84 @@ DocumentCompilerFacade.new():execute()
 `;
 }
 
-function buildSource(composedText, lang){
+function buildAssemblySource(text){
+  const bytes = toUtf8Bytes(text);
+  const block = chunkNumbers(bytes, 12).map(line => `    db ${line.join(", ")}`).join("\n");
+  return `; NASM (x86-64, Linux syscall ABI)
+BITS 64
+
+section .data
+
+; --- ByteRepository: the document's bytes, glyph by glyph ---
+byte_repository:
+${block}
+byte_repository_len equ $ - byte_repository
+
+newline_byte:
+    db 10
+
+section .text
+global _start
+
+; --- GlyphAssemblyStrategy: the bytes are already contiguous, so assembling
+;     them is just handing the pointer/length straight through ---
+; in:  rdi = pointer, rsi = length
+; out: rax = pointer, rdx = length
+glyph_assembly_strategy_assemble:
+    mov rax, rdi
+    mov rdx, rsi
+    ret
+
+; --- DocumentAssemblyEngine: renders the repository through the strategy ---
+document_assembly_engine_render:
+    mov rdi, byte_repository
+    mov rsi, byte_repository_len
+    call glyph_assembly_strategy_assemble
+    ret
+
+; --- ConsoleOutputSink: writes a payload (rax = pointer, rdx = length) to
+;     stdout, followed by a trailing newline ---
+console_output_sink_write_line:
+    mov rsi, rax
+    mov rdi, 1              ; fd = stdout
+    mov rax, 1              ; sys_write
+    syscall
+    mov rsi, newline_byte
+    mov rdx, 1
+    mov rdi, 1
+    mov rax, 1
+    syscall
+    ret
+
+; --- DocumentCompilerFacade: orchestrates render + write ---
+document_compiler_facade_execute:
+    call document_assembly_engine_render
+    call console_output_sink_write_line
+    ret
+
+_start:
+    call document_compiler_facade_execute
+    mov rax, 60              ; sys_exit
+    xor rdi, rdi
+    syscall
+`;
+}
+
+// Turns arbitrary text (a document title, or a filename the user typed in
+// the download dialog) into a valid Java identifier, changing as little as
+// possible so an already-valid name passes through untouched. Java requires
+// a public class's name to match its file's base name exactly, so this same
+// string is used for both -- see compileToSource's "java" branch.
+function toJavaIdentifier(raw){
+  let s = String(raw || "").trim();
+  s = s.replace(/[^A-Za-z0-9_$]+/g, "_").replace(/^_+|_+$/g, "");
+  if (!s) return "Document";
+  if (/^[0-9]/.test(s)) s = "_" + s;
+  return s;
+}
+
+function buildSource(composedText, lang, opts){
+  opts = opts || {};
   let source;
   switch(lang){
     case "python":     source = buildPythonSource(composedText); break;
@@ -6023,7 +7264,7 @@ function buildSource(composedText, lang){
     case "typescript": source = buildTypeScriptSource(composedText); break;
     case "c":          source = buildCSource(composedText); break;
     case "cpp":        source = buildCppSource(composedText); break;
-    case "java":       source = buildJavaSource(composedText); break;
+    case "java":       source = buildJavaSource(composedText, opts.javaClassName); break;
     case "csharp":     source = buildCSharpSource(composedText); break;
     case "go":         source = buildGoSource(composedText); break;
     case "rust":       source = buildRustSource(composedText); break;
@@ -6034,6 +7275,7 @@ function buildSource(composedText, lang){
     case "kotlin":     source = buildKotlinSource(composedText); break;
     case "perl":       source = buildPerlSource(composedText); break;
     case "lua":        source = buildLuaSource(composedText); break;
+    case "assembly":   source = buildAssemblySource(composedText); break;
     default:           source = buildPythonSource(composedText);
   }
   return source;
@@ -7003,7 +8245,10 @@ tableCtxMenu.addEventListener("click", (e) => {
 });
 
 // ---- Compile the drafted document into source for the selected language ----
-function compileToSource(lang){
+// opts.filenameBase, when given (the download dialog uses this for Java),
+// overrides the document title as the source of the file's base name.
+function compileToSource(lang, opts){
+  opts = opts || {};
   const pages = getPages();
   const titleRaw = document.getElementById("docTitle").value.trim() || "Untitled Document";
 
@@ -7019,8 +8264,20 @@ function compileToSource(lang){
 
   const useAnsi = true; // bold/italic/underline are always preserved as terminal (ANSI) styling
   const meta = LANG_META[lang] || LANG_META.python;
-  const safeBase = titleRaw.toLowerCase().replace(/[^a-z0-9_\-]+/g, "_").replace(/^_+|_+$/g, "") || "output";
-  const filename = `${safeBase}.${meta.ext}`;
+
+  // Java requires the public class name to match the file's base name
+  // exactly, so both are derived from the same sanitized string here --
+  // whatever name is chosen (the doc title by default, or a name typed
+  // into the download dialog), the file javac is pointed at will always
+  // declare a class of the same name, instead of always being "Main".
+  let filename, javaClassName;
+  if (lang === "java"){
+    javaClassName = toJavaIdentifier(opts.filenameBase || titleRaw);
+    filename = `${javaClassName}.java`;
+  } else {
+    const safeBase = titleRaw.toLowerCase().replace(/[^a-z0-9_\-]+/g, "_").replace(/^_+|_+$/g, "") || "output";
+    filename = `${safeBase}.${meta.ext}`;
+  }
 
   // Walk each page's content in order, inserting a page-break block between
   // pages so the compiled ASCII output shows the same page breaks the
@@ -7031,7 +8288,7 @@ function compileToSource(lang){
     blocks.push(...collectBlocks(page));
   });
   const composedText = composeDocumentText(blocks, useAnsi);
-  const source = buildSource(composedText, lang);
+  const source = buildSource(composedText, lang, { javaClassName });
   return { source, filename, ext: meta.ext, lang };
 }
 
@@ -7060,6 +8317,18 @@ document.getElementById("compileDocBtn").addEventListener("click", () => {
 });
 document.getElementById("closePreviewBtn").addEventListener("click", closePreviewPanel);
 previewOverlay.addEventListener("click", closePreviewPanel);
+
+// For Java, keep the previewed source's public class in sync with whatever
+// filename the person types here, so what's shown is exactly what will be
+// downloaded and exactly what `javac <that name>.java` will compile.
+document.getElementById("previewFilenameInput").addEventListener("input", (e) => {
+  const lang = document.getElementById("langSelect").value;
+  if (lang !== "java") return;
+  const stem = e.target.value.trim().replace(/\.[A-Za-z0-9]+$/, "");
+  if (!stem) return;
+  const compiled = compileToSource(lang, { filenameBase: stem });
+  document.getElementById("sourcePreviewCode").textContent = compiled.source;
+});
 
 // ---- Download the document itself (formatted, standalone HTML file) ----
 function buildDocumentHtml(title, bodyHtml){
@@ -7098,7 +8367,7 @@ const MIME_BY_EXT = {
   c: "text/x-csrc", cpp: "text/x-c++src", java: "text/x-java", cs: "text/x-csharp",
   go: "text/x-go", rs: "text/x-rust", rb: "text/x-ruby", php: "application/x-httpd-php",
   sh: "application/x-sh", swift: "text/x-swift", kt: "text/x-kotlin", pl: "text/x-perl",
-  lua: "text/x-lua"
+  lua: "text/x-lua", asm: "text/x-asm"
 };
 
 // Extra formats the Open picker accepts but that Save can't write back to
@@ -7123,6 +8392,102 @@ function buildOpenAcceptTypes(){
   return [{ description: "Documents & source files", accept }];
 }
 
+// ---- Default Save/Open folder: this repo's own "lawgpt" directory ----
+// The File System Access API's `startIn` option only accepts a well-known
+// directory keyword ("downloads", "documents", ...) or a FileSystemHandle --
+// never a raw OS path -- so there's no way to point the picker at "wherever
+// this repo happens to be cloned" without first getting the user to grant
+// access to that folder, once, the same way any other file/folder picker
+// works. That grant is a FileSystemDirectoryHandle, stored in IndexedDB (the
+// only storage that can hold one) so it's remembered across reloads without
+// asking again -- and it works identically regardless of what machine or
+// path the repo lives at, since nothing here is a hardcoded path.
+const LAWGPT_HANDLE_DB = "lawgpt-fs-handles";
+const LAWGPT_HANDLE_STORE = "handles";
+const LAWGPT_ROOT_KEY = "repoRoot";
+
+function openLawgptHandleDb(){
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(LAWGPT_HANDLE_DB, 1);
+    req.onupgradeneeded = () => req.result.createObjectStore(LAWGPT_HANDLE_STORE);
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function getStoredRepoRootHandle(){
+  try{
+    const db = await openLawgptHandleDb();
+    return await new Promise((resolve, reject) => {
+      const tx = db.transaction(LAWGPT_HANDLE_STORE, "readonly");
+      const req = tx.objectStore(LAWGPT_HANDLE_STORE).get(LAWGPT_ROOT_KEY);
+      req.onsuccess = () => resolve(req.result || null);
+      req.onerror = () => reject(req.error);
+    });
+  } catch(e){
+    return null; // IndexedDB unavailable/blocked -- callers fall back gracefully
+  }
+}
+
+async function storeRepoRootHandle(handle){
+  try{
+    const db = await openLawgptHandleDb();
+    await new Promise((resolve, reject) => {
+      const tx = db.transaction(LAWGPT_HANDLE_STORE, "readwrite");
+      tx.objectStore(LAWGPT_HANDLE_STORE).put(handle, LAWGPT_ROOT_KEY);
+      tx.oncomplete = resolve;
+      tx.onerror = () => reject(tx.error);
+    });
+  } catch(e){ /* best-effort only -- Save/Open still work without this */ }
+}
+
+async function verifyHandlePermission(handle, mode){
+  try{
+    const opts = { mode: mode || "read" };
+    if ((await handle.queryPermission(opts)) === "granted") return true;
+    return (await handle.requestPermission(opts)) === "granted";
+  } catch(e){
+    return false;
+  }
+}
+
+// Resolves to a handle on this repo's own root folder (the one containing
+// lawgpt.html), asking the user to link it -- once per browser profile --
+// the first time it's needed. Cached in-memory too, so a slow IndexedDB
+// round trip or a cancelled picker doesn't get repeated within one page
+// load; reload the page to try linking again after a cancel.
+let repoRootHandlePromise = null;
+async function getRepoRootHandle(){
+  if (!window.showDirectoryPicker) return null;
+  if (repoRootHandlePromise) return repoRootHandlePromise;
+  repoRootHandlePromise = (async () => {
+    const stored = await getStoredRepoRootHandle();
+    if (stored && await verifyHandlePermission(stored, "read")) return stored;
+    try{
+      alert('One-time setup: select this app\'s own "lawgpt" folder (the one containing lawgpt.html), so Save and Open can default to it from now on.');
+      const handle = await window.showDirectoryPicker({ id: "lawgpt-repo-root", startIn: "documents" });
+      await storeRepoRootHandle(handle);
+      return handle;
+    } catch(err){
+      return null; // user cancelled -- callers fall back to a generic default
+    }
+  })();
+  return repoRootHandlePromise;
+}
+
+// The repo's "notes" subfolder (created if missing), for Save's default
+// location. Falls back to null -- caller uses a generic startIn -- if the
+// repo folder was never linked or that failed.
+async function getNotesDirHandle(){
+  const root = await getRepoRootHandle();
+  if (!root) return null;
+  try{
+    return await root.getDirectoryHandle("notes", { create: true });
+  } catch(e){
+    return null;
+  }
+}
+
 // Remembers where the document was last saved/opened (via the File System
 // Access API), so the Save button can write straight back to that same
 // file/folder without prompting again — like Word's Save vs. Save As.
@@ -7140,16 +8505,25 @@ async function downloadDocument(triggerBtn){
   const btn = triggerBtn || document.getElementById("downloadDocBtn");
   const originalLabel = btn.textContent;
 
+  // If the preview panel is open, honor whatever file name the person typed there.
+  const typed = sourcePreviewPanel.classList.contains("open")
+    ? document.getElementById("previewFilenameInput").value.trim()
+    : "";
+
   // Always compile fresh from the current draft so the download can never
   // drift from what's on the page (or from what the preview panel is showing).
-  const compiled = compileToSource(lang);
+  // For Java specifically, a typed name has to drive the recompile (not just
+  // the filename) so the file's public class always matches whatever name
+  // it's saved under -- otherwise `javac <name>.java` fails whenever the
+  // name isn't the one the class happened to be generated with.
+  const compiled = (lang === "java" && typed)
+    ? compileToSource(lang, { filenameBase: typed.replace(/\.[A-Za-z0-9]+$/, "") })
+    : compileToSource(lang);
   const ext = compiled.ext;
 
-  // If the preview panel is open, honor whatever file name the person typed there.
   let defaultName = compiled.filename;
-  if (sourcePreviewPanel.classList.contains("open")){
-    const typed = document.getElementById("previewFilenameInput").value.trim();
-    if (typed) defaultName = typed.includes(".") ? typed : `${typed}.${ext}`;
+  if (typed && lang !== "java"){
+    defaultName = typed.includes(".") ? typed : `${typed}.${ext}`;
   }
 
   const mime = MIME_BY_EXT[ext] || "text/plain";
@@ -7157,10 +8531,12 @@ async function downloadDocument(triggerBtn){
 
   if (window.showSaveFilePicker){
     try{
+      // Defaults into this repo's own notes/ folder (see getNotesDirHandle
+      // above) once it's been linked; falls back to Documents otherwise.
+      const notesDir = await getNotesDirHandle();
       const handle = await window.showSaveFilePicker({
         suggestedName: defaultName,
-        // Hint the picker to open in the user's Downloads folder by default.
-        startIn: "downloads",
+        startIn: notesDir || "documents",
         types: [{ description: (LANG_META[lang] ? LANG_META[lang].label : "HTML") + " File", accept: { [mime]: ["." + ext] } }]
       });
       const writable = await handle.createWritable();
@@ -7232,7 +8608,13 @@ async function saveDocument(){
       source = getEditorPlainText();
       ext = savedFileExt;
     } else {
-      const compiled = compileToSource(savedFileLang);
+      // For Java, re-derive the class name from the file's actual saved
+      // name (not the current doc title, which may well differ from a
+      // custom name chosen at Download/Save-As time) so a re-save never
+      // drifts out of sync with the filename already on disk.
+      const compiled = (savedFileLang === "java" && savedFileHandle.name)
+        ? compileToSource(savedFileLang, { filenameBase: savedFileHandle.name.replace(/\.[A-Za-z0-9]+$/, "") })
+        : compileToSource(savedFileLang);
       source = compiled.source;
       ext = compiled.ext;
     }
@@ -7358,7 +8740,10 @@ document.getElementById("newDocBtn").addEventListener("click", () => {
 document.getElementById("openDocBtn").addEventListener("click", async () => {
   if (window.showOpenFilePicker){
     try{
-      const [handle] = await window.showOpenFilePicker({ types: buildOpenAcceptTypes() });
+      // Defaults into this repo's own root folder (see getRepoRootHandle
+      // above) once it's been linked; falls back to Documents otherwise.
+      const root = await getRepoRootHandle();
+      const [handle] = await window.showOpenFilePicker({ startIn: root || "documents", types: buildOpenAcceptTypes() });
       const file = await handle.getFile();
       await openDocumentFile(file, handle);
       return;
@@ -7403,6 +8788,17 @@ function loadPlainTextIntoEditor(text){
     const escaped = escapeHtml(line);
     return `<div>${escaped.length ? escaped : "<br>"}</div>`;
   }).join("");
+  schedulePageReflow();
+}
+
+// Like loadPlainTextIntoEditor, but keeps the paragraph/code-block
+// formatting formatContent() already gives this text in the chat and AI
+// report views (bold-code fences as <pre><code>, blank-line-separated
+// paragraphs) instead of dumping every line into its own div.
+function loadFormattedTextIntoEditor(text){
+  resetToSinglePage();
+  const editor = document.getElementById("docEditor");
+  editor.innerHTML = sanitizeImportedHtml(formatContent(text || ""));
   schedulePageReflow();
 }
 
@@ -7634,7 +9030,7 @@ async function openDocumentFile(file, handle){
 
     } else if (sourceExts.includes(ext)){
       // Reverse the compiler itself: find the embedded byte/code-point table
-      // in whichever of the 16 languages this is, decode it back into the
+      // in whichever of the 17 languages this is, decode it back into the
       // drafted text, then reconstruct tables/lists/alignment/bold-italic-
       // underline (the last three only if the ANSI toggle was on when it was
       // compiled) from that text.

@@ -1,0 +1,458 @@
+114
+H. DEFENSES
+1.CONSENT
+
+a.Actual Consent
+
+The doctrine of consent embraces several, rather disparate concepts. At the core of the defense is the concept of “actual consent,” where the plaintiff is proven (1) to have had the capacity to consent, (2) to have been free of duress or substantial material mistake, and (3) to have been subjectively willing for the defendant’s conduct to occur. See Restatement Third of Torts: Intentional Torts § 13. Actual consent may be express or inferred from the circumstances. For example, suppose that plaintiff is an immigrant in line to see a doctor for screening at Ellis Island—and that she has never before been treated by a doctor. She sees people ahead of her receive immunization shots. When she reaches the doctor, she remains silent, and the doctor gives her a shot. Although the plaintiff has not expressly given the doctor her consent, her actual consent might reasonably be inferred from the facts.33 In other words, although the plaintiff might well testify at trial that she did not consent to the vaccine, a jury might infer from the circumstances that she did consent and is simply not telling the truth at trial.
+
+Note that the “willingness” sufficient to shield a defendant from liability need not amount to desire. The immigrant might not have desired to receive the vaccine; but she might have been willing to endure the vaccination as a condition to her entry into the United States. Of course, there is sometimes a fine line between a willingness freely felt and a “willingness” produced by duress. The topic of duress is discussed further in the materials below.
+
+Some of the most interesting issues in cases involving the defense of actual consent involve the scope of consent—that is, to what precisely did the plaintiff consent? Evander Holifield certainly consented to being punched in the face or torso during his famous bout with Mike Tyson. But did he consent to being punched below the belt, an act which violates the rules of boxing? Did he consent to having a part of his ear bitten off à la Hannibal Lecter? Consider these questions in light of the following case.
+
+115
+Hellriegel v. Tholl
+
+Supreme Court of Washington, 1966.
+69 Wn.2d 97, 417 P.2d 362.
+
+Donworth, Judge.
+
+This is an appeal by a plaintiff from the dismissal of his complaint at the end of the plaintiff’s evidence. Wolf-Jurgen Hellriegel, plaintiff’s teen-age son, was seriously injured when three of his friends tried to throw him into Lake Washington during an afternoon spent in water-skiing, sunbathing, and engaging in horseplay. The defendants in the suit are these three teen-age friends of plaintiff’s son. Plaintiff sued in his own behalf for recovery of the cost of the medical care for his son, and sued in his son’s behalf for the loss of income and for the temporary total disability and the alleged permanent partial disability, as well as for general damages for the alleged negligence and recklessness by which his son was harmed. Before trial, the complaint was amended by changing the grounds of the liability from negligence and recklessness to that of battery.
+
+The only issue on this appeal is the issue decided by the trial court in the granting of the nonsuit—did the plaintiff present sufficient evidence to take the question of liability of any of the three defendants to the jury?
+
+* * *
+
+Certain background against which to consider the sufficiency of appellant’s evidence should be stated. On the afternoon of July 26, 1963, appellant’s son, Wolf-Jurgen Hellriegel (called Dicka by his friends), a 15- or 16-year-old high school student, joined a group of friends and fellow students at the Mount Baker Beach, on Lake Washington, for an afternoon of waterskiing.
+
+Although there may have been other teenagers coming and going and for a time sunbathing and mingling with them, the group consisted primarily of the 6 witnesses whose testimony was presented to the trial court. * * * Although these witnesses recall the general setting and the incident with varying details and with varying degrees of clarity about what happened, there appears to be no dispute that, in general, the circumstances leading up to the injury of minor appellant Hellriegel occurred approximately as young Hellriegel himself described it.
+
+He stated:
+
+* * *
+
+And somebody started throwing a pillow—I don’t know who it was—it was Nina’s pillow. And we threw it around, and after a while it got so far out of reach—we were kind of lazy at the time—and we just—I don’t think we bothered about it and started throwing grass, and I guess after we tired of throwing grass we got around—talk got around to throwing people into
+116
+the lake. And after a while of talking like this—I don’t know—somebody must have said they could throw me in, or something to this effect, and I stated, “Oh, you couldn’t throw me in even if you tried.” And with that the three boys, Mike, Greg and John, jumped up and, well, tried to throw me into the water. I struggled for a while and I ended up in a sitting position parallel to the lake, facing, my head facing north, and Mike was behind me. Again, I was in a sitting position and John and Greg had my legs up in the air.
+
+I was trying to get them off, and I had my hands reaching toward my legs when Mike, trying to reach my hands, must have slipped or lost his balance, and he fell on the back of my head and pushed it forward. I heard two cracks like somebody snapping his knuckles, and right after that I lost all control, I couldn’t move my legs, and it was kind of a numb sensation all over.
+
+I yelled out, I knew what had happened. I yelled out, “Please, let me down, I am paralyzed.”
+
+With that, John and Greg put down my legs and they must have—somehow they must have got them crossed, and Mike got off me as fast as possible. And then I just lay there looking up at the sun. There was a big tree above me. It was getting hot. I didn’t notice it, but I figured somebody better put a towel over me. So they did this, and my brother arrived.
+
+* * *
+
+Appellant has assigned error solely to the trial court’s determination that there was not sufficient evidence of a battery to establish a prima facie case of liability against respondents. Appellant acknowledges that the basis for the trial court’s ruling is shown in the colloquy between counsel and the court just prior to the granting of respondents’ motion. The record shows that the trial court ruled that respondents were not liable because:
+
+(1)The actions of respondents in trying to throw appellant’s son into the lake were not such as to constitute an offensive touching of his person.
+
+(2)The actions of the respondents were consented to by appellant’s son by his participation in the “horseplay” and his statement to the effect that all three of the boys could not throw him into the lake.
+
+If the trial court is correct on either point, its judgment must be affirmed.
+
+We shall first discuss the issue of consent before considering the issue of offensive touching.
+
+It is agreed by all parties to the suit that consent is a defense to battery, except for some exceptions (not presently applicable) when consent cannot be given. The points on which the parties differ is whether the words and actions of Dicka amounted to consent to engage in the horseplay, and
+117
+whether this consent was broad enough to encompass the events which caused his injury.
+
+First, with regard to the significance of Dicka’s words and actions, we agree with the trial court that his words were an invitation to respondents to try to throw him into the water if they thought they could. His statement to them (quoted above) constituted a consent that the boys could try to throw him into the lake (as distinguished from a consent to being thrown into the lake) and he thereby assumed the risk that he might be accidentally injured during the horseplay that necessarily would result from their attempt to throw him into the lake and his resistance to such attempt. Even if what he said was in response to someone’s statement to the effect “Let’s throw Dicka into the lake,” his words were an invitation to try, as distinguished from a warning to the other boys not to try to throw him in because he did not want to be thrown in and would resist.
+
+The setting in which these words were spoken is the key to their meaning. The boys had been throwing a pillow around, apparently at each other, rather like a ball. They also threw grass when the pillow was thrown out of reach. They were all good friends. No one was angry, nor had anyone tried to withdraw from the horseplay. It was in good-natured fun.
+
+If there had been the slightest indication that Dicka had not wanted to participate in this horseplay but had engaged in it only to the extent necessary to protect himself, then appellant’s position might be plausible. However, we have Dicka’s own statement that he had joined in the pillow throwing and the grass throwing. Dicka also stated that he and the boy who fell on him, Mike Dorris, were used to wrestling together prior to this accident. Dicka was very athletic and this activity was regarded by all of the boys as “fun.” Under the circumstances shown by the evidence, it would be a strained and unreasonable interpretation of Dicka’s statement to the boys to construe it as a warning not to try to throw him into the lake, because he did not want to be thrown in, even in fun, and that he would resist such an attempt.
+
+Appellant’s counsel argues in his brief that, even if Dicka gave any consent, it was consent to being thrown into the lake, and not a consent to have his neck broken, i.e., that the scope of the consent did not include this battery. Of course, Dicka did not consent to having his neck broken. As we pointed out above, Dicka did not even consent to being thrown into the lake—he consented only to having his three friends try to throw him into the lake, while he resisted their attempt. In other words, he consented to rough and tumble horseplay.
+
+Appellant’s counsel argues in connection with this issue that Restatement, Torts § 53, and Comment a clearly show that the particular invasion was not consented to by Dicka. That section reads:
+
+118
+To constitute a consent, the assent must be to the invasion itself and not merely to the act which causes it.
+
+* * *
+
+Appellant argues (1) that the invasion to which this section refers in the present case is the breaking of Dicka’s neck, and (2) that the breaking of his neck was not substantially certain to result from being thrown into the lake, and that, therefore, he did not consent to this invasion. We do not agree with appellant’s understanding of what the term “invasion” means as used in § 53 of the Restatement. Comment b of that section shows that the “invasion” refers to the intentional acts, such as blows received in a boxing match, and not the injuries which may result from accidents such as accidental slipping, as in the case at bar.
+
+The invasion consented to in this instance, as we stated earlier, was rough and tumble horseplay. The question which § 53 of the Restatement does not answer is, who takes the risk of injury which may, accidentally result from such rough and tumble play? It seems to us that rough and tumble play is like an informal boxing match, which is described in Comment b above. The boxer accepts the risk of serious injuries from the blows received. * * * Persons who engage in roughhouse horseplay also accept the risk of accidental injuries which result from participation therein.
+
+* * *
+
+The second question is whether there was evidence of any intentional act which could be called “offensive contact” committed by respondents beyond the limits of that consent? The record is completely barren of any such evidence. The contact (when Mike Dorris slipped and fell onto Dicka) which actually broke Dicka’s neck was accidental. All other contact was a part of the rough and tumble play.
+
+Therefore, we must affirm the trial court.
+
+* * *
+
+Notes
+
+1.How does this court define the scope of consent? The Restatement Third of Torts: Intentional Torts § 14(a) defines the relevant scope as follows: “A person’s actual consent extends to conduct of the actor that is not substantially different in nature from the conduct that the person is willing to permit.” Is this consistent with the court’s holding in Hellriegel? What if the roughhousing had resulted in a truly unforeseeable injury—a heart attack, for example—would the court have come out the same way? In such a case, would the defendant be shielded from liability under § 14(a)?
+119
+2.Reconsider the hypothetical posed before the case, with regard to a boxer hitting below the belt, in light of the following cases. In Hackbart v. Cincinnati Bengals, Inc., 601 F.2d 516 (10th Cir. 1979), the plaintiff Dale Hackbart, a defensive back for the Denver Broncos, tried to block Charles “Booby” Clark, an offensive back for the Cincinnati Bengals, during the return of an intercepted pass. Clark had been running a pass pattern but the pass was intercepted by another Denver player. While Hackbart was on the ground, according to the findings of the trial court, Clark “acting out of anger and frustration [at losing the game] but without a specific intent to injure * * * stepped forward and struck a blow with his right forearm to the back of the kneeling plaintiff’s head and neck.” The blow caused a serious fracture of Hackbart’s neck. Trying the case without a jury, the trial judge held for the defendants, concluding that it was unreasonable to apply what the court of appeals described as “the laws and rules of injury” to professional football. The court of appeals reversed. It doubted whether a professional football player either consents to or assumes the risk of being injured by conduct in violation of the rules of football. The court noted the evidence of witnesses that not only is the intentional striking of others prohibited by the rules of football but that it is contrary to the general customs of the game. See also Agar v. Canning (1965) 54 W.W.R. 302 (Man.) (same with regard to hockey); Nabozny v. Barnhill, 31 Ill.App.3d 212, 334 N.E.2d 258 (1975) (same regarding a high school age soccer game). Several cases have been more cautious in extending liability for intentional contact outside the rules of the game for fear that they will chill competition. See Turcotte v. Fell, 68 N.Y.2d 432, 510 N.Y.S.2d 49, 502 N.E.2d 964 (1986) (horse racing); McKichan v. St. Louis Hockey Club, L.P., 967 S.W.2d 209 (Mo. App. 1998) (hockey); Gauvin v. Clark, 404 Mass. 450, 537 N.E.2d 94 (1989) (college hockey). What result when a pitcher hits a batter with a pitch thrown with the purpose of driving the batter away from the plate? What if the pitch is a “beanball” thrown at the batter’s head, causing him serious injury? See Avila v. Citrus Community College District, 38 Cal.4th 148, 131 P.3d 383, 41 Cal.Rptr.3d 299 (2006).
+
+Several cases have arisen out of athletic injuries in informal settings. See Marchetti v. Kalish, 53 Ohio St.3d 95, 559 N.E.2d 699 (1990) (children’s game of “kick the can”); Knight v. Jewett, 3 Cal.4th 296, 11 Cal.Rptr.2d 2, 834 P.2d 696 (1992) (social game of touch football).
+
+3.A plaintiff may place conditions on her consent—for example, with respect to time or area. A plaintiff may also revoke consent at any point. If the plaintiff in Hellriegel, for example, had shouted, “You are hurting me, please put me down,” the plaintiff’s consent will have ended, and further roughhousing by the defendants might well result in liability. In addition, consent does not extend to past conduct; if a plaintiff did not consent at the time of the act, then any future change of heart about the acceptability of the incident does not excuse the defendant’s tort.
+
+4.A continuing controversy has surrounded the question of whether or not consent is a defense to a tort action when the conduct consented to is criminal. Although jurisdictions are not unanimous on the matter, the
+120
+Restatement Third of Torts: Intentional Torts § 14(d) reflects the majority approach: “A person’s actual consent is legally effective even if the conduct consented to is a crime. However, if the conduct is made criminal in order to protect a class of persons without regard to their actual consent, the person’s actual consent is not legally effective.” The rule reflected in this first sentence must be the case, as nearly every intentional tort—battery, for example—also constitutes a crime. An example of the exception captured by the second sentence of § 14(d) is statutory rape. Even if a sixteen year-old is subjectively willing to have intercourse with a thirty year-old, consent will not shield the thirty year-old from liability for battery. Statutes prohibiting the sale of intoxicating beverages to minors and safety regulations are also typical exceptions to the general rule. See Hudson v. Craft, 33 Cal.2d 654, 204 P.2d 1 (1949) (minor injured in carnival boxing exhibition not conducted in accordance with regulations of State Athletic Commission; tort action allowed against promoter).
+
+5.Consent given by a person without the capacity to consent is not valid. Incapacity might be due to a plaintiff’s young age, intellectual disability, or mental illness, or it might be due to a temporary condition such as inebriation. The standard in determining capacity is generally understood to be whether the “person is capable of appreciating the nature, extent, and potential consequences of the conduct consented to.” Restatement Third of Torts § 14, cmt. b; see Saucier v. McDonald’s Restaurants of Montana, Inc., 179 P.3d 481 (Mont. 2008) (intellectually disabled employee stated cause of action for battery against manager who had sexual relationship with her in light of evidence of employee’s low IQ and extremely limited capacity to appreciate the consequences of a sexual relationship); Kortner v. Martise, 91 A.3d 412 (Conn. 2014) (factfinder should consider all the circumstances in determining whether a conserved person with various mental and physical infirmities was capable of consenting to sadomasochistic relationship); Flores v. Santiago, 986 N.E.2d 1216 (Ill. App. Ct. 2013) (patient of defendant eye doctor sufficiently alleged an inability to consent due to defendant repeatedly plying her with illegal drugs in order to facilitate sexual contact); Hollerud v. Malamis, 174 N.W.2d 626, 634–635 (Mich. Ct. App. 1969) (question of fact whether bartender knew or should have known that plaintiff was in such advanced state of intoxication that he was incapable of consenting to arm-wrestling contest).
+
+6.Consent obtained by fraud, duress, or even by the nondisclosure of some material fact also will not immunize a defendant from liability. Each of these exceptions requires a threshold determination by the factfinder. The Restatement Second, Torts § 892B, Comment j, offers the following explanation of the applicable threshold regarding duress:
+
+The cases to date in which duress has been found to render the consent ineffective have involved those forms of duress that are quite drastic in their nature and that clearly and immediately amount to an overpowering of the will. These include force or threats of force against the person consenting or the members of his immediate family or his valuable property; and also arrest, imprisonment or
+121
+prosecution upon a serious criminal charge of the person consenting or a member of his family, as well as immediate threats of that force. The cases, however, do not indicate that these are the limits of the duress that will render consent ineffective. The early common law view that duress is restricted to imprisonment or threats sufficient to put a brave man in fear of loss of life or limb or of imprisonment of himself or a member of his immediate family clearly does not apply. Nor is it certain that the duress must be of a type to which a person of ordinary firmness or a reasonable person would yield, though this may be important in determining whether the other party’s will was actually overborne. Age, sex, mental capacity, the relation of the parties and antecedent circumstances all may be significant. The type of conduct to which the other party consents is also important.
+
+With respect to mistakes of material fact, the classic example is where the defendant fails to disclose a sexually transmitted disease prior to intercourse. See Doe v. Johnson, 817 F. Supp. 1382 (W.D. Mich. 1993); B.N. v. K.K., 312 Md. 135, 538 A.2d 1175 (1988); Kathleen K. v. Robert B., 150 Cal.App.3d 992, 198 Cal. Rptr. 273, 40 A.L.R.4th 1083 (1984). If the plaintiff cannot prove that the defendant knew he was infected, however, then there will be no liability for an intentional tort, McPherson v. McPherson, 712 A.2d 1043 (Me. 1998), although negligence is a possibility. See Long v. Adams, 175 Ga. App. 538, 333 S.E.2d 852 (1985). See John A. Turcotte, When You Should Have Known: Rethinking Constructive Knowledge in Tort Liability for Sexual Transmission of HIV, 52 Me. L. Rev. 261 (2000); Note, Assessing Liability for Negligent Transmission of a.i.d.s., 24 Suffolk U. L. Rev. 649 (1990).
+
+Similarly, if an actor falsely informs plaintiff that he is sterile, and plaintiff becomes pregnant, plaintiff has a viable battery claim. See Barbara A. v. John G., 145 Cal. App. 3d 369 (1983).
+
+The Restatement Third § 14(c) adopts the position that the plaintiff must have a “substantial mistake” about “the nature of the invasion of the person’s interests, the extent of the expected harm, or the actor’s purpose in engaging in the conduct.” A threshold determination is inherent in this standard. For example, in Micari v. Mann, 481 N.Y.S.2d 967, 969 (1984), adult students successfully claimed battery when an acting teacher represented that their sexual acts with him and with each other were needed as part of their drama training. And in Barbara A. v. John G., 145 Cal. App. 3d 369 (1983), the court imposed liability when the defendant falsely informed plaintiff that he was sterile, resulting in her pregnancy. But misrepresentations of love or fidelity, for example, have consistently been held insufficient to vitiate consent. See McPherson, supra; see also Conley v. Romeri, 806 N.E.2d 933 (Mass. App. Ct. 2004) (ruling that a former girlfriend’s consent to have sexual intercourse was not vitiated by fraud because of defendant former boyfriend’s failure to reveal that he had had a vasectomy).
+
+7.Substitute consent. Particularly in the medical context, difficult issues often arise if another is empowered to grant or deny consent to medical
+122
+treatment on behalf of the patient. Courts routinely permit competent but terminally ill patients to refuse treatment. Somewhat more difficult are cases where the patient’s quality of life is substantially diminished but their condition is not terminal. The courts have had to deal with “the constantly increasing power of science to keep the human body alive for longer than any reasonable person would want to inhabit it.” Cruzan v. Harmon, 497 U.S. 261 at 292, 110 S.Ct. 2841 at 2859, 111 L.Ed.2d 224 (1990); see Bouvia v. Superior Ct., 179 Cal.App.3d 1127, 225 Cal.Rptr. 297, 300 (1986) (twenty-eight year old college-educated woman with cerebral palsy permitted to refuse treatment); McKay v. Bergstedt, 106 Nev. 808, 801 P.2d 617, 628–32 (1990) (approving a quadriplegic man’s petition to remove a ventilator); Thor v. Superior Court, 5 Cal.4th 725, 855 P.2d 375, 21 Cal.Rptr.2d 357 (1993) (quadriplegic prisoner permitted to refuse life sustaining procedures).
+
+But what happens when the patient is incapacitated? The core question is the desires of the patient, of course, but often those desires are unknown or contested. The famous case of Terri Schiavo is illustrative. See In re Guardianship of Schiavo, 2000 WL 34546715 (Fla. Cir. Ct. 2000).
+
+Finally, there is ample authority that the courts have power to order essential medical treatment for mental incompetents or for children over the objections of their guardians—the classic case being where a child’s parents refuse to consent to a blood transfusion for the child on religious grounds. Some courts have distinguished the case in which medical treatment was necessary to save a child’s life from that in which the treatment was desirable but not essential for preservation of life. For cases on the treatment of children, see Annot.21 A.L.R.5th 248. But see Newmark v. Williams, 588 A.2d 1108 (Del. 1991). What about the “mature minor”? May her wishes override those of her parents? See Belcher v. Charleston Area Medical Center, 188 W.Va. 105, 422 S.E.2d 827 (1992).
+b.Apparent Consent
+
+Return to the hypothetical that began this section—the immigrant in line at Ellis Island. Suppose that upon seeing those in front of her in line receiving vaccines, the woman turns to her companion and expresses her unwillingness to receive the vaccine. Not speaking English, however, she does not know how to communicate her unwillingness to the doctor. When she reaches the doctor, he takes her arm and administers the vaccine. In such a case, the doctor will not be shielded from liability by the defense of actual consent, for the immigrant did not consent to the vaccine. Nonetheless, a jury might conclude that a reasonable person in the doctor’s circumstances would have believed that the plaintiff consented to the vaccine, and a reasonable belief that the plaintiff consented to the conduct constitutes a valid defense.
+
+This doctrine is referred to as “apparent consent.” Note, however, that this doctrine has nothing to do with the plaintiff’s willingness to submit to the defendant’s conduct—the defense shields the defendant from liability
+123
+even if the jury determines that the plaintiff did not consent. Rather, “apparent consent” is more analogous to a defense of “reasonable mistake.” Whereas the actual consent doctrine precludes liability on the grounds that the plaintiff’s interests have not been violated (a consensual touching does no harm to the interest protected by battery, for example), the doctrine of apparent consent precludes liability because, due to a reasonable mistake, the defendant’s conduct was not wrongful.
+
+Although the defense of apparent consent arises in a wide variety of circumstances, one of the most difficult is in claims of sexual battery. The following case illustrates some of the difficulties in such cases.
+
+Reavis v. Slominski
+
+Supreme Court of Nebraska, 1996.
+250 Neb. 711, 551 N.W.2d 528.
+
+Lanphier, Justice.
+
+Alleging she was sexually assaulted, Mary Reavis filed a civil action against the alleged attacker, James Slominski, D.D.S. The petition stated two causes of action—one for the tort of sexual assault and one for the tort of intentional infliction of emotional distress. Slominski denied those allegations and further alleged that any contact with Reavis was consensual. Trial before a jury commenced in the district court for Richardson County on January 12, 1994. At the close of Reavis’ case, Slominski’s motion for a directed verdict was overruled. At the close of all the evidence, Slominski renewed his motion for a directed verdict, which was again overruled. The jury returned a verdict in favor of Reavis on the sexual assault cause of action and in favor of Slominski on the intentional infliction of emotional distress cause of action. Slominski timely appealed, and Reavis cross-appealed.
+
+* * * A majority of this court concurs that the district court properly refused to grant Slominski’s motions for a directed verdict. * * *
+
+I.BACKGROUND
+
+Reavis was employed by Slominski as a receptionist in his dental clinic located in Falls City, Nebraska. Reavis alleges that Slominski sexually assaulted her on December 31, 1991, after a New Year’s Eve office party.
+
+Reavis first worked for Slominski at his dental clinic from 1969 to 1975 as a chair-side assistant, with one brief absence. Reavis testified that there were many occasions during the early 1970’s when Slominski fondled her. Reavis stated that she felt that she could not say anything to him because she needed to work. When she did ask Slominski to stop touching her, he would laugh and say, “ ‘You know you like it.’ ”
+
+Reavis married her husband, Frank, in February 1972. Reavis testified that Slominski continued to touch her. Although Slominski never
+124
+told Reavis that he would fire her if she objected, Reavis stated that Slominski said she would lose her job and her marriage if she told anyone.
+
+In or around 1973, Slominski and Reavis began to engage in sexual intercourse. Although Reavis said no, she claims she felt that she had no choice but to engage in relations. Reavis admitted that Slominski never physically forced her to have sex with him. Reavis testified that she could not quit her job because she needed the money to support her family. However, Reavis admitted that there were times when she was able to successfully refuse Slominski’s advances.
+
+In 1975, Reavis’ husband obtained employment in Lincoln, and Reavis left Slominski’s employment. The Reavises returned to Falls City in 1978, and Reavis worked for another dentist.
+
+In the summer of 1988, Reavis was unemployed and Slominski offered her a job. Reavis testified that she told Slominski that before she would accept the position, he had to promise to leave her alone. Reavis testified that Slominski did not try to engage in sexual intercourse with her from 1988 until December 31, 1991. However, Reavis stated that Slominski touched her several times during that time period. As before, Reavis said she did not quit because her family needed the money.
+
+On December 31, 1991, the employees of the dental clinic had an office party. The party began about 1 p.m. Reavis and Slominski each admit that they became somewhat intoxicated. Reavis testified that after the party began to wind down around 5 p.m., she and another employee, Kathy Foster, cleaned up the clinic. Foster left, and Reavis and Slominski were alone in the clinic. Reavis testified that she was in the lab clocking out when she heard Slominski lock the back door.
+
+Reavis said that Slominski came into the lab and began kissing her. Reavis testified that she pushed Slominski away and told him no. Slominski laughed and said, “ ‘You know you want it.’ ” Reavis said, “ ‘Oh, hell,’ ” and then walked down the hall toward Slominski’s office and “threw [her] sweater off.” Reavis testified that she felt there was nothing she could do because Slominski would just laugh at her. In the office, Reavis admonished Slominski and said, “ ‘You know you should not be doing this.’ ” Reavis felt that if she did not comply, she would lose her job. She said that she numbed her mind and body during the sexual intercourse, but that the physical contact was hurting her “very bad.”
+
+While Reavis and Slominski were engaged in sexual conduct, Foster came back into the dental clinic. Foster noticed an article of clothing in the hall and said, “ ‘I hope the two of you are having fun in there.’ ” Reavis asked Slominski if Foster had seen them, and Slominski said yes. Reavis and Slominski got dressed and left the dental clinic.
+125
+After Reavis left the dental clinic, she went home. A short time later, Reavis went to a restaurant where she held a second job. Although she was not scheduled to work, Reavis met some of the people she worked with and had some champagne. Reavis did not tell any of her friends about the events of the afternoon and did not report the sexual contact to the police.
+
+That evening, Reavis was unable to sleep. She woke her husband and told him that “ ‘Dr. Slominski had sex with me.’ ” Her husband was very upset. During the next several days, the couple sought counseling with their pastor, but Reavis remained quite distraught. During the night of January 3, Reavis attempted suicide by ingesting sleeping pills.
+
+Reavis was hospitalized for several weeks in January and was still under medical care at the time of the trial. As a result of the alleged sexual assault, Reavis states that she has suffered damages due to her inability to work. Reavis alleges that she required hospitalization and counseling as a result of the emotional distress proximately caused by Slominski’s wrongful conduct.
+
+Reavis further alleges that Slominski acted intentionally and with reckless disregard of her emotional suffering by his conduct on New Year’s Eve. Reavis asserts that Slominski’s conduct was outrageous in character and so extreme in degree that it should be regarded as atrocious and intolerable in a civilized community. Reavis states that Slominski’s conduct proximately caused her extreme emotional distress resulting in damages.
+
+By his answer, Slominski denied Reavis’ allegations. Slominski alleged that Reavis encouraged and promoted a private meeting after the New Year’s Eve party and that Reavis initiated consensual sexual contact. Slominski testified that Reavis called him back into the office as he was leaving the party and initiated the sexual contact. When Reavis began to disrobe, Slominski assumed that she wanted sexual contact. Slominski stated that his relationship with Reavis during the early 1970’s was an affair involving two consenting adults.
+
+II.ASSIGNMENTS OF ERROR
+
+Slominski asserts that the district court erred in failing to grant his motions for a directed verdict, in receiving evidence that Reavis was abused as a child over relevance objections, in giving erroneous jury instructions, * * *, and in failing to set aside the jury verdicts as inconsistent.
+
+* * *
+
+III.ANALYSIS
+
+1.OVERVIEW
+
+In order to succeed on her theory of recovery regarding sexual assault, Reavis was required to prove that Slominski had sexual contact with her
+126
+without her consent and that he acted with intent to inflict physical injury or contact upon her which resulted in physical injury proximately causing some damage. Reavis was also required to prove the nature and extent of her alleged damages.
+
+Reavis’ cause of action for sexual assault is technically a cause of action for battery.
+
+Battery and assault are separate torts resulting from a defendant’s intentional actions directed toward another. . . . A battery requires “an actual infliction” of an unconsented injury upon or unconsented contact with another. . . . In contrast, we have characterized the intentional tort of assault as a “ ‘wrongful offer or attempt with force or threats, made in a menacing manner, with intent to inflict bodily injury upon another with present apparent ability to give effect to the attempt,’ ” without requiring that the one assaulted be subjected to any actual physical injury or contact.
+
+* * *
+
+A review of the record indicates that Reavis’ trial strategy contained two theories. Reavis attempted to prove that her actions did not constitute consent to sexual contact with Slominski on December 31. Alternatively, Reavis attempted to establish that if such actions did amount to consent, such consent was not effective because she lacked mental capacity and that any consent was coerced, in part, by her fear that she would lose her job.
+
+By his answer and arguments, Slominski concedes that he did have sexual contact with Reavis. However, Slominski argues that the contact was between two consenting adults. Slominski asserts that Reavis failed to prove that she did not consent to the sexual contact on December 31 and that she gave apparent consent to the contact. Slominski states that he had no knowledge of Reavis’ alleged incapacity and that therefore her consent was effective. Slominski concludes that the court erred by failing to direct a verdict in his favor.
+
+* * *
+
+(b)Actual or Apparent Consent
+
+“In tort law, consent ordinarily bars recovery for intentional interferences with person or property.” * * *
+
+Except in the case of persons whom the law protects for reasons of policy, such as those who are mentally immature or otherwise incompetent (see Comment b), no one suffers a legal wrong as the result of an act to which, unaffected by fraud, mistake or duress, he freely consents or to which he manifests apparent consent. * * *
+127
+This principle is expressed in the ancient legal maxim, volenti non fit injuria, meaning that no wrong is done to one who consents.
+
+* * *
+
+Section 892 of the Restatement states:
+
+(1)Consent is willingness in fact for conduct to occur. It may be manifested by action or inaction and need not be communicated to the actor.
+
+(2)If words or conduct are reasonably understood by another to be intended as consent, they constitute apparent consent and are as effective as consent in fact.
+
+One can consent to a personal invasion such as sexual contact even if such contact is immoral or harmful to one’s own interests. “ ‘Consent avoids recovery simply because it destroys the wrongfulness of the conduct as between the consenting parties. . . .’ ” * * * If one says yes to sexual contact, no matter how distasteful or wrong, the contact cannot constitute a sexual battery because, by definition, battery involves contact without consent.
+
+If Reavis did not consent on December 31, then Slominski was guilty of sexual assault. If Reavis gave actual or apparent consent to the sexual contact, then, as a matter of law, Slominski may have been entitled to a directed verdict on that theory of recovery. However, as discussed in the following section, if Reavis suffered from some incompetency or abnormality on December 31 which rendered her actual or apparent consent ineffective, then Reavis may be within the category of “persons whom the law protects for reasons of policy, such as those who are mentally immature or otherwise incompetent.”
+
+A trial court should direct a verdict as a matter of law only when the facts are conceded, undisputed, or such that reasonable minds can draw but one conclusion therefrom. * * *
+
+The party against whom a verdict is directed is entitled to have every controverted fact resolved in his or her favor and to have the benefit of every inference which can reasonably be drawn from the evidence. If there is any evidence which will sustain a finding for the party against whom the motion is made, the case may not be decided as a matter of law. * * *
+
+Giving Reavis the benefit of all of the inferences which can reasonably be drawn from the evidence, there is some evidence which will sustain a finding that Reavis did not give actual consent or apparent consent to the sexual contact. Reavis initially said no, and her subsequent conduct can be considered ambiguous. The fact that Reavis began disrobing does not necessarily indicate that she consented to the sexual contact if the prior events indicated that she felt that she had no other choice but submission at that time. Reavis’ comment to the effect of “what the hell” could be read
+128
+either as a surrender or as consent, grudgingly or otherwise. The testimony was in conflict.
+
+(c)Effective Consent
+
+Assuming arguendo that Reavis did consent to the sexual contact, the next question is whether the consent was effective. Reavis introduced evidence in an effort to establish that if she did consent to sexual contact on December 31, such consent was not effective. Much of that evidence focused on the effect of certain childhood abuse on Reavis’ ability to refuse unwanted sexual contact as an adult.
+
+Slominski asserts that
+
+[t]he admission of evidence of plaintiff’s abuse as a child constituted prejudicial error . . . because it allowed the jury to speculate that the plaintiff Mary Reavis did not have the capacity to consent. Since there was no evidence that Slominski had any knowledge of her supposed incapacity, such evidence was completely irrelevant. . . .
+
+Brief for appellant at 20. Slominski concludes that as a matter of law, if he had no knowledge of Reavis’ supposed incapacity, her apparent consent to the sexual contact was effective consent and that therefore, the district court erred by failing to grant a verdict in his favor.
+
+“To avoid liability, consent must be effective.” W. Page Keeton et al., Prosser and Keeton on the Law of Torts § 18 at 114 (5th ed.1984). Consent is ineffective if the person lacks capacity to consent to the conduct. * * * “Generally . . . one who has reached the age of majority can give an effective consent to all kinds of conduct unless the defendant knows or has reason to know of some kind of abnormality, temporary or permanent, of the consenting person.” * * * Note that there are two aspects to the effectiveness of consent: abnormality on the part of the alleged victim and knowledge on the part of the alleged attacker.
+
+In Nebraska, any person who subjects another person to sexual intercourse or sexual contact who knew or should have known that the victim was physically or mentally incapable of resisting or appraising the nature of his or her conduct is guilty of sexual assault. * * * The lack of the victim’s consent is not an element of the crime of sexual assault when the victim is incapable of resisting or of appraising the nature of his or her conduct. * * *
+
+* * *
+
+Reavis testified to her childhood fear of her father’s discipline and several instances of sexual abuse by relatives. Reavis also testified that she was afraid to say no to Slominski because she needed the job. Allegedly,
+129
+both of these factors undermined Reavis’ ability to refuse unwanted sexual contact with Slominski.
+
+Dr. Wesley Sime, a clinical psychologist, was hired as an expert witness to testify on Reavis’ behalf. Dr. Sime testified that an adult who was abused as a child may fear protesting too vigorously. In Dr. Sime’s opinion, Reavis’ ability to withhold consent on December 31 was compromised by the circumstances of her isolation and the locked door. In that situation, Reavis would have difficulty saying no and enforcing her refusal.
+
+Dr. Y. Scott Moore, Reavis’ treating psychiatrist, testified that Reavis’
+
+history of early sexual harassment places her in the category of victim to start with. Following that, she turns into a person, as is usual with more (sic) sexually abused young girls, who has pretty low self-esteem, who has difficulty seeing any worth, who is quite dependent, has difficulty saying no and meaning it, and has a tendency to view assaults as her due because she is damaged goods to begin with.
+
+Therefore, there was some evidence that Reavis may have lacked the capacity to give effective consent on December 31, creating a question for the jury. “Triers of fact are not required to take opinions of experts as binding upon them.” * * * Accord Keystone Ranch Co. v. Central Neb. Pub. Power & Irr. Dist., 237 Neb. 188, 465 N.W.2d 472 (1991). Determining the weight that should be given expert testimony is uniquely the province of the fact finder, and where there is evidence from an expert, a directed verdict should not be granted. * * *
+
+Slominski testified that he had no knowledge of Reavis’ childhood abuse and that, therefore, he had no hint that Reavis was emotionally disturbed in any manner. Slominski claims that, therefore, the evidence regarding her alleged incapacity was inadmissible. However, the issue is whether Slominski knew, or had reason to know, that Reavis had an abnormal inability to refuse unwanted sexual contact. Lack of knowledge of the cause of such abnormal inability does not negate knowledge of the abnormality itself. If Slominski knew that he could engage in sexual contact with Reavis against her will, then Reavis could not have given effective consent. Such knowledge could be based on the fact that he had repeatedly been able to engage in sexual contact in the past despite her requests that he not touch her.
+
+* * *
+
+The dissent appears to urge that a sexual assault of a “substantially sexually experienced woman” requires the use of physical force. Although this is made in support of the dissent’s limited view of effective consent, the reasoning harkens back to a time when “unchaste women” and “errant young girls” had difficulty pressing sexual assault complaints absent
+130
+strong evidence of the use of force. * * * “Unchaste women” were viewed as possessing psychic complexes which were “ ‘multifarious, distorted partly by inherent defects, partly by diseased derangements or abnormal instincts, partly by bad social environment, partly by temporary physiological or emotional conditions. One form taken by these complexes is that of contriving false charges of sexual offences [sic] by men.’ ” * * * Use of evidence of a victim’s past sexual behavior is now appropriately limited. * * *
+
+A victim is no longer required to “ ‘resist to the utmost with the most vehement exercise of every physical means or faculty naturally within her power to prevent carnal knowledge, and she must persist in such resistance as long as she has the power to do so until the offense is consummated.’ ” * * *
+
+Connolly, Justice, concurring.
+
+While I concur in the result reached by the plurality opinion, I disagree with the reasoning touching on the consent issue.
+
+Reavis claims that her consent was ineffectual because she was abused as a child, more than 20 years before the alleged incident in the instant case. Reavis offered the testimony of Drs. Moore and Sime to show that the abuse she suffered as a child made her incapable of giving consent in the instant case. As the plurality characterizes Dr. Sime’s testimony, it was as a result of her childhood sexual abuse that Reavis would have difficulty saying no and enforcing her refusal. Dr. Moore testified that she had difficulty saying no and meaning it.
+
+While the testimony of Drs. Sime and Moore may support a conclusion that Reavis suffered some type of dysfunction as a result of her abuse, it does not support a conclusion that she lacked the legal capacity to consent. On the issue of legal capacity, in their treatise on the law of torts, Prosser and Keeton say “[t]he abnormality [suffered by the consenting person] must substantially impair the plaintiff’s capacity to understand and weigh the harm and risks of harm against the benefits flowing from the proposed conduct, and must reduce that capacity below the level of the average person.” (Emphasis supplied.) W. Page Keeton et al., Prosser and Keeton on the Law of Torts § 18 at 114–15 (5th ed.1984). Drs. Sime and Moore did not testify that Reavis’ prior sexual abuse impaired her ability to understand the consequences of sexual intercourse or that it impaired her ability to weigh the harm and risks of harm of engaging in sexual intercourse against the benefits—they merely testified that she cannot say no.
+
+Thus, the abuse that Reavis suffered as a child is not relevant to the issue of whether she consented on the afternoon of December 31, 1991. Therefore, the district court erred in receiving the testimony of Drs. Sime
+131
+and Moore on the issue of Reavis’ alleged lack of legal capacity to consent to sexual intercourse.
+
+* * *
+
+Caporale, Justice, dissenting.
+
+* * *
+
+Under the record with which we are presented, there is no triable issue of fact on the matter of consent. How can one’s disrobing and one’s willing participation in sexual intercourse be considered an ambiguous indication of consent to have intercourse? The plurality has no answer, except to say that “disrobing does not necessarily indicate that [Reavis] consented to the sexual contact if the prior events indicated that she felt that she had no other choice but submission at that time.” While I recognize that there could be an issue regarding whether Reavis was coerced by Slominski, that does not render Reavis’ conduct an ambiguous indication of her consent.
+
+Coercion, as noted previously, goes to the effectiveness of consent. So the ultimate question becomes whether Slominski forced Reavis to engage in sexual intercourse with him.
+
+Reavis admitted that Slominski never physically forced her to have sex with him, and a review of the record reveals no evidence that Slominski ever threatened Reavis with physical force. Nonetheless, Reavis claims that she felt that she had no other choice but to engage in sexual intercourse with Slominski because she feared losing her job and needed the money.
+
+As a consequence, there is no issue of fact for the jury to decide, not because Reavis was “unchaste” or “errant,” and was not subjected to physical force, but because, as noted in Schieffer v. Catholic Archdiocese of Omaha, 244 Neb. 715, 718, 508 N.W.2d 907, 911 (1993), it is a fundamental principle of common law that “ ‘to one who is willing, no wrong is done.’ ” The district court clearly erred in not sustaining the motion for a directed verdict Slominski made at the close of all the evidence.
+
+Accordingly, I would reverse the judgment of the district court and remand the cause for dismissal.
+
+Fahrnbruch, J., joins in this dissent.
+
+Wright, Justice, dissenting.
+
+I dissent. The issue in this case is whether Slominski had sexual intercourse with Reavis without her consent. The evidence was based upon the testimony of two medical doctors regarding whether Reavis lacked the legal capacity to consent to the sexual intercourse. One doctor said that Reavis’ ability to consent was “compromised by the circumstances.” The rest of his testimony was equivocal, but he stated that it was easier for Reavis to refuse when there were other people around. The other doctor
+132
+stated that Reavis “felt that her job depended upon having sex with [Slominski] and that she had no recourse.” In my opinion, there was no basis for submitting the issue of lack of capacity to consent to the jury. A threat of loss of employment did not impair Reavis’ ability to say no.
+
+I also cannot accept the plurality’s position that Slominski could have known that Reavis could not effectively give consent, because Slominski had repeatedly been able to engage in sexual contact in the past, despite Reavis’ requests that he not touch her. Reavis admitted that she had previously been able to successfully refuse Slominski’s advances.
+
+In my opinion, there was a valid consent to the sexual intercourse, and the district court should have directed a verdict in favor of Slominski at the close of all of the evidence.
+
+Notes
+
+1.There are two primary defensive arguments in Reavis: (1) that the plaintiff actually consented to sex, and (2) that even if she did not actually consent, the defendant reasonably believed that she consented. In your opinion, did the plaintiff actually consent to the defendant’s advances? Regardless, did the defendant have a reasonable belief that she consented?
+
+In addition to disputing the defendant’s assertions on their face, the plaintiff argued that because she was incapable of consenting, neither actual nor apparent consent can succeed. Whether the limiting doctrines of capacity, duress, and mistake will vitiate not only actual consent, but apparent consent as well is an issue not altogether clear in the courts and was a matter of considerable debate in the dueling opinions of this case, edited out here for the sake of brevity.
+
+2.The Restatement Third of Torts: Intentional Torts, Council Draft No. 5 § 18 (Sept. 21, 2018) proposes a special section addressing consent to sexual conduct. This section states that:
+
+(a)If a person, by words or conduct, expresses to the actor his or her unwillingness to permit any sexual contact, or sexual contact of a specified type, and the actor immediately proceeds to cause such a contact, then as a matter of law, the actor does not satisfy the criteria of actual, apparent, or presumed consent and is subject to liability for battery.
+
+This section embodies the concept commonly known as “no means no.” Although no courts have expressly adopted (or rejected) this concept as a matter of law, an overwhelming majority of university conduct codes have done so, and community norms increasingly appear to embrace it.
+
+If the Reavis court had adopted “no means no,” would summary judgment for the plaintiff have been appropriate? Note that just as consent may be revoked by the plaintiff at any point, so too might non-consent be converted by
+133
+the plaintiff to consent—so long as it is done without duress, with the requisite capacity, and without substantial material mistake of fact.
+
+3.The plaintiff in Reavis said “no” at various points and even conditioned her re-employment on Slominski’s promise to leave her alone. What if she had merely remained silent throughout Slominski’s conduct, not actively taking part, but not actively resisting? Might a jury reasonably find apparent consent in such a scenario?
+
+No civil court has addressed this question directly in the civil context, leaving the matter to juries. A few states have incorporated so-called “affirmative consent” requirements in the criminal law of rape. In such states, unless an alleged victim indicates affirmative consent by words or conduct, they have not consented. See e.g., Wis. State. Ann. § 940.225 (4); Vt. Stat. ann. Tit. 13, § 3251 (3); M.T.S., 609 A2d at 1277 (permission . . . must be affirmative and . . . given freely). The comments to the Restatement Third of Torts: Intentional Torts § 18 urge courts to consider the merits of such a requirement in the context of sexual intercourse.
+
+4.In the typical sexual battery case, plaintiff and defendant frequently offer very different narratives regarding what happened. One way to look at the dilemma is where to place the burden of proving consent in such cases. The Reavis court indicated that the plaintiff carries the burden of disproving consent. As explained earlier in this chapter, this is not a unanimous position, and indeed there are perhaps stronger reasons in sexual battery cases to place the burden of proving consent on the defendant. A variety of sources suggest that sexual battery occurs with staggering frequency and rarely results in legal action. In an early study, 6,000 students at thirty-two college campuses revealed that one in four college-age women are subject to sexual assault. See Amelia Thomson-DeVeaux, A New Form of Justice for Rape Survivors, Nat’l J. (May 1, 2015), https://www.nationaljournal.com/s/637160/new-form-justice-rape‌-survivors. Subsequent surveys in 2006 by the National Institute of Justice and in 2014 by a White House Task Force showed that 19% and 23%, respectively, of undergraduate women were victims of sexual assault or attempted sexual assault. Christopher P. Krebs, et al., The Campus Sexual Assault (CSA) Study, U.S. Dep’t Just. 5-1 (Oct. 2007), https://‌www.‌ncjrs.‌gov/‌pdf‌files1/nij/grants/221153.pdf; Not Alone: The First Report of the White House Task Force To Protect Students from Sexual Assault, White House 6–8 (Apr. 2014). Other studies show that between 1/3 and 1/2 women are sexually assaulted at some point in their lifetime, 8/10 of these by someone they know. And 10% of sexual assaults involve male victims. There is also ample evidence that women’s reports of sexual assault are given less credibility than the explanations of their alleged aggressors. If accurate, should these factors effect courts’ views about the appropriate standard for consent and assignment of the burden of proof in sexual assault claims?
+
+5.A minority of courts require that affirmative consent be traced to words or actions of the plaintiff; a majority do not, allowing the jury to find affirmative consent under all of the circumstances of the case. Consider the
+134
+immigrant hypothetical and the facts of Reavis—which is the better approach? Are there some situations in which the defendant’s belief that the plaintiff consents cannot be reasonable unless that belief is based on the words or conduct of the plaintiff? What is lost by such a requirement? Consider this question in light of the following hypothetical:
+
+A patient informs the admitting nurse that he is unwilling to permit a particular medication to be used during surgery, even though it is conventionally used in that surgery. The nurse records this information in the patient’s electronic record, but due to a software malfunction, the information is not permanently recorded and is not conveyed to the surgeon. The surgeon administers this medication during surgery.
+
+Restatement Third of Torts: Intentional Torts § 16, Illustration 5 (Council Draft No. 5, Sept. 2018).
+
+c.The Concepts of Presumed and Implied Consent
+
+Consider the following hypothetical: “In a movie theater, Ellen asks a stranger, Roberta, to turn off her cell phone. When Roberta does not respond, Ellen taps Roberta on the shoulder and repeats her request. The tap aggravates a preexisting shoulder injury, causing Roberta bodily harm.” Restatement § 16, Illustration 6. Did Roberta actually consent to the tap on her shoulder? Did Ellen have a reasonable belief that Roberta actually consented? The answer to both of these questions is demonstrably “no,” and therefore Ellen cannot avail herself of the defensive principles of actual or affirmative consent.
+
+Nevertheless, Ellen likely will not be held liable. Some courts would deny liability by citing the amorphous doctrine of “implied consent” or “implied-in-law consent.” The problem with this term is that it is sometimes used by courts to refer to completely different concepts—for example, some courts use implied consent to refer to inferred actual consent, others to affirmative consent. The Restatement Third thus gives a new name to the doctrine that shields Ellen in this hypothetical: “presumed consent.” The Restatement defines the doctrine as follows:
+
+Presumed consent exists if the actor is justified in engaging in the conduct in the absence of the person’s actual consent, and the actor has no reason to believe that the person would not have actually consented to the conduct if the actor had made such a request.
+
+Presumed consent thus operates as a defense when the defendant has engaged in a behavior that is commonly accepted under the circumstances—a gentle slap on the shoulder in greeting an acquaintance, perhaps a congratulatory slap on the rear of a teammate during a basketball game, or an attempt to hold hands on a third date. So long as
+135
+the defendant has no reason to believe that the person has a special aversion to such contact, a court will presume the plaintiff’s consent. Like affirmative consent, this doctrine has nothing to do with the plaintiff’s actual consent—it is merely a policy decision that defendants are entitled to presume that certain types of contact in society are acceptable, and therefore have not acted wrongfully when acting consistent with those presumptions.
+
+One of the most common applications of presumed consent is known as the “emergency doctrine.” This doctrine precludes liability in a narrow set of circumstances: the actor has no reason to believe that the plaintiff would not have consented, if he or she had the opportunity to do so, and the risk to plaintiff’s life or health is sufficiently great that it would be unreasonable for the actor to wait to see whether the plaintiff (or another empowered to consent on behalf of the plaintiff) actually does consent. This doctrine is most commonly applicable in the medical context, although it sometimes arises in other scenarios. The following Illustration from § 17 of the Restatement Third is exemplary:
+
+D performs a laparoscopic appendectomy on P with P’s consent. During the procedure, D negligently injures P’s abdominal aorta, requiring D to open P’s abdomen to repair the damage—a procedure for which D had not previously obtained consent. In light of the immediate risk to P’s life or health, and assuming that D is unable to obtain substitute consent from P’s spouse or another person empowered to consent for P, the emergency doctrine is established as a matter of law, and D is not liable to P for battery. P’s negligence claim would likely succeed, however, enabling P to collect damages caused by D’s negligent injury of the aorta and within the scope of liability.
+
+See also Rogers v. Lumbermens Mutual Casualty Co., 119 So.2d 649 (La.App. 1960) (holding that defendant failed to satisfy the requirements of the emergency doctrine when the physician, employed to perform an appendectomy, also performed a total hysterectomy “as a precautionary measure”).
+
+There is one final, albeit narrow set of cases in which a court might deny a plaintiff liability citing the consent defense, but which is not covered by actual, apparent, or presumed consent. To illustrate, consider the following hypothetical:
+
+Tony enters a crowded bus and loudly shouts, “Keep your distance! Do not touch me!” The bus driver announces: “Please move to the back of the bus, to make room for other passengers.” Ben, despite hearing Tony’s statement, squeezes past Tony toward the back of the bus, brushing against Tony.
+136
+Restatement Third § 1, cmt. h, Illus. 7. Under these facts, Tony has not actually consented, Ben cannot reasonably believe that Tony has consented, and in fact Tony has reason to believe the contrary; thus Ben may not avail himself of the defenses of actual, apparent, or presumed consent. Nevertheless, a court will almost certainly preclude liability. A court might do so by holding that the contact was de minimis, and therefore cannot constitute a battery. Or, a court might hold that there is “implied consent” for Ben to engage in what is a minimal and socially acceptable type of behavior. In the few cases that turn on such a holding, courts are unclear in defining the doctrine or its scope. Often, however, they cite this famous quote from William Prosser, Reporter of the Second Restatement:
+
+[I]n a crowded world, a certain amount of personal contact is inevitable, and must be accepted. Consent is assumed to all those ordinary contacts which are customary and reasonably necessary to the common intercourse of life, such as a tap on the shoulder to attract attention, a friendly grasp of the arm, or a casual jostling to make a passage. . . . Although where there is any doubt at all the plaintiff’s expressed wishes may very well turn the scale as to what is reasonable, it may be questioned whether any individual can be permitted, by his own fiat, to erect a glass cage around himself, and to announce that all physical contact with his person is at the expense of liability.
+
+William Prosser, Handbook of Torts 37 (4th ed. 1971*) (footnotes omitted).
+
+2.SELF-DEFENSE
+
+a.Defense of Person
+
+Silas v. Bowen
+
+United States District Court, District of South Carolina, 1967.
+277 F.Supp. 314.
+
+Donald Russell, District Judge.
+
+This cause came on for trial before me without a jury on the 21st day of November, 1967, upon the issues made by the complaint and answer, and having heard testimony of witnesses and having observed their conduct and demeanor on the stand and having weighed their credibility, and having considered the exhibits, and being fully advised in the premises, * * * I find the facts specially and state my conclusions of law thereon, in the above cause, as follows:
+
+Findings of Fact
+
+1.Plaintiff is a resident of the State of Missouri. He is a professional basketball player, affiliated with the St. Louis Hawks. At the times involved herein, however, he was engaged in his basic training as a
+137
+member of the Missouri National Guard detailed for training at Fort Jackson on the outskirts of the City of Columbia, South Carolina.
+
+2.The defendant is a resident of Columbia, South Carolina, and operates a parking lot just outside one of the main gate entrances to Fort Jackson.
+
+3.About a week before the incident out of which this action arose, the plaintiff and another serviceman, in possession of the car of a third party, brought such car to the parking lot of the defendant and engaged a mechanic who was present at the lot, though not employed by the defendant to make certain repairs to the car. About 11 o’clock on the Saturday following, August 14, 1965, the plaintiff and his fellow-serviceman returned to defendant’s parking lot and reclaimed the car, after paying the full repair charges. They then drove in the car to the City of Columbia.
+
+4.Shortly after the plaintiff and his companion reached Columbia, they went to the home of a young woman, who thereafter accompanied them in their travels. Between the time they left the parking lot in the morning and their return late in the afternoon, they drank, according to the plaintiff, beer and had some in the car when they returned to the parking lot.
+
+5.During that afternoon, the plaintiff and his companions noted that the repairs made to the car were not satisfactory and that the clutch thereon was still slipping. They then returned to the parking lot to demand a correction of the condition of the clutch. The plaintiff testified that it was about 1 P.M. when they arrived. However, the records at Fort Jackson conclusively establish that it was about 6 P.M. when they returned.
+
+6.When they arrived at the parking lot, plaintiff’s companion was driving. He drove into the parking lot at an excessive speed, indicating undoubtedly his anger at discovering that the car had not been properly repaired.
+
+There seems little question that both the plaintiff and his companion were upset and distinctly annoyed by the failure to repair satisfactorily the car.
+
+It seems equally clear that they had been drinking, even though the plaintiff denied that either of them was drunk. They had been driving around all day, had with them in the car some beer, and it is only credible to assume that they had been drinking such beer during much of the day. At least the defendant, his wife, and one disinterested witness judged them to be under the influence when they arrived at the lot.
+
+7.According to the plaintiff, his companion got out of the car, approached the defendant who was near the door of a small office maintained by him on the lot. He demanded that his car be repaired
+138
+immediately, and, when the defendant stated that the repairman did not work for him and was not then at the lot, he became insistent, whereupon defendant inquired if he were trying “to be smart.” In the meantime, the plaintiff alighted from the car. He testified that he stood by the side of the car, did not approach the defendant, and took no part in the controversy between his companion and the defendant other than to state to the defendant that they wanted the car fixed at once.
+
+This testimony of the plaintiff is vigorously denied by the defendant, his wife, who was in the small office located on the parking lot, and a disinterested witness who was only a short distance from the parties. According to their testimony, the plaintiff got out of the car along with his companion, and approached the defendant in a threatening manner, cursing and abusing him. Frightened, the defendant, after demanding without success that the plaintiff and his party leave his premises, went into his office and got a shotgun. When he returned with the shotgun, the plaintiff, according to the defendant and his witnesses, told the defendant he was not afraid of the gun, approached the defendant and took the defendant by the shoulder with one hand, with his other hand in his pocket. The defendant claims that, frightened by the action and the language of the plaintiff and believing himself in danger of serious bodily harm, he drew back and fired the gun, not at the plaintiff but towards the ground, hoping that this would induce the plaintiff to withdraw and to cease any threat of serious bodily harm to him. Unquestionably, the defendant was not seeking to kill the plaintiff; in fact, he seems not to have intended to harm the plaintiff, only to frighten him to desist from his assault and it was a mere accident that the shot hit the plaintiff in his foot.
+
+I cannot believe that the plaintiff conducted himself in such a restrained way as he stated. If he had not taken a far more active part in the whole controversy than he indicates—if his companion were the aggressor in the whole transaction and he largely an onlooker, as he testifies—it would seem that his companion, would have been the one involved in the shotgun affair and not the plaintiff.
+
+The testimony of the defendant and his two corroborating witnesses, one of whom it is true, is his wife, seems more credible. According to them, the plaintiff was drinking when he arrived at the parking lot; he was quite belligerent, was cursing, refused to depart when told to leave, approached the defendant in a threatening manner and grabbed him. When the difference in the size and age of the plaintiff and defendant is considered, the situation of the defendant was such to strike fear and terror in the latter. The plaintiff was a young man, a professional athlete, robust, standing some six feet six inches, in perfect physical condition, weighing 225 to 230 pounds. The defendant, on the other hand, was of middle age, weighing about 135 pounds and standing five feet six inches. Facing a threat from the plaintiff, unable to induce him and his companions to leave
+139
+his premises, already assaulted by the plaintiff, the defendant, under the emergency thus created and with reasonable cause to fear serious bodily harm from an individual so much more overpowering than he, fired his shotgun, not, I am convinced, with the intent of striking the plaintiff, but for the purpose of frightening him into desisting from his attack and into leaving his premises. Unfortunately, the shot, though directed downward towards the ground, struck the plaintiff in the foot. At any rate the defendant sought to use no more force than appeared necessary under the circumstances to protect himself from serious bodily harm.
+
+As a result of his gunshot wound, plaintiff was taken to the hospital at Fort Jackson, where, as a result of the skilled medical attention rendered him, he recovered, without any impairment in the use of his foot, save for slight discomfort in the early months after his release from the hospital.
+
+Conclusions of Law
+
+* * *
+
+The commission of an assault and battery by the defendant on the plaintiff is conceded and defendant seeks exoneration on his affirmative plea of self-defense. In testing such defense, it is necessary at the outset to note the circumstances of the parties at the scene of the controversy. The defendant, at the time of the battery, was at his place of business in the doorway to his office. The plaintiff, though initially perhaps an invitee, had become a trespasser on the defendant’s premises as a result of the demand of the defendant that the former vacate the parking lot. Under these circumstances, the legal rights of the parties were:
+
+1.While entry of the defendant’s premises by the plaintiff was lawful, the defendant had a plain right to order the plaintiff and his companions to depart; and, when the plaintiff refused to withdraw voluntarily after such demand, to use reasonable force to eject them. * * *
+
+2.While this right to use reasonable force does not ordinarily encompass the use of a deadly weapon, such use will be authorized, by way of self-defense, if the conduct of the trespasser under all the circumstances is such as to produce in the mind of a person of reasonable prudence and courage an apprehension of an assault by such trespasser involving serious bodily harm. * * *
+
+3.As it is stated in 100 A.L.R.2d 1024–1025, “There is no disagreement, however, that a property owner may shoot with impunity where the incursion upon his property is also attended by a threat of personal harm to himself, his family, or others he is entitled to defend. * * * The property owner’s reasonable belief that he or his family were in danger of bodily injury would appear to be the touchstone of exoneration in this area of law.”
+
+140
+4.In determining whether there was reasonable cause and justification for the use of a deadly weapon in such a situation, all the circumstances must be considered. Accordingly, it is generally stated that a defendant, in his own place of business, where he has a right to be, as the defendant was in this case, is not required to retreat in the face of a threatened assault in order to be able to plead self-defense. * * * Again, while it is well-settled that mere words, however, “abusive, insulting, vexatious or threatening”, will not in themselves justify the use of a deadly weapon, such words if “accompanied by an actual offer of physical violence” reasonably warranting fear of serious bodily harm, may be an integral part of a plea of self-defense against liability for an assault and battery. * * * Moreover, in determining whether there was reasonable cause for the apprehension of serious bodily harm, the difference in age, size, and relative physical strength of the parties to the controversy is a proper matter for consideration. * * * As the Court said in State v. Floyd (1859), 51 N.C. (6 Jones) 392, “One cannot be expected to encounter a lion as he would a lamb.”
+
+5.Of course, the defendant, in order to support his plea of self-defense must not have been at fault in provoking the difficulty * * * but, by demanding that the plaintiff and his companions leave his parking lot, the defendant acted within his legal rights and can in no way be regarded as provoking the difficulty in this case. * * *
+
+* * *
+
+In my opinion, the defendant has made out his plea of self-defense under the facts and applicable law, as I have found and concluded. He acted in reasonable apprehension of serious bodily harm and to repel what he reasonably feared would be a serious and dangerous assault by a person of overpowering size.
+
+Let judgment be entered for defendant, * * *.
+Notes
+
+1.The fact that the plaintiff may not have desired or in any way intended to harm the defendant is irrelevant. When the issue is defense of person, the law focuses upon how the situation would have appeared to a reasonable person in the defendant’s position. What result if Mr. Bowen intentionally shot Mr. Silas in the leg? See Slayton v. McDonald, 690 So.2d 914 (La. Ct. App. 1997).
+
+2.The Restatement (Second) of Torts § 63 permits one to defend himself from harm by using non-deadly force, even if he could avoid injury by retreating. Accord Restatement (Third) of Torts: Intentional Torts § 22 (Council Draft No. 5, Sept. 21, 2018). When it comes to deadly force, § 65 of the Restatement adopts the so-called English common-law rule that resorts to deadly force, that is force threatening death or serious bodily injury, cannot be
+141
+justified if retreat is possible unless the defender is attacked within his own dwelling or is defending his own dwelling against intrusion or dispossession. It is said that the majority of American jurisdictions have not adopted this “retreat to the wall” rule. See Dan B. Dobbs, The Law of Torts 161–162 (2000). The Third Restatement has nevertheless stuck with the approach of the Restatement Second. See Restatement Third § 23. As the comments to both Restatements explain, however, that “even the slightest doubt [about whether retreat can be safely made], if reasonable, is enough to justify his standing his ground, and in determining whether his doubt is reasonable every allowance must be made for the predicament in which his assailant has placed him.” Did the defendant use deadly force in Silas?
+
+3.The rule that one need not retreat from his home is sometimes called the “castle doctrine.” A person’s home is his castle and one need not retreat from one’s castle to the uncertainties of the street. A number of states have codified the castle doctrine. See Me. Rev. Stat. Ann. tit. 17–A, § 104(3)(B)(1) (West 2009). Other states go further, and create a presumption that the use of deadly force when confronting a criminal in one’s home is reasonable. See R.I. Gen. Laws § 11–8–8 (2002). Beginning with a Florida 2005 statute, numerous states have gone further still and enacted “stand your ground” laws. For example, the Florida statute states that any individual behaving lawfully in a place he or she has a right to be “has no duty to retreat and has the right to stand his or her ground and meet force with force, including deadly force.” Fla. Stat. Ann. § 776.013(3). States that have passed such statutes have effectively rejected the duty to retreat in nearly all situations. Over 30 states have enacted such legislation, some of which expressly apply to tort cases as well as criminal. Zachary L. Weaver, Florida’s “Stand Your Ground” Law: The Actual Effects and the Need For Clarification, 63 U. Miami L. Rev. 395, 397 (2008). For a history of the duty to retreat and the castle doctrine, see Benjamin Levin, A Defensible Defense? Reexamining Castle Doctrine Statutes, 47 Harv. J. on Legis. 523 (2010).
+
+4.The Restatement (Second) of Torts § 76 gives a person the right to use force to protect third persons “under the same conditions and by the same means as those under and by which he is privileged to defend himself if the actor correctly or reasonably believes that
+
+(a)the circumstances are such as to give the third person a privilege of self defense, and
+
+(b)his [i.e. the actor’s] intervention is necessary for the protection of the third person.”
+
+Accord Restatement Third § 29. What if the actor’s belief is reasonable, but mistaken? Take a case where the actor comes across what he reasonably believes is a hold-up. The actor intervenes to help the apparent victim. It turns out that what the actor has witnessed is two people rehearsing for a theatrical performance. Under the Restatement view the actor is still privileged to use reasonable force. In recent years, many jurisdictions have enacted criminal statutes that reflect the Restatement view. See Danny R. Veilleux,
+142
+Construction and Application of Statutes Justifying the Use of Force to Prevent the Use of Force Against Another, 71 A.L.R.4th 940 (1989).
+
+5.The Restatement (Second) of Torts § 143 takes the position that deadly force may not be used in order to prevent the commission of a felony unless the felony is one “threatening death or serious bodily harm or involving the breaking and entry of a dwelling place.” Restatement (Second) of Torts § 131, however, reaffirms the traditional common law doctrine that deadly force may be used if reasonably necessary in order to arrest a person for a felony.
+
+
+

@@ -1,0 +1,709 @@
+40
+3.What if insanity renders a defendant unable to recognize that the relevant act will result in contact with the plaintiff? If the defendant had made this argument in Wagner, how would the jury assess whether the defendant’s claim was true? How does one look into the mind of another, especially another afflicted with a mental illness? Would expert testimony help?
+
+4.Where a defendant loses all capacity for voluntary action, such as where she unexpectedly becomes incapacitated, then the defendant will not be held to be capable of forming the requisite intent. See Goodrich v. Blair, 132 Ariz. 459, 646 P.2d 890 (App. 1982) (80 year defendant suffers sudden heart attack while taking driving test and swerves into oncoming traffic); Cohen v. Petty, 65 F.2d 820 (D.C.Cir. 1933) (driver faints); Buckley and Toronto Transp. Comm. v. Smith Transp., [1946] 4 D.L.R. 721 (as a result of syphilis of the brain defendant’s driver suddenly became subject to insane delusions that his truck was being controlled by an electric beam). Nevertheless, even in such instances, the defendant may be held liable on a negligence theory if, having reason to know that he was subject to such seizures, he engages in activities that create a high degree of risk to others if he should suddenly suffer a seizure. See Reliance Insurance Co. v. Dickens, 279 So.2d 234 (La. App. 1973) (epileptic has seizure); Breunig v. American Family Insurance Co., 45 Wis.2d 536, 173 N.W.2d 619 (1970) (defendant suffered from hallucinations but had lucid moments from which the jury could infer that she was aware that she was likely to have hallucinations); Goldman v. New York Railways, 185 App.Div. 739, 173 N.Y.S. 737 (1919) (defendant’s driver kept on operating a street car after he had a dizzy spell; the accident occurred when he suffered another dizzy spell shortly thereafter).
+
+B. BATTERY
+Leichtman v. WLW Jacor Comms., Inc.
+
+Court of Appeals of Ohio, First District, 1994.
+92 Ohio App.3d 232, 634 N.E.2d 697.
+
+Per Curiam.
+
+The plaintiff-appellant, Ahron Leichtman, appeals from the trial court’s order dismissing his complaint against the defendants-appellees, WLW Jacor Communications (“WLW”), William Cunningham and Andy Furman, for battery, invasion of privacy, and a violation of Cincinnati Bd. of Health Reg. No. 00083. In his single assignment of error, Leichtman contends that his complaint was sufficient to state a claim upon which relief could be granted and, therefore, the trial court was in error when it granted the defendants’ Civ.R. 12(B)(6) motion. We agree in part.
+
+In his complaint, Leichtman claims to be “a nationally known” antismoking advocate. Leichtman alleges that, on the date of the Great American Smokeout, he was invited to appear on the WLW Bill Cunningham radio talk show to discuss the harmful effects of smoking and
+41
+breathing secondary smoke. He also alleges that, while he was in the studio, Furman, another WLW talk-show host, lit a cigar and repeatedly blew smoke in Leichtman’s face “for the purpose of causing physical discomfort, humiliation and distress.”
+
+* * *
+
+Leichtman contends that Furman’s intentional act constituted a battery. The Restatement of the Law 2d, Torts (1965), states:
+
+“An actor is subject to liability to another for battery if
+
+(a)he acts intending to cause a harmful or offensive contact with the person of the other * * *, and
+
+(b)a harmful contact with the person of the other directly or indirectly results[; or]
+
+[c]an offensive contact with the person of the other directly or indirectly results.”
+
+In determining if a person is liable for a battery, the Supreme Court has adopted the rule that “[c]ontact which is offensive to a reasonable sense of personal dignity is offensive contact.” * * * It has defined “offensive” to mean “disagreeable or nauseating or painful because of outrage to taste and sensibilities or affronting insultingness.” * * * Furthermore, tobacco smoke, as “particulate matter,” has the physical properties capable of making contact. * * *
+
+As alleged in Leichtman’s complaint, when Furman intentionally blew cigar smoke in Leichtman’s face, under Ohio common law, he committed a battery. No matter how trivial the incident, a battery is actionable, even if damages are only one dollar. Lacey v. Laird (1956), 166 Ohio St. 12, 1 O.O.2d 158, 139 N.E.2d 25, paragraph two of the syllabus. The rationale is explained by Roscoe Pound in his essay “Liability”: “[I]n civilized society men must be able to assume that others will do them no intentional injury-that others will commit no intentioned aggressions upon them.” Pound, An Introduction to the Philosophy of Law (1922) 169.
+
+Other jurisdictions also have concluded that a person can commit a battery by intentionally directing tobacco smoke at another. * * * We do not, however, adopt or lend credence to the theory of a “smoker’s battery,” which imposes liability if there is substantial certainty that exhaled smoke will predictably contact a nonsmoker. Ezra, Smoker Battery: An Antidote to Second-Hand Smoke (1990), 63 S.Cal.L.Rev. 1061, 1090. Also, whether the “substantial certainty” prong of intent from the Restatement of Torts translates to liability for secondary smoke via the intentional tort doctrine in employment cases as defined by the Supreme Court in Fyffe v. Jeno’s, Inc. (1991), 59 Ohio St.3d 115, 570 N.E.2d 1108, paragraph one of the syllabus, need not be decided here because Leichtman’s claim for battery is
+42
+based exclusively on Furman’s commission of a deliberate act. Finally, because Leichtman alleges that Furman deliberately blew smoke into his face, we find it unnecessary to address offensive contact from passive or secondary smoke under the “glass cage” defense of McCracken v. Sloan (1979), 40 N.C.App. 214, 217, 252 S.E.2d 250, 252, relied on by the defendants.
+
+Neither Cunningham nor WLW is entitled to judgment on the battery claim under Civ.R. 12(B)(6). Concerning Cunningham, at common law, one who is present and encourages or incites commission of a battery by words can be equally liable as a principal. * * * Leichtman’s complaint states, “At Defendant Cunningham’s urging, Defendant Furman repeatedly blew cigar smoke in Plaintiff’s face.”
+
+With regard to WLW, an employer is not legally responsible for the intentional torts of its employees that do not facilitate or promote its business. * * * However, whether an employer is liable under the doctrine of respondeat superior because its employee is acting within the scope of employment is ordinarily a question of fact. * * * Accordingly, Leichtman’s claim for battery with the allegations against the three defendants in the second count of the complaint is sufficient to withstand a motion to dismiss under Civ.R. 12(B)(6).
+
+* * *
+
+Arguably, trivial cases are responsible for an avalanche of lawsuits in the courts. They delay cases that are important to individuals and corporations and that involve important social issues. The result is justice denied to litigants and their counsel who must wait for their day in court. However, absent circumstances that warrant sanctions for frivolous appeals under App.R. 23, we refuse to limit one’s right to sue. Section 16, Article I, Ohio Constitution states, “All courts shall be open, and every person, for an injury done him in his land, goods, person, or reputation, shall have remedy by due course of law, and shall have justice administered without denial or delay.”
+
+This case emphasizes the need for some form of alternative dispute resolution operating totally outside the court system as a means to provide an attentive ear to the parties and a resolution of disputes in a nominal case. Some need a forum in which they can express corrosive contempt for another without dragging their antagonist through the expense inherent in a lawsuit. Until such an alternative forum is created, Leichtman’s battery claim, previously knocked out by the trial judge in the first round, now survives round two to advance again through the courts into round three.
+
+We affirm the trial court’s judgment as to the first and third counts of the complaint, but we reverse that portion of the trial court’s order that dismissed the battery claim in the second count of the complaint. This
+43
+cause is remanded for further proceedings consistent with law on that claim only.
+
+* * *
+
+Notes
+
+1.Consider Leichtman in light of the Restatement Third’s section on Battery:
+
+Restatement (Third) of Torts: Intentional Torts to Persons, Council Draft No. 5 (2018)
+
+§ 1.Battery: General Definition
+
+An actor is subject to liability to another for battery if:
+
+(a)the actor intends to cause a contact with the person of the other * * *;
+
+(b)the actor’s affirmative conduct causes such a contact; and
+
+(c)the contact (i) causes bodily harm to the other or (ii) is offensive.
+
+Both Leichtman and the Restatement Second describe the requisite intent as “intending to cause a harmful or offensive contact.” Does this mirror the intent requirement in the Restatement Third § 1, excerpted at the beginning of the prior section on intent? What if the defendant in Leichtman did not intend the contact to be harmful or offensive? This difference raises the question of single versus dual intent, discussed above.
+
+2.It is not uncommon for judges and lawyers to use the phrase “assault and battery” for what is, strictly speaking, only a battery. Perhaps the reason for this usage is that most but not all batteries probably involve the putting of the victim in imminent apprehension of a battery. These cases thus present something of a civil analogue of the notion of a lesser included offense in criminal law.
+
+3.In order to constitute a battery, the contact need not actually be with the body of the victim. It is enough that contact is made with something that is attached or closely related to a person’s body. Knocking a person’s hat off his head would thus be a battery, as would striking his cane. In Fisher v. Carrousel Motor Hotel, Inc., 424 S.W.2d 627 (Tex. 1967) defendant’s restaurant employee approached plaintiff, snatched a plate from his hand and “shouted that he, a Negro, could not be served.” Held: intentionally grabbing the plate constituted a battery. It has been held that striking a horse upon which a person is riding is a battery (see Dodwell v. Burford, 1 Mod.Rep. 24, 86 Eng.Rep. 703 (K.B. 1669)), and there are also cases holding that intentional physical contact with an occupied car constitutes a battery against the occupants. See Crossman v. Thurlow, 336 Mass. 252, 143 N.E.2d 814 (1957); Farm Bureau Mutual Automobile Insurance Co. v. Hammer, 177 F.2d 793 (4th Cir. 1949). As a corollary question, in both the horse and automobile cases, the plaintiff was
+44
+physically injured as the result of the defendant’s conduct; should this fact matter under the Restatement Third’s definition of battery?
+
+4.Spitting in the face of another or touching a stranger in a sexual manner are common and uncontroversial examples of “offensive battery,” defined by many courts as a contact that is “offensive of a reasonable sense of personal dignity.” Suppose that a caterer serves pork in a form not evident to guests at a wedding reception, despite knowing that many of the guests feel that consuming pork is a great sin. Or suppose that a high school student taps a classmate on the arm, knowing that the classmate is severely autistic and will have an intense emotional reaction to having been touched. Can the standard of “reasonable sense of personal dignity” make room for such situations? On the other hand, suppose that the plaintiff is simply an unusually sensitive or reactive person? How might courts better define the contours of offensive battery to match your sense of justice in such cases? For an interesting discussion of this issue, see Geber v. Veltri, 203 F. Supp.3d 846 (N.D. Ohio 2016), in which a court denied liability in a suit brought by a law professor against his Dean for touching him on the arm to guide him toward another room for a private conversation.
+
+5.As Dean William Prosser famously stated: “[I]n a crowded world, a certain amount of personal contact is inevitable, and must be accepted. Consent is assumed to all those ordinary contacts which are customary and reasonably necessary to the common intercourse of life, such as a tap on the shoulder to attract attention, a friendly grasp of the arm, or a casual jostling to make a passage.” Thus, courts do not typically hold defendants liable for trivial physical contacts. Some courts hold thus because the contact is not “offensive”—however, this reasoning would not hold where the contact results in physical injury. Other courts deny liability on the basis that the plaintiff “impliedly consents” to such contacts. Suppose, however, that a man declares to an airline and its passengers that he must not sit next to a woman because contact with her would be a terrible sin. If a woman sitting next to him touches him, can it be said that he consented to the contact? What is the best doctrinal mechanism to handle cases involving trivial physical contacts?
+
+6.Many jurisdictions include, in the prima facie elements of battery, that the touching was without the consent of the plaintiff. In other jurisdictions, lack of consent is considered an affirmative defense, with the burden on the defendant to prove that the plaintiff consented to the battery. Which is the better approach? How would a plaintiff go about proving a lack of consent? This casebook, as does the Restatement Third of Torts: Intentional Torts, discusses consent as an affirmative defense.
+
+7.Suppose that a school principal, harboring hostility toward student A, decides not to intervene to stop a fight in which student B severely beats student A. Should the principal be liable for battery? Although very few courts have addressed whether an omission may serve as the basis for battery, those courts generally reject liability. This is not always true with regard to the intentional tort of false imprisonment, however.
+
+45
+8.Suppose that a prison guard purposefully lowers the temperature in a prisoner’s cell in order to make her ill, resulting in the prisoner contracting pneumonia and frostbite. Or suppose that a manager, knowing that an employee has a herniated disc and wishing to cause the employee physical distress, removes the chair from the employee’s office so that the employee must work while standing. Neither of these hypotheticals constitutes a battery, yet a new tort proposed by the Restatement Third of Intentional Torts would impose liability:
+
+§ 4.Purposeful Infliction of Bodily Harm
+
+An actor is subject to liability to another for purposeful infliction of bodily harm if the actor purposely causes bodily harm to the other, either by the actor’s affirmative conduct or by the actor’s failure to prevent bodily harm when the actor has a duty to prevent such harm.
+
+C. ASSAULT
+Dickens v. Puryear
+
+Supreme Court of North Carolina, 1981.
+302 N.C. 437, 276 S.E.2d 325.
+
+Exum, Justice.
+
+Plaintiff’s complaint is cast as a claim for intentional infliction of mental distress. It was filed more than one year but less than three years after the incidents complained of occurred. Defendants moved for summary judgment before answer was due or filed. Much of the factual showing at the hearing on summary judgment related to assaults and batteries committed against plaintiff by defendants. Defendants’ motions for summary judgment were allowed on the ground that plaintiff’s claim was for assault and battery; therefore it was barred by the one-year statute of limitations applicable to assault and battery. G.S. 1–54(3).
+
+The facts brought out at the hearing on summary judgment may be briefly summarized: For a time preceding the incidents in question plaintiff Dickens, a thirty-one year old man, shared sex, alcohol and marijuana with defendants’ daughter, a seventeen year old high school student. On 2 April 1975 defendants * * * lured plaintiff into rural Johnston County, North Carolina. Upon plaintiff’s arrival defendant Earl Puryear, after identifying himself, * * * pointed a pistol between plaintiff’s eyes and shouted “Y’all come on out.” Four men wearing ski masks and armed with nightsticks then approached from behind plaintiff and beat him into semi-consciousness. They handcuffed plaintiff to a piece of farm machinery and resumed striking him with nightsticks. Defendant Earl Puryear, while brandishing a knife and cutting plaintiff’s hair, threatened plaintiff with castration. During four or five interruptions of the beatings defendant Earl Puryear and the others, within plaintiff’s hearing, discussed and took votes
+46
+on whether plaintiff should be killed or castrated. Finally, after some two hours and the conclusion of a final conference, the beatings ceased. Defendant Earl Puryear told plaintiff to go home, pull his telephone off the wall, pack his clothes, and leave the state of North Carolina; otherwise he would be killed. Plaintiff was then set free.
+
+Plaintiff filed his complaint on 31 March 1978. It alleges that defendants on the occasion just described intentionally inflicted mental distress upon him. * * * Judge Braswell, * * * concluded that plaintiff’s claim was barred by G.S. 1–54(3), the one-year statute of limitations applicable to assault and battery. On 29 March 1979 he granted summary judgment in favor of both defendants.
+
+* * *
+
+North Carolina follows common law principles governing assault and battery. An assault is an offer to show violence to another without striking him, and a battery is the carrying of the threat into effect by the infliction of a blow. * * * The interest protected by the action for battery is freedom from intentional and unpermitted contact with one’s person; the interest protected by the action for assault is freedom from apprehension of a harmful or offensive contact with one’s person. * * * The apprehension created must be one of an immediate harmful or offensive contact, as distinguished from contact in the future.
+
+* * *
+
+Common law principles of assault and battery as enunciated in North Carolina law are also found in the Restatement (Second) of Torts (1965) (hereinafter “the Restatement”). As noted in s 29(1) of the Restatement, “(t)o make the actor liable for an assault he must put the other in apprehension of an imminent contact.” (Emphasis supplied.) The comment to s 29(1) states: “The apprehension created must be one of imminent contact, as distinguished from any contact in the future. ‘Imminent’ does not mean immediate, in the sense of instantaneous contact. . . . It means rather that there will be no significant delay.” Similarly, s 31 of the Restatement provides that “(w)ords do not make the actor liable for assault unless together with other acts or circumstances they put the other in reasonable apprehension of an imminent harmful or offensive contact with his person.” (Emphasis supplied.)
+
+* * *
+
+Again, as noted by Prosser, s 10, p. 40, “(t)hreats for the future . . . are simply not present breaches of the peace, and so never have fallen within the narrow boundaries of (assault).” Thus threats for the future are actionable, if at all, not as assaults but as intentional infliction of mental distress.
+
+* * *
+
+47
+Although plaintiff labels his claim one for intentional infliction of mental distress, we agree with the Court of Appeals that “(t)he nature of the action is not determined by what either party calls it. . . .” * * * The nature of the action is determined “by the issues arising on the pleading and by the relief sought,” id., and by the facts which, at trial, are proved or which, on motion for summary judgment, are forecast by the evidentiary showing.
+
+Here much of the factual showing at the hearing related to assaults and batteries committed by defendants against plaintiff. The physical beatings and the cutting of plaintiff’s hair constituted batteries. The threats of castration and death, being threats which created apprehension of immediate harmful or offensive contact, were assaults. Plaintiff’s recovery for injuries, mental or physical, caused by these actions would be barred by the one-year statute of limitations.
+
+The evidentiary showing on the summary judgment motion does, however, indicate that defendant Earl Puryear threatened plaintiff with death in the future unless plaintiff went home, pulled his telephone off the wall, packed his clothes, and left the state. The Court of Appeals characterized this threat as being “an immediate threat of harmful and offensive contact. It was a present threat of harm to plaintiff. . . .”
+
+* * *
+
+The Court of Appeals thus concluded that this threat was also an assault barred by the one-year statute of limitations.
+
+We disagree with the Court of Appeals’ characterization of this threat. The threat was not one of imminent, or immediate, harm. It was a threat for the future apparently intended to and which allegedly did inflict serious mental distress; therefore it is actionable, if at all, as an intentional infliction of mental distress.
+
+Reversed in part. Affirmed in part.
+
+Notes
+
+1.The Restatement Third’s section on assault provides as follows:
+
+Restatement (Third) of Torts: Intentional Torts to Persons, Council Draft No. 5 (2018)
+
+§ 5.Assault
+
+An actor is subject to liability to another for assault if:
+
+(a)(i)the actor intends to cause the other to anticipate an imminent, and harmful or offensive, contact with his or her person, * * *; and
+48
+(b)the actor’s affirmative conduct causes the other to anticipate an imminent, and harmful or offensive, contact with his or her person.
+
+Note the difference in the intent requirement as applied to battery and assault. For assault, it is not enough that a person intends to cause another to anticipate an imminent contact; the person must intend to cause another to anticipate a harmful or offensive contact. Put differently, courts have adopted a dual intent approach to assault, even when they have adopted a single intent rule for battery.
+
+2.Statutes of limitations require suits to be commenced within a certain period of time. Under North Carolina law, actions for assault and battery must be brought within one year of the alleged tortious act. N.C. Gen. Stat. § 1–54(3) (1994). Actions based on a claim of an intentional infliction of emotional distress are swept up in a general provision that establishes a 3-year limitation period for “criminal conversation, or for any other injury to the person or rights of another, not arising on contract and not hereafter enumerated.” N.C. Gen. Stat. § 1–52(5) (1994). Why do you think the legislature provides such a short time for bringing a battery claim?
+
+3.“Your money or your life!” One might logically argue that a threat conditioned on some prior occurrence is not an assault because the plaintiff is ultimately “in control” of whether the harm occurs. Courts have roundly rejected such an argument, however, often imposing liability for conditional threats. Thus, if a defendant threatened to knock plaintiff down if plaintiff did not stop talking, the defendant would be subject to liability for assault. Suppose, however, that A, while holding a kitchen knife at a party, says to B, “If all of these people weren’t here, I would stab you with this knife.” In such case, would B satisfy the intent and imminence requirements of an assault claim?
+
+4.Consider the following hypotheticals, which appear in the Comments to the Restatement Third for Intentional Torts § 5. In which should the jury find liability for assault?
+
+a.A, a small and weak person, swings a punch toward B, a large and muscular person. B sees the punch coming but does not experience any fear of the contact.
+
+b.A, standing behind B, points a gun at B. C overpowers A and removes the gun before A can shoot it. B, hearing the noise, turns around and for the first time realizes the danger that she faced.
+
+c.A, an intoxicated person, tries to punch B, a highly trained boxer. B is confident that, by moving evasively, she can avoid any blow from A, and in fact avoids being struck.
+
+d.A arrives at the home of his ex-wife, B, to deliver some documents. A becomes enraged at B when he observes what he believes is an unflattering haircut that he thinks B gave to their son, who is also in the house. After several minutes of screaming about the haircut, A threatens to shoot B and
+49
+walks out of the house toward his car. B knows that A always keeps a gun in his car.
+
+e.A leans over to kiss B, a stranger on the subway, convinced she will welcome the kiss. B manages to duck out of the way.
+
+f.A, who physically abused B during their marriage, calls B several weeks after the divorce is final and says he will kill her the next time he sees her. Coming around a corner, B encounters A standing on the sidewalk. Without moving, A calmly says to B, “Your time is up.”
+
+D. TRANSFERRED INTENT AND PARTICIPATION LIABILITY
+Singer v. Marx
+
+District Court of Appeal of California, 1956.
+144 Cal.App.2d 637, 301 P.2d 440.
+
+Ashburn, Justice.
+
+Plaintiff Denise Singer, a minor, sues Tim Marx, another minor, for personal injury alleged to have been inflicted upon her (1) through his negligence, and (2) through a battery of her person. She seeks recovery from Tim’s parents, Zeppo Marx and Marion Marx, on the theory of their negligent failure to control Tim’s known penchant for throwing rocks at other people. Denise’s father also sues the parents of Tim for recovery of expenses incurred by him as a result of his child’s injury, the charge being negligence upon the part of the parents. The trial judge granted a nonsuit as to both plaintiffs and all causes of action. Plaintiffs appeal.
+
+“Under well-established rules we must, in considering whether the judgment of nonsuit was proper, resolve every conflict in their testimonies in favor of plaintiff, consider every inference which can reasonably be drawn and every presumption which can fairly be deemed to arise in support of plaintiff, and accept as true all evidence adduced direct and indirect which tends to sustain plaintiff’s case.” * * * In the following discussion the court assumes as established all evidence and all inferences favorable to plaintiffs’ causes of action.
+
+On September 13, 1953, Tim Marx was nine years of age. Plaintiff Denise was eight and Barbara Corcoran was also eight. They are the only eyewitnesses to the episode under examination. Tim and Denise were on the front lawn of the Singer residence, which was located on the north side of the street fronting south. Barbara was riding a bicycle back and forth on the pavement. At the time the injury was inflicted upon her Denise was some six, eight or ten feet north of the sidewalk and Tim was to her left and rear about four feet away. The children were not playing any game. Tim had been throwing rocks into or across the street and talking about
+50
+how far he could throw. Neither girl threw any rocks or clods. Immediately preceding Tim’s striking Denise in the eye with a rock, which he admitted, Barbara was riding easterly on the sidewalk and entering upon the Singer property at the west side, about 30 feet from Denise. Tim, who was looking at plaintiff, said to her, “watch Barbie.” He had not previously thrown at her or Barbara. Denise looked toward Barbara and then back at Tim and at the same moment was struck in the eye by the rock, which was a flat, rough one about the size of a small hen’s egg. Barbara saw him throw at an angle toward her; saw him let go of the rock but did not see it strike plaintiff. Denise heard him say “watch Barbie” and saw him raise his arm in the throw but did not see the rock leave his hand. She was struck immediately in the left eye. The line of throw toward Barbara would pass several feet in front of Denise. For the rock to strike her, one of two things would have to occur, either (1) Tim changed the direction of throw without any warning, or (2) he held the rock too loosely, or let go of it too soon to control its flight, and inadvertently hit Denise. The evidence is susceptible of either of these inferences.
+
+The general proposition that an infant is liable for his torts is established in this state by statute. Civil Code, § 41, says: “A minor * * * is civilly liable for a wrong done by him, but is not liable in exemplary damages unless at the time of the act he was capable of knowing that it was wrongful.” That statute, it will be noted, does not imply as an element of liability for compensatory damages the existence of capacity to appreciate the wrongful character of the act. But the cases have engrafted upon it certain reasonable qualifications about to be discussed.
+
+An infant who forcibly invades the person of another is liable for a battery regardless of an intent to inflict injury; the only intent which is necessary is that of doing the particular act in question in this case throwing a rock at somebody. This matter is discussed in Ellis v. D’Angelo, 116 Cal.App.2d 310, at page 316, 253 P.2d 675, at page 678, in which it was held that, although a four-year-old child is, as a matter of law, incapable of negligence, the complaint nevertheless stated a cause of action for battery against the same child. At page 315 of 116 Cal.App.2d, at page 677 of 253 P.2d it is said: “From these authorities and the cases which they cite it may be concluded generally that an infant is liable for his torts even though he lacks the mental development and capacity to recognize the wrongfulness of his conduct so long as he has the mental capacity to have the state of mind necessary to the commission of the particular tort with which he is charged. Thus as between a battery and negligent injury an infant may have the capacity to intend the violent contact which is essential to the commission of battery when the same infant would be incapable of realizing that his heedless conduct might foreseeably lead to injury to another which is the essential capacity of mind to create liability for negligence.” * * *
+51
+Certainly it cannot be said as a matter of law that Tim did not have sufficient mental capacity to intend the harmful striking of another. If he indicated to both girls that he was throwing at Barbara and then aimed at Denise, whom he hit he was plainly liable to her for a battery.
+
+* * *
+
+While throwing rocks at trees or into the street ordinarily is an innocent and lawful pastime, that same act when directed at another person is wrongful. The evidence at bar (combining that of Barbara with portions of Tim’s own testimony) warrants an inference that Tim threw at Barbara and inadvertently struck Denise. In such circumstances the doctrine of “transferred intent” renders him liable to Denise. On this subject the Lopez case, supra, says at page 318 of 112 Cal.App.2d, at page 113 of 246 P.2d: “If defendant unlawfully aims at one person and hits another he is guilty of assault and battery on the party he hit, the injury being the direct, natural and probable consequence of the wrongful act.* * * ” The rule is not confined to criminal cases, as argued by respondents.
+
+* * *
+
+We hold that the evidence at bar would sustain an inference that Tim (1) deliberately threw the rock at plaintiff, or (2) threw the rock at Barbara and accidentally struck plaintiff, or (3) negligently held and threw the rock in such manner as to cause the throw to miscarry and thus strike plaintiff. Pursuing this line of thought counsel for respondent Tim argue that: “When one equally reasonable inference supports a plaintiff’s prima facie case against an equally reasonable inference supporting the defendant, the plaintiff has not sustained his burden of proof.” In support thereof * * * cases are cited: * * *. While they do hold that evidence which is equally susceptible of opposing inferences, one favorable and one unfavorable to the plaintiff, constitutes no proof at all, we are cognizant of no authority to the effect that that is true of evidence susceptible of several inferences all of which point in the same direction, liability of defendant. On principle it seems that whenever the evidence affords room for several inferences favorable to the plaintiff the jury should determine the one to draw, and the plaintiff does not have to elect or to establish one inescapable inference. * * * The plaintiff relying on circumstantial evidence does not have to exclude the possibility of every other reasonable inference possibly derivable from the facts proved. * * *
+
+The granting of a nonsuit in favor of Tim was erroneous.
+
+* * *
+
+[In the remainder of its opinion the court considered the propriety of the nonsuit granted by the trial court in favor of Tim’s parents. The crucial issue was whether there was sufficient evidence of negligence in exercising
+52
+control over a child known “to possess and exercise dangerous proclivities toward other people.” On the basis of the testimony of a former neighbor “that she could almost say that she had never seen Tim or his younger brother when they were not throwing rocks” and of evidence that Mrs. Marx had been told by the principal of Tim’s school that Tim had thrown clods of earth at her car, the court concluded that a jury could infer that Mrs. Marx had knowledge of her son’s proclivities and was negligent in failing to control him. The court concluded however that there was no evidence that Mr. Marx had any personal knowledge of his son’s rock-throwing proclivities; the most the evidence showed was that Mr. Marx had been consulted before Tim had been punished for throwing clods of earth at his school principal’s car. The court therefore affirmed the nonsuit as to Mr. Marx.]
+
+Notes
+
+1.In the infant case, the infant defendant may have wanted to hit one of the girls with a stone. If he had this morally reprehensible purpose, it does not seem unfair to subject him to full liability for a battery when he misses the girl at which he was aiming and hits another girl. Suppose, however, that the defendant did not desire to cause a contact upon anyone, but is nevertheless held to have acted intentionally because he knew that a contact was substantially certain to occur, as for example in Garratt v. Dailey, Section A, supra. Recall that there, a five year old boy pulled away a chair while his aged aunt was about to sit in it because the boy wanted to sit in the chair himself. Suppose, while falling down, the aunt had fallen against a third person? Could this person bring an action for battery against the boy on the basis of “transferred intent?” The conventional wisdom is that he can. Cf. Reynolds v. Pierson, 29 Ind. App. 273, 64 N.E. 484 (1902). Does the imposition of liability in such circumstances seem as morally justifiable as in a case like Singer v. Marx? On the history of the transferred intent rule, see William L Prosser, Transferred Intent, 45 Tex. L. Rev. 650 (1967); Osborne M. Reynolds, Jr. Transferred Intent: Should Its “Curious Survival” Continue?, 50 Okla. L. Rev. 529 (1997).
+
+Of course, if the plaintiff suffers any significant injuries, he probably would have the basis of an action for negligence against the defendant, unless the defendant was a young child. As the discussion in Singer v. Marx indicates, there may be occasions when it is difficult to bring an action against a young child on the basis of negligence (i.e. a lack of reasonable care) even though the child is held to be capable of committing an intentional tort.
+
+2.Note that in Singer v. Marx the court was unprepared to hold Timmy’s parents liable for his actions simply because they were his parents. With limited exceptions, most jurisdictions refuse to hold parents vicariously liable for the torts of their children simply because of the parent-child relationship. A parent might, however, be held directly liable for her or his own negligence in failing to supervise the child. See, Valerie D. Barton, Reconciling
+53
+the Burden: Parental Liability for Tortious Acts of Minors, 51 Emory L.J. 877 (2002); Andrew C. Gratz, Increasing the Price of Parenthood: When Should Parents Be Held Civilly Liable for the Torts of Their Children? 39 Hous. L. Rev. 169 (2002); Amy L. Tomaszewski, From Columbine to Kazaa: Parental Liability in a New World, 2005 U. Ill. L. Rev. 573.
+
+3.Transferred intent operates not only to transfer intent between persons, but also between torts. Thus, suppose that A fires a gun at B, intending to injure her. Although B is frightened by A’s actions, A misses B and instead hits C. Although A did not intend to frighten B, but merely to injure her, and although A did not intend any tort against C, the doctrine of transferred intent satisfies the intent requirement both for C’s battery suit as well as B’s suit for assault. See Restatement (Third) of Torts: Intentional Torts to Persons § 11, Council Draft No. 5 (2018).
+Halberstam v. Welch
+
+United States Court of Appeals, D.C. Circuit, 1983.
+705 F.2d 472.
+
+Wald [with Bork & Scalia], Circuit Judge:
+
+* * *
+
+I.BACKGROUND
+
+This case arises out of the shocking climax to a coldly efficient criminal campaign that had confounded, frustrated, and ultimately terrorized the Washington area. We are asked to determine the civil liability of the passive but compliant partner to this rampage that left widowed the wife of one of the community’s most eminent physicians. As a result of Welch’s innumerable burglaries over the course of five years, he and Hamilton acquired a fortune that would have been the envy of a Barbary brigand. In the words of the district court, Hamilton:
+
+knew full well the purpose of [Welch’s] evening forays and the means by which she and Welch had risen from “rags to riches” in a relatively short period of time. She closed neither her eyes nor her pocketbook to the reality of the life she and Welch were living. She was compliant, but neither dumb nor duped, so long as her personal comfort and fortune were assured. She was a willing partner in his criminal activities.
+
+* * * The district court based this conclusion largely on Hamilton’s own testimony.
+
+Hamilton first met Welch in October 1975, when Welch walked up to her in an apartment parking lot and asked her for a date. Hamilton stated that this was the first and only time she saw Welch with a gun. At the time of their meeting, Hamilton, a twenty-five-year-old high school graduate, worked as a secretary-compositor at the National Academy of Sciences.
+54
+Welch told Hamilton that he bought estates and invested in coins, jewelry stores, and real estate. Welch moved into Hamilton’s apartment a few weeks after their first meeting; apparently, his only assets at that time were a new Monte Carlo automobile, some clothing, a watch, pocket change, and some gold coins. They continued to live together, in various residences, until Welch shot Halberstam during the course of a burglary of Halberstam’s home on December 5, 1980. * * *
+
+In 1976, Hamilton and Welch moved to a rented house in Falls Church, Virginia. Hamilton, still employed at this time, gave Welch her salary in cash to invest for her in gold coins. Welch had no outside employment, and spent most days at home managing investments. He would leave the house four or five times each week between 5:00 p.m. and 5:30 p.m., and return between 9:00 p.m. and 9:30 p.m. This routine continued throughout the five years Hamilton lived with Welch. Hamilton stated that she never accompanied Welch on these evening expeditions. She did not think his absences peculiar, and said she never had a full discussion with him about where he had been. She assumed he was checking on his investments or meeting with coin and jewelry dealers. Hamilton remembered only one instance, in Minnesota, when she joined Welch on a visit to a coin dealer. Now and then Hamilton picked up coins for Welch from dealers, paying for the coins with cash Welch supplied. * * *
+
+Soon Welch’s “investments” bore fruit. In April 1978, after Hamilton gave birth to the first of their three children, Welch and Hamilton purchased a house in Minnesota for $102,000. Welch contributed about $55,000 in cash, and Hamilton put up about $20,000. The house was titled in Hamilton’s name. They lived in Minnesota during portions of 1978, 1979, and 1980.
+
+In 1979, the couple built a home in Great Falls, Virginia, valued at $1,000,000. Except for a trip to Minnesota during the summer, they lived in Great Falls from November 1979 until December 1980, when Welch was arrested for killing Halberstam. Hamilton’s niece and the niece’s child moved in with them. As suited their lifestyle, Welch and Hamilton bought two 1980 Mercedes-Benz cars and a station wagon, and hired a housekeeper. * * *
+
+Meanwhile, a different kind of refinement was taking place in the garage. With Hamilton’s knowledge, Welch installed a smelting furnace in the garage and used it to melt gold and silver into bars. He then sold the ingots to refiners in other states. Hamilton typed transmittal letters for these sales. She also kept inventories of antiques sold, and in general did the secretarial work for Welch’s “business.” The buyers of Welch’s goods made their checks payable to her, and she deposited them in her own bank accounts. She kept the records on these asymmetrical transactions—which included payments coming in from buyers, but no money going out to the
+55
+sellers from whom Welch had supposedly bought the goods. Hamilton remembered no mail from dealers in antiques or precious metals. * * *
+
+Not surprisingly, given the “low” cost of Welch’s materials, his business was a profitable one. By 1978 Hamilton and Welch had a gross annual income in excess of $1,000,000. Hamilton’s individual tax returns for 1978 and 1979 reported gross earnings of $647,569.21 and $491,762.16, respectively, from the sale of gold and silver. She took deductions, per Welch’s instructions, for “cost of goods sold and/or operations” in 1978 and 1979 of $498,770.87 and $360,000, respectively—despite the absence of any evidence of payouts for such goods. Hamilton assumed that Welch filed a separate tax return. * * *
+
+After the police apprehended Welch, they obtained a search warrant for the Great Falls house and discovered Welch’s basement “inventory”: some fifty boxes containing approximately three thousand stolen items—antiques, furs, jewelry, silverware, and various household and personal effects. While Hamilton admitted having seen the boxes, she claimed not to have seen their contents before. She said she did not go down to the basement often, although she had free access to it. Indeed, she provided policemen the key to Welch’s locked basement study. * * *
+
+The district court concluded that this loot “was the source of [Welch’s] and Hamilton’s livelihood, income and investments. Disposing of the loot was the principal business in which Welch and Hamilton engaged while at home.” * * *
+
+II.ANALYSIS
+
+The primary issues raised by this appeal are what kind of activities of a secondary defendant (Hamilton) will establish vicarious liability for tortious conduct (burglaries) by the primary wrongdoer (Welch), and to what extent will the secondary defendant be liable for another tortious act (murder) committed by the primary tortfeasor while pursuing the underlying tortious activity. To illuminate these issues, we need to clarify basic elements of vicarious liability in tort and to analyze case law to see what evidence is sufficient to establish them.
+
+Various theories of civil liability are untidily grouped under the general heading of concerted tortious action. To guide our deliberations, we initially outline a framework for this area of tort law, focusing on the two theories of liability the district court found applicable here—civil conspiracy, and aiding and abetting. We discuss a series of cases in the context of the framework, beginning with the sparse District of Columbia precedent. Then, after testing the district court’s factual inferences against the “clearly erroneous” standard of review, we finally apply the law to these facts to determine Hamilton’s liability for Michael Halberstam’s death.
+56
+A.Legal Framework
+
+Prosser notes that “[t]he original meaning of ‘joint tort’ was that of vicarious liability for concerted action. All persons who acted in concert to commit a trespass, in pursuance of a common design, were held liable for the entire result.” W. Prosser, Law of Torts § 46, at 291 (4th ed. 1971). His illustration portrays a standard situation that involved this “joint tort”: combined action by tortfeasors on the scene together—“one might have battered the plaintiff, while another imprisoned him, and a third stole his silver buttons.” * * * Each was responsible for the others’ actions.
+
+Over time, courts applied the principle of vicarious liability for concerted action to less obvious situations, covering tortfeasors whose relationship was more subtle than Prosser’s “highwaymen.” The two variations significant here are (1) conspiracy, or concerted action by agreement, and (2) aiding-abetting, or concerted action by substantial assistance. These two bases of liability correspond generally to the first two subsections in the Restatement (Second) of Torts § 876 (1979) [hereinafter cited as Restatement] on “Persons Acting in Concert”:
+
+For harm resulting to a third person from the tortious conduct of another, one is subject to liability if he
+
+(a)does a tortious act in concert with the other or pursuant to a common design with him [conspiracy], or
+
+(b)knows that the other’s conduct constitutes a breach of duty and gives substantial assistance or encouragement to the other so to conduct himself [aiding-abetting], or
+
+(c)gives substantial assistance to the other in accomplishing a tortious result and his own conduct, separately considered, constitutes a breach of duty to the third person.
+
+* * *
+
+As pristine legal concepts, conspiracy and aiding-abetting can be distinguished clearly enough. A list of the separate elements of civil conspiracy includes: (1) an agreement between two or more persons; (2) to participate in an unlawful act, or a lawful act in an unlawful manner; (3) an injury caused by an unlawful overt act performed by one of the parties to the agreement; (4) which overt act was done pursuant to and in furtherance of the common scheme. * * *
+
+The element of agreement is a key distinguishing factor for a civil conspiracy action. Proof of a tacit, as opposed to explicit, understanding is sufficient to show agreement. * * * But the agreement in a civil conspiracy does not assume the same importance it does in a criminal action. To establish liability, the plaintiff also must prove that an unlawful overt act
+57
+produced an injury and damages. “It is only where means are employed, or purposes are accomplished, which are themselves tortious, that the conspirators who have not acted but have promoted the act will be held liable.” * * *
+
+Aiding-abetting includes the following elements: (1) the party whom the defendant aids must perform a wrongful act that causes an injury; (2) the defendant must be generally aware of his role as part of an overall illegal or tortious activity at the time that he provides the assistance; (3) the defendant must knowingly and substantially assist the principal violation. * * * In the “Comment on Clause (b),” the authors of the Restatement summarize these elements and explain why they create liability: “Advice or encouragement to act operates as a moral support to a tortfeasor and if the act encouraged is known to be tortious it has the same effect upon the liability of the adviser as participation or physical assistance.” * * *
+
+In practice, liability for aiding-abetting often turns on how much encouragement or assistance is substantial enough. The Restatement suggests five factors in making this determination: “the nature of the act encouraged, the amount of assistance given by the defendant, his presence or absence at the time of the tort, his relation to the other [tortfeasor] and his state of mind.” * * *
+
+The prime distinction between civil conspiracies and aiding-abetting is that a conspiracy involves an agreement to participate in a wrongful activity. Aiding-abetting focuses on whether a defendant knowingly gave “substantial assistance” to someone who performed wrongful conduct, not on whether the defendant agreed to join the wrongful conduct.
+
+Courts and commentators have frequently blurred the distinction between the two theories of concerted liability. Most commonly, courts have relied on evidence of assistance to the main tortfeasor to infer an agreement, and then attached the label “civil conspiracy” to the resultant amalgam. Sometimes, although not always, the inference has been factually justified; many tort defendants have both conspired with and substantially assisted each other. But we find it important to keep the distinctions clearly in mind as we review the facts in this novel case to see if tort liability is warranted on either or both concerted action theories. For the distinctions can make a difference. There is a qualitative difference between proving an agreement to participate in a tortious line of conduct, and proving knowing action that substantially aids tortious conduct. In some situations, the trier of fact cannot reasonably infer an agreement from substantial assistance or encouragement. A court must then ensure that all the elements of the separate basis of aiding-abetting have been satisfied. For example, Rael v. Cadena, 93 N.M. 684, 604 P.2d 822 (1979) (liability for verbal encouragement at the scene of a battery), discussed
+58
+below, involved aid that was unlikely to support a conclusion of agreement. * * *
+
+B.Case Law
+
+* * *
+
+2.Civil Conspiracy * * *
+
+A few cases in other jurisdictions have considered more carefully than the District of Columbia two issues at the heart of Halberstam’s conspiracy case against Hamilton: what kind of evidence is sufficient to establish an agreement to pursue wrongful conduct, and the extent of liability for acts performed by a coconspirator.
+
+Both issues arose in Davidson v. Simmons, 203 Neb. 804, 280 N.W.2d 645 (1979), which involved a civil conspiracy to commit burglary. The boy whose liability was in question was the driver of a getaway truck. One of his codefendants, who had been inside the burglarized building, had struck an investigating policeman on the head with a hammer. Even though the driver never entered the building and had beaten a hasty retreat from the scene when the police appeared, the court held he could be liable to the injured policeman on a conspiracy basis. * * * The court stated that the finding of a conspiracy would be justified if the defendants’ acts revealed that they had “pursued the same object, although by different means, one performing one part and another another part.” * * *
+
+The Davidson court cited a similar case: Tabb v. Norred, 277 So.2d 223 (La.App.), cert. denied, 279 So.2d 694 (1973), in which two armed boys burglarized a school and one shot an investigating officer. The boy who did not shoot the deputy argued that he was not liable because he had not fired the injurious shot and had not assisted in or encouraged the shooting; indeed, the boy had been disarmed by police before the deputy was wounded. The boy further argued that even if there had been a conspiracy, it had not contemplated gunfire. The court held that both boys were liable for the shooting under a statute that established liability for assisting or encouraging a person in the commission of an unlawful act. Its analysis, however, merged the conspiracy and aiding-abetting theories. The court based a finding of conspiracy on the boys’ joint action of breaking into the school with pistols. Since both boys carried pistols and fired them at the police to avoid apprehension, the court found that the wounding shot was not beyond the scope of the conspiracy.
+
+One might reasonably conclude from these cases that where two or more persons jointly commit an onsite burglary, a court will infer that there has been a prior agreement to do so, and that a violent act is within the reasonable scope of such an agreement, particularly when both persons are armed.
+59
+Peterson v. Cruickshank, 144 Cal.App.2d 148, 300 P.2d 915 (1956), extends the reasoning about inferring agreement to a situation where, as in this case, the parties did not execute the tort together at the same time and place. In Peterson, the issue was “whether there [was] any substantial evidence to support the finding that appellant conspired with his two co-defendants to falsely imprison [appellant’s consort],” id. 300 P.2d at 925, in a sanitarium where she received shock treatments. The appellant protested that all he had done was pay his consort’s bills; he had neither directed the doctor at the sanitarium to imprison her or administer shock treatments. The court observed that, absent a confession, an agreement between conspirators must generally be inferred from circumstantial evidence revealing a common intent; it found a number of circumstances that permitted the inference that appellant had reached an understanding with his codefendants about the restraint and treatment of his consort. First, appellant’s past stormy personal relationship with the woman had provided him a motive to have her restrained. Second, there was evidence of a conversation within a few days of the confinement between appellant and a codefendant doctor at the sanitarium. In this conversation, appellant and the doctor had discussed appellant’s falling out with the woman, the history of appellant’s relationship with her, and appellant’s willingness to pay all bills for her “treatment.” After the talk, the doctor had refused to let the woman’s sister take her home; he also secured, under suspicious circumstances and over her sister’s objection, the woman’s “consent” to shock treatments. Furthermore, before the woman left the sanitarium, appellant sent an attorney to induce her to sign a release of “all claims.” The court found such evidence sufficient to sustain the finding of a conspiracy between appellant and the doctor to imprison the woman against her will.
+
+* * *
+
+In sum, we expect that the relationships between the actors and between the actions (e.g., the proximity in time and place of the acts, and the duration of the actors’ joint activity) are relevant in inferring an agreement in a civil conspiracy action. There may well be other significant factors in individual cases.
+
+As to the extent of liability, once the conspiracy has been formed, all its members are liable for injuries caused by acts pursuant to or in furtherance of the conspiracy. A conspirator need not participate actively in or benefit from the wrongful action in order to be found liable. He need not even have planned or known about the injurious action, as in the case of the getaway driver in Davidson, so long as the purpose of the tortious action was to advance the overall object of the conspiracy.
+
+60
+3.Aiding-Abetting
+
+Our second line of cases focuses on the aiding-abetting theory of liability—specifically on what constitutes knowing substantial assistance or encouragement and on the extent to which an aider-abettor is liable for injuries caused by the principal tortfeasor. Calling attention again to the distinction between aiding-abetting and civil conspiracy, we find both cases that are “pure” aiding-abetting and ones that courts could probably also have found to be civil conspiracies.
+
+An example of the purer strain, Rael v. Cadena, 93 N.M. 684, 604 P.2d 822 (1979), involved a person who had given verbal encouragement (“Kill him!” and “Hit him more!”) to an assailant. The defendant had not physically assisted in the battery. The court explained that liability did not require a finding of action in concert, nor even that the injury had directly resulted from the encouragement. Instead, it found, citing Restatement § 876(b), that the fact of encouragement was enough to create joint liability for the battery. Mere presence at the scene, it noted, would not be sufficient for liability.
+
+Suggestive words may also be enough to create joint liability when they plant the seeds of action and are spoken by a person in an apparent position of authority. In Cobb v. Indian Springs, Inc., 258 Ark. 9, 522 S.W.2d 383 (1975), a security guard allegedly urged a younger motorist with a new car to “run [the car] back up here and see what it will do.” * * * The driver then struck the plaintiff while trying to avoid a pedestrian during his high-speed “test run.” The court held, relying on Restatement § 876(b), that a jury could have found the guard’s encouragement substantial because he had first proposed the trial drive and because his position of authority gave his suggestion extra weight. On the issue of extent of liability, the Cobb court found that the guard could have foreseen an appreciable risk of harm to others at the time of encouragement.
+
+Vicarious liability can of course be based on acts of assistance as well as words of encouragement. And the contributing activity itself need not be so obviously nefarious as cheering a beating or prodding someone to drive recklessly. Keel v. Hainline, 331 P.2d 397 (Okl.1958), involved students throwing erasers at one another in a classroom. One eraser struck the plaintiff, a nonparticipant in the “horse play”; her eye glasses shattered and she lost the use of an eye. The court found that a student who had only aided the throwers by retrieving and handing erasers to them was still liable for the injury, because he had substantially encouraged the wrongful activity that resulted in the injury. It did not matter that the defendant may not even have given any particular aid to the boy who threw the eraser that hit the plaintiff.
+
+Rael, Cobb, and Keel dealt with direct encouragement by word or deed at the scene of the tort. But the aiding-abetting action may also be more
+61
+distant in time and location and still be substantial enough to create liability. In Russell v. Marboro Books, 18 Misc.2d 166, 183 N.Y.S.2d 8 (N.Y.Sup.Ct.1959), the court held that a book company could be liable as a contributing tortfeasor because it had sold a model’s picture to a company with the knowledge the company would (as it did) alter and use the picture to defame the model. * * *
+
+* * *
+
+American Family Mutual Insurance Co. v. Grim, 201 Kan. 340, 440 P.2d 621 (1968), is a good example of judicial merger of the theories. Grim involved the liability of a thirteen-year-old boy to an insurer of a church damaged by fire. The boy had broken into the church with his companions at night in search of soft drinks in the kitchen. Two other boys failed to extinguish torches they had used to light their way in the church attic. As a result, the church was damaged by an extensive fire. The boy whose liability was in question neither entered the attic nor even knew about the torches. He was not near the church when the fire appeared. Nevertheless, the court found the boy liable for the fire damage. In reaching this conclusion, the Grim court appeared to rely in part on a conspiracy-type analysis, reasoning that the boy was liable, despite his lack of involvement with the torches, because “the torches were used in the four boys’ attempt to carry out their original unlawful plan.” * * * But the Grim court also drew upon aiding-abetting concepts. It observed that the defendant was more than an innocent bystander after the boys had entered the church: “[T]here was evidence from which it could be inferred that [the boy] actively participated and lent encouragement and cooperation to the successful accomplishment of their over-all mission.” * * * In sum, the Grim court was invoking both civil conspiracy and aiding-abetting theories on the ground there was both an agreement to break in to get soft drinks and substantial aid through actual participation in the break-in.
+
+* * *
+
+Before leaving the aiding-abetting line of cases, it is helpful to review a case in which a court found that there was not enough evidence of assistance to support liability. Duke v. Feldman, 245 Md. 454, 226 A.2d 345 (1967), involved an allegation that a woman was liable for civil assault [i.e., battery] because she had aided and assisted her husband, who had struck the plaintiff. * * * The plaintiff’s evidence of her involvement—consisting of the defendant’s awareness of her husband’s previous threats to plaintiff; her contemporaneous request to her husband to get their downpayment back from the plaintiff; her observation of the incident; and driving her husband away—was found insufficient to go to the jury. * * *
+
+Summing up our review of the aiding-abetting cases, it is obvious that many variables entered into the equation on how much aid is “substantial aid.” Generally, the cases support the five factors identified in the
+62
+Restatement: the nature of the act encouraged; the amount [and kind] of assistance given; the defendant’s absence or presence at the time of the tort; his relation to the tortious actor; and the defendant’s state of mind. * * *
+
+For example, the nature of the act involved dictates what aid might matter, i.e., be substantial. In Rael, the beating case, the defendant’s war cry for more blood may well have contributed to the assaulter’s hysteria, which was fueling his physical acts of violence. Obviously verbal support would have been of lesser import in Russell, the defamed model case, where the key assistance rendered was access to the photo.
+
+The amount [and kind] of assistance given the wrongdoer is also a significant factor in the cases. For example, the court in Cobb stressed the security guard’s major part in prompting the tort—his suggestion sparked the negligent action. Similarly, the sale of the model’s photo in Russell was integral to the wrongful alteration and advertisement. Presence at the time of the tort, the third factor, applies to all the aider-abettor cases discussed above except Russell. On the other hand, the court in Duke stressed that an assailant’s wife was not jointly liable, despite her presence, because she offered no real assistance.
+
+The fourth factor, the defendant’s relation to the tortfeasor, was significant in Cobb, where the court emphasized that the guard’s position of authority lent greater force to his power of suggestion. The Keel court also seemed to believe that the students’ group action, their creation of a free-for-all, was both dangerous and ultimately injurious; thus, it found even a minimally-involved participant liable. This focus on group activity giving rise to joint liability for the wrongs of the group also appears in Grim (the church break-in and fire). Of course, the intimacy of the relationship between the wrongdoer and the defendant may also lead a court to be wary of inferring assistance warranting joint liability from supportive activities. Thus, in Duke the court seemed especially vigilant in evaluating evidence of the wife’s assistance to her husband (who assaulted someone while she watched), so as not to infuse the normal activities of a spouse with the aura of a concerted tort.
+
+Fifth, evidence as to the state of mind of the defendant may also be relevant to evaluating liability. In Rael, the defendant’s abusive cheering of the battery showed he was one in spirit with the assaulter. But once again, the Duke court (wife on the scene of her husband’s assault) refused to find evidence of liability, despite the fact that the wife had urged her husband to get the payment and had watched silently while the assault took place.
+
+Finally, we would also rate a sixth factor—duration of the assistance provided—as important. The length of time an alleged aider-abettor has been involved with a tortfeasor almost certainly affects the quality and
+63
+extent of their relationship and probably influences the amount of aid provided as well; additionally, it may afford evidence of the defendant’s state of mind.
+
+As for the second issue in aiding-abetting, the extent of liability, the test from Cobb and Grim appears to be that a person who assists a tortious act may be liable for other reasonably foreseeable acts done in connection with it. * * *
+
+* * *
+
+C.Applying the Two Theories in this Case
+
+1.The Factual Inferences
+
+Our first step in applying the law to the facts of this case is to review the district court’s findings of fact under the “clearly erroneous” standard. * * * This standard applies to the inferences drawn from findings of fact as well as to the findings themselves. The test places considerable limits on our discretion.
+
+* * *
+
+As to the inference of Hamilton’s knowledge of Welch’s criminal doings, it defies credulity that Hamilton did not know that something illegal was afoot. Welch’s pattern of unaccompanied evening jaunts over five years, his boxes of booty, the smelting of gold and silver, the sudden influx of great wealth, the filtering of all transactions through Hamilton except payouts for goods, Hamilton’s collusive and unsubstantiated treatment of income and deductions on her tax forms, even her protestations at trial that she knew absolutely nothing about Welch’s wrongdoing—combine to make the district court’s inference that she knew he was engaged in illegal activities acceptable, to say the least.
+
+Similarly, the district court’s finding of an agreement between Welch and Hamilton to execute a criminal enterprise involving stolen goods was not “clearly erroneous.” * * * Hamilton and Welch did not commit burglaries together but their activities were symbiotic. They were pursuing the same object by different but related means. Their home became the storage and processing base for Welch’s criminal activities; they thus performed some of their different parts of the illegal operation together at the same location. The long-running nature of the scheme is also crucial to the inference of agreement—Hamilton’s knowledge and aid over five years makes some kind of accord extremely likely—perhaps only a tacit accord, but that is enough. Furthermore, while Hamilton’s extensive participation in the profits of the illegal venture might not by itself prove an agreement, her unquestioning accession of wealth during this period is certainly consistent with such an agreement. Totaling all this evidence up, the district court’s conclusion that Hamilton and Welch reached an understanding about their illegal enterprise withstands attack.
+64
+Finally, the district court’s inference of knowing assistance also stands under the “clearly erroneous” test. Hamilton’s invaluable service to the enterprise as banker, bookkeeper, recordkeeper, and secretary is substantiated by her own testimony. * * *
+
+2.Civil Conspiracy
+
+The district court relied on the same three factual inferences to conclude that Hamilton was liable as a coconspirator. * * * We agree. * * * We have upheld the district court’s finding that Hamilton and Welch agreed to undertake an illegal enterprise to acquire stolen property. The only remaining issue, then, is whether Welch’s killing of Halberstam during a burglary was an overt act in furtherance of the agreement. We believe it was. As noted above, a conspirator can be liable even if he neither planned nor knew about the particular overt act that caused injury, so long as the purpose of the act was to advance the overall object of the conspiracy. Welch was trying to further the conspiracy by escaping after an attempted burglary, and he killed Halberstam in his attempt to do so. The use of violence to escape apprehension was certainly not outside the scope of a conspiracy to obtain stolen goods through regular nighttime forays and then to dispose of them. * * *
+
+3.Aiding-Abetting
+
+The district court also concluded that Hamilton was liable as a “joint venturer.” The elements to which the court referred—that Hamilton knew of Welch’s illegal activity and assisted in it—suggest to us that the court basically relied on the theory that we have labeled aiding-abetting. We have summarized its elements as follows: (1) the party the defendant aids must perform a wrongful act that causes an injury; (2) the defendant must be generally aware of his role as part of an overall illegal or tortious activity at the time he provides the assistance; and (3) the defendant must knowingly and substantially assist the principal violation.
+
+Welch fulfilled the first of these three elements by killing Halberstam during the course of a burglary. The district court’s conclusions that Hamilton knew about and acted to support Welch’s illicit enterprise establish that Hamilton had a general awareness of her role in a continuing criminal enterprise. The second element is thus satisfied. Finally, the district court also justifiably inferred that Hamilton assisted Welch with knowledge that he had engaged in illegal acquisition of goods. The only remaining issue, then, is whether her assistance was “substantial.”
+
+Applying the Restatement’s five factors, we look first at the nature of the act assisted, here a long-running burglary enterprise, heavily dependent on aid in transforming large quantities of stolen goods into “legitimate” wealth. Hamilton’s assistance was indisputably important to this laundering function; she gave not only her time and talents but also her name to accomplish that objective, through having checks made out to
+65
+her and falsifying income tax returns. Although her own acts were neutral standing alone, they must be evaluated in the context of the enterprise they aided, i.e., a five-year-long burglary campaign against private homes. Second, although the amount of assistance Hamilton gave Welch may not have been overwhelming as to any given burglary in the five-year life of this criminal operation, it added up over time to an essential part of the pattern.
+
+Third, Hamilton was admittedly not present at the time of the murder or even at the time of any burglary. But as we noted above, the success of the tortious enterprise clearly required expeditious and unsuspicious disposal of the goods, and Hamilton’s role in that side of the business was substantial.
+
+Fourth, the significance of Hamilton’s relation to the tortious actor requires a careful balancing. We are understandably wary of finding a housemate civilly liable on the basis of normal spousal support activities. Even though Hamilton’s assistance surely transcended performing household chores for Welch, we must be cautious not to overemphasize the relationship. Hence, we accord it a low priority in our calculus.
+
+On the other hand, the fifth factor, the defendant’s state of mind assumes a special importance in this case. If, as the district court found, Hamilton’s assistance was knowing, then it evidences a deliberate long-term intention to participate in an ongoing illicit enterprise. Hamilton’s continuous participation reflected her intent and desire to make the venture succeed; it was no passing fancy or impetuous act. Finally, the duration of the assistance has strongly influenced our weighing of Hamilton’s assistance. It affected our sense of how Hamilton perceived her role and of the value of her assistance to Welch. In sum, we find that Hamilton’s assistance was indeed substantial enough to justify liability on an aider-abettor theory.
+
+On the scope of her liability, we agree with the district court that Hamilton’s assistance to Welch’s illegal enterprise should make her liable for Welch’s killing of Halberstam. We noted above that under a civil conspiracy theory, it was within the scope and in furtherance of their agreement to conduct the illicit burglary enterprise. Similarly, under an aiding-abetting theory, it was a natural and foreseeable consequence of the activity Hamilton helped Welch to undertake. It was not necessary that Hamilton knew specifically that Welch was committing burglaries. Rather, when she assisted him, it was enough that she knew he was involved in some type of personal property crime at night—whether as a fence, burglar, or armed robber made no difference—because violence and killing is a foreseeable risk in any of these enterprises. * * *
+
+66
+III.CONCLUSION
+
+We have lingered long on the elements of traditional tort theory that permit holding a nonparticipant in a burglary that led to murder civilly responsible for the economic consequences of so terrible an injury. Our effort to distinguish the elements and proof of civil conspiracy and aiding-abetting may appear formalistic, but it is motivated by our desire to move cautiously in cases like this one. Our ultimate purpose is to identify those characteristics that make the application of vicarious liability appropriate. We recognize that the elements of either theory are not perfect guides in this search. We expect that they will not be accepted as immutable components but that they will be adapted as new cases test their usefulness in evaluating vicarious liability.
+
+Tort law is not, at this juncture, sufficiently well developed or refined to provide immediate answers to all the serious questions of legal responsibility and corrective justice. It has to be worked over to produce answers to questions raised by cases such as this. * * * Yet the implications of tort law in this area as a supplement to the criminal justice process and possibly as a deterrent to criminal activity cannot be casually dismissed. We have seen the evolution of tort theory to meet twentieth century phenomena in areas such as product liability; there is no reason to believe it cannot also be adapted to new uses in circumstances of the sort presented here. * * *
+
+Affirmed.
+
+Notes
+
+1.The Restatement Third of Intentional Torts refers to such cases as “participation claims.”
+
+Restatement (Third) of Torts: Intentional Torts to Persons, Tentative Draft No. 3 (2018)
+
+§ 10.Participation in an Intentional Tort
+
+An actor who knowingly and substantially instigates, encourages, or assists another person’s commission of an intentional tort of battery, purposeful infliction of bodily harm, assault, intentional infliction of emotional harm, or false imprisonment is subject to liability for that tort, even if the actor’s conduct does not independently satisfy all elements of the underlying tort.
+
+2.The Halberstam court casually refers to participation liability—also called, in various contexts, concerted action, aiding and abetting, or civil conspiracy—as a form of vicarious liability. This is not a proper characterization of the concept, however. As will be explored in depth in Chapter 7, vicarious liability is a form of strict liability in which A is held liable for the tortious acts of B, regardless of whether A acted wrongfully. Unlike
+67
+vicarious liability, participation liability turns on the defendant’s wrongfulness—for instigating, assisting, or participating in another’s tortious acts. For further discussion, see Restatement (Third) of Torts: Intentional Torts to Persons, Tentative Draft No. 3, § 10, cmt. e (2018).
+
+3.In proving any tort, a plaintiff must typically prove that the defendant’s tortious conduct played a causal role in the plaintiff’s injury. Can the plaintiff in Halberstam prove that but for the defendant wife’s involvement, the plaintiff’s husband would not have been killed? In fact, courts often relax the requirements for causation, or even dispose of them altogether, in participation cases. Although the primary tortfeasor must be shown to have caused the plaintiff’s injury, courts often do not require that the defendant’s participatory acts contributed causally.
+
+4.As § 876 of the Second Restatement explains, participation liability also applies in negligence cases.
+
+E. FALSE IMPRISONMENT
+Restatement (Third) of Torts: Intentional Torts to Persons, Council Draft No. 5 (2018)
+
+§ 7False Imprisonment: General Definition
+
+An actor is subject to liability to another for false imprisonment if:
+
+(a)the actor intends to confine the other within a limited area, or the actor’s intent is sufficient under § 11 (transferred intent);
+
+(b)the actor’s affirmative conduct causes a confinement of the other, as provided in §§ 8 and 9, or the actor fails to release the other from a confinement despite owing a duty to do so; and
+
+(c)the other is aware that he or she is confined or the other suffers bodily harm as a result of the confinement.
+
+Notes
+
+1.The term “false imprisonment” is an idiom that, on its face, describes cases of wrongful arrest. Such cases do indeed constitute false imprisonments, but the tort encompasses a much broader universe of factual scenarios. It might therefore be more accurately thought of as the tort of “intentional confinement.”
+
+2.As § 7(b) describes, false imprisonment may occur either by confinement or by failing to release from confinement when the actor has a duty to do so. See Bennett v. Ohio Dep’t of Rehabilitation and Correction, 60 Ohio St.3d 107, 573 N.E.2d 633 (1991) (holding that false imprisonment was properly pled when State parole board wrongly held prisoner for six months after the end of sentence term); Talcott v. National Exhib. Co., 144 App.Div.
+68
+337, 128 N.Y.S. 1059 (1911) (upholding false imprisonment claim when ballpark failed to advise patron of an alternate exit after the main gate was locked because of the crush of the crowd).
+
+3.In most cases of false imprisonment, the physical scope of confinement is relatively small—a room, house, prison cell, or car. Larger areas are also likely sufficient. For example, in Allen v. Fromme, 141 App.Div. 362, 126 N.Y.S. 520 (1910), a law student who was confined to the city of New York pursuant to invalid civil process was held to have a cause of action for false imprisonment. A more recent example is presented by Helstrom v. North Slope Borough, 797 P.2d 1192 (Alaska 1990), in which it was held that confinement within the Borough was sufficient to constitute false imprisonment. According to the Third Restatement: “Liability should be denied only when the area of confinement is so large that the interference with the other’s freedom is de minimis.” In addition, compelling someone to go where they don’t want to go might also amount to false imprisonment. See Karow v. Student Inns, Inc., 357 N.E.2d 682 (Ill. App. Ct. 1976) (holding that defendant’s request that police remove plaintiff from a building amounted to a false imprisonment, even though the police did not take plaintiff into custody).
+
+4.The temporal scope of confinement can be very brief and yet remain actionable—for example, when a person grabs another by the arm and refuses to let go, even if the other breaks free in less than a minute. See, e.g., Richards v. Legislature of Virgin Islands, 2009 WL 482476, 51 V.I. 517 at *6 (D.V.I. Feb. 23, 2009) (holding that summary judgment was inappropriate where Senator Richards was alleged by plaintiff to have pushed his body against hers and tried to kiss her, obstructing her passage and interfering with her freedom).
+
+5.An actionable confinement may occur by a variety of means: barriers, force, express or implied threat of force, duress, fraudulent inducement, or by the assertion of legal authority. See Manikhi v. Mass Transit Admin., 360 Md. 333, 758 A.2d 95 (Md. 2000) (female transit employee had a cause of action against male coworker for false imprisonment, based on allegations that, without the employee’s consent, the coworker locked the back door of a bus, turned off the lights, cut off the employee’s only other egress from the bus by placing himself between her and the front door, stated that she could not get away, and “barrag[ed] her with lascivious puerilities” which, taken together, amounted to an implicit threat of force); Ashland Dry Goods Co. v. Wages, 302 Ky. 577, 195 S.W.2d 312 (1946) (finding confinement when defendant took plaintiff’s purse to prevent her from leaving). When reading the next two cases, ask yourself which means of confinement were the plaintiffs asserting, and what must the plaintiff prove with respect to that particular means?
+
+69
+McCann v. Wal-Mart Stores, Inc.
+
+United States Court of Appeals, First Circuit, 2000.
+210 F.3d 51.
+
+Boudin, Circuit Judge.
+
+This case involves a claim for false imprisonment. On December 11, 1996, Debra McCann and two of her children—Jillian, then 16, and Jonathan, then 12—were shopping at the Wal-Mart store in Bangor, Maine. After they returned a Christmas tree and exchanged a CD player, Jonathan went to the toy section and Jillian and Debra McCann went to shop in other areas of the store. After approximately an hour and a half, the McCanns went to a register and paid for their purchases. One of their receipts was time stamped at 10:10 p.m.
+
+As the McCanns were leaving the store, two Wal-Mart employees, Jean Taylor and Karla Hughes, stepped out in front of the McCanns’ shopping cart, blocking their path to the exit. Taylor may have actually put her hand on the cart. The employees told Debra McCann that the children were not allowed in the store because they had been caught stealing on a prior occasion. In fact, the employees were mistaken; the son of a different family had been caught shoplifting in the store about two weeks before, and Taylor and Hughes confused the two families.
+
+Despite Debra McCann’s protestations, Taylor said that they had the records, that the police were being called, and that the McCanns “had to go with her.” Debra McCann testified that she did not resist Taylor’s direction because she believed that she had to go with Taylor and that the police were coming. Taylor and Hughes then brought the McCanns past the registers in the store to an area near the store exit. Taylor stood near the McCanns while Hughes purportedly went to call the police. During this time, Debra McCann tried to show Taylor her identification, but Taylor refused to look at it.
+
+After a few minutes, Hughes returned and switched places with Taylor. Debra McCann told Hughes that she had proof of her identity and that there must be some proof about the identity of the children who had been caught stealing. Hughes then went up to Jonathan, pointed her finger at him, and said that he had been caught stealing two weeks earlier. Jonathan began to cry and denied the accusation. At some point around this time Jonathan said that he needed to use the bathroom and Hughes told him he could not go. At no time during this initial hour or so did the Wal-Mart employees tell the McCanns that they could leave.
+
+Although Wal-Mart’s employees had said they were calling the police, they actually called a store security officer who would be able to identify the earlier shoplifter. Eventually, the security officer, Rhonda Bickmore, arrived at the store and informed Hughes that the McCanns were not the family whose son had been caught shoplifting. Hughes then acknowledged
+70
+her mistake to the McCanns, and the McCanns left the store at approximately 11:15 p.m. In due course, the McCanns brought suit against Wal-Mart for false imprisonment (a defamation claim was also made but was rejected by the jury).
+
+The jury awarded the McCanns $20,000 in compensatory damages on their claim that they were falsely imprisoned in the Wal-Mart store by Wal-Mart employees. Wal-Mart has now appealed the district court’s denial of its post-judgment motions for judgment as a matter of law and for a new trial pursuant to Fed.R.Civ.P. 50(b) and 59, respectively, arguing that the McCanns did not prove false imprisonment under Maine law and that the court’s jury instructions on false imprisonment were in error. * * *
+
+Both of Wal-Mart’s claims of error depend on the proper elements of the tort of false imprisonment. Although nuances vary from state to state, the gist of the common law tort is conduct by the actor which is intended to, and does in fact, “confine” another “within boundaries fixed by the actor” where, in addition, the victim is either “conscious of the confinement or is harmed by it.” Restatement (Second), Torts § 35 (1965). The few Maine cases on point contain no comprehensive definition, * * * and the district court’s instructions (to which we will return) seem to have been drawn from the Restatement.
+
+While “confinement” can be imposed by physical barriers or physical force, much less will do-although how much less becomes cloudy at the margins. It is generally settled that mere threats of physical force can suffice, Restatement, supra, § 40; and it is also settled-although there is no Maine case on point-that the threats may be implicit as well as explicit, see id. cmt. a; 32 Am.Jur.2d False Imprisonment § 18 (1995) (collecting cases), and that confinement can also be based on a false assertion of legal authority to confine. * * * Indeed, the Restatement provides that confinement may occur by other unspecified means of “duress.” * * *
+
+* * * [W]e think that a reasonable jury could conclude that Wal-Mart’s employees intended to “confine” the McCanns “within boundaries fixed by” Wal-Mart, that the employees’ acts did result in such a confinement, and that the McCanns were conscious of the confinement.
+
+The evidence, taken favorably to the McCanns, showed that Wal-Mart employees stopped the McCanns as they were seeking to exit the store, said that the children were not allowed in the store, told the McCanns that they had to come with the Wal-Mart employees and that Wal-Mart was calling the police, and then stood guard over the McCanns while waiting for a security guard to arrive. The direction to the McCanns, the reference to the police, and the continued presence of the Wal-Mart employees (who at one point told Jonathan McCann that he could not leave to go to the bathroom) were enough to induce reasonable people to believe either that they would
+71
+be restrained physically if they sought to leave, or that the store was claiming lawful authority to confine them until the police arrived, or both.
+
+Wal-Mart asserts that under Maine law, the jury had to find “actual, physical restraint,” a phrase it takes from Knowlton, 95 A. at 283; see also Whittaker, 85 A. at 402. While there is no complete definition of false imprisonment by Maine’s highest court, this is a good example of taking language out of context. In Knowlton, the wife of a man who owed a hotel for past bills entered the hotel office and was allegedly told that she would go to jail if she did not pay the bill; after discussion, she gave the hotel a diamond ring as security for the bill. She later won a verdict for false imprisonment against the hotel, which the Maine Supreme Judicial Court then overturned on the ground that the evidence was insufficient.
+
+While a police officer was in the room and Mrs. Knowlton said she thought that the door was locked, the SJC found that the plaintiff had not been confined by the defendants. The court noted that the defendants did not ask Mrs. Knowlton into the room (another guest had sent for her), did not touch her, and did not tell her she could not leave. The court also said that any threat of jail to Mrs. Knowlton was only “evidence of an intention to imprison at some future time.” * * * In context, the reference to the necessity of “actual, physical restraint” is best understood as a reminder that a plaintiff must be actually confined-which Mrs. Knowlton was not.
+
+Taking too literally the phrase “actual, physical restraint” would put Maine law broadly at odds with not only the Restatement but with a practically uniform body of common law in other states that accepts the mere threat of physical force, or a claim of lawful authority to restrain, as enough to satisfy the confinement requirement for false imprisonment (assuming always that the victim submits). It is true that in a diversity case, we are bound by Maine law, as Wal-Mart reminds us; but we are not required to treat a descriptive phrase as a general rule or attribute to elderly Maine cases an entirely improbable breadth.
+
+* * *
+
+Affirmed.
+Fojtik v. Charter Medical Corp.
+
+Court of Appeals of Texas, 1999.
+985 S.W.2d 625.
+
+Chavez, Justice.
+
+Felix Fojtik appeals from a take-nothing summary judgment entered against him on his claim against Charter Medical Corporation. Fojtik had brought a false imprisonment cause of action against Charter arising from his stay at a Charter hospital where he was treated for alcoholism. Fojtik argues in a single point of error that the trial court erred in granting
+72
+summary judgment to Charter because issues of material fact existed regarding whether Fojtik was falsely imprisoned. We affirm the judgment of the trial court.
+
+* * *
+
+Background Facts
+
+Fojtik’s admission to Charter was preceded by an “intervention,” where Dorrill Nabours and Valerie Bullock from Charter, along with a group of Fojtik’s family and friends, confronted him and told him that he needed to go through an inpatient treatment at Charter for alcohol abuse. Fojtik’s medical records indicate that he told Charter staff he had admitted himself to Charter because those conducting the “intervention” had told him that, if he did not voluntarily admit himself, they would have him committed to the hospital and have him brought in wearing handcuffs. When admitted, Fojtik was angry about being at Charter and refused to be photographed or to agree to permit Charter to contact him after he left the treatment program. While at the hospital Fojtik made several requests for a “pass” permitting him to leave the Charter facility. His initial requests were denied on the ground that he was not “eligible” for a pass until he was further into his stay. Fojtik expressed his opinion that he was getting a “raw deal” because he was “locked up and couldn’t get away.” Later Fojtik was granted passes for a few hours at a time, and always returned to Charter voluntarily and on time. Fojtik explained that he had vowed to follow all of the rules at Charter. Although nothing in the record explains the reason Fojtik made this “vow,” he argues on appeal that he had decided to follow all the rules only because he hoped that obedient behavior might speed his release.
+
+Charter produced summary judgment evidence that Fojtik was free to leave at any time. Charter employees explained that, although they used a system of “passes” and preferred to follow certain procedures when patients left the hospital, if a patient insisted on leaving without following Charter procedures, Charter would permit the patient to leave. Charter also refers us to Fojtik’s admission documents, which indicate that he consented to inpatient treatment.
+
+Legal Standards
+
+Summary judgment for a defendant is proper only when the defendant negates at least one element of each of the plaintiff’s theories of recovery or pleads and conclusively establishes each element of an affirmative defense. * * *
+
+The elements of a false imprisonment cause of action are: (1) willful detention by the defendant, (2) without consent of the detainee, and (3) without authority of law. * * * A detention may be accomplished by
+73
+violence, by threats, or by any other means that restrain a person from moving from one place to another. * * *
+
+Where it is alleged that a detention is effected by a threat, the plaintiff must demonstrate that the threat was such as would inspire in the threatened person a just fear of injury to his person, reputation, or property. * * * Threats to call the police are not ordinarily sufficient in themselves to effect an unlawful imprisonment. * * * In determining whether such threats are sufficient to overcome the plaintiff’s free will, factors such as the relative size, age, experience, sex, and physical demeanor of the participants may be considered. * * *
+
+* * *
+
+Whether Fojtik Was Restrained
+
+Although Fojtik was not physically restrained, he alleges that he was detained against his will by threats that, if he did not submit to his detention, he would be forcibly committed and “brought in in handcuffs.” Fojtik also contends that Charter used “other means” in addition to threats of commitment in order to restrain him. We first consider whether the evidence raises a question of fact regarding whether Fojtik was restrained by threats.
+
+A review of false imprisonment case law is instructive. In Black v. Kroger, 527 S.W.2d 794 (Tex.App.—Houston [1st Dist.] 1975, writ dism’d) an eighteen year old woman with a tenth grade education and a two-year-old daughter was accused by her employers of stealing. She was led into a small, windowless room lit by bare light bulbs, where the store manager and another man who worked for “Kroger Security” were waiting. She was told repeatedly that they knew she had been stealing, and that if she did not admit to stealing they would handcuff her and take her to jail. She testified that she made a false confession, explaining “I just had it in my head that they were going to put me in jail no matter what I did, and I wasn’t going to see my little girl for a long, long time.” The court noted the woman’s lack of business experience and the harsh and intimidating nature of her questioning. * * * The court held that under these facts the jury could have reasonably concluded that the threats to the woman intimidated her to the point where she was not free to leave and was unreasonably detained.
+
+* * *
+
+Skillern & Sons, Inc. v. Stewart, 379 S.W.2d 687 (Tex.Civ.App.—Fort Worth 1964, writ ref’d n.r.e) presents a similar set of facts. A female employee was accused of stealing. She was led by the arm to a room where two men she had never met beat on a desk while telling her “we have the goods on you . . . we know you’ve been stealing money.” She was threatened with imprisonment, and told that she could not leave until she wrote a
+74
+confession. She managed to leave, but was ordered back, and again told that she would either sign a confession or she would go to jail, but that she could not leave without confessing. When she tried to stand up she was physically pushed back into a chair by her accusers. These facts were held to support a recovery for false imprisonment. * * *
+
+In Safeway Stores, Inc. v. Amburn, 388 S.W.2d 443 (Tex.App.—Fort Worth 1965, no writ) the evidence was held insufficient to support a finding that the plaintiff was falsely imprisoned. In this case as well, an employee was led to a secluded room where others were waiting to accuse him of theft. The employee’s path to the door, if he had desired to leave, was not blocked. The only physical contact between the employee and his accusers was a handshake. When the employee denied stealing anything he was accused of lying and threatened with jail. The employee spent thirty to forty minutes with his accusers. The court held that, where there is nothing else particularly overbearing about this kind of meeting, threats of imprisonment are not enough to establish a claim for false imprisonment, and the court reversed the jury’s verdict in the plaintiff’s favor. * * *
+
+In Randall’s Food Markets, Inc. v. Johnson, 891 S.W.2d 640 (Tex.1995), the plaintiff was a store employee accused of stealing. She was told to either wait in an office or to work on a volunteer project in a particular area. She waited in the office, but left twice and returned each time. The Texas Supreme Court rejected the plaintiff’s contention that the store management had impliedly threatened her person, because no one was guarding her and she had in fact left the office twice. * * * Summary judgment in favor of the store on the employee’s false imprisonment claim was upheld. * * *
+
+In evaluating Fojtik’s claim of false imprisonment, the issue is essentially this: to what extent must plaintiffs insist on their freedom and have it denied to them before they can recover for false imprisonment? Under some circumstances, a combination of the plaintiff’s vulnerability and oppressive circumstances permit recovery, even when the plaintiffs does not actually resist their detention. Comparing the facts of this case to previous reported cases, however, indicates that this is not one of those cases. None of the factors that are considered in evaluating whether threats are sufficient to overcome the plaintiff’s free will, i.e., the relative size, age, experience, sex, and physical demeanor of the participants, weigh in Fojtik’s favor. Fojtik was a forty-five-year-old man who had run several businesses. He was not a young, inexperienced woman, like the plaintiff in Black. He was not physically restrained, like the plaintiff in Skillern. Although he was threatened with the police, there were no other factors adding to the intimidating effect of those threats, and, as in Amburn, such threats, standing alone, are not enough to establish false imprisonment. Fojtik left and voluntarily returned, as the plaintiff did in Johnson, where the plaintiff’s actions were held to negate her false imprisonment theory.
+
+75
+Fojtik contends that his frequent comments at Charter about being “locked up” and his generally uncooperative attitude are evidence that he did not consider himself free to leave. While it may be true that Fojtik considered himself restrained, the issue is not Fojtik’s subjective interpretation of his situation, but rather whether he had a “just fear of injury.” * * * The facts of this case do not raise a fact issue on whether Fojtik had a “just fear” of injury. The record before us indicates that, while Fojtik certainly complained about being at Charter, he never insisted that he be permitted to leave. As discussed above, there is nothing in this case to suggest that Fojtik was a person whose weakness or susceptibility to intimidation might excuse his failure to insist on leaving when he felt he was falsely imprisoned.
+
+Aside from threats of legal commitment, the “other means” of restraint identified by Fojtik are: (1) constantly telling him that he was an alcoholic and treating him as though he were, and (2) permitting him to leave on temporary passes. Appellant’s argument appears to be that these methods lessened his will to insist on being released. We do not believe that such trifling matters as these constitute restraint. Treating Fojtik as an alcoholic did not restrain him; if it contributed to his ongoing presence at the Charter hospital, it did so by persuading Fojtik that he did have a problem with alcohol that should be addressed, not by any actual restraint. The fact that Charter permitted Fojtik to leave on passes undermines his claim for false imprisonment rather than supporting it. * * *
+
+We conclude that the trial court properly granted summary judgment in Charter’s favor. The judgment of the trial court is affirmed.
+
+Notes
+
+1.What distinguishes McCann and Fojtik? Do you imagine Mr. Fojtik felt less restrained than the McCanns? Is there any difference in the legal standards applied by the two courts?
+
+2.These two courts require the plaintiffs to prove a “reasonable” or “just” belief that they were not free to leave. Not all courts require the belief to be reasonable. According to the Restatement Third of Torts: Intentional Torts, § 8, cmt. g: “It is not necessary for a plaintiff to prove that a reasonable person would submit to confinement rather than sustain the harm or indignity threatened by the force or restraint. It is sufficient that the actor threatens physical force or physical restraint with the intention of confining the plaintiff and that the plaintiff submits to the threat, believing that the actor had the ability to carry out the threat.” Which is the better approach?
+
+3.Both courts list “lack of consent” and “that the defendant acted without the authority of the law” as elements of the plaintiff’s claim. The latter very clearly is not an element of the plaintiff’s prima facie case, but an affirmative defense, often referred to as a “privilege.” As for the former, just as
+76
+with battery and assault, courts are less than clear whether plaintiff or defendant bears the burden of proving whether the plaintiff consented.
+
+4.Notice that the Wal-Mart employees believed that their confinement of the McCanns was lawful but were nevertheless subject to liability for false imprisonment. This points to the fact that false imprisonment does not require proof that the defendant intended a wrongful confinement, only that the plaintiff be confined. Wrongfulness—to the extent that it is relevant at all—is litigated in the context of affirmative defenses such as the privilege of lawful arrest or the shopkeeper’s privilege to detain. This is true of most intentional torts and stems from the understanding that actions such as intentional contacts, threats, and confinements are inherently wrongful, unless excused by some special privilege.
+
+5.As mentioned above, a false imprisonment may occur via a variety of means of confinement: barriers, force, express or implied threat of force, duress, fraudulent inducement, and the assertion of legal authority. As McCann and Fojtik illustrate, each means necessitates a threshold determination. For example, if the plaintiff asserts that the defendant confined her by the imposition of barriers, the factfinder must determine whether the barriers were substantial enough to constitute confinement—if a plaintiff could have climbed out of a first-story window and dropped six feet to the ground, was that a substantial enough barrier to consider the plaintiff confined? Or suppose the plaintiff asserts that he was confined due to duress, it must be determined whether the pressure to remain in an area was substantial enough to constitute duress. For example, suppose that defendant removed the plaintiff’s clothes from the locker room of a public shower, is plaintiff confined even though he could easily, if immodestly, escape?
+
+6.Confinement by means of the assertion of legal authority is worth special consideration. The Third Restatement defines this category as follows:
+
+§ 9.False Imprisonment: Confinement by Assertion of Legal Authority
+
+An actor confines another * * * if:
+
+(a)the actor asserts the legal authority to take the other into custody or to otherwise confine the other; and
+
+(b)the other submits to such confinement because the other believes either that he or she has a duty to comply with the assertion of authority or that he or she might face adverse legal or physical consequences for failure to comply.
+
+Although such cases often involve law enforcement officers, liability might attach whenever, as the comments to § 9 explain, “an actor’s role is ordinarily understood to be vested with legal authority over others, or when the context in which he or she acts suggests such authority.” For example, courts have held that school teachers, security guards, doctors in a hospital, store managers, casino employees, and flight attendants are all capable, under appropriate circumstances, of asserting legal authority.
+77
+In many such cases, the plaintiff submits to the assertion of legal authority not only due to a felt duty to obey the law, but also due to a fear of physical harm—either alone is sufficient to effectuate a confinement. For example, suppose that plaintiff is a racial minority in a city with a history of police violence against and harassment of members of plaintiff’s community. Suppose also that a police officer approaches the plaintiff one night as plaintiff leaves a movie theater and says, “Hey you, I want to ask you some questions—stand over there against the wall of that building.” Should plaintiff accede to the officer’s command, the plaintiff has been confined—either because plaintiff reasonably perceived an implicit threat of violence due to the frequent experience of members of his race with the city’s police force or because plaintiff submitted to an assertion of legal authority.
+
+7.Notwithstanding the cases and notes above, in cases of false arrest, the issues on which the case is determined do not typically involve the plaintiff’s prima facie case. In most cases, it is clear that the plaintiff was confined and that the defendant intended the confinement. Such cases instead turn on whether the confinement was privileged—in other words, whether the defendant can succeed in proving an affirmative defense. If the defendant is a police officer, the relevant affirmative defense is that of “police privilege.” In most jurisdictions, the requirements of this defense track doctrines of Constitutional Law (most often the Fourth Amendment) and sovereign immunity. In fact, although plaintiffs in such cases often bring both tort claims and claims for violation of their Constitutional rights pursuant to 42 U.S.C. § 1983, courts regularly either ignore the tort claims or simply mention that the tort analysis mirrors that of the Constitutional claim. See, e.g., Hun v. State of Delaware, 69 A.3d 360 (Del. 2013) (holding that police officer’s wrongful detention of a student for interrogation constitutes false imprisonment for the same reasons it constitutes a violation of the student’s Fourth Amendment rights). The issue central to resolution of police privilege is whether the officer’s conduct was “reasonable under the circumstances.” Thus, although false imprisonment is an intentional tort, resolution of many cases turns on principles similar to negligence.
+
+The analysis is often analogous when the defendant is a private person acting either pursuant to a citizen’s arrest statute or the affirmative defense of “shopkeeper’s privilege.” See Collyer v. S.H. Kress Co., 5 Cal.2d 175, 54 P.2d 20 (1936) (holding that a seventy-year-old man who was detained, questioned, and searched did not have a cause of action for false imprisonment against the store and its personnel because the defendants’ conduct was held to be reasonable under the circumstances). Most states have adopted statutes memorializing the shopkeeper’s privilege to detain suspected shoplifters. See, e.g., Minn. Stat. Ann. § 629.366 (2009).
+
+8.Plaintiffs often bring a variety of claims in addition to false imprisonment—for example, intentional infliction of emotional distress or Constitutional claims. If the confinement was accomplished by means of (or in conjunction with) threat or force, plaintiffs will claim assault or battery. And
+78
+if the confinement is followed by court action against the plaintiff, a malicious prosecution claim is frequently added.
+
+F. TRESPASS
+As we saw in Chapter 1, tort law grew largely out of two common law writs: trespass and trespass on the case. Today, the term “trespass” generally refers to two specific intentional torts: trespass to land and trespass to chattels (personal property).
+
+1.TRESPASS TO LAND
+
+Although the law of trespass involves intentional invasions, it must be stressed that the intent necessary to commit a trespass is quite minimal. The only thing that must be intended is the act of entering the land. It is not necessary that the defendant have intended to enter another’s land. One who enters the land of another in the mistaken but nevertheless reasonable belief that he is entering onto his own or public land is nonetheless liable for trespass. See Restatement (Second) of Torts § 164. In this way, although trespass is an intentional tort, it embraces an element of strict liability. As is the case with other intentional torts, the defendant may be liable if she knows her actions make entry onto the land of another a substantial certainty.
+
+Still, the actor must intend to enter the land—it is not enough that the defendant negligently entered the land. For example, if a person drives too fast around a bend in the road, skidding off the road and through a landowner’s fence, the person might well be liable for negligence but not the intentional tort of trespass. And if a person were to non-negligently stumble and fall onto another’s land, there would be no liability for either trespass or negligence.
+
+Although the classic case of trespass involves a defendant himself or herself entering the plaintiff’s land, a trespass occurs whenever a defendant causes the invasion of another’s land—for example, if a person lands a drone or hires a third party to dump waste onto another’s land. As the case below illustrates, a more difficult issue arises when the defendant is alleged to have trespassed plaintiff’s land by less tangible means.
+
+A trespass also arises when a person, although initially on another’s land lawfully, overstays her welcome, strays into areas of the land to which she was not invited, or engages in behavior that exceeds her license. Thus, for example, the actor in each of the following scenarios will be liable for trespass:
+
+a. a person who has been permitted to keep her car in another’s garage and refuses to remove it within a reasonable time after the permission has been revoked;
+79
+b. the representative of a water company, on land pursuant to an easement allowing him to check the water meter, who peers into the homeowner’s windows;
+c. a store customer who hides in order to remain in the store after closing; and
+d. a party guest who enters the owner’s master bathroom without permission to rummage through the cabinets.
+Once a trespass to land has been shown, the plaintiff has a cause of action for at least nominal damages regardless of whether the plaintiff’s property has suffered any harm and regardless of the good faith of the defendant. Nominal damages are “representative” damages of a nominal amount—often one dollar. The justification for allowing an action for trespass to be brought in the absence of actual damages and regardless of the defendant’s good faith is the high social value traditionally placed upon the inviolability of a person’s real property, and particularly of her home. Thus, the action of trespass is viewed as a means of enhancing the individual’s sense of security and of discouraging people from resorting to breaches of the peace in order to protect this important interest.
+
+What attorney would represent a client in a law suit for nominal damages, you might ask? The first possibility is that the plaintiff is wealthy and can afford to pay by the hour, rather than on a contingency basis. In addition, if the defendant acted with bad faith, the plaintiff would be entitled to punitive damages, which might be sufficient to make the case worthwhile even for an attorney working for a contingency fee.
+
+Finally, although many plaintiffs in trespass cases are the owners of the property, anyone with “legal possession, a right to immediate possession, or a right to future possession” in the land might sue for trespass. Restatement (Fourth) of the Law of Property, Preliminary Draft No. 4 § 5 (September 12, 2018).
+John Larkin, Inc. v. Marceau
+
+Supreme Court of Vermont, 2008.
+184 Vt. 207, 959 A.2d 551.
+
+Johnson, J.
+
+Real estate developers, who sued a neighboring landowner for trespass based on the neighbor’s spraying of pesticides in his apple orchard, appeal the superior court’s decision rejecting their trespass theory. Because the developers failed to make a showing sufficient to survive the neighbor’s motion for summary judgment, we affirm the court’s judgment in favor of the neighbor.
+
+Plaintiffs John Larkin, Inc. and Larkin Family Partnership (Larkin) own undeveloped land adjoining that of defendant J. Edward Marceau, Jr.,
+80
+who operates an apple orchard on his property. Larkin purchased the property from Marceau’s former spouse in 2001 for the purpose of building a residential development. To increase the density of the proposed development, Larkin later obtained a transfer of the development rights from Marceau’s property and another adjoining parcel of land.
+
+* * *
+
+In March 2005, * * * Larkin filed suit against Marceau, seeking injunctive and compensatory relief based on Marceau’s spraying of pesticides in his orchard. The lawsuit sounded in trespass, with Larkin alleging that winds carried detectable levels of pesticides onto its property, thereby damaging the property. In his answer to the complaint, Marceau asserted, among other things, that Larkin had failed to state a claim upon which relief could be granted, that the claims were not ripe, and that the claims were barred by Vermont’s right-to-farm law, 12 V.S.A. §§ 5751–5754, which establishes a rebuttable presumption that agricultural activities are not a nuisance. Id. § 5753(a)(1). The superior court initially dismissed the trespass claim, but later allowed it to proceed beyond the pleadings stage.
+
+In January 2007, after discovery was closed, Marceau moved for summary judgment, arguing that Larkin was in fact making a nuisance claim but couching the complaint in terms of trespass to circumvent the right-to-farm law. Larkin opposed the motion and filed a cross-motion for summary judgment * * *. Concluding that Larkin’s suit actually sounded in nuisance rather than trespass, the superior court stated that it would not endorse the fiction that Marceau’s pesticides occupied Larkin’s land, which would allow Larkin to evade the Legislature’s plain intent to offer heightened protection to agricultural activities with respect to claims of this nature. The court declined to grant either party summary judgment, however, stating that the right-to-farm law did not necessarily preclude Larkin’s complaint from surviving a motion for summary judgment insofar as the law established only a rebuttable presumption that no nuisance existed. The parties later stipulated to dismissal of Larkin’s claims to the extent that they sounded in nuisance, and the superior court entered a final judgment against Larkin.
+
+On appeal, Larkin argues that: (1) the superior court erred by recharacterizing its trespass action as a nuisance action subject to the right-to-farm law and thus effectively dismissing its trespass claim; (2) the right-to-farm law does not insulate farmers from liability for trespass, regardless of the nature of the trespass * * *. In response, Marceau argues that Larkin’s claims are actually nuisance claims subject to the right-to-farm law, and that Larkin cannot avoid that law by alleging trespass. * * * We conclude that Larkin failed to make a showing sufficient to survive
+81
+summary judgment on its trespass claim, and thus affirm the superior court’s judgment in favor of Marceau.
+
+The parties frame the primary issue as whether the deposit of airborne particulates on land may sound in trespass rather than nuisance. They both acknowledge the accepted distinction “that trespass is an invasion of the plaintiff’s interest in the exclusive possession of his land, while nuisance is an interference with his use and enjoyment of it.” W. Keeton et al., Prosser and Keeton on the Law of Torts § 87, at 622 (5th ed.1984). Compare Restatement (Second) of Torts § 158 cmt. c, at 277 (1965) (describing trespass as an “intrusion” invading “the possessor’s interest in the exclusive possession of his land” (internal quotations omitted)) with Restatement (Second) of Torts § 821D cmt. d, at 101 (1979) (defining nuisance as “an interference with the interest in the private use and enjoyment of the land [that] does not require interference with the possession,” and distinguishing trespass as “an invasion of the interest in the exclusive possession of land”). Larkin claims that Marceau’s application of pesticides that settle onto its property effectively ousted it from the property. Marceau counters that Larkin is actually asserting a loss in the use and enjoyment of its property, which is a claim sounding in nuisance.
+
+Traditionally, courts held that although a personal entry is unnecessary for trespass to take place, a defendant’s act “must cause an invasion of the plaintiff’s property by some tangible matter.” See Maddy v. Vulcan Materials Co., 737 F.Supp. 1528, 1539 (D.Kan.1990 (citing cases); see also Adams v. Cleveland-Cliffs Iron Co., 237 Mich.App. 51, 602 N.W.2d 215, 219 (Ct.App.1999) (citing cases); D. Dobbs, The Law of Torts § 50, at 96 (2001) (“The law of nuisance deals with indirect or intangible interference with an owner’s use and enjoyment of land, while trespass deals with direct and tangible interferences with the right to exclusive possession of land.”) * * *. Plaintiffs showing a direct and tangible invasion of their property may obtain injunctive relief and at least nominal damages without proof of any other injury. Adams, 602 N.W.2d at 219.
+
+On the other hand, plaintiffs claiming a nuisance have to demonstrate actual and substantial injury. Id. Under this traditional view, the intrusion of smoke, gas, noise, or other invisible particles onto another’s property is not actionable as a trespass, but only as a private nuisance. Keeton, supra, § 13, at 71; see Dobbs, supra, § 53, at 105 (explaining that courts have been reluctant to allow trespass actions based on the invasion of microscopic or intangible particles because trespass “provided no mechanism for limiting liability to serious or substantial invasions”).
+
+Some courts eventually adopted a so-called “modern” theory of trespass that permits actions based on the invasion of intangible airborne particulates. Compare Maddy, 737 F.Supp. at 1539–40 (explaining and
+82
+adopting “modern trend” of trespass) with Adams, 602 N.W.2d at 220–21 (explaining and rejecting “modern view” of trespass). Under this modern theory, invasions of intangible matter are actionable in trespass only if they cause substantial damage to the plaintiff’s property, sufficient to be considered an infringement on the plaintiff’s right to exclusive possession of the property. Hence, the modern view “departs from traditional trespass rules by refusing to infer damages as a matter of law” with respect to intangible invasions of property, as would be the case with direct, tangible invasions of property. Maddy, 737 F.Supp. at 1539; see Borland v. Sanders Lead Co., 369 So.2d 523, 530 (Ala.1979) (explaining that invasion of polluting particulates is actionable as trespass only if invasion interferes with exclusive possessory interest of plaintiff’s property by causing substantial damage to property); Bradley v. Am. Smelting & Ref. Co., 104 Wash.2d 677, 709 P.2d 782, 791 (1985) (en banc) (explaining that trespass from airborne particles cannot occur unless plaintiff has suffered actual and substantial damages).
+
+At least one court has rejected this modern view and held that recovery for trespass is available “only upon proof of an unauthorized direct or immediate intrusion of a physical, tangible object onto land over which the plaintiff has a right of exclusive possession.” Adams, 602 N.W.2d at 222. In so holding, the Michigan court reasoned that requiring a showing of substantial damage for a trespass of intangible matter would “conflate [ ] nuisance with trespass to the point of rendering it difficult to delineate the difference between the two theories of recovery” and would weaken property owners’ automatic right of exclusion in traditional trespass cases involving invasions of tangible objects. Id. at 221; see Keeton, supra, § 13, at 72 (“The historical requirement of an intrusion by a person or some tangible thing seems the sounder way to go about protecting the exclusive right to the use of property.”).
+
+In considering these alternatives, we note that Vermont law is silent on this issue, although we have recently looked to the Restatement of Torts for guidance on the law of trespass and nuisance. See, e.g., Harris v. Carbonneau, 165 Vt. 433, 437, 685 A.2d 296, 299 (1996) (citing Restatement § 158 in defining liability for trespass); Canton, 171 Vt. at 552, 762 A.2d at 810 (citing Restatement §§ 158. 821D, and 833 in defining liability for trespass and comparing nuisance). But neither the Restatement provisions nor their accompanying commentaries address the thorny question of whether the dispersion of particulate matter on property may be actionable as a trespass in addition to a nuisance. The Restatement does note, however, that the two actions are not necessarily exclusive and may overlap. Restatement (Second) of Torts § 821D cmt. e, at 102; see Bradley, 709 P.2d at 790 (noting that “remedies of trespass and nuisance are not necessarily mutually exclusive”) (quotations omitted).
+
+83
+We recognize that the dispersion of airborne particles, whatever their nature, may technically be considered an entry onto land creating liability for trespass irrespective of whether any damage was caused. Because the ambient environment always contains particulate matter from many sources, such a technical reading of trespass would subject countless persons and entities to automatic liability for trespass absent any demonstrated injury. Plainly, that cannot be the law-and, as far as we can tell, no jurisdiction has so held. The question, then, is whether the physical entry onto land of intangible airborne particulates can ever be a trespass, or whether such an invasion may be actionable only as a nuisance. Because Larkin has failed to demonstrate any impact on its property from Marceau’s pesticides, we find it unnecessary in this case to adopt a hard-line position that the dispersion of airborne particulates on property may never be actionable as a trespass, irrespective of the nature of the invasion or the right invaded. We leave for another day the question of whether the intrusion of airborne particulates may ever be a trespass, and, if so, what impact is required to sustain such an action.
+
+Here, absent a demonstrated physical impact on Larkin’s property resulting from the airborne particulates, the superior court did not err in granting summary judgment to Marceau. When particles enter the ambient environment without any demonstrated impact on the land, we fail to see how a trespass has occurred. In such a case, there is no ouster from the land, as Larkin claims here, and no interference with the landowner’s right to exclusive possession of the land. Hence, under such circumstances, the landowner has no action in trespass. In a traditional trespass action, the right to exclusive possession of property may not depend on an analysis of the impact on the use of the land, but we cannot presume an intrusion on that right in situations where the plaintiff fails to show that an intangible invasion of airborne particulates had a demonstrated physical impact.
+
+Despite having an opportunity during discovery to make out a case of trespass under the modern view examining the nature of the right invaded, Larkin failed to make any showing whatsoever that the presumed dispersion of detectable levels of pesticides onto its property from Marceau’s orchard deprived it of exclusive possession of its property or had any other impact on the property. * * * Nor did Larkin proffer evidence indicating the extent of the dispersion of pesticides on its property or any potential safety or health concerns related to the pesticide use. * * *
+
+Without question, there are situations in which both trespass and nuisance—two distinct actions that are not mutually exclusive—will be cognizable in the same lawsuit. This is not such a case, however.
+
+* * *
+
+Affirmed.
+84
+Notes
+
+1.What becomes of the availability of nominal damages in trespass cases in Vermont after Larkin?
+
+2.In what sense might it be said that Marceau intended to put his valuable pesticide onto adjacent property? If you were the defendant, would you have conceded the issue of intent?
+
+3.Courts have adopted a variety of approaches to the problem addressed in Larkin. Bradley v. American Smelting & Refining Co., 104 Wash.2d 677, 691, 709 P.2d 782, 791 (1985), for example, held that:
+
+When airborne particles are transitory and quickly dissipate, they do not interfere with a property owner’s possessory rights and, therefore, are properly denominated as nuisances. * * * When, however, the particles or substance accumulate on the land and do not pass away, then a trespass has occurred.
+
+The court in Martin v. Reynolds Metals Co., 221 Or. 86, 342 P.2d 790 (1959), took yet another approach in a case involving fluoride particulates blown from an aluminum plant onto neighboring properties. The court held that in light of the revelations of modern science, the physical properties of the invading matter—whether automobile or noxious odor—are irrelevant: “We prefer to emphasize the object’s energy or force rather than its size. Viewed in this way we may define trespass as any intrusion which invades the possessor’s protected interest in exclusive possession, whether that intrusion is by visible or invisible pieces of matter or by energy which can be measured only by the mathematical language of the physicist.” The court defined the interest in exclusive possession as the “sense of ownership; a feeling that what one owns or possesses should not be interfered with,” leaving to the jury to determine whether the defendant interfered with this interest. Interestingly, the court went so far as to say that “if such interest circumscribed by these considerations is not violated or endangered, the defendant’s conduct, even though it may result in a physical intrusion, will not render him liable in an action of trespass.”
+
+Which of these approaches—that of Larkin, Bradley, or Martin—most faithfully protects the interest at stake in trespass cases and maintains a meaningful distinction between trespass and nuisance? Note that with any approach, some invasions will constitute both a trespass and a nuisance. The degree of overlap is significant not only for right to farm statutes, as in Larkin, but also because actions for trespass and nuisance differ significantly in the applicable statute of limitations, required degree of culpability (intent in trespass, negligence in nuisance), and available measures of damages.
+
+4.What of “stray electricity” and electromagnetic waves escaping onto plaintiff’s land? Trespass? See, Fletcher v. Conoco Pipe Line Co., 129 F.Supp.2d 1255 (W.D. Mo. 2001); Public Service Co. of Colorado v. Van Wyk, 27 P.3d 377 (Colo. 2001); Beal v. Western Farmers Elec. Co-op., 228 P.3d 538 (Okla. Civ. App. 2009). If the answer is no, does this mean that a “fictitious ‘dimensional’
+85
+test,” as the Larkin court describes it, still plays some role in distinguishing trespasses and nuisances?
+
+5.Common defenses. Not all intentional entries onto the land of another are actionable. Some entries are privileged as, for example, when one enters the land of another with the consent of the possessor. In many everyday situations consent is implied. For example, in Dobrin v. Stebbins, 122 Ill.App.2d 387, 259 N.E.2d 405 (1970) the plaintiff, a door-to-door salesman was attacked by the defendant’s dog as he approached the defendant’s front door. The court held that in the absence of signs warning salesmen and others to keep off, plaintiff and others who might peaceably come onto the land in this way were not trespassers. As is described later in this chapter, courts also recognize the defense (or privilege) of necessity under which, in some emergency situations, public authorities and also private persons can enter the land of others, and even destroy the real and personal property of others, to avoid greater perils. Other privileges include the privileges long recognized at common law of travelers upon the public highways to enter adjoining land in order to avoid obstructions upon the highway and of the owners of animals being driven upon the public highway to enter adjoining land to recapture animals that have strayed from the highway.
+
+6.Subsurface areas and airspace. The typical trespass case involves an invasion of the possessor’s interest in the exclusive possession of the surface area of the land. The possessor’s interests, however, include an interest in the subsurface areas of the land as well as the airspace above it. The question is, how extensive is this legally protected interest? At common law, it was sometimes said that with respect to the air above property, a person who possessed land “possesses all the space upwards to an indefinite extent; such is the maxim of the law.” Herrin v. Sutherland, 74 Mont. 587, 241 P. 328, 331–32 (1925), quoting Cooley’s Blackstone, Book II, 18. This usque ad coelum perspective inevitably came into conflict with air travel. At least since the Air Commerce Act of 1926, 44 Stat. 568, the navigable air space, as defined by regulations promulgated by the Federal Aviation Authority, is within the public domain. See United States v. Causby, 328 U.S. 256, 66 S.Ct. 1062, 90 L.Ed. 1206 (1946). A useful discussion of some cases may be found in Colin Cahoon, “Low Altitude Airspace” A Property Rights No-man’s Land, 56 J. Air. L & Com. 157 (1990).
+
+A landowner obviously has a similar interest in exploiting the subsurface potential of his real property or preventing others from doing so without his consent. See Edwards v. Sims, 232 Ky. 791, 24 S.W.2d 619 (1929) (plaintiff claimed the Great Onyx Cave ran beneath his land and sought to prohibit owner of land where the cave mouth was located from conducting guided tours through the portion of the cave under plaintiff’s land). However, public easements for sewer lines or subways may be so far below the potentially useable subsurface areas of the land as not to constitute a compensable “taking” of property. See Boehringer v. Montalto, 142 Misc. 560, 254 N.Y.S. 276 (1931). Trespass claims also arise with respect to oil and gas wells and
+86
+underground pollution, two topics that are beyond the scope of a first year course.
+2.TRESPASS TO CHATTELS (PERSONAL PROPERTY)
+
+a.General
+
+In modern law, the tort of trespass to chattels covers the intentional physical interference with or destruction of personal property. As with trespass to land, all that is required is that the defendant intend the act toward the property. A good faith and reasonable belief that the chattels are one’s own is no defense. In a classic case, the defendant shot at what he reasonably believed was a wolf. The animal turned out to be a dog owned by the plaintiff, and the defendant was held liable for damages. Ranson v. Kitner, 31 Ill.App. 241 (1888). (As the Ranson case illustrates, animals are considered to be chattels.) In most jurisdictions, trespass to chattels will lie even if only for nominal damages when the defendant has intentionally dispossessed the plaintiff. If, however, the defendant has merely intentionally interfered with the chattel, the plaintiff must prove actual damages. See Restatement (Second) of Torts § 218. Damages may consist in harm to the chattel itself or in the loss of the use of the chattel for some period of time.
+
+The internet has created new and interesting ways to trespass on another’s chattel. In eBay, Inc. v. Bidder’s Edge, Inc., 100 F.Supp.2d 1058 (N.D.Cal. 2000), the defendant was an “auction aggregation site” designed to offer on-line auction buyers the ability to search for items across numerous on-line auctions without having to visit each host site individually. In order to acquire this information, Bidder’s Edge used software bots (also called spiders and web-crawlers) whose function was to search, copy, and retrieve information from the web sites of others. EBay sued the defendant, alleging among other things that the robots constituted a trespass to eBay’s chattel, i.e. its servers. The court agreed and granted eBay a preliminary injunction. Part of eBay’s claim was that the bots, and the potential for still other aggregation companies to send out additional bots, threatened to reduce eBay’s system performance and system availability. Id. at 1066. For a similar outcome, see Sotelo v. DirectRevenue, LLC, 384 F.Supp.2d 1219 (N.D. Ill. 2005) (recognizing a trespass to chattel claim under Illinois law for spyware). What if there were no threatened diminution in performance? Still a trespass? See Intel Corp. v. Hamidi, 30 Cal.4th 1342, 1 Cal.Rptr.3d 32, 71 P.3d 296 (2003). In Hamidi, the defendant, a former Intel employee, sent six mass e-mails to some 35,000 current Intel employees. These e-mails were critical of Intel’s personnel practices, and urged the employees to leave Intel for other firms. Should the defendant’s purpose matter?
+
+87
+Extensive literature has developed concerning the wisdom of equating real space and cyberspace so as to facilitate the application trespass law to this new area. See Dan Hunter, Cyberspace as Place and the Tragedy of the Digital Anticommons, 91 Cal. L. Rev. 439 (2003); Richard Epstein, Intel v. Hamidi: The Role of Self-Help in Cyberspace?, 1 J.L. Econ. & Pol’y 147 (2005); Greg Lastowka, Decoding Cyberproperty, 40 Ind. L. Rev. 23 (2007); Catherine M. Sharkey, Trespass Torts and Self-Help For an Electronic Age, 44 Tulsa L. Rev. 677 (2009).
+
+b.Relationship to Conversion
+
+In some jurisdictions, “conversion” is merely a type of remedy—consisting of a forced sale, at market value, of the plaintiff’s property to the defendant—for the tort of trespass to chattels. In other jurisdictions, conversion is considered a stand-alone tort, albeit one closely related to trespass to chattels. In these jurisdictions, conversion is described as the intentional “exercise of dominion or control over a chattel which so seriously interferes with the right of another to control it that the actor may justly be required to pay the other the full value of the chattel.” Restatement (Second) of Torts § 222A. The exercise of dominion can consist of the intentional unauthorized use, destruction, possession, or wrongful disposition of the chattel. Id. at § 223. In a case where the defendant intentionally destroys a chattel, the remedy will be the same whether the plaintiff brings his action in trespass to chattels or in conversion.
+
+Under both theories the damages will be the fair market value of the chattel at the time of its destruction. Where the chattel is not totally destroyed, however, the remedy under a trespass theory will be the damage caused to the chattel,32 that is an amount representing the diminution in the chattel’s fair market value. In those circumstances a plaintiff might prefer to proceed in conversion if he is able to establish that the defendant has exercised the requisite dominion or control over the plaintiff’s property. Similarly, to take a case of unauthorized use of a chattel, conversion will lie, and the defendant will in effect be forced to purchase the chattel, if the unauthorized use “is a serious violation of the right of another to control its use.” Restatement (Second) of Torts § 227. See also id. at § 228. Control that is accompanied by an unauthorized, intentional refusal to return the chattel to its owner, will sometimes constitute a conversion even where the other’s possession lasts only a short period of time. In such circumstances, if a court concludes that the defendant was “exercising dominion over [the chattel] in exclusion or defiance of plaintiff’s right” it may hold that the defendant has converted the chattel and assess damages accordingly. See Russell-Vaughn Ford, Inc. v. Rouse, 281 Ala. 567, 206 So.2d 371 (1968) (automobile salesman asks for the keys to plaintiff’s car and mockingly
+88
+refuses to return them until the police are called). If the unauthorized use is not so serious but nevertheless deprives someone of the use of a chattel for a substantial enough period of time, i.e. for a period that is more than de minimis, damages, as has already been noted, may be recovered for the temporary loss of the use of the chattel under a trespass to chattels theory.
+
+Many modern cases of conversion involve the hypothecation of financial instruments, such as stock certificates. While such instruments are chattels, they are intangible and thus are different sorts of chattels from the ones generally associated with trespass to chattels. Conversion is thus more fruitfully discussed in connection with other economic torts that typically arise in a commercial context.
+
+As is the case with respect to trespass to chattels, the internet has created novel opportunities for conversion. For an interesting conversion case involving the ownership of the internet domain name “sex.com,” see Kremen v. Cohen, 337 F.3d 1024 (9th Cir. 2003); Noah M. Schottenstein, Of Process and Product: Kremen v. Cohen and the Consequences of Recognizing Property Rights in Domain Names, 14 Va. J.L. & Tech 1 (2009). Developments in medical research have also given rise to conversion claims. See Moore v. Regents of the University of California, 51 Cal.3d 120, 793 P.2d 479, 271 Cal.Rptr. 146 (1990). In Moore plaintiff’s doctors used his cells without his consent for potentially lucrative medical research. See David Koepsell, Who Owns You: The Corporate Gold Rush to Patent Your Genes (2009).
+
+
