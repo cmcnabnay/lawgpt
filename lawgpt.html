@@ -341,6 +341,12 @@
   .bubble p{ margin:0 0 12px; }
   .bubble p:last-child{ margin-bottom:0; }
   .bubble ul, .bubble ol{ margin:0 0 12px; padding-left:20px; }
+  .msg-cost{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10.5px;
+    color:var(--text-muted);
+    margin-top:8px;
+  }
 
   .thinking{
     display:inline-flex;
@@ -1258,6 +1264,16 @@ pre code {
   white-space:nowrap;
 }
 .schedule-notes-btn:hover{ border-color:var(--brass-dim); color:var(--brass); }
+.schedule-attach-select{
+  flex:0 0 auto;
+  max-width:160px;
+  background:var(--ink-3);
+  border:1px solid var(--hairline);
+  color:var(--text-muted);
+  font-size:11px;
+  padding:5px 6px;
+  border-radius:var(--radius);
+}
 .schedule-banner-card{
   background:var(--ink-3);
   border:1px solid var(--brass-dim);
@@ -1543,6 +1559,38 @@ pre code {
 .notes-sidebar-item:hover .notes-sidebar-item-delete{ opacity:1; }
 .notes-sidebar-item-delete:hover{ background:var(--oxblood); color:var(--text-light); }
 
+.notes-sidebar-folder{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  width:100%;
+  text-align:left;
+  background:none;
+  border:none;
+  padding:8px 10px 8px 6px;
+  margin-top:6px;
+  cursor:pointer;
+  font-family:'IBM Plex Mono',monospace;
+  font-size:10.5px;
+  letter-spacing:.04em;
+  text-transform:uppercase;
+  color:var(--brass-dim);
+}
+.notes-sidebar-folder:hover{ color:var(--brass); }
+.notes-sidebar-folder-arrow{
+  display:inline-block;
+  transition:transform .12s ease;
+  font-size:9px;
+}
+.notes-sidebar-folder.collapsed .notes-sidebar-folder-arrow{ transform:rotate(-90deg); }
+.notes-sidebar-folder-count{
+  margin-left:auto;
+  color:var(--text-muted);
+  font-size:10px;
+}
+.notes-sidebar-folder-items.collapsed{ display:none; }
+.notes-sidebar-folder-items .notes-sidebar-item{ padding-left:20px; }
+
 .notes-main{
   flex:1;
   min-width:0;
@@ -1671,6 +1719,15 @@ pre code {
 }
 .notes-report-source.matched{ color:#8fb3d9; }
 .notes-report-source.missing{ color:#c9855a; }
+.notes-heading{ margin-top:1.4em; }
+.notes-heading:first-child{ margin-top:0; }
+.notes-report-body hr, .bubble hr{ border:none; border-top:1px solid rgba(255,255,255,.12); margin:1.2em 0; }
+.notes-report-cost{
+  font-size:11px;
+  margin-top:2px;
+  color:var(--text-muted);
+  font-family:'IBM Plex Mono',monospace;
+}
 .notes-report-actions{ display:flex; gap:8px; flex:0 0 auto; }
 .notes-report-actions button{
   font-size:11.5px;
@@ -2014,7 +2071,7 @@ pre code {
     <div class="settings-divider"></div>
 
     <h2>Notes prompts</h2>
-    <p>Each Schedule "Notes" button sends one of these prompts to the model, chosen by how that reading is classified (the second pill next to it). Edit a prompt below to change what gets asked for that type from now on, or reset it back to the built-in version. Assignments and tasks don't get a Notes button, so they have no prompt to edit.</p>
+    <p>Each Schedule "Notes" button sends one of these prompts to the model, chosen by how that reading is classified (the second pill next to it). Edit a prompt below to change what gets asked for that type from now on, or reset it back to the built-in version. "Assignment" is the prompt the "Complete" button sends instead — it tells the model to do the assignment, not summarize it. Tasks (bring an item, attend something) don't get a button at all, so they have no prompt to edit.</p>
     <div class="settings-form">
       <label for="settingsPromptKindSelect">Reading type</label>
       <select id="settingsPromptKindSelect">
@@ -2022,6 +2079,7 @@ pre code {
         <option value="textbook">Textbook</option>
         <option value="reading">Other Reading</option>
         <option value="restatement">Restatement/UCC (Contracts)</option>
+        <option value="assignment">Assignment (Complete button)</option>
       </select>
       <textarea class="settings-prompt-textarea" id="settingsPromptTextarea" spellcheck="false"></textarea>
       <div class="settings-prompt-hint" id="settingsPromptHint"></div>
@@ -2029,6 +2087,16 @@ pre code {
         <button type="button" id="settingsPromptSaveBtn">Save prompt</button>
         <button type="button" class="btn-secondary" id="settingsPromptResetBtn">Reset to default</button>
       </div>
+    </div>
+
+    <div class="settings-divider"></div>
+
+    <h2>Linked project folder</h2>
+    <p>Save/Download and Open default into this repo's own <code>notes/</code> folder once you've linked it. Click "Link folder now" and pick this app's <strong>"lawgpt" folder itself</strong> (the one containing <code>lawgpt.html</code>) — <strong>not</strong> the <code>notes</code> folder inside it; the app creates/uses the <code>notes</code> subfolder automatically from there. Picking anything else (e.g. <code>notes</code> itself, or an unrelated folder) is rejected rather than linked, so it can't create a stray <code>notes</code> folder somewhere unexpected. This link is remembered by your browser — it survives reloads and proxy server restarts, and stays linked until you use "Forget linked folder" below.</p>
+    <div class="settings-status" id="settingsFolderStatus"></div>
+    <div class="settings-actions">
+      <button type="button" id="settingsLinkFolderBtn">Link folder now</button>
+      <button type="button" class="btn-secondary" id="settingsForgetFolderBtn">Forget linked folder</button>
     </div>
 
     <div class="settings-actions" style="margin-top:18px;">
@@ -2363,6 +2431,7 @@ pre code {
                 <div class="notes-report-head-text">
                   <div class="notes-report-title" id="notesReportTitle"></div>
                   <div class="notes-report-source" id="notesReportSource" style="display:none;"></div>
+                  <div class="notes-report-cost" id="notesReportCost" style="display:none;"></div>
                 </div>
                 <div class="notes-report-actions">
                   <button type="button" id="notesReportOpenEditorBtn" title="Open this AI-generated report in the Draft &amp; Compile editor">Open in Editor</button>
@@ -2384,6 +2453,7 @@ pre code {
                     <option value="">+ New row</option>
                   </select>
                   <button type="button" class="notes-head-btn" id="caseBriefFillBtn" title="Fill these fields from the Reading Report open above" style="display:none;">Fill from Report</button>
+                  <select class="case-brief-select" id="caseBriefFillSelect" title="Pick which one to fill in" style="display:none;"></select>
                   <div class="notes-save-status" id="caseBriefStatus"></div>
                 </div>
               </div>
@@ -2503,6 +2573,44 @@ return ctor.prototype=parent.prototype,child.prototype=new ctor,child.__super__=
 const API_URL = "http://localhost:3000/api/chat";
 const PROXY_ORIGIN = "http://localhost:3000";
 
+// Standard (non-batch) OpenAI API pricing, USD per 1M tokens, for the
+// models in #modelSelect. Update these if OpenAI changes pricing or a new
+// model is added to that dropdown -- there's no pricing endpoint in the
+// API itself, so this has to be kept in sync by hand.
+const MODEL_PRICING = {
+  "gpt-4o":      { input: 2.50, cachedInput: 1.25, output: 10.00 },
+  "gpt-4o-mini": { input: 0.15, cachedInput: 0.075, output: 0.60 }
+};
+
+// The Responses API returns token usage on every response (data.usage);
+// this turns that + the model used into a dollar figure. Returns null if
+// pricing for the model isn't known or usage is missing, so callers can
+// just skip showing a cost rather than showing a wrong one.
+function costFromUsage(usage, model){
+  const pricing = MODEL_PRICING[model];
+  if (!pricing || !usage || typeof usage.input_tokens !== "number" || typeof usage.output_tokens !== "number"){
+    return null;
+  }
+  const cachedTokens = (usage.input_tokens_details && usage.input_tokens_details.cached_tokens) || 0;
+  const uncachedInputTokens = Math.max(0, usage.input_tokens - cachedTokens);
+  const cost =
+    (uncachedInputTokens / 1e6) * pricing.input +
+    (cachedTokens / 1e6) * pricing.cachedInput +
+    (usage.output_tokens / 1e6) * pricing.output;
+  return cost;
+}
+
+// $0.0003 rather than $0.00 for a cheap gpt-4o-mini request -- fixed 2
+// decimals would round nearly every request in this app to "$0.00" and
+// make the feature useless. Once a request is expensive enough to clear a
+// cent, drop back to plain 2-decimal formatting.
+function formatCost(cost){
+  if (typeof cost !== "number" || Number.isNaN(cost)) return "";
+  if (cost === 0) return "$0.00";
+  if (cost < 0.01) return "$" + cost.toFixed(4);
+  return "$" + cost.toFixed(2);
+}
+
 // ====== SETTINGS PANEL (paste an API key, saved server-side to .env) ======
 const settingsOverlay = document.getElementById("settingsOverlay");
 const settingsApiKeyInput = document.getElementById("settingsApiKeyInput");
@@ -2531,6 +2639,7 @@ function openSettings(){
   settingsApiKeyInput.value = "";
   settingsOverlay.style.display = "flex";
   refreshKeyStatus();
+  refreshFolderStatus();
   settingsApiKeyInput.focus();
   populateSettingsPromptEditor();
 }
@@ -2557,6 +2666,67 @@ function populateSettingsPromptEditor(){
 
 document.getElementById("settingsGearBtn").addEventListener("click", openSettings);
 document.getElementById("settingsCloseBtn").addEventListener("click", closeSettings);
+document.getElementById("settingsForgetFolderBtn").addEventListener("click", async () => {
+  const btn = document.getElementById("settingsForgetFolderBtn");
+  const original = btn.textContent;
+  await clearRepoRootHandle();
+  const status = document.getElementById("settingsFolderStatus");
+  status.textContent = "No folder linked yet.";
+  status.className = "settings-status";
+  btn.textContent = "Forgotten — you'll be asked again";
+  setTimeout(() => { btn.textContent = original; }, 2000);
+});
+
+// Shows whether a folder is currently linked, the same way refreshKeyStatus
+// shows whether an API key is configured -- called on Settings open so the
+// status reflects what's actually stored in IndexedDB (and so survives a
+// proxy server restart, page reload, or new tab, none of which touch it --
+// it's purely a browser-side grant, not server state).
+async function refreshFolderStatus(){
+  const status = document.getElementById("settingsFolderStatus");
+  if (!window.showDirectoryPicker){
+    status.textContent = "This browser doesn't support folder linking (File System Access API unavailable) — Save/Download will use the browser's own download flow instead.";
+    status.className = "settings-status";
+    return;
+  }
+  const stored = await getStoredRepoRootHandle();
+  if (stored){
+    status.textContent = `Folder linked: "${stored.name}".`;
+    status.className = "settings-status ok";
+  } else {
+    status.textContent = "No folder linked yet.";
+    status.className = "settings-status";
+  }
+}
+
+// Links the folder directly from this click -- the picker call is the
+// FIRST thing that happens (no prior await/alert), which is the most
+// reliable way to satisfy the browser's "must be a direct response to a
+// user gesture" requirement for showDirectoryPicker.
+document.getElementById("settingsLinkFolderBtn").addEventListener("click", async () => {
+  const status = document.getElementById("settingsFolderStatus");
+  if (!window.showDirectoryPicker){
+    status.textContent = "This browser doesn't support folder linking (File System Access API unavailable) — Save/Download will use the browser's own download flow instead.";
+    status.className = "settings-status";
+    return;
+  }
+  try{
+    const handle = await window.showDirectoryPicker({ id: "lawgpt-repo-root", startIn: "documents", mode: "readwrite" });
+    if (!(await looksLikeRepoRoot(handle))){
+      status.textContent = `"${handle.name}" doesn't contain lawgpt.html, so it wasn't linked — pick the "lawgpt" folder itself, not a subfolder like "notes".`;
+      status.className = "settings-status err";
+      return;
+    }
+    await storeRepoRootHandle(handle);
+    repoRootHandlePromise = Promise.resolve(handle);
+    status.textContent = `Folder linked: "${handle.name}".`;
+    status.className = "settings-status ok";
+  } catch(err){
+    if (err && err.name === "AbortError") return; // user cancelled the picker
+    status.textContent = "Couldn't link a folder: " + err.message;
+    status.className = "settings-status err";
+  }
+});
 settingsOverlay.addEventListener("click", (e) => {
   if (e.target === settingsOverlay) closeSettings();
 });
@@ -2625,6 +2795,15 @@ let matterCounter = 0;
 // and are listed in the Notes tab's own sidebar (#notesSidebar).
 let savedReports = [];
 let reportCounter = 0;
+
+// Declared here (rather than next to DEFAULT_NOTES_PROMPTS, much further
+// down) because loadState() below assigns to it directly, and loadState()
+// is called at top level before the script reaches that point -- a `let`
+// declared later is in its temporal dead zone until execution actually
+// reaches it, so referencing it from loadState() before then throws
+// "Cannot access 'customNotesPrompts' before initialization" the first
+// time a real saved docket (one that actually reaches this line) loads.
+let customNotesPrompts = {};
 
 const STORAGE_KEY = "lawgpt.docket.v1";
 
@@ -2805,7 +2984,7 @@ function renderChat(){
 
   inner.innerHTML = "";
   matter.messages.forEach(msg => {
-    inner.appendChild(renderMessage(msg.role, msg.content));
+    inner.appendChild(renderMessage(msg.role, msg.content, msg.cost));
   });
   document.getElementById("chatScroll").scrollTop = document.getElementById("chatScroll").scrollHeight;
 }
@@ -2819,16 +2998,20 @@ function attachChipListeners(){
   });
 }
 
-function renderMessage(role, content){
+function renderMessage(role, content, cost){
   const div = document.createElement("div");
   div.className = "msg " + role;
   const avatarLabel = role === "user" ? "You" : "LG";
   const roleLabel = role === "user" ? "You" : "Counsel";
+  const costHtml = role === "assistant" && typeof cost === "number"
+    ? `<div class="msg-cost">${escapeHtml(formatCost(cost))}</div>`
+    : "";
   div.innerHTML = `
     <div class="avatar">${avatarLabel}</div>
     <div class="bubble">
       <div class="role-label">${roleLabel}</div>
       <div class="content">${formatContent(content)}</div>
+      ${costHtml}
     </div>`;
   return div;
 }
@@ -2843,9 +3026,9 @@ function formatContent(text){
       // plain text chunk — run through your existing paragraph logic
       const chunk = parts[i];
       if (chunk.trim()){
-        html += escapeHtml(chunk)
+        html += chunk
           .split(/\n{2,}/)
-          .map(para => `<p>${para.replace(/\n/g,"<br>")}</p>`)
+          .map(formatParagraph)
           .join("");
       }
     } else if (i % 3 === 1){
@@ -2858,6 +3041,29 @@ function formatContent(text){
     }
   }
   return html;
+}
+
+// A single blank-line-delimited paragraph of Markdown-lite -> HTML. The
+// AI-generated notes/reports mark section headers with a leading "#"/"##"/
+// "###" and bold subheaders/terms with "**text**", but this renderer used to
+// just escape and print those characters literally instead of the bold text
+// they were meant to produce -- a report showed "## 1. Elements" and
+// "**Rule:**" on the page verbatim instead of rendering as bold.
+function formatParagraph(para){
+  // A bare "---" (the case/rule/definition separator the notes templates
+  // are told to emit between repeated blocks) renders as an actual divider
+  // instead of a literal line of hyphens.
+  if (/^\s*-{3,}\s*$/.test(para)) return "<hr>";
+  const escaped = escapeHtml(para);
+  const headingMatch = /^[ \t]*#{1,6}[ \t]+(.*)$/.exec(escaped);
+  if (headingMatch && !headingMatch[1].includes("\n")){
+    return `<p class="notes-heading"><strong>${boldInline(headingMatch[1])}</strong></p>`;
+  }
+  return `<p>${escaped.split("\n").map(boldInline).join("<br>")}</p>`;
+}
+
+function boldInline(line){
+  return line.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
 }
 
 function escapeHtml(str){
@@ -2927,7 +3133,7 @@ async function sendMessage(){
     }
 
     const replyText = extractText(data);
-    matter.messages.push({ role: "assistant", content: replyText });
+    matter.messages.push({ role: "assistant", content: replyText, cost: costFromUsage(data.usage, model) });
   } catch (err){
     matter.messages.push({ role: "assistant", content: "The request to counsel's office failed: " + err.message });
   } finally {
@@ -3061,12 +3267,14 @@ document.getElementById("tabDatabase").addEventListener("click", () => setView("
 // local proxy's generic /api/db/:table routes (see lawgpt-proxy/server.js)
 // -- the Supabase key never reaches this page. Tables and their columns are
 // discovered live (dbTables, loaded by loadDbTables()), not hardcoded. Every
-// table -- "cases" included -- is a plain freestanding editor with a picker
-// for existing rows and its primary key typed in like any other field. The
-// "cases" table additionally gets a "Fill from Report" button (see
-// caseBriefFillBtn below) that parses whichever Reading Report is open into
-// the form as a starting point -- including its own title as a default case
-// name -- but the user can always type a case name by hand instead.
+// table is a plain freestanding editor with a picker for existing rows and
+// its primary key typed in like any other field. "cases", "rules", and
+// "definitions" additionally get a "Fill from Report" button (see
+// caseBriefFillBtn/REPORT_PARSERS below) that parses whichever Reading
+// Report is open into the form as a starting point -- if the report covers
+// more than one case/rule/definition, a dropdown lets the user pick which
+// one -- but every field lands in a normal, editable box, so correcting or
+// retyping anything by hand is always fine.
 let dbTables = [];
 let dbSelectedTable = null;
 let dbRowsCache = [];
@@ -3097,12 +3305,18 @@ function getSelectedTableInfo(){
 // for.
 const TABLE_FIELD_CONFIG = {
   cases: {
-    order: ["case", "course", "facts", "procedural_posture", "issue", "holding", "rule", "reasoning", "plantiff_arguments", "defendant_arguments", "disposition", "importance"],
+    order: ["case", "course", "document", "facts", "procedural_posture", "issue", "holding", "rule", "reasoning", "plantiff_arguments", "defendant_arguments", "disposition", "importance"],
     labels: {
       procedural_posture: "Procedural Posture",
       plantiff_arguments: "Plaintiff's/Appellee's Arguments",
       defendant_arguments: "Defendant/Appellant's Arguments"
     }
+  },
+  rules: {
+    order: ["rule_name", "course", "source", "document", "statement", "legal_question", "requirements", "application", "exceptions"]
+  },
+  definitions: {
+    order: ["term", "course", "document", "definition", "significance", "distinction"]
   }
 };
 
@@ -3123,6 +3337,7 @@ function renderCaseFormFields(tableInfo, excludeColumns){
   columns.forEach(col => {
     if (exclude.has(col.name)) return;
     const isCourse = col.name === "course";
+    const isDocument = col.name === "document";
     const label = document.createElement("label");
     label.className = "case-field" + (col.isPrimaryKey || isCourse ? "" : " case-field-wide");
     const span = document.createElement("span");
@@ -3134,6 +3349,10 @@ function renderCaseFormFields(tableInfo, excludeColumns){
       field = document.createElement("select");
       field.appendChild(new Option("Select course…", ""));
       Object.values(CASE_COURSE_LABELS).forEach(courseLabel => field.appendChild(new Option(courseLabel, courseLabel)));
+    } else if (isDocument){
+      field = document.createElement("input");
+      field.type = "text";
+      field.placeholder = "e.g. CB pp. 1-34, Lucy v. Zehmer";
     } else {
       field = document.createElement(col.isPrimaryKey ? "input" : "textarea");
       if (col.isPrimaryKey) field.type = "text";
@@ -3305,75 +3524,253 @@ document.getElementById("caseBriefDeleteBtn").addEventListener("click", async ()
   }
 });
 
-// Best-effort extraction of the case-brief fields out of a generated
-// Reading Report's markdown (matching the section headings the
-// NOTES_PROMPT_* templates actually use: "## Facts", "# 10. POLICY AND
-// COMPETING ARGUMENTS", a bare "**Importance**" line, etc). This is a
-// starting point to review and correct by hand, not a guarantee — templates
-// differ, and a couple of fields (Policy, Importance) don't map cleanly onto
-// every one of them.
-function parseCaseFieldsFromReport(text){
-  const lines = String(text || "").split("\n");
-  const atx = /^#{1,4}\s+(.+?)\s*$/;
-  const boldOnly = /^\*\*(.+?)\*\*:?\s*$/;
-  const headings = [];
+// ====== "FILL FROM REPORT" PARSING (best-effort, for cases/rules/definitions) ======
+// AI-generated reports don't stick to one single markdown convention for a
+// field label -- some of it comes out as "**Label**" on its own line with
+// the body below, some as "## Label", and some as a plain "Label: value"
+// inline. This scans for whichever convention was actually used, but only
+// ever treats a line as a field label if it's one of the specific names
+// being looked for -- otherwise ordinary prose containing a colon (e.g.
+// "Whether the defendant breached its duty: yes.") would get misread as a
+// heading. This is a starting point to review and correct by hand, not a
+// guarantee — real reports vary, and some fields won't always be found.
+function normalizeReportLabel(s){
+  return String(s || "").replace(/^\d+\.\s*/, "").replace(/:$/, "").trim().toLowerCase();
+}
 
+// Finds every line in `lines` that looks like a field-label heading whose
+// normalized text is in `candidateNorms`, in any of the three conventions
+// above. `remainder` captures same-line text after "Label: " so a field
+// stated as "Document: CB pp 35-51" isn't lost (its body never reaches a
+// following line).
+function findReportFieldMarkers(lines, candidateNorms){
+  const markers = [];
   lines.forEach((line, i) => {
     const trimmed = line.trim();
-    let m = atx.exec(trimmed);
-    let headingText = m ? m[1] : null;
-    if (headingText == null){
-      m = boldOnly.exec(trimmed);
-      headingText = m ? m[1] : null;
+    let label = null, remainder = "";
+    let m = /^#{1,4}\s+(.+?)\s*$/.exec(trimmed);
+    if (m){ label = m[1]; }
+    if (label == null){
+      m = /^\*\*(.+?)\*\*:?\s*$/.exec(trimmed);
+      if (m){ label = m[1]; }
     }
-    if (headingText == null) return;
-    const norm = headingText.replace(/^\d+\.\s*/, "").replace(/:$/, "").trim().toLowerCase();
-    headings.push({ norm, line: i });
+    if (label == null){
+      m = /^\*{0,2}([A-Za-z][A-Za-z'/.() ]{1,45}?)\*{0,2}:\s*(.*)$/.exec(trimmed);
+      if (m && candidateNorms.has(normalizeReportLabel(m[1]))){ label = m[1]; remainder = m[2]; }
+    }
+    if (label == null) return;
+    markers.push({ norm: normalizeReportLabel(label), raw: label, line: i, remainder });
   });
+  return markers;
+}
 
-  const bodyFor = (candidates) => {
-    for (const h of headings){
-      if (candidates.includes(h.norm)){
-        const startLine = h.line + 1;
-        const next = headings.find(x => x.line > h.line);
-        const endLine = next ? next.line : lines.length;
-        return lines.slice(startLine, endLine).join("\n").trim();
-      }
+// Extracts {outputKey: bodyText} from one block of text, given a map of
+// outputKey -> acceptable label spellings (already lowercase).
+function extractReportFields(blockText, fieldMap){
+  const lines = String(blockText || "").split("\n");
+  const allNorms = new Set();
+  Object.values(fieldMap).forEach(norms => norms.forEach(n => allNorms.add(n)));
+  const markers = findReportFieldMarkers(lines, allNorms);
+
+  const bodyForNorms = (norms) => {
+    const marker = markers.find(mk => norms.includes(mk.norm));
+    if (!marker) return "";
+    const next = markers.find(mk => mk.line > marker.line);
+    const endLine = next ? next.line : lines.length;
+    const rest = lines.slice(marker.line + 1, endLine).join("\n");
+    return [marker.remainder, rest].filter(Boolean).join("\n").trim();
+  };
+
+  const fields = {};
+  Object.entries(fieldMap).forEach(([key, norms]) => { fields[key] = bodyForNorms(norms); });
+  return { fields, markers };
+}
+
+// Splits a section's raw text into one block per case/rule/definition -- the
+// templates are told to separate each with a line containing only "---".
+// Falls back to treating the whole section as a single block for older
+// reports generated before that instruction existed.
+function splitReportBlocks(sectionText){
+  const blocks = String(sectionText || "")
+    .split(/\n[ \t]*-{3,}[ \t]*\n/)
+    .map(b => b.trim())
+    .filter(Boolean);
+  if (blocks.length) return blocks;
+  const whole = String(sectionText || "").trim();
+  return whole ? [whole] : [];
+}
+
+// Locates a top-level numbered section ("### 4. CASES", "# 3. CASE BRIEF",
+// "## 3. IMPORTANT LEGAL CONCEPTS", etc.) by title match and returns just
+// its own text, up to the next top-level numbered heading. Falls back to
+// the whole report if no top-level heading matches (so parsing still runs,
+// just over a wider range) -- templates and their exact section numbers can
+// vary or change over time.
+function extractReportSection(text, titleMatchers){
+  const lines = String(text || "").split("\n");
+  const tops = [];
+  lines.forEach((line, i) => {
+    const m = /^#{1,4}\s*\d+\.\s*(.+?)\s*$/.exec(line.trim());
+    if (m) tops.push({ norm: m[1].toLowerCase(), line: i });
+  });
+  const start = tops.find(t => titleMatchers.some(re => re.test(t.norm)));
+  if (!start) return text;
+  const next = tops.find(t => t.line > start.line);
+  const endLine = next ? next.line : lines.length;
+  return lines.slice(start.line + 1, endLine).join("\n");
+}
+
+// A block's first non-blank line, useful as a fallback "name" when nothing
+// more specific parses out -- the AI sometimes titles a case/rule/term block
+// with its actual name as a bare heading, rather than literally writing the
+// field label ("Case Name:", "Rule:", ...) the template asked for.
+function firstNonBlankLine(block){
+  return (block.split("\n").map(l => l.trim()).find(Boolean) || "").replace(/^#{1,4}\s+/, "").replace(/^\*+|\*+$/g, "").trim();
+}
+
+function parseCasesFromReport(reportText, report){
+  const section = extractReportSection(reportText, [/^cases?$/i, /case brief/i]);
+  const courseLabel = CASE_COURSE_LABELS[report.course] || report.course || "";
+  return splitReportBlocks(section).map((block, idx) => {
+    const fieldMap = {
+      __name: ["case name"],
+      __course: ["course"],
+      document: ["document"],
+      facts: ["facts"],
+      procedural_posture: ["procedural posture"],
+      issue: ["issue"],
+      holding: ["holding"],
+      rule: ["rule", "rule(s)"],
+      reasoning: ["reasoning", "court's reasoning"],
+      plantiff_arguments: ["plaintiff's/appellee's arguments", "plaintiff arguments", "plaintiff's arguments", "appellee's arguments"],
+      defendant_arguments: ["defendant/appellant's arguments", "defendant arguments", "defendant's arguments", "appellant's arguments"],
+      disposition: ["disposition"],
+      importance: ["importance"]
+    };
+    const { fields, markers } = extractReportFields(block, fieldMap);
+    // Only trust the block's bare first line as the case's own name if that
+    // line wasn't itself recognized as one of the fields above (e.g. a
+    // literal "**Case Name**" heading, which fields.__name already captures
+    // the body of) -- otherwise the label text itself would get used as the
+    // "name" instead of the actual case.
+    const blockLines = block.split("\n");
+    const firstLineIdx = blockLines.findIndex(l => l.trim());
+    const firstLineIsField = markers.some(mk => mk.line === firstLineIdx);
+    const first = firstNonBlankLine(block);
+    let name = (!firstLineIsField && first) ? first : "";
+    if (!name && fields.__name) name = fields.__name.split(/\n|,/)[0].trim();
+    if (!name) name = `Case ${idx + 1}`;
+    delete fields.__name;
+    delete fields.__course;
+    return { label: name, values: { case: name, course: courseLabel, ...fields } };
+  });
+}
+
+function parseRulesFromReport(reportText, report){
+  const section = extractReportSection(reportText, [/rules and legal principles/i, /^rules$/i, /important legal concepts/i]);
+  const courseLabel = CASE_COURSE_LABELS[report.course] || report.course || "";
+  return splitReportBlocks(section).map((block, idx) => {
+    const { fields } = extractReportFields(block, {
+      source: ["source"],
+      document: ["document"],
+      statement: ["statement"],
+      legal_question: ["legal question"],
+      requirements: ["requirements"],
+      application: ["application"],
+      exceptions: ["exceptions"]
+    });
+    // The rule's own name is the heading that introduced this block, e.g.
+    // "**Rule 1: Offer Definition**" -- strip a leading "Rule"/"Rule N:".
+    const lines = block.split("\n");
+    let name = "";
+    for (const line of lines){
+      const trimmed = line.trim();
+      const m = /^#{1,4}\s+(.+?)\s*$/.exec(trimmed) || /^\*\*(.+?)\*\*:?\s*$/.exec(trimmed);
+      if (m && /^rule\b/i.test(m[1])){ name = m[1].replace(/^rule\s*\d*[.:)]?\s*/i, "").trim(); break; }
     }
-    return "";
-  };
+    if (!name){
+      const first = firstNonBlankLine(block);
+      if (/^rule\b/i.test(first)) name = first.replace(/^rule\s*\d*[.:)]?\s*/i, "").trim();
+    }
+    if (!name) name = `Rule ${idx + 1}`;
+    return { label: name, values: { rule_name: name, course: courseLabel, ...fields } };
+  });
+}
 
-  return {
-    facts: bodyFor(["facts"]),
-    procedural_posture: bodyFor(["procedural posture"]),
-    issue: bodyFor(["issue"]),
-    holding: bodyFor(["holding"]),
-    rule: bodyFor(["rule", "rule(s)"]),
-    reasoning: bodyFor(["reasoning", "court's reasoning"]),
-    plantiff_arguments: bodyFor(["plaintiff's/appellee's arguments", "plaintiff's / appellee's argument", "plaintiff's/appellee's argument"]),
-    defendant_arguments: bodyFor(["defendant/appellant's arguments", "defendant's / appellant's argument", "defendant's/appellant's argument"]),
-    disposition: bodyFor(["disposition"]),
-    importance: bodyFor(["importance", "what i need to know"])
-  };
+function parseDefinitionsFromReport(reportText, report){
+  const section = extractReportSection(reportText, [/definitions and terminology/i, /important terms/i]);
+  const courseLabel = CASE_COURSE_LABELS[report.course] || report.course || "";
+  return splitReportBlocks(section).map((block, idx) => {
+    const { fields } = extractReportFields(block, {
+      definition: ["definition"],
+      significance: ["significance", "meaning", "meaning in this case", "why it matters"],
+      distinction: ["distinction"]
+    });
+    // The term itself is normally the block's own heading (e.g. "**Offer**"),
+    // not restated as a literal "Term:" label.
+    let name = "";
+    for (const line of block.split("\n")){
+      const trimmed = line.trim();
+      const m = /^#{1,4}\s+(.+?)\s*$/.exec(trimmed) || /^\*\*(.+?)\*\*:?\s*$/.exec(trimmed);
+      if (m && !/^(term|definition|significance|distinction|meaning|why it matters)\b/i.test(m[1])){ name = m[1].trim(); break; }
+    }
+    if (!name){
+      const first = firstNonBlankLine(block);
+      if (!/^(term|definition|significance|distinction|meaning|why it matters)\b/i.test(first)) name = first;
+    }
+    if (!name) name = `Term ${idx + 1}`;
+    return { label: name, values: { term: name, course: courseLabel, ...fields } };
+  });
+}
+
+// Which tables "Fill from Report" understands, and how to parse each.
+const REPORT_PARSERS = {
+  cases: parseCasesFromReport,
+  rules: parseRulesFromReport,
+  definitions: parseDefinitionsFromReport
+};
+
+function applyReportFillItem(item){
+  if (currentCaseId && !confirm("This will overwrite the form with fields parsed from the report. Continue?")) return;
+  setCaseFormValues(item.values);
+  setCaseBriefStatus(`Filled "${item.label}" from report — review before saving.`);
 }
 
 // Fills the form from whichever Reading Report is open -- a starting point
-// to review and correct, not a save. Only ever shown for the "cases" table
-// (see onDbTableChanged), but the case name it fills in (the report's own
-// title) is just a default: it lands in a normal, editable "Case" field, so
-// typing a different name before saving is fine.
+// to review and correct, not a save. Shown for any table REPORT_PARSERS
+// knows how to parse (see onDbTableChanged). When a report contains more
+// than one case/rule/definition (e.g. a textbook reading covering three
+// cases), this presents a dropdown to pick which one instead of guessing.
 document.getElementById("caseBriefFillBtn").addEventListener("click", () => {
-  if (dbSelectedTable !== "cases") return;
+  const parser = REPORT_PARSERS[dbSelectedTable];
+  const select = document.getElementById("caseBriefFillSelect");
+  if (!parser) return;
   if (!currentReport || !currentReport.content){
     setCaseBriefStatus("Open a Reading Report above first.");
     return;
   }
-  if (currentCaseId && !confirm("This will overwrite the form with fields parsed from the open report. Continue?")) return;
-  const parsed = parseCaseFieldsFromReport(currentReport.content);
-  parsed.case = currentReport.title;
-  parsed.course = CASE_COURSE_LABELS[currentReport.course] || currentReport.course || "";
-  setCaseFormValues(parsed);
-  setCaseBriefStatus("Filled from report — review before saving.");
+  const items = parser(currentReport.content, currentReport).filter(it =>
+    Object.entries(it.values).some(([k, v]) => k !== "course" && String(v || "").trim())
+  );
+  if (!items.length){
+    select.style.display = "none";
+    setCaseBriefStatus(`Couldn't find any ${dbSelectedTable} content to parse in this report.`);
+    return;
+  }
+  if (items.length === 1){
+    select.style.display = "none";
+    applyReportFillItem(items[0]);
+    return;
+  }
+  select.innerHTML = "";
+  select.appendChild(new Option(`Choose which one to fill… (${items.length} found)`, "", true, true));
+  items.forEach((item, i) => select.appendChild(new Option(item.label, String(i))));
+  select.style.display = "inline-block";
+  select.onchange = () => {
+    if (select.value === "") return;
+    applyReportFillItem(items[Number(select.value)]);
+  };
+  setCaseBriefStatus(`Found ${items.length} in this report — pick one from the dropdown.`);
 });
 
 // Reconfigures the row editor for whichever table is selected. Called both
@@ -3384,10 +3781,13 @@ function onDbTableChanged(){
   const tableInfo = getSelectedTableInfo();
   const label = document.getElementById("caseFormLabel");
   const fillBtn = document.getElementById("caseBriefFillBtn");
+  const fillSelect = document.getElementById("caseBriefFillSelect");
   const rowSelect = document.getElementById("dbRowSelect");
   const emptyNote = document.getElementById("caseFormEmptyNote");
   const grid = document.getElementById("caseFormGrid");
   const actions = document.querySelector(".case-form-actions");
+
+  fillSelect.style.display = "none";
 
   if (!tableInfo){
     grid.innerHTML = "";
@@ -3395,7 +3795,7 @@ function onDbTableChanged(){
   }
 
   rowSelect.style.display = "inline-block";
-  fillBtn.style.display = dbSelectedTable === "cases" ? "inline-block" : "none";
+  fillBtn.style.display = REPORT_PARSERS[dbSelectedTable] ? "inline-block" : "none";
   fillBtn.disabled = !currentReport;
   grid.style.display = "grid";
   actions.style.display = "flex";
@@ -3411,7 +3811,7 @@ function onDbTableChanged(){
 
 // Called from renderReportPanel() so opening/closing/switching a Reading
 // Report keeps the "Fill from Report" button's enabled state current even
-// while the cases table is already selected.
+// while a fillable table is already selected.
 function syncCaseForm(){
   const fillBtn = document.getElementById("caseBriefFillBtn");
   if (!fillBtn) return;
@@ -3533,7 +3933,7 @@ let notesRightView = null;
 // so the report panel can show the user exactly what was (or wasn't) sent
 // to OpenAI as attached source material \u2014 as opposed to the model having
 // fallen back to general knowledge. documentsCache is the same client-side
-// list findLocalPageMatches/lookupCanvasMatch already search against, so
+// list findLocalPageMatches/lookupCanvasMatches already search against, so
 // this reflects the same data those lookups used.
 function describeDocumentSource(documentIds){
   const titles = (documentIds || [])
@@ -3544,7 +3944,8 @@ function describeDocumentSource(documentIds){
   return { matched: true, label: "Attached to OpenAI: " + titles.join(", ") };
 }
 
-async function generateReadingReport({ course, classLabel, title, prompt, documentIds, btn }){
+async function generateReadingReport({ course, classLabel, title, prompt, documentIds, btn, idleLabel }){
+  idleLabel = idleLabel || "Notes";
   if (btn){ btn.disabled = true; btn.textContent = "Generating\u2026"; }
   setView("notes");
   const source = describeDocumentSource(documentIds);
@@ -3571,7 +3972,7 @@ async function generateReadingReport({ course, classLabel, title, prompt, docume
       const errMsg = (data && data.error && data.error.message) ? data.error.message : "Request failed.";
       throw new Error(errMsg);
     }
-    currentReport = { id: null, course, classLabel, title, source, documentIds: documentIds || [], content: extractText(data), createdAt: new Date().toISOString(), notes: currentReport.notes || "", chat: [] };
+    currentReport = { id: null, course, classLabel, title, source, documentIds: documentIds || [], content: extractText(data), cost: costFromUsage(data.usage, model), createdAt: new Date().toISOString(), notes: currentReport.notes || "", chat: [] };
   } catch(err){
     currentReport = {
       id: null, course, classLabel, title, source,
@@ -3583,10 +3984,19 @@ async function generateReadingReport({ course, classLabel, title, prompt, docume
       chat: []
     };
   } finally {
-    if (btn){ btn.disabled = false; btn.textContent = "Notes"; }
+    if (btn){ btn.disabled = false; btn.textContent = idleLabel; }
     renderReportPanel();
   }
 }
+
+// Course code -> the display label used both for the folder heading and for
+// each item's meta line (see renderReportSidebar below).
+const COURSE_LABELS = { lss: "LSS", civpro: "CivPro", contracts: "Contracts", torts: "Torts" };
+const COURSE_FOLDER_ORDER = ["civpro", "contracts", "torts", "lss"];
+
+// Which course folders are collapsed, keyed by course code (or "" for the
+// no-course catch-all) -- session-only, not persisted; folders start open.
+const collapsedNotesFolders = new Set();
 
 function renderReportPanel(){
   renderReportSidebar();
@@ -3603,7 +4013,7 @@ function renderReportPanel(){
   }
 
   panel.style.display = "flex";
-  const courseLabel = currentReport.course === "lss" ? "LSS" : currentReport.course === "civpro" ? "CivPro" : currentReport.course === "contracts" ? "Contracts" : "";
+  const courseLabel = COURSE_LABELS[currentReport.course] || "";
   document.getElementById("notesReportTitle").textContent =
     [courseLabel, currentReport.classLabel, currentReport.title].filter(Boolean).join(" — ");
 
@@ -3613,6 +4023,13 @@ function renderReportPanel(){
     sourceEl.textContent = source ? source.label : "";
     sourceEl.className = "notes-report-source" + (source && source.matched ? " matched" : source ? " missing" : "");
     sourceEl.style.display = source ? "block" : "none";
+  }
+
+  const costEl = document.getElementById("notesReportCost");
+  if (costEl){
+    const hasCost = typeof currentReport.cost === "number";
+    costEl.textContent = hasCost ? "Cost: " + formatCost(currentReport.cost) : "";
+    costEl.style.display = hasCost ? "block" : "none";
   }
 
   document.getElementById("notesReportBody").innerHTML = currentReport.loading
@@ -3634,42 +4051,80 @@ function renderReportSidebar(){
   empty.style.display = savedReports.length ? "none" : "block";
   list.innerHTML = "";
 
+  // One folder per class, so the sidebar reads as a docket rather than one
+  // flat pile of every reading ever saved across every course.
+  const groups = new Map();
   savedReports.forEach(r => {
-    const item = document.createElement("button");
-    item.type = "button";
-    item.className = "notes-sidebar-item" + (currentReport && currentReport.id === r.id ? " active" : "");
-    const courseLabel = r.course === "lss" ? "LSS" : r.course === "civpro" ? "CivPro" : r.course === "contracts" ? "Contracts" : "";
+    const key = r.course || "";
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(r);
+  });
 
-    const titleSpan = document.createElement("span");
-    titleSpan.className = "notes-sidebar-item-title";
-    titleSpan.textContent = r.title;
-    item.appendChild(titleSpan);
+  const orderedKeys = [
+    ...COURSE_FOLDER_ORDER.filter(k => groups.has(k)),
+    ...Array.from(groups.keys()).filter(k => !COURSE_FOLDER_ORDER.includes(k))
+  ];
 
-    const metaSpan = document.createElement("span");
-    metaSpan.className = "notes-sidebar-item-meta";
-    metaSpan.textContent = [courseLabel, r.classLabel].filter(Boolean).join(" \u00b7 ");
-    item.appendChild(metaSpan);
+  orderedKeys.forEach(courseKey => {
+    const reports = groups.get(courseKey);
+    const label = COURSE_LABELS[courseKey] || "Other";
+    const collapsed = collapsedNotesFolders.has(courseKey);
 
-    const del = document.createElement("span");
-    del.className = "notes-sidebar-item-delete";
-    del.innerHTML = "&#10005;";
-    del.title = "Delete this saved report";
-    del.addEventListener("click", (e) => {
-      e.stopPropagation();
-      if (!confirm(`Delete saved report "${r.title}"?`)) return;
-      savedReports = savedReports.filter(x => x.id !== r.id);
-      if (currentReport && currentReport.id === r.id) currentReport = null;
-      persistState();
-      renderReportPanel();
+    const folderBtn = document.createElement("button");
+    folderBtn.type = "button";
+    folderBtn.className = "notes-sidebar-folder" + (collapsed ? " collapsed" : "");
+    folderBtn.innerHTML =
+      `<span class="notes-sidebar-folder-arrow">&#9660;</span>` +
+      `<span>${escapeHtml(label)}</span>` +
+      `<span class="notes-sidebar-folder-count">${reports.length}</span>`;
+    folderBtn.addEventListener("click", () => {
+      if (collapsedNotesFolders.has(courseKey)) collapsedNotesFolders.delete(courseKey);
+      else collapsedNotesFolders.add(courseKey);
+      renderReportSidebar();
     });
-    item.appendChild(del);
+    list.appendChild(folderBtn);
 
-    item.addEventListener("click", () => {
-      currentReport = r;
-      renderReportPanel();
+    const itemsWrap = document.createElement("div");
+    itemsWrap.className = "notes-sidebar-folder-items" + (collapsed ? " collapsed" : "");
+
+    reports.forEach(r => {
+      const item = document.createElement("button");
+      item.type = "button";
+      item.className = "notes-sidebar-item" + (currentReport && currentReport.id === r.id ? " active" : "");
+
+      const titleSpan = document.createElement("span");
+      titleSpan.className = "notes-sidebar-item-title";
+      titleSpan.textContent = r.title;
+      item.appendChild(titleSpan);
+
+      const metaSpan = document.createElement("span");
+      metaSpan.className = "notes-sidebar-item-meta";
+      metaSpan.textContent = [COURSE_LABELS[r.course] || "", r.classLabel].filter(Boolean).join(" · ");
+      item.appendChild(metaSpan);
+
+      const del = document.createElement("span");
+      del.className = "notes-sidebar-item-delete";
+      del.innerHTML = "&#10005;";
+      del.title = "Delete this saved report";
+      del.addEventListener("click", (e) => {
+        e.stopPropagation();
+        if (!confirm(`Delete saved report "${r.title}"?`)) return;
+        savedReports = savedReports.filter(x => x.id !== r.id);
+        if (currentReport && currentReport.id === r.id) currentReport = null;
+        persistState();
+        renderReportPanel();
+      });
+      item.appendChild(del);
+
+      item.addEventListener("click", () => {
+        currentReport = r;
+        renderReportPanel();
+      });
+
+      itemsWrap.appendChild(item);
     });
 
-    list.appendChild(item);
+    list.appendChild(itemsWrap);
   });
 }
 
@@ -3729,8 +4184,9 @@ function buildNotesChatInput(report, question){
     .join("\n\n");
   return [
     "You are answering a follow-up question about a set of law-school reading notes generated earlier from the attached document(s). " +
-      "Use the attached document(s) as your source of truth, and the notes below only for context on what's already been covered. " +
-      "If the attached material doesn't address the question, say so rather than guessing.",
+      "Treat the attached document(s) as your source of truth for anything they cover, and the notes below as context on what's already been covered. " +
+      "If the question goes beyond what's in the attached material, answer it anyway using your own general legal knowledge rather than refusing or saying it isn't addressed -- just make clear when you're drawing on outside knowledge rather than the attached material, so the two don't get confused. " +
+      "Only stick strictly to the attached material if I explicitly ask you to.",
     "",
     "## Reading Notes",
     report.content || "(no notes content)",
@@ -3758,7 +4214,16 @@ function renderNotesChat(){
     chat.forEach(m => {
       const div = document.createElement("div");
       div.className = "notes-chat-msg " + (m.role === "user" ? "user" : "assistant") + (m.failed ? " failed" : "");
-      div.textContent = m.content;
+      const textSpan = document.createElement("span");
+      textSpan.className = "notes-chat-msg-text";
+      textSpan.textContent = m.content;
+      div.appendChild(textSpan);
+      if (m.role === "assistant" && typeof m.cost === "number"){
+        const costSpan = document.createElement("div");
+        costSpan.className = "msg-cost";
+        costSpan.textContent = formatCost(m.cost);
+        div.appendChild(costSpan);
+      }
       list.appendChild(div);
     });
     if (currentReport.chatPending){
@@ -3794,7 +4259,14 @@ async function sendNotesChatMessage(){
       body: JSON.stringify({
         model,
         input: buildNotesChatInput(currentReport, question),
-        documentIds: currentReport.documentIds || []
+        documentIds: currentReport.documentIds || [],
+        // Overrides the proxy's default "attached documents = strict,
+        // document-only answers" instruction for this one request -- see
+        // allowGeneralKnowledge in server.js. Notes generation itself stays
+        // strict (that flag is left false everywhere else), but a follow-up
+        // question in this chat should be answered even when it goes beyond
+        // what the attached reading covers, not met with "not in the case."
+        allowGeneralKnowledge: true
       })
     });
     const data = await res.json();
@@ -3802,7 +4274,7 @@ async function sendNotesChatMessage(){
       const errMsg = (data && data.error && data.error.message) ? data.error.message : "Request failed.";
       throw new Error(errMsg);
     }
-    currentReport.chat.push({ role: "assistant", content: extractText(data) });
+    currentReport.chat.push({ role: "assistant", content: extractText(data), cost: costFromUsage(data.usage, model) });
   } catch(err){
     currentReport.chat.push({ role: "assistant", content: "Couldn't get an answer: " + err.message, failed: true });
   } finally {
@@ -4102,16 +4574,19 @@ Start with a concise explanation of:
 
 ### 2. RULES AND LEGAL PRINCIPLES
 
-Identify every important legal rule or principle. State every rule using exactly this format:
+Identify every important legal rule or principle in the reading — this section is not limited to rules that come from a case; include rules stated directly by the textbook/casebook narrative, Restatement/UCC provisions, and rules established or applied by any case in the reading. Every rule discussed in a case brief in the CASES section below must also appear here in full, under the same name/number used there (see the CASES section's Rule field). State every rule using exactly this format:
 
 **Rule [citation/section, or a short descriptive name if the source doesn't cite one]**
 
 - **Source:** Restatement / UCC / case holding / textbook narrative — say which, and cite the specific provision, case, or passage it comes from.
+- **Document:** Name the exact file this rule comes from, using its full file name and extension exactly as it appears in the SOURCE: label of the attached material (e.g., "CB pp 87-93.txt", "Lucy v Zehmer.pdf") — not a paraphrase and not the generic "assigned reading." If multiple documents are attached, identify which one this particular rule is drawn from.
 - **Statement:** State the rule in one or two sentences. Preserve any qualifying language the source uses — don't flatten a qualifier like "materially different" into "different," or otherwise simplify away a distinction the source drew deliberately.
 - **Legal Question:** What legal question does the rule answer?
 - **Requirements:** Break the rule into its component parts. If the source states it as a single element rather than a multi-part test, say so rather than forcing it into a list.
 - **Application:** How the rule actually gets used in practice — what question a court or party invokes it to answer, and what triggers reliance on it.
 - **Exceptions:** Anything that narrows the rule, carves out a category, or states when it does not apply. Pull this from comments, caveats, or surrounding text, not just the black-letter statement.
+
+Separate each rule from the next with a line containing only three hyphens (---), so each rule is a distinct, clearly-bounded block.
 
 Also distinguish the rule from related rules when useful.
 
@@ -4119,11 +4594,29 @@ Do not omit a rule simply because it appears obvious.
 
 When the reading gives a rule through a case rather than stating it explicitly, identify the rule that can reasonably be inferred from the case.
 
-### 3. CASES
+### 3. CASE NARRATIVE
+
+For every case in the reading, before the structured case brief in the next section, give a plain narrative summary — a few paragraphs of prose (not a bulleted list) that tell the story of the case the way you'd explain it out loud. Make sure the narrative explicitly covers:
+
+- Who each named party in the case caption actually is (e.g. in "Smith v. Jones," who Smith is and who Jones is — plaintiff/defendant, appellant/appellee, individual/company/government entity, etc.).
+- Who the plaintiff(s) were and who the defendant(s) were.
+- When the underlying events happened (specific dates if the opinion gives them, otherwise the general time period).
+- Where the events occurred (the relevant location(s) — city/state, or the setting, as applicable).
+- What happened, how the dispute got to court, and how the court resolved it.
+
+If the opinion doesn't state a date or location, say so rather than guessing. This is the version to read first for a quick, intuitive grasp of the case before working through the structured brief.
+
+### 4. CASES
 
 For every case, create a separate case brief containing exactly these fields, in exactly this order:
 
-**Case name**
+**Case Name**
+
+* Full case name, court, date, and authoring judge if stated.
+
+**Document**
+
+* Name the exact file this case comes from, using its full file name and extension exactly as it appears in the SOURCE: label of the attached material (e.g., "CB pp 87-93.txt", "Lucy v Zehmer.pdf") — not a paraphrase and not the generic "assigned reading." If multiple documents are attached, identify which one this case is drawn from.
 
 **Course**
 
@@ -4149,7 +4642,7 @@ For every case, create a separate case brief containing exactly these fields, in
 
 **Rule**
 
-* State the legal rule established, applied, or clarified by the case.
+* Give the SHORT form only: **[Source]: [Statement]** — a single line naming the rule's source and stating it in one sentence (e.g., "Restatement (Second) § 39: A counteroffer constitutes a rejection of the original offer and creates a new offer for the original offeror to accept."). Do NOT repeat the full Document/Legal Question/Requirements/Application/Exceptions breakdown here — that full version belongs in the RULES AND LEGAL PRINCIPLES section above, and this rule must appear there in full (add it there if it isn't already listed).
 
 **Reasoning**
 
@@ -4173,17 +4666,21 @@ For every case, create a separate case brief containing exactly these fields, in
 
 * Explain why this case appears in the assigned reading and what I should learn from it.
 
-### 4. DEFINITIONS AND TERMINOLOGY
+Separate each case brief from the next with a line containing only three hyphens (---), so each case is a distinct, clearly-bounded block.
 
-Identify important legal terminology.
+### 5. DEFINITIONS AND TERMINOLOGY
 
-For each term:
+Identify important legal terminology. State each term using exactly this format:
 
-* Give a clear definition
-* Explain its significance in this reading
-* Distinguish it from similar concepts when necessary
+**Term**
 
-### 5. CASE COMPARISONS AND DOCTRINAL DEVELOPMENT
+* **Definition:** Give a clear definition.
+* **Significance:** Explain its significance in this reading.
+* **Distinction:** Distinguish it from similar concepts when necessary.
+
+Separate each term from the next with a line containing only three hyphens (---), so each term is a distinct, clearly-bounded block.
+
+### 6. CASE COMPARISONS AND DOCTRINAL DEVELOPMENT
 
 Explain how the cases relate to one another.
 
@@ -4198,7 +4695,7 @@ Specifically identify:
 
 Do not simply list the cases independently.
 
-### 6. EXAMPLES / HYPOTHETICALS
+### 7. EXAMPLES / HYPOTHETICALS
 
 If the reading contains examples or hypotheticals, explain:
 
@@ -4210,7 +4707,7 @@ If the reading contains examples or hypotheticals, explain:
 
 If useful, create a small number of additional hypothetical examples to illustrate difficult rules, but clearly label anything you create yourself with the heading **Added Hypothetical (not in the reading):**.
 
-### 7. POLICY AND COMPETING ARGUMENTS
+### 8. POLICY AND COMPETING ARGUMENTS
 
 Identify important policy arguments on both sides of disputed issues.
 
@@ -4221,23 +4718,6 @@ Separate:
 * What you are inferring
 
 Do not present an inference as though it were stated by the source.
-
-### 8. CLASS / SOCRATIC PREPARATION
-
-Generate questions a professor could reasonably ask about the reading.
-
-Include questions such as:
-
-* What is the rule?
-* Why did the court reach this result?
-* Why does this fact matter?
-* How would the result change if one fact changed?
-* How do two cases differ?
-* What is the strongest argument for each side?
-* What policy justifies the rule?
-* What are the limits of the rule?
-
-Provide the answer immediately after each question.
 
 ### 9. EXAM-RELEVANT TAKEAWAYS
 
@@ -4255,26 +4735,7 @@ Prioritize:
 
 Do not fill this section with trivial facts.
 
-### 10. UNCERTAINTY AND SOURCE FIDELITY
-
-Be extremely faithful to the assigned reading.
-
-Do NOT:
-
-* Invent facts
-* Invent holdings
-* Invent rules
-* Attribute arguments to a court that the court did not make
-* Treat dicta as the holding
-* Treat your own inference as something explicitly stated by the text
-* Fill gaps with outside law unless I specifically ask you to
-* Discuss any case, rule, or example that is not actually present in the attached reading, even if it is a well-known case on the same general topic
-* Open the response with introductory filler ("Sure!", "Here are your notes", "Certainly!", etc.) — start directly with the notes content
-* Refer to yourself as an AI, a language model, or an assistant anywhere in the notes
-
-If something is unclear from the reading, say so.
-
-If you use information from outside the assigned reading, clearly label it **Outside Source/Background**.
+Do not open the response with introductory filler ("Sure!", "Here are your notes", "Certainly!", etc.) — start directly with the notes content. Do not refer to yourself as an AI, a language model, or an assistant anywhere in the notes.
 
 ### LEVEL OF DETAIL
 
@@ -4320,7 +4781,19 @@ Then give me a short "Case in One Sentence" that captures the basic holding.
 
 Do not begin with unnecessary background or a generic explanation of the area of law.
 
-# 2. CASE BRIEF
+# 2. CASE NARRATIVE
+
+Before the structured case brief in the next section, give a plain narrative summary — a few paragraphs of prose (not a bulleted list) that tell the story of the case the way you'd explain it out loud. Make sure the narrative explicitly covers:
+
+- Who each named party in the case caption actually is (e.g. in "Smith v. Jones," who Smith is and who Jones is — plaintiff/defendant, appellant/appellee, individual/company/government entity, etc.).
+- Who the plaintiff(s) were and who the defendant(s) were.
+- When the underlying events happened (specific dates if the opinion gives them, otherwise the general time period).
+- Where the events occurred (the relevant location(s) — city/state, or the setting, as applicable).
+- What happened, how the dispute got to court, and how the court resolved it.
+
+If the opinion doesn't state a date or location, say so rather than guessing. This is the version to read first for a quick, intuitive grasp of the case before working through the structured brief.
+
+# 3. CASE BRIEF
 
 Create a complete case brief using the following structure.
 
@@ -4331,6 +4804,10 @@ Include:
 - Court
 - Date
 - Judge/authoring judge if stated
+
+## Document
+
+Name the exact file this case comes from, using its full file name and extension exactly as it appears in the SOURCE: label of the attached material (e.g., "CB pp 87-93.txt", "Lucy v Zehmer.pdf") — not a paraphrase and not the generic "assigned reading." If multiple documents are attached, identify which one this case is drawn from.
 
 ## Course
 
@@ -4392,11 +4869,14 @@ Give the holding in one or two clear sentences first, then explain it if necessa
 
 ## Rule
 
+This is one of the MOST IMPORTANT sections.
+
 Identify every important legal rule the court uses. State every rule using exactly this format:
 
 **Rule [citation/section, or a short descriptive name if the opinion doesn't cite one]**
 
 - **Source:** Restatement / UCC / case holding / textbook narrative — here this will normally be a case holding (this case or the precedent it relies on); name the case if the opinion identifies one.
+- **Document:** Name the exact file this rule comes from, using its full file name and extension exactly as it appears in the SOURCE: label of the attached material (e.g., "CB pp 87-93.txt", "Lucy v Zehmer.pdf") — not a paraphrase and not the generic "assigned reading."
 - **Statement:** State the rule in one or two sentences. Preserve any qualifying language the opinion uses — don't flatten a qualifier like "materially different" into "different," or otherwise simplify away a distinction the court drew deliberately.
 - **Legal Question:** What legal question does the rule answer?
 - **Requirements:** Break the rule into its component parts. If the opinion states it as a single element rather than a multi-part test, say so rather than forcing it into a list.
@@ -4458,7 +4938,7 @@ Explain what the disposition means for the parties.
 
 Explain why this case appears in the assigned reading and what I should learn from it.
 
-# 3. PROCEDURAL DOCTRINE
+# 4. PROCEDURAL DOCTRINE
 
 If the case involves a procedural doctrine or procedural standard, explain it separately.
 
@@ -4484,7 +4964,7 @@ For each procedural doctrine:
 
 Do not assume I already understand the procedural terminology.
 
-# 4. SUBSTANTIVE LEGAL DOCTRINE
+# 5. SUBSTANTIVE LEGAL DOCTRINE
 
 Identify the underlying substantive legal doctrine involved in the case.
 
@@ -4498,7 +4978,7 @@ Explain:
 
 Clearly distinguish substantive law from procedural law when both appear.
 
-# 5. PRECEDENT
+# 6. PRECEDENT
 
 For every prior case that the court relies upon in its reasoning, identify:
 
@@ -4530,7 +5010,7 @@ Do NOT give full case briefs for minor cases that are merely cited in passing.
 
 Focus detailed treatment on precedents that actually influence the court's reasoning.
 
-# 6. CASE COMPARISON
+# 7. CASE COMPARISON
 
 Compare the current case with the important precedent discussed in the opinion.
 
@@ -4549,7 +5029,7 @@ Then explain the most important factual and legal distinction in plain English.
 
 Pay particular attention to whether a factual difference changes the legal result.
 
-# 7. FACTS THAT MATTER
+# 8. FACTS THAT MATTER
 
 Create a section called:
 
@@ -4566,7 +5046,7 @@ For each important fact, explain:
 
 This is extremely important for exam preparation.
 
-# 8. COUNTERFACTUALS / CHANGED FACTS
+# 9. COUNTERFACTUALS / CHANGED FACTS
 
 Identify facts that, if changed, could potentially change the result.
 
@@ -4588,7 +5068,7 @@ Only make inferences that are reasonably supported by the court's reasoning.
 
 Clearly label any hypothetical analysis as an inference rather than something the court actually held.
 
-# 9. DEFINITIONS AND TERMINOLOGY
+# 10. DEFINITIONS AND TERMINOLOGY
 
 Identify important legal terms used in the opinion.
 
@@ -4610,7 +5090,7 @@ Explain why I should know it.
 
 Include terms such as procedural terms, doctrinal terms, and specialized legal terminology.
 
-# 10. POLICY AND COMPETING ARGUMENTS
+# 11. POLICY AND COMPETING ARGUMENTS
 
 Identify policy considerations if the court discusses them or if they are clearly relevant to the court's reasoning.
 
@@ -4625,43 +5105,6 @@ from
 Do not attribute a policy argument to the court unless the opinion actually makes it.
 
 For disputed issues, explain the strongest argument on both sides.
-
-# 11. CLASS / SOCRATIC PREPARATION
-
-Create questions a law professor could reasonably ask about this case.
-
-Include:
-
-### Basic questions
-- What happened?
-- Who is appealing?
-- What is the issue?
-- What did the court hold?
-
-### Rule questions
-- What is the governing rule?
-- What are the elements?
-- What is the relevant exception?
-- What burden does each party have?
-
-### Reasoning questions
-- Why did the court reach this result?
-- Which facts mattered?
-- Why did the court reject the opposing argument?
-- Why was the precedent relevant?
-
-### Distinction questions
-- How is this case different from the prior case?
-- Why does that factual distinction matter?
-- What if one fact were changed?
-
-### Challenge questions
-- What is the strongest argument for the losing side?
-- What is the strongest response?
-- Is the court's reasoning persuasive?
-- What limitation can be placed on the holding?
-
-Immediately provide the answer after each question.
 
 # 12. EXAM ANALYSIS
 
@@ -4694,19 +5137,7 @@ Give me:
 
 Do not invent an unrelated hypothetical. Base the exam analysis on the legal reasoning actually used by the court.
 
-# 13. HOLDING vs. DICTA
-
-Explicitly identify:
-
-**Holding:**
-What the court necessarily decided to resolve the case.
-
-**Dicta / additional observations:**
-Statements that are not necessary to the result, if identifiable.
-
-If you cannot confidently distinguish dicta from holding based on the opinion, say so rather than guessing.
-
-# 14. WHAT I NEED TO KNOW
+# 13. WHAT I NEED TO KNOW
 
 End with a section titled exactly:
 
@@ -4727,39 +5158,7 @@ Prioritize:
 
 Keep this section concise enough to use as a last-minute study sheet.
 
-# 15. UNCERTAINTY AND SOURCE FIDELITY
-
-Be extremely faithful to the assigned reading.
-
-DO NOT:
-
-- Invent facts
-- Invent procedural history
-- Invent holdings
-- Invent rules
-- Invent quotations
-- Attribute arguments to a party that the opinion does not make
-- Attribute reasoning to the court that the court does not use
-- Treat dicta as the holding
-- Treat an inference as an explicit holding
-- Add outside law without labeling it
-- Discuss any case, rule, or example that is not actually present in the attached reading, even if it is a well-known case on the same general topic
-- "Correct" the court based on what you think the law should be
-- Fill missing or unclear portions of the opinion with assumptions
-- Open the response with introductory filler ("Sure!", "Here are your notes", "Certainly!", etc.) — start directly with the notes content
-- Refer to yourself as an AI, a language model, or an assistant anywhere in the notes
-
-If the text is unclear, incomplete, garbled, or ambiguous, explicitly say:
-
-"Source is unclear on this point."
-
-If you make an inference, label it:
-
-"Analysis / Inference:"
-
-If you use outside information, label it:
-
-"Outside Source/Background:"
+Do not open the response with introductory filler ("Sure!", "Here are your notes", "Certainly!", etc.) — start directly with the notes content. Do not refer to yourself as an AI, a language model, or an assistant anywhere in the notes.
 
 # LEVEL OF DETAIL
 
@@ -4833,13 +5232,14 @@ For any legal rule, state it using exactly this format:
 **Rule [citation/section, or a short descriptive name if the reading doesn't cite one]**
 
 - **Source:** Restatement / UCC / case holding / textbook narrative — say which, and cite the specific provision, case, or passage it comes from.
+- **Document:** Name the exact file this rule comes from, using its full file name and extension exactly as it appears in the SOURCE: label of the attached material (e.g., "CB pp 87-93.txt", "Lucy v Zehmer.pdf") — not a paraphrase and not the generic "assigned reading." If multiple documents are attached, identify which one this particular rule is drawn from.
 - **Statement:** State the rule in one or two sentences. Preserve any qualifying language the source uses — don't flatten a qualifier like "materially different" into "different," or otherwise simplify away a distinction the source drew deliberately.
 - **Legal Question:** What legal question does the rule answer?
 - **Requirements:** Break the rule into its component parts. If the source states it as a single element rather than a multi-part test, say so rather than forcing it into a list.
 - **Application:** How the rule actually gets used in practice — what question a court or party invokes it to answer, and what triggers reliance on it.
 - **Exceptions:** Anything that narrows the rule, carves out a category, or states when it does not apply. Pull this from comments, caveats, or surrounding text, not just the black-letter statement.
 
-For doctrines, principles, distinctions, and terminology, give a brief explanation of each.
+For doctrines, principles, distinctions, and terminology, give a brief explanation of each. Bold the name of every term/doctrine/distinction the first time you introduce it (e.g. **consideration**), so key vocabulary stands out from the surrounding explanation.
 
 Do not explain basic concepts at unnecessary length.
 
@@ -4867,13 +5267,7 @@ If there are competing viewpoints, briefly explain:
 
 Distinguish the author's position from positions the author is merely describing.
 
-## 6. CLASS PREPARATION
-
-Give me 3–5 questions a professor could reasonably ask about this reading, with a short answer immediately after each question.
-
-Focus on questions that test understanding rather than trivial details.
-
-## 7. WHAT I NEED TO KNOW
+## 6. WHAT I NEED TO KNOW
 
 End with a short bullet list of the most important things I should remember from the reading.
 
@@ -4886,24 +5280,7 @@ Prioritize:
 5. Important authorities
 6. Important terminology
 
-## SOURCE FIDELITY
-
-Do not:
-
-- Invent facts
-- Invent arguments
-- Invent legal rules
-- Invent quotations
-- Attribute an argument to the author that the author does not make
-- Treat an inference as something explicitly stated in the reading
-- Add outside law without clearly labeling it
-- Discuss any case, rule, or example that is not actually present in the attached reading, even if it is a well-known case on the same general topic
-- Open the response with introductory filler ("Sure!", "Here are your notes", "Certainly!", etc.) — start directly with the notes content
-- Refer to yourself as an AI, a language model, or an assistant anywhere in the notes
-
-If something is unclear, say so.
-
-If you make an inference, label it "Inference."
+Do not open the response with introductory filler ("Sure!", "Here are your notes", "Certainly!", etc.) — start directly with the notes content. Do not refer to yourself as an AI, a language model, or an assistant anywhere in the notes.
 
 ## LEVEL OF DETAIL
 
@@ -4940,6 +5317,7 @@ For every Restatement section, UCC provision, or other legal rule in the assigne
 **Rule [citation/section, or a descriptive name if uncited]**
 
 - **Source:** Restatement / UCC / case holding / textbook narrative — say which, and cite the specific section or provision.
+- **Document:** Name the exact file this rule comes from, using its full file name and extension exactly as it appears in the SOURCE: label of the attached material (e.g., "CB pp 87-93.txt", "Lucy v Zehmer.pdf") — not a paraphrase and not the generic "assigned reading." If multiple documents are attached, identify which one this particular rule is drawn from.
 - **Statement:** State the rule in one or two sentences. Preserve any qualifying language the source uses — don't flatten a qualifier like "materially different" into "different," or otherwise simplify away a distinction the source drew deliberately.
 - **Legal Question:** What legal question does the rule answer?
 - **Requirements:** Break the rule into its component parts. If the source states it as a single element rather than a multi-part test, say so rather than forcing it into a list.
@@ -5005,21 +5383,7 @@ If one rule qualifies, modifies, or follows from another rule, point that out.
 
 Do NOT force connections that the reading does not support.
 
-## 6. CLASS / SOCRATIC QUESTIONS
-
-Create 3–5 questions a Contracts professor could reasonably ask based on these readings.
-
-Focus on questions such as:
-
-- What does this rule mean?
-- What are its requirements?
-- Why does this situation satisfy or fail the rule?
-- What is the distinction between these two rules?
-- What happens if one fact changes?
-
-Give a concise answer immediately after each question.
-
-## 7. WHAT I NEED TO KNOW
+## 6. WHAT I NEED TO KNOW
 
 End with a short section titled:
 
@@ -5038,30 +5402,7 @@ Prioritize:
 
 This should function as a quick pre-class review sheet.
 
-## SOURCE FIDELITY
-
-Base the notes primarily on the attached documents.
-
-Do NOT:
-
-- Invent rules
-- Add cases that are not in the reading
-- Add outside doctrine
-- Change the meaning of a Restatement or UCC provision
-- Omit important qualifications
-- Treat an example as a rule
-- Present your own inference as though it were stated in the source
-- Discuss any case, rule, or example that is not actually present in the attached documents, even if it is a well-known case on the same general topic
-- Open the response with introductory filler ("Sure!", "Here are your notes", "Certainly!", etc.) — start directly with the notes content
-- Refer to yourself as an AI, a language model, or an assistant anywhere in the notes
-
-If you explain something using general Contracts knowledge that is not contained in the assigned reading, clearly label it:
-
-**Outside Background:**
-
-If something is unclear from the source, say:
-
-**Source is unclear on this point.**
+Do not open the response with introductory filler ("Sure!", "Here are your notes", "Certainly!", etc.) — start directly with the notes content. Do not refer to yourself as an AI, a language model, or an assistant anywhere in the notes.
 
 ## LEVEL OF DETAIL
 
@@ -5079,6 +5420,28 @@ Do not summarize the wording of every sentence.
 
 The goal is to make the assigned rules easy to understand, memorize, and apply on a Contracts exam.`;
 
+// Sent by the "Complete" button (assignment-kind schedule rows only), never
+// by "Notes" — this is deliberately NOT a summarize/notes prompt. The
+// assignment's own instructions live in the attached document(s); this
+// prompt's only job is to tell the model to actually do the work those
+// instructions describe, using whatever additional context document(s) the
+// user chose to attach alongside it.
+const NOTES_PROMPT_ASSIGNMENT = `You are my law school assignment assistant.
+
+I'm giving you one or more attached documents. The FIRST attached document (if any) contains the assignment itself — instructions describing something I need to do (e.g. brief a case, answer questions, fill out a chart, draft something). Any OTHER attached documents are additional context I chose to attach because they're relevant to completing this assignment (e.g. the case(s) the assignment tells me to brief, a client email, a fact pattern) — not additional assignments.
+
+Your job is to actually COMPLETE the assignment as described, using the attached context documents as your source material. Do NOT summarize or "take notes on" the assignment instructions themselves — produce the actual work product the instructions call for.
+
+If the assignment asks me to brief a case, produce a full case brief (facts, procedural posture, issue, holding, reasoning, disposition) based on the actual case document attached, not a generic template.
+
+If the assignment asks me to answer specific questions, answer each one directly and completely, in order, using the attached context.
+
+If the assignment asks for something else (a chart, an analysis, a draft), produce that specific deliverable in a clearly organized format.
+
+If part of the assignment can't be completed because the relevant context document wasn't attached (e.g. it asks me to brief a case I didn't attach), say exactly what's missing rather than inventing facts or guessing at a case you don't actually have in front of you.
+
+Do not open the response with introductory filler ("Sure!", "Here's the completed assignment", etc.) — start directly with the work product. Do not refer to yourself as an AI, a language model, or an assistant.`;
+
 const CIVPRO_SCHEDULE = [{"classLabel": "Class 1", "date": "8/25", "extra": "", "topic": "What Is Civil Procedure?", "readings": [{"text": "Anonymous Physician v. Wininger (please read carefully, take notes, and come to class prepared to discuss the case)", "pages": "Canvas (3 pages)"}, {"text": "Hubbard casebook introduction to the courts and civil procedure (there is no need to memorize this material, the goal of these pages is simply to begin introducing the issues we will cover this semester)", "pages": "3–6; 45–54"}]}, {"classLabel": "Class 2", "date": "8/26", "extra": "", "topic": "Preliminary Relief; Notice", "readings": [{"text": "Winter v. NRDC", "pages": "29–44"}, {"text": "Rule 65", "pages": "104–05"}, {"text": "U.S. Const., Amend. V; Amend. XIV, § 1", "pages": "79"}, {"text": "Mullane v. Central Hanover Bank", "pages": "119–28"}]}, {"classLabel": "Class 3", "date": "8/27", "extra": "", "topic": "Notice", "readings": [{"text": "Greene v. Lindsey", "pages": "130–35"}, {"text": "Jones v. Flowers", "pages": "136–45"}, {"text": "Rule 4", "pages": "154–55"}]}, {"classLabel": "Class 4", "date": "9/1", "extra": "", "topic": "Opportunity to Be Heard", "readings": [{"text": "Fuentes v. Shevin", "pages": "82–95"}, {"text": "Connecticut v. Doehr", "pages": "96–101"}]}, {"classLabel": "Class 5", "date": "9/2", "extra": "", "topic": "Early Pleading Regimes—i.e., How to Begin a Lawsuit", "readings": [{"text": "Noll, A Reader’s Guide to Pre-Modern Procedure (read Noll for background)", "pages": "162–70"}, {"text": "Note on Code Pleading", "pages": "173–74"}, {"text": "Rules 2, 3, 7, and 8", "pages": "175–77"}, {"text": "Dioguardi v. Durning", "pages": "182–84"}, {"text": "Conley v. Gibson", "pages": "186–90"}]}, {"classLabel": "Class 6", "date": "9/3", "extra": "", "topic": "The Twombly and Iqbal Standard", "readings": [{"text": "Bell Atlantic Corp. v. Twombly", "pages": "192–205"}, {"text": "Ashcroft v. Iqbal", "pages": "207–19"}]}, {"classLabel": "Class 7", "date": "9/8", "extra": "", "topic": "Pleading after Twombly and Iqbal", "readings": [{"text": "Johnson v. City of Shelby", "pages": "221–22"}, {"text": "In re Text Messaging Antitrust Litigation", "pages": "224–27"}, {"text": "Swanson v. Citibank", "pages": "228–38"}]}, {"classLabel": "Class 8", "date": "9/9", "extra": "", "topic": "Pleading in the Alternative; Rule 11 Sanctions", "readings": [{"text": "Beyond Plausibility", "pages": "251"}, {"text": "Rule 8(d)", "pages": "252–53"}, {"text": "McCormick v. Kopmann", "pages": "254–58"}, {"text": "Rule 11", "pages": "259–61"}, {"text": "Brown v. Ameriprise Financial Servs., Inc.", "pages": "262–70"}, {"text": "Introductory Note on Heightened Pleading", "pages": "271–72"}, {"text": "Practice Problem 1 will be distributed", "pages": "Canvas/email"}]}, {"classLabel": "Class 9", "date": "9/10", "extra": "", "topic": "Responding to the Complaint; Amendment", "readings": [{"text": "Answer", "pages": "280–81"}, {"text": "Rule 8", "pages": "281–82"}, {"text": "Rule 12", "pages": "283–86"}, {"text": "Bowers v. Mortgage Elec. Registration Systems", "pages": "288–91"}, {"text": "Perez v. Gordon & Wong Law Group", "pages": "292–95"}, {"text": "Rule 15", "pages": "297–98"}, {"text": "Global Tech. & Trading v. Tech Mahindra", "pages": "299–302"}, {"text": "Beeck v. Aquaslide’N’Dive Corp.", "pages": "302–06"}]}, {"classLabel": "Class 10", "date": "9/15", "extra": "", "topic": "The Rules Framework for Discovery", "readings": [{"text": "Rules 26, 30, and 33–37 (read only the Rules)", "pages": "319–46"}, {"text": "Mancia v. Mayflower Textile Servs. Co.", "pages": "348–60"}]}, {"classLabel": "Class 11", "date": "9/16", "extra": "", "topic": "Privilege & Work Product", "readings": [{"text": "SodexoMagic, LLC v. Drexel University", "pages": "385–89"}, {"text": "Uphjohn Co. v. United States", "pages": "390–96"}, {"text": "Hickman v. Taylor", "pages": "398–409"}]}, {"classLabel": "", "date": "9/17", "extra": "", "topic": "No class, but Practice Problem 1 due", "readings": [{"text": "No class on 9/17", "pages": "Submit on Canvas"}, {"text": "Practice Problem 1 is due on Canvas by 9:00pm on 9/17", "pages": ""}]}, {"classLabel": "Class 12", "date": "9/22", "extra": "", "topic": "Privilege & Work Product", "readings": [{"text": "Rule 26(b)", "pages": "411–12"}, {"text": "Rule of Evidence 502", "pages": "431–32"}, {"text": "In re Abilify Products Liability Litig.", "pages": "419–29"}, {"text": "Note on Privilege Logs, Redaction, and the Crime-Fraud Exception", "pages": "433–36"}]}, {"classLabel": "Class 13", "date": "9/23", "extra": "", "topic": "Summary Judgment", "readings": [{"text": "Summary Judgement note and Rule 56", "pages": "563–64"}, {"text": "Introductory Note on the Celotex Trilogy", "pages": "578–81"}, {"text": "Introductory Note to Celotex v. Catrett", "pages": "582–83"}, {"text": "Celotex Corp. v. Catrett", "pages": "584–90"}]}, {"classLabel": "Class 14", "date": "9/24", "extra": "", "topic": "Summary Judgment; Other Pre-Trial Dispositions", "readings": [{"text": "Scott v. Harris", "pages": "613–21"}, {"text": "Tolan v. Cotton", "pages": "Canvas"}, {"text": "Introductory Note on Default Judgment; Rules 41, 54(c), 55, and 60", "pages": "309–13"}, {"text": "Practice Problem 2 will be distributed", "pages": "Canvas/email"}]}, {"classLabel": "Class 15", "date": "9/29", "extra": "", "topic": "Trial by Jury", "readings": [{"text": "U.S. Constitution Amend. VII; Rules 38 and 39", "pages": "474–77"}, {"text": "Curtis v. Loether", "pages": "480–84"}, {"text": "Chauffeurs, Teamsters, and Helpers v. Terry", "pages": "484–91"}, {"text": "Colgrove v. Battin", "pages": "511–18"}, {"text": "Rule 48", "pages": "521–22"}, {"text": "Rule 47 and 28 U.S.C. § 1870", "pages": "536–37"}]}, {"classLabel": "Class 16", "date": "9/30", "extra": "Part 1", "topic": "Taking the Case from the Jury", "readings": [{"text": "Rule 50", "pages": "627–28"}, {"text": "Rule 59", "pages": "630"}, {"text": "Rule 61", "pages": "634"}, {"text": "Neely v. Martin K. Eby Constr. Co.", "pages": "637–42"}]}, {"classLabel": "Class 16", "date": "9/30", "extra": "Part 2", "topic": "Finality", "readings": [{"text": "28 U.S.C. § 1291", "pages": "669"}, {"text": "Rule 54(b)", "pages": "676"}, {"text": "28 U.S.C. § 1292(a)–(b)", "pages": "677"}, {"text": "Liberty Mut. Ins. Co. v. Wetzel", "pages": "678–82"}]}, {"classLabel": "Class 17", "date": "10/1", "extra": "", "topic": "Collateral Order Doctrine", "readings": [{"text": "Cohen v. Beneficial Indus. Loan Corp.", "pages": "685–87"}, {"text": "Mohawk Industries v. Carpenter", "pages": "688–98"}, {"text": "Microsoft I and Microsoft II", "pages": "701–04"}]}, {"classLabel": "", "date": "10/2", "extra": "", "topic": "7:00pm", "readings": [{"text": "Practice Problem 2 due", "pages": "Canvas"}]}, {"classLabel": "Class 18", "date": "10/6", "extra": "", "topic": "Preclusion", "readings": [{"text": "Res Judicata", "pages": "735–38"}, {"text": "Rose v. Board of Election Commissioners", "pages": "738–42"}, {"text": "Rush v. City of Maple Heights", "pages": "744–51"}, {"text": "Cromwell v. County of Sac", "pages": "754–57"}]}, {"classLabel": "Class 19", "date": "10/7", "extra": "", "topic": "Preclusion; Joinder", "readings": [{"text": "Bernhard v. Bank of America", "pages": "759–63"}, {"text": "Parklane Hosiery Co. v. Shore", "pages": "768–73"}, {"text": "introductory notes on Joinder, Rules 13, 14, 18, 19, 20, 21, and 24", "pages": "712–21"}, {"text": "Breaking Glass Pictures v. Does 1–188", "pages": "729–32"}]}, {"classLabel": "Class 20", "date": "10/8", "extra": "", "topic": "Preclusion & Representation", "readings": [{"text": "Preclusion and Representation", "pages": "775"}, {"text": "Taylor v. Sturgell", "pages": "776–87"}, {"text": "Hansberry v. Lee", "pages": "789–94"}]}, {"classLabel": "Class 21", "date": "10/13", "extra": "", "topic": "Midterm Exam", "readings": [{"text": "The Midterm Exam will cover all material through 10/8. It will contain a mix of multiple choice and essay questions.", "pages": "1:00–2:00pm, in-class"}]}, {"classLabel": "Class 22", "date": "10/14", "extra": "", "topic": "Settlement & ADR", "readings": [{"text": "Settlement and ADR (this is lighter reading, but please do read)", "pages": "1307–20"}, {"text": "Rule 23 (we will begin going over Rule 23 in this class, and continue in the following class)", "pages": "802–10"}]}, {"classLabel": "Class 23", "date": "10/15", "extra": "", "topic": "Class Actions", "readings": [{"text": "In re Whirlpool Corp.", "pages": "812–24"}, {"text": "Wal-Mart Stores v. Dukes", "pages": "830–50"}]}, {"classLabel": "Class 24", "date": "10/20", "extra": "", "topic": "Introduction to Subject Matter Jurisdiction; Diversity Jurisdiction", "readings": [{"text": "U.S. Constitution Article III", "pages": "860–63"}, {"text": "28 U.S.C. §§ 1331, 1332", "pages": "863–64"}, {"text": "Strawbridge v. Curtiss", "pages": "872"}, {"text": "ConnectU LLC v. Zuckerberg", "pages": "877–83"}, {"text": "Ceglia v. Zuckerberg", "pages": "885–89"}]}, {"classLabel": "Class 25", "date": "10/21", "extra": "", "topic": "Diversity Jurisdiction", "readings": [{"text": "Hertz Corp. v. Friend", "pages": "892–900"}, {"text": "Lincoln Benefit Life Co. v. AEI Life, LLC", "pages": "902–10"}, {"text": "A.F.A. Tours v. Whitchurch", "pages": "912–18"}, {"text": "Freeland v. Liberty Mutual Fire Ins. Co.", "pages": "919–22"}]}, {"classLabel": "Class 26", "date": "10/22", "extra": "", "topic": "Federal Question Jurisdiction", "readings": [{"text": "Introductory Note to Osborn, plus all of Osborn v. Bank of the United States", "pages": "925–32"}, {"text": "Lousville & Nashville Railroad Co. v. Mottley", "pages": "934–36"}, {"text": "Gunn v. Minton", "pages": "947–55"}]}, {"classLabel": "Class 27", "date": "10/27", "extra": "", "topic": "Supplemental Jurisdiction", "readings": [{"text": "28 U.S.C. § 1367", "pages": "956–57"}, {"text": "Exxon Mobil v. Allapattah Services", "pages": "962–80"}]}, {"classLabel": "Class 28", "date": "10/28", "extra": "", "topic": "Removal", "readings": [{"text": "28 U.S.C. §§ 1441, 1446, 1447", "pages": "984–90"}, {"text": "St. Paul Mercury Indemnity v. Red Cab Co.", "pages": "992–97"}]}, {"classLabel": "Class 29", "date": "10/29", "extra": "", "topic": "Removal", "readings": [{"text": "Caterpillar Inc. v. Lewis", "pages": "998–1004"}, {"text": "Grupo Dataflux v. Atlas Global Group", "pages": "1005–13"}]}, {"classLabel": "Class 30", "date": "11/3", "extra": "", "topic": "Historical Development of the Doctrine", "readings": [{"text": "Introduction to Personal Jurisdiction", "pages": "1017–19"}, {"text": "Pennoyer v. Neff", "pages": "1019–26"}, {"text": "Hess v. Pawloski", "pages": "1029–31"}, {"text": "International Shoe Co. v. Washington", "pages": "1034–39"}]}, {"classLabel": "Class 31", "date": "11/4", "extra": "", "topic": "Specific Jurisdiction", "readings": [{"text": "Note on Long-Arm Statutes", "pages": "1041–42"}, {"text": "World-Wide Volkswagen Corp. v. Woodson", "pages": "1043–54"}, {"text": "J. McIntyre Machinery, Ltd. V. Nicastro", "pages": "1059–73"}]}, {"classLabel": "Class 32", "date": "11/5", "extra": "", "topic": "Specific & General Jurisdiction", "readings": [{"text": "Walden v. Fiore", "pages": "1082–89"}, {"text": "General Jurisdiction", "pages": "1091–92"}, {"text": "Burnham v. Superior Court of California", "pages": "1092–1104"}, {"text": "Goodyear Dunlop Tires Operations v. Brown", "pages": "1107–12"}]}, {"classLabel": "Class 33", "date": "11/10", "extra": "", "topic": "Specific & General Jurisdiction", "readings": [{"text": "Daimler AG v. Bauman", "pages": "1114–22"}, {"text": "be2 LLC v. Ivanov", "pages": "1123–27"}, {"text": "Mallory v. Norfolk Southern", "pages": "Canvas"}, {"text": "Practice Problem 3 will be distributed", "pages": "Canvas/email"}]}, {"classLabel": "Class 34", "date": "11/11", "extra": "", "topic": "Venue; Transfer", "readings": [{"text": "Venue and Transfer; 28 U.S.C. §§ 1390, 1391", "pages": "1167–69"}, {"text": "Gulf Oil Corp. v. Gilbert", "pages": "1171–77"}, {"text": "28 U.S.C. §§ 1404, 1406", "pages": "1177–78"}, {"text": "Piper Aircraft Co. v. Reyno", "pages": "1180–90"}]}, {"classLabel": "", "date": "", "extra": "", "topic": "", "readings": [{"text": "No class on 11/12", "pages": ""}]}, {"classLabel": "", "date": "11/16", "extra": "", "topic": "7:00pm", "readings": [{"text": "Practice Problem 3 due", "pages": "Canvas"}]}, {"classLabel": "Class 35", "date": "11/17", "extra": "", "topic": "The Erie Problem", "readings": [{"text": "Introductory notes on The Erie Problem; A Brooding Omnipresence", "pages": "1205–09"}, {"text": "Swift v. Tyson", "pages": "1209–13"}, {"text": "Erie Railroad Co. v. Tompkins", "pages": "1214–24"}]}, {"classLabel": "Class 36", "date": "11/18", "extra": "", "topic": "Erie’s Progeny", "readings": [{"text": "An Irrepressible Myth", "pages": "1232–34"}, {"text": "Ruhlin v. New York Life Insurance", "pages": "1235–36"}, {"text": "Sibbach v. Wilson & Co.", "pages": "1248–53"}, {"text": "Rules Enabling Act (28 U.S.C. 2072)", "pages": "1253–54"}, {"text": "Cohen v. Beneficial Indus. Loan Corp.", "pages": "1256–63"}]}, {"classLabel": "Class 37", "date": "11/19", "extra": "", "topic": "Erie’s Progeny", "readings": [{"text": "Hanna v. Plumer", "pages": "1264–73"}, {"text": "Berk v. Choy", "pages": "Canvas"}, {"text": "Postscript on Erie and Horizontal Choice of Law", "pages": "1301–03"}]}, {"classLabel": "Class 38", "date": "11/23", "extra": "", "topic": "Review Session", "readings": [{"text": "Format to be announced in advance", "pages": "No reading for review session"}]}, {"classLabel": "", "date": "11/24", "extra": "", "topic": "", "readings": []}]
 ;
 const LSS_SCHEDULE = [{"week": "WEEK 1", "classes": [{"date": "August 25", "classLabel": "Class 1A", "topic": "Introduction to LSS", "banner": false, "assignments": ["Becoming a Legal Writer (BLW)Introduction §§ I-II (pp. xix-xx), Ch. 3 intro. page 35, Ch. 3.2 and 3.3, and Ch. 4 intro. page 85", "Complete BLW Exercises 3.2.1, 3.2.2 and 3.3.1 (You may do them in handwriting or in a word doc. You will not be turning these in, but be prepared to discuss.)", "Read article by Brent J Hoeft, AI Hallucinations: What Lawyers Need to Understand, available on Canvas Week 1 module", "First Day Questionnaire in Canvas Week 1 Module"]}, {"date": "August 27", "classLabel": "Class 1B", "topic": "Intro to Legal Analysis and to your Client", "banner": false, "assignments": ["Read BLW Ch. 1, intro. and §§ I-II (pp. 3-6)", "Complete Exercise 1.1 (questions 1-3)", "Read and brief Mustafa and Sobin cases and client email (available on Canvas)", "Complete Legal Research Modules 0.1-0.4 by 5:00 p.m. Tuesday, 9/1"]}]}, {"week": "WEEK 2", "classes": [{"date": "September 1", "classLabel": "Class 2A", "topic": "Legal Analysis Continued & an Introduction to Bluebook Citation", "banner": false, "assignments": ["Read BLW Ch. 5", "In lieu of Ch. 5 exercises, complete chart for Mustafa and Sobin", "Complete selected problems from ICWs 1 and 2 by 5:00 p.m. Sunday, 9/6 (see Canvas module for selections)", "Bring Bluebook to class, and make sure you have registered for LEXIS, so you can access the ICW platform.", "Mandatory Legal Research Fellows’ Research Lab – 12:00 p.m.-12:50 p.m. Rm 102A-There is free food!"]}, {"date": "September 3", "classLabel": "Class 2B", "topic": "Communicating Legal Analysis in Writing (IRAC and CReAC)", "banner": false, "assignments": ["Read Closed Memo Discussion Assignment (on Canvas) and Ch. 6, intro. and §§ I-II (pp. 113-115)", "Complete BLW Exercise 1.1 (questions 4-8) including reading sample email and memo, and complete exercises 6.1, 6.2, and 6.3", "Complete Legal Research Modules 1.1-1.3 by 5:00 p.m. Tuesday, 9/8"]}]}, {"week": "WEEK 3", "classes": [{"date": "September 8", "classLabel": "Class 3A", "topic": "Synthesizing and Drafting Rules", "banner": false, "assignments": ["Read BLW Ch. 4, §§ I-IV (pp. 85-88).", "Complete Exercises 4.1, 4.4", "Read, brief, and chart your cases for the Closed Memo discussion before class and be prepared to discuss (See BLW Ch. 5 for Case Charting info)", "Complete selected exercises from ICWs 3 and 5 by 5:00 p.m. Sunday, 9/13"]}, {"date": "September 10", "classLabel": "Class 3B", "topic": "Rule Synthesis cont.; Identifying Legally Significant Facts and Drafting Case Explications", "banner": false, "assignments": ["Read BLW Ch. 7 intro., page 125, Ch, 7.1, intro. and §§ I-II (pp. 127-130), Ch. 7.2, §§ I-III (pp. 147-149)", "Complete Exercises 7.1.5, 7.2.1, and 7.2.2", "Complete Legal Research Modules 2.1-2.3 by 5:00 p.m. Tuesday, 9/15"]}]}, {"week": "WEEK 4", "classes": [{"date": "September 15", "classLabel": "Class 4A", "topic": "Applying the Law to the Facts + Editing", "banner": false, "assignments": ["Bring PRINTED Draft of Closed Memo Discussion Rules to Class", "Read BLW Ch. 8 intro., page 169, Ch, 8.1, § I (pp. 171-172), Ch. 8.2, §§ I-II (pp. 179-181)", "Complete Exercises 8.1.1, and 8.2.1"]}, {"date": "September 17", "classLabel": "Class 4B", "topic": "More on Application + Editing", "banner": false, "assignments": ["Read BLW Ch. 8.3 intro. and §§ I-III (pp. 197-205)–focus on the counterapplication format;", "Complete Exercise 8.3.1", "Bring your completed draft discussion to class", "Complete Legal Research Modules 2.4 -2.7 by 5:00 p.m. Tuesday, 9/22"]}, {"date": "", "classLabel": "", "topic": "Issue 1 (Closed) Discussion due by 5:00 pm on Sunday, September 20 in Canvas", "banner": true, "assignments": []}]}, {"week": "WEEK 5", "classes": [{"date": "September 22", "classLabel": "Class 5A", "topic": "Hierarchy of Authority and an Introduction to the Legal Research Process", "banner": false, "assignments": ["Read BLW Ch. 2 intro. and §§ I-IV (pp. 21-27); we will do some of the exercises in class.", "Sign up for and attend mandatory Closed Memo Discussion Conference (5% of course grade)", "*Bring a laptop computer to class during weeks 5, 6, 7, and 8 to practice researching."]}, {"date": "September 24", "classLabel": "Class 5B", "topic": "Legal Research – Secondary Sources", "banner": false, "assignments": ["Complete Selected ICW questions from ICW 6 and 7 by 5:00 p.m. Sunday, 9/27", "Complete Legal Research Modules 3.1-3.3 by class time Thursday, 9/24"]}]}, {"week": "WEEK 6", "classes": [{"date": "September 29", "classLabel": "Class 6A", "topic": "Legal Research – Statutes", "banner": false, "assignments": ["Read BLW Ch. 3.1 intro. and § I (pp. 37-42) (exercises not req’d)", "Complete Legal Research Modules 3.4-3.7 by class time Tuesday, 9/29"]}, {"date": "October 1", "classLabel": "Class 6B", "topic": "Legal Research: Cases & Citators", "banner": false, "assignments": ["Complete Legal Research Modules 4.1-4.4 by class time Thursday, 10/1"]}]}, {"week": "WEEK 7", "classes": [{"date": "October 6", "classLabel": "Class 7A", "topic": "Legal Research: Boolean Searching, Wrap-Up, and In-Class Practice", "banner": false, "assignments": ["Complete Legal Research Modules 4.5-4.9 by class time Tuesday, 10/6"]}, {"date": "October 8", "classLabel": "Class 7B", "topic": "Graded Research Assessment (15% of course grade)", "banner": false, "assignments": []}]}, {"week": "WEEK 8", "classes": [{"date": "October 13", "classLabel": "Class 8A", "topic": "GenAI Legal Research Validation and in-class exercise", "banner": false, "assignments": ["Complete GenAI legal readings and pre-class preparation work for the validation exercise (to be available on Canvas)"]}, {"date": "October 15", "classLabel": "Class 8B", "topic": "Introduction to Predictive Memoranda", "banner": false, "assignments": ["Read Open Memo Packet (on Canvas) and begin researching"]}]}, {"week": "WEEK 9", "classes": [{"date": "October 20", "classLabel": "Class 9A", "topic": "The Open Memo - Locating and choosing authority", "banner": false, "assignments": ["Spend some time analyzing the issue and researching before class", "Sign up and attend your Open Memo Research Conference (10% of your course grade)"]}, {"date": "October 22", "classLabel": "Class 9B", "topic": "Discussion Section: Drafting rules & case illustrations/parentheticals deep dive", "banner": false, "assignments": ["Complete selected exercises from ICWs 12, 13, and 15 by Sunday at 5:00 p.m., 10/25"]}]}, {"week": "WEEK 10", "classes": [{"date": "October 27", "classLabel": "Class 10A", "topic": "Question Presented and Brief Answers", "banner": false, "assignments": ["Read BLW Ch. 9 intro. and §§ I-IV (pp. 215-222) and Ch. 10 intro. and §§ I-III (pp. 237-242)", "Complete exercises 9.2, 9.3, 10.3 and 10.5 (refer to facts in Exercise 5.3 to assist in completing the issue)"]}, {"date": "October 29", "classLabel": "Class 10B", "topic": "Statement of Facts", "banner": false, "assignments": ["Read BLW Ch. 11 (pp. 253-255)", "Complete exercises 11.2"]}]}, {"week": "WEEK 11", "classes": [{"date": "November 3", "classLabel": "Class 11A", "topic": "Putting it All Together and Polishing the Open Memo", "banner": false, "assignments": ["Read BLW Ch. 13 pp. 285-289)", "Complete Ch. 13 exercises 13.1, 13.2, 13.4 and 13.5"]}, {"date": "November 5", "classLabel": "Class 11B", "topic": "Practitioners’ Panel Discussion", "banner": false, "assignments": []}, {"date": "", "classLabel": "", "topic": "Final memo due (30% of course grade) by 5:00 pm on Sunday, November 8 in Canvas", "banner": true, "assignments": []}]}, {"week": "WEEK 12", "classes": [{"date": "November 10", "classLabel": "Class 12A", "topic": "Professional Communications, including Professional Emails", "banner": false, "assignments": ["Quickly review BLW Ch. 1 and complete exercise 1.2"]}, {"date": "November 12", "classLabel": "Class 12B", "topic": "More on Professional Communications, in-class exercise using AI to create an e-mail from your Final Memo", "banner": false, "assignments": ["Bring to class a draft of an email analysis boiling down your open memo"]}]}, {"week": "WEEK 13", "classes": [{"date": "November 17", "classLabel": "Class 13A", "topic": "Exam Review: Writing Under Timed Conditions", "banner": false, "assignments": ["Review past assignment and sample answer posted on Canvas"]}, {"date": "November 19", "classLabel": "Class 13B", "topic": "In-Class E-mail Timed Writing Assignment; Using Lockdown Browser, Closed Library (30% of course grade)", "banner": false, "assignments": []}, {"date": "", "classLabel": "", "topic": "In lieu of Class in Week 14, you must go to (1) the introductory Legal Research Fellows’ weekly research lab (Sept. 1 from 12:00 p.m. – 12:50 p.m. in Rm 102A-free food!) and (2) one of the Legal Writing Fellows’ Workshops held this semester (details will be announced in class).", "banner": true, "assignments": []}]}]
@@ -5092,6 +5455,27 @@ const TORTS_SCHEDULE = [{"classLabel":"Week 1","topic":"Introduction & Intention
 
 let scheduleActiveCourse = "civpro";
 
+// Maps a schedule course code to the documents/<folder> slug local-scan.js
+// and the Canvas importer actually use (see COURSE_FOLDER_ALIASES in
+// canvas-routes.js) -- documentsCache entries carry that folder name as
+// courseId/courseName. Document matching is scoped to this so a reading in
+// one class never surfaces a document that only exists for another (e.g. an
+// LSS reading matching a Contracts Restatement excerpt just because both
+// happen to share an incidental word).
+const SCHEDULE_COURSE_TO_FOLDER = {
+  civpro: "civil_procedure",
+  contracts: "contracts",
+  torts: "torts",
+  lss: "lawyering_skills_and_strategies"
+};
+
+function docsForCourse(courseCode, docs){
+  const folder = SCHEDULE_COURSE_TO_FOLDER[courseCode];
+  const list = Array.isArray(docs) ? docs : [];
+  if (!folder) return list;
+  return list.filter(d => d.courseId === folder || d.courseName === folder);
+}
+
 // Lets Settings show/edit the actual prompt text sent for each reading
 // classification, overriding these built-in defaults. customNotesPrompts
 // only holds the kinds the user has actually edited; getNotesPrompt() falls
@@ -5101,9 +5485,9 @@ const DEFAULT_NOTES_PROMPTS = {
   case: NOTES_PROMPT_CASE,
   textbook: NOTES_PROMPT_TEXTBOOK,
   reading: NOTES_PROMPT_READING,
-  restatement: NOTES_PROMPT_RESTATEMENT
+  restatement: NOTES_PROMPT_RESTATEMENT,
+  assignment: NOTES_PROMPT_ASSIGNMENT
 };
-let customNotesPrompts = {};
 
 function getNotesPrompt(kind){
   return (customNotesPrompts && customNotesPrompts[kind]) || DEFAULT_NOTES_PROMPTS[kind];
@@ -5243,26 +5627,29 @@ function appendKindBadge(row, kind){
   row.appendChild(badge);
 }
 
-// Only the four kinds a Notes button can actually generate a report for
-// have a document behind them worth surfacing.
-const DOC_MATCH_KINDS = new Set(["case", "textbook", "reading", "restatement"]);
+// The kinds a Notes or Complete button can actually generate a report for
+// have a document behind them worth surfacing. "assignment" is included so
+// the Complete button's primary source document (and any case(s) it names)
+// shows up as a pill too, same as a reading would.
+const DOC_MATCH_KINDS = new Set(["case", "textbook", "reading", "restatement", "assignment"]);
 
 // CivPro/Contracts document-match pill: shows the title of the local file
 // that actually backs this reading (found the same way generateCivProNotes/
 // generateContractsNotes look it up — by exact page-range filename for
 // textbook/restatement, by fuzzy title match for a standalone case), or
 // "No document found" if nothing matches. Hovering shows the original
-// citation the schedule data carries (page range, "Emailed", etc.).
-function appendDocMatchBadge(row, kind, text, pagesRaw){
+// citation the schedule data carries (page range, "Emailed", etc.). Matching
+// is scoped to courseCode's own documents/ folder — see docsForCourse.
+function appendDocMatchBadge(row, kind, text, pagesRaw, courseCode){
   if (!DOC_MATCH_KINDS.has(kind)) return;
 
   let matches = null;
   if (kind === "textbook" || kind === "restatement"){
-    const found = findLocalPageMatches(pagesRaw);
+    const found = findLocalPageMatches(pagesRaw, courseCode);
     matches = found.length ? found : null;
   } else {
-    const found = findLocalCanvasMatch(text);
-    matches = found ? [found] : null;
+    const found = findLocalCanvasMatches(text, courseCode);
+    matches = found.length ? found : null;
   }
 
   const label = matches ? matches.map(m => m.title).join("; ") : "No document found";
@@ -5273,17 +5660,19 @@ function appendDocMatchBadge(row, kind, text, pagesRaw){
   row.appendChild(badge);
 }
 
-// LSS equivalent: every LSS reading (BLW textbook pages included — BLW
-// itself isn't in documents/, only Canvas-hosted material is) is looked up
-// the same way generateLSSNotes does, by fuzzy title match against
-// documentsCache — there's no page-range filename convention for LSS.
-function appendLssDocMatchBadge(row, kind, text){
+// LSS equivalent: every LSS reading/assignment (BLW textbook pages included
+// — BLW itself isn't in documents/, only Canvas-hosted material is) is
+// looked up the same way generateLSSNotes/completeAssignment does, by fuzzy
+// title match against documentsCache, scoped to the LSS folder — there's no
+// page-range filename convention for LSS.
+function appendLssDocMatchBadge(row, kind, text, courseCode){
   if (!DOC_MATCH_KINDS.has(kind)) return;
-  const match = findLocalCanvasMatch(text);
+  const matches = findLocalCanvasMatches(text, courseCode);
+  const label = matches.length ? matches.map(m => m.title).join("; ") : "No document found";
   const badge = document.createElement("span");
-  badge.className = "schedule-page-badge " + (match ? "matched" : "missing");
-  badge.textContent = match ? match.title : "No document found";
-  badge.title = match ? match.title : "No matching document";
+  badge.className = "schedule-page-badge " + (matches.length ? "matched" : "missing");
+  badge.textContent = label;
+  badge.title = label;
   row.appendChild(badge);
 }
 
@@ -5330,7 +5719,7 @@ function renderCivProSchedule(body){
 
       const kind = classifyCivProReading(r.text, r.pages);
       appendKindBadge(row, kind);
-      appendDocMatchBadge(row, kind, r.text, r.pages);
+      appendDocMatchBadge(row, kind, r.text, r.pages, "civpro");
 
       if (kind === "textbook" || kind === "case"){
         const btn = document.createElement("button");
@@ -5339,6 +5728,8 @@ function renderCivProSchedule(body){
         btn.textContent = "Notes";
         btn.addEventListener("click", (e) => generateCivProNotes(cls, r, kind, e.currentTarget));
         row.appendChild(btn);
+      } else if (kind === "assignment"){
+        appendCompleteButton(row, cls, r.text, "civpro");
       }
 
       card.appendChild(row);
@@ -5381,7 +5772,7 @@ function renderContractsSchedule(body){
 
       const kind = classifyContractsReading(r.text, r.pages);
       appendKindBadge(row, kind);
-      appendDocMatchBadge(row, kind, r.text, r.pages);
+      appendDocMatchBadge(row, kind, r.text, r.pages, "contracts");
 
       if (kind === "textbook" || kind === "case" || kind === "restatement"){
         const btn = document.createElement("button");
@@ -5390,6 +5781,8 @@ function renderContractsSchedule(body){
         btn.textContent = "Notes";
         btn.addEventListener("click", (e) => generateContractsNotes(cls, r, kind, e.currentTarget));
         row.appendChild(btn);
+      } else if (kind === "assignment"){
+        appendCompleteButton(row, cls, r.text, "contracts");
       }
 
       card.appendChild(row);
@@ -5526,7 +5919,7 @@ function renderLSSSchedule(body){
 
         const kind = classifyLssAssignment(a);
         appendKindBadge(row, kind);
-        appendLssDocMatchBadge(row, kind, a);
+        appendLssDocMatchBadge(row, kind, a, "lss");
 
         if (kind === "case" || kind === "textbook" || kind === "reading"){
           const btn = document.createElement("button");
@@ -5535,6 +5928,8 @@ function renderLSSSchedule(body){
           btn.textContent = "Notes";
           btn.addEventListener("click", (e) => generateLSSNotes(cls, a, kind, e.currentTarget));
           row.appendChild(btn);
+        } else if (kind === "assignment"){
+          appendCompleteButton(row, cls, a, "lss");
         }
 
         card.appendChild(row);
@@ -5554,58 +5949,106 @@ function renderLSSSchedule(body){
 // these just quietly no-op (return null) if the proxy isn't running or
 // nothing has been imported yet — callers fall back to the old hedged
 // behavior in that case.
+// Generic instruction/filler words that show up in nearly every reading or
+// assignment line ("read", "complete", "review", ...) plus ordinary English
+// stopwords. None of these carry any title-identifying signal, but before
+// this list existed they could still register as a "shared word" between a
+// query and a document title -- which is exactly how, e.g., a query
+// containing "and" three times could out-score a genuine match against a
+// document title that (after stripping numbers/section symbols) reduced to
+// nothing but the word "and". Filtering them out here, before scoring ever
+// happens, is a more direct fix than trying to patch the scoring formula
+// around them.
+// Deliberately conservative -- "ch", "intro", "pp", case/chapter/page words
+// etc. are NOT included here even though they're generic-sounding, because
+// for LSS specifically (which has no separate page-range filename lookup
+// the way CivPro/Contracts/Torts do — see findLocalPageMatches) they're
+// often the only words left distinguishing one BLW chapter's title from
+// another once real stopwords are stripped. Over-filtering here was a real
+// regression caught while testing this: it made "Read BLW Ch. 1, intro. and
+// §§ I-II (pp. 3-6)" fail to match its own near-identical filename.
+const MATCH_STOPWORDS = new Set([
+  "and","the","for","with","from","that","this","are","was","were","have",
+  "has","had","not","but","you","your","will","can","its",
+  "read","brief","complete","review","bring","attend","please"
+]);
+
 function normalizeForMatch(s){
-  return (s || "")
+  const words = (s || "")
     .toLowerCase()
     .replace(/[^a-z0-9 ]/g, " ")
     .split(/\s+/)
-    .filter(w => w.length >= 3);
+    .filter(w => w.length >= 3 && !MATCH_STOPWORDS.has(w));
+  return new Set(words);
 }
 
 // Shared word-overlap scoring behind both the network-backed Canvas lookup
-// used when a Notes button is actually clicked (findCanvasDocumentMatch)
-// and the synchronous local-cache lookup used to render the schedule's
-// document-match pill (findLocalCanvasMatch) — same heuristic, just fed a
-// different (docs) array.
-function bestDocumentMatch(queryText, docs){
+// used when a Notes/Complete button is actually clicked
+// (findCanvasDocumentMatches) and the synchronous local-cache lookup used to
+// render the schedule's document-match pill (findLocalCanvasMatches) — same
+// heuristic, just fed a different (docs) array. Returns every qualifying
+// document (best first), not just one — an assignment line naming two
+// cases ("brief Mustafa and Sobin") should pull in both of their documents,
+// not force a single winner.
+function findDocumentMatches(queryText, docs){
   const queryWords = normalizeForMatch(queryText);
-  if (!queryWords.length || !Array.isArray(docs) || !docs.length) return null;
+  if (!queryWords.size || !Array.isArray(docs) || !docs.length) return [];
 
-  let best = null, bestScore = 0;
-  for (const doc of docs){
-    const titleWords = normalizeForMatch(doc.title);
-    if (!titleWords.length) continue;
-    let overlap = 0;
-    for (const w of queryWords){
-      if (titleWords.includes(w)) overlap++;
+  const withWords = docs.map(doc => ({ doc, words: normalizeForMatch(doc.title) }));
+
+  // How many of this course's OTHER document titles also contain each word
+  // -- e.g. "blw" shows up in the title of nearly every BLW reading in the
+  // LSS folder, so on its own it identifies nothing. Only used to gate a
+  // single-word match (see below); a title matching on 2+ distinct words is
+  // specific enough regardless of how common any one of those words is.
+  const df = new Map();
+  for (const { words } of withWords){
+    for (const w of words) df.set(w, (df.get(w) || 0) + 1);
+  }
+  const commonThreshold = Math.max(2, withWords.length / 4);
+
+  const scored = [];
+  for (const { doc, words: titleWords } of withWords){
+    if (!titleWords.size) continue; // e.g. a title that's all citation numbers/symbols
+    const overlapWords = [...titleWords].filter(w => queryWords.has(w));
+    if (!overlapWords.length) continue;
+    const ratio = overlapWords.length / titleWords.size;
+    if (overlapWords.length >= 2){
+      scored.push({ doc, ratio, overlap: overlapWords.length });
+      continue;
     }
-    if (overlap < 2) continue; // require at least 2 shared significant words
-    const ratio = overlap / Math.min(queryWords.length, titleWords.length);
-    if (ratio > bestScore){
-      bestScore = ratio;
-      best = doc;
+    // Exactly one shared word: only trust it if it accounts for at least
+    // half of the title's own significant words (e.g. "Mustafa" against a
+    // title that normalizes to just {mustafa, truskett}) AND that word
+    // isn't so common across this course's own filenames that it carries
+    // no real identifying signal on its own.
+    const word = overlapWords[0];
+    if (ratio >= 0.5 && (df.get(word) || 0) <= commonThreshold){
+      scored.push({ doc, ratio, overlap: 1 });
     }
   }
-  return bestScore >= 0.4 ? best : null;
+
+  scored.sort((a, b) => (b.ratio - a.ratio) || (b.overlap - a.overlap));
+  return scored.map(s => s.doc);
 }
 
-async function findCanvasDocumentMatch(queryText){
+async function findCanvasDocumentMatches(queryText, courseCode){
   let docs;
   try {
     const res = await fetch(PROXY_ORIGIN + "/api/documents");
-    if (!res.ok) return null;
+    if (!res.ok) return [];
     docs = await res.json();
   } catch(e){
-    return null; // proxy not reachable
+    return []; // proxy not reachable
   }
-  return bestDocumentMatch(queryText, docs);
+  return findDocumentMatches(queryText, docsForCourse(courseCode, docs));
 }
 
 // Synchronous counterpart used for schedule pills — matches against
 // whatever's already in documentsCache instead of firing a network request
 // per row (see refreshDocumentsCacheQuietly, which keeps that cache warm).
-function findLocalCanvasMatch(queryText){
-  return bestDocumentMatch(queryText, documentsCache);
+function findLocalCanvasMatches(queryText, courseCode){
+  return findDocumentMatches(queryText, docsForCourse(courseCode, documentsCache));
 }
 
 async function fetchCanvasDocumentText(id){
@@ -5619,35 +6062,47 @@ async function fetchCanvasDocumentText(id){
   }
 }
 
-async function lookupCanvasMatch(btn, queryText){
+// Looks up every document matching queryText (course-scoped) and fetches
+// each one's full text, returning only the ones that actually resolved to
+// text. idleLabel is what the button reverts to when done — "Notes" for a
+// reading/case lookup, "Complete" for an assignment lookup.
+async function lookupCanvasMatches(btn, queryText, courseCode, idleLabel){
   if (btn){ btn.disabled = true; btn.textContent = "Looking up…"; }
-  let result = null;
+  let results = [];
   try {
-    const match = await findCanvasDocumentMatch(queryText);
-    if (match){
-      const text = await fetchCanvasDocumentText(match.id);
-      if (text) result = { id: match.id, title: match.title, text };
-    }
+    const matches = await findCanvasDocumentMatches(queryText, courseCode);
+    const fetched = await Promise.all(matches.map(async m => {
+      const text = await fetchCanvasDocumentText(m.id);
+      return text ? { id: m.id, title: m.title, text } : null;
+    }));
+    results = fetched.filter(Boolean);
   } finally {
-    if (btn){ btn.disabled = false; btn.textContent = "Notes"; }
+    if (btn){ btn.disabled = false; btn.textContent = idleLabel || "Notes"; }
   }
-  return result;
+  return results;
 }
 
 function normalizePageToken(str){
   return String(str || "")
     .trim()
     .replace(/[‒–—―]/g, "-")
-    .replace(/\s+/g, "");
+    .replace(/\s+/g, "")
+    // Contracts files are usually saved with the "CB pp" prefix, matching
+    // the schedule data's "CB pp 87-93" citations exactly -- but a few get
+    // saved as just "102-106" instead. Stripping an optional "CB pp" prefix
+    // from both sides means either naming convention still matches; this is
+    // a no-op for CivPro/Torts filenames, which never carry that prefix.
+    .replace(/^CBpp\.?/i, "");
 }
 
-function findLocalPageMatches(pagesStr){
+function findLocalPageMatches(pagesStr, courseCode){
   const tokens = String(pagesStr || "").split(/;\s*/).map(normalizePageToken).filter(Boolean);
   if (!tokens.length) return [];
 
+  const pool = docsForCourse(courseCode, documentsCache);
   const matches = [];
   for (const token of tokens){
-    const doc = documentsCache.find(d => normalizePageToken(d.title) === token);
+    const doc = pool.find(d => normalizePageToken(d.title) === token);
     if (doc) matches.push(doc);
   }
   return matches;
@@ -5666,9 +6121,10 @@ function findLocalTortsPageMatches(pagesStr){
   const tokens = String(pagesStr || "").split(/;\s*/).map(normalizeTortsPageToken).filter(Boolean);
   if (!tokens.length) return [];
 
+  const pool = docsForCourse("torts", documentsCache);
   const matches = [];
   for (const token of tokens){
-    const doc = documentsCache.find(d => normalizeTortsPageToken(d.title) === token);
+    const doc = pool.find(d => normalizeTortsPageToken(d.title) === token);
     if (doc) matches.push(doc);
   }
   return matches;
@@ -5685,17 +6141,17 @@ function generateCivProNotes(cls, reading, kind, btn){
     let documentIds = [];
 
     if (kind === "case"){
-      const found = await lookupCanvasMatch(btn, reading.text);
-      if (found){
-        documentIds = [found.id];
-        sourceNote = `This reading is posted on Canvas (marked "${reading.pages}"). I found a matching document imported from Canvas, titled "${found.title}", and it's attached below in full so you can work from the actual case.`;
+      const founds = await lookupCanvasMatches(btn, reading.text, "civpro", "Notes");
+      if (founds.length){
+        documentIds = founds.map(f => f.id);
+        sourceNote = `This reading is posted on Canvas (marked "${reading.pages}"). I found ${founds.length > 1 ? "matching documents" : "a matching document"} imported from Canvas, titled ${founds.map(f => `"${f.title}"`).join(", ")}, and ${founds.length > 1 ? "they're" : "it's"} attached below in full so you can work from the actual case.`;
         instructions = getNotesPrompt("case");
       } else {
         sourceNote = `This reading is posted on Canvas rather than in the Hubbard casebook (marked "${reading.pages}"). I couldn't find a matching document among the Canvas materials imported into this app (either it hasn't been imported yet via the Canvas importer, or the local proxy server isn't running), so you won't have the actual document either.`;
         instructions = generalFallback;
       }
     } else {
-      const matches = findLocalPageMatches(reading.pages);
+      const matches = findLocalPageMatches(reading.pages, "civpro");
       if (matches.length){
         documentIds = matches.map(m => m.id);
         sourceNote = `The assigned pages are Hubbard, Civil Procedure: An Integrated Approach (1st ed. 2021), pp. ${reading.pages}. The reading text for ${matches.length > 1 ? "these page ranges is" : "this page range is"} attached below in full.`;
@@ -5732,17 +6188,17 @@ function generateContractsNotes(cls, reading, kind, btn){
     let documentIds = [];
 
     if (kind === "case"){
-      const found = await lookupCanvasMatch(btn, reading.text);
-      if (found){
-        documentIds = [found.id];
-        sourceNote = `This case was e-mailed out rather than printed in the casebook. I found a matching document, titled "${found.title}", among the materials imported into this app, and it's attached below in full so you can work from the actual case.`;
+      const founds = await lookupCanvasMatches(btn, reading.text, "contracts", "Notes");
+      if (founds.length){
+        documentIds = founds.map(f => f.id);
+        sourceNote = `This case was e-mailed out rather than printed in the casebook. I found ${founds.length > 1 ? "matching documents" : "a matching document"}, titled ${founds.map(f => `"${f.title}"`).join(", ")}, among the materials imported into this app, and ${founds.length > 1 ? "they're" : "it's"} attached below in full so you can work from the actual case.`;
         instructions = getNotesPrompt("case");
       } else {
         sourceNote = `This case was e-mailed out rather than printed in the casebook. I couldn't find a matching document among the materials imported into this app (either it hasn't been saved into documents/contracts yet, or the local proxy server isn't running), so you won't have the actual text either.`;
         instructions = generalFallback("case");
       }
     } else {
-      const matches = findLocalPageMatches(reading.pages);
+      const matches = findLocalPageMatches(reading.pages, "contracts");
       if (matches.length){
         documentIds = matches.map(m => m.id);
         sourceNote = `The assigned reading is ${reading.pages}. The text for ${matches.length > 1 ? "these citations is" : "this citation is"} attached below in full.`;
@@ -5819,12 +6275,12 @@ function generateLSSNotes(cls, assignment, kind, btn){
   const notesPrompt = getNotesPrompt(kind === "case" ? "case" : kind === "textbook" ? "textbook" : "reading");
 
   const run = async () => {
-    const found = await lookupCanvasMatch(btn, assignment);
+    const founds = await lookupCanvasMatches(btn, assignment, "lss", "Notes");
 
     let sourceNote;
     let instructions;
-    if (found){
-      sourceNote = `I found a matching document imported from Canvas, titled "${found.title}", and it's attached below in full so you can work from the actual reading rather than general knowledge.`;
+    if (founds.length){
+      sourceNote = `I found ${founds.length > 1 ? "matching documents" : "a matching document"} imported from Canvas, titled ${founds.map(f => `"${f.title}"`).join(", ")}, and ${founds.length > 1 ? "they're" : "it's"} attached below in full so you can work from the actual reading rather than general knowledge.`;
       instructions = notesPrompt;
     } else {
       sourceNote = kind === "textbook"
@@ -5840,13 +6296,90 @@ function generateLSSNotes(cls, assignment, kind, btn){
       classLabel: cls.classLabel,
       title: assignment.length > 60 ? assignment.slice(0, 60) + "…" : assignment,
       prompt,
-      documentIds: found ? [found.id] : [],
+      documentIds: founds.map(f => f.id),
       btn
     });
   };
 
   run();
 }
+
+// "Complete" replaces "Notes" for assignment-kind rows (see DOC_MATCH_KINDS
+// and the kind === "assignment" branches in the render* functions above).
+// Unlike Notes, it doesn't summarize -- it sends NOTES_PROMPT_ASSIGNMENT
+// (getNotesPrompt("assignment")) telling the model to actually do the work
+// the assignment describes, using: (1) whatever document(s) fuzzy-matched
+// the assignment line itself (course-scoped, same heuristic as the pill),
+// plus (2) an optional extra document the user manually picked from this
+// course's Documents tab entries via the <select> appendCompleteButton adds
+// next to the button, for material the assignment references but that
+// wouldn't fuzzy-match the assignment text itself (e.g. a client email a
+// case-briefing assignment depends on).
+function appendCompleteButton(row, cls, text, courseCode){
+  const select = document.createElement("select");
+  select.className = "schedule-attach-select";
+  select.title = "Optionally attach another document from this course as extra context";
+
+  const noneOpt = document.createElement("option");
+  noneOpt.value = "";
+  noneOpt.textContent = "+ Attach context doc";
+  select.appendChild(noneOpt);
+
+  docsForCourse(courseCode, documentsCache).forEach(doc => {
+    const opt = document.createElement("option");
+    opt.value = doc.id;
+    opt.textContent = doc.title;
+    select.appendChild(opt);
+  });
+  row.appendChild(select);
+
+  const btn = document.createElement("button");
+  btn.type = "button";
+  btn.className = "schedule-notes-btn";
+  btn.textContent = "Complete";
+  btn.addEventListener("click", (e) => completeAssignment(cls, text, courseCode, select.value || null, e.currentTarget));
+  row.appendChild(btn);
+}
+
+function completeAssignment(cls, text, courseCode, extraDocId, btn){
+  const classHeader = cls.classLabel + (cls.date ? " (" + cls.date + ")" : "") + (cls.topic ? " — " + cls.topic : "");
+  const courseLabel = courseCode === "civpro" ? "Civil Procedure" : courseCode === "contracts" ? "Contracts" : courseCode === "torts" ? "Torts" : "Lawyering Skills & Strategies";
+
+  const run = async () => {
+    const founds = await lookupCanvasMatches(btn, text, courseCode, "Complete");
+    const attached = founds.slice();
+
+    if (extraDocId && !attached.some(f => f.id === extraDocId)){
+      const extraDoc = documentsCache.find(d => d.id === extraDocId);
+      if (extraDoc){
+        const extraText = await fetchCanvasDocumentText(extraDocId);
+        if (extraText) attached.push({ id: extraDoc.id, title: extraDoc.title, text: extraText });
+      }
+    }
+
+    let sourceNote;
+    if (attached.length){
+      sourceNote = `Attached: ${attached.map(a => `"${a.title}"`).join(", ")}. The first is the assignment's own instructions/context (matched by the assignment text); any others are additional context I chose to attach.`;
+    } else {
+      sourceNote = `I couldn't find a matching document for this assignment among the materials imported into this app, and didn't attach a context document manually either, so you don't have the actual instructions or context text — only this one line from the schedule.`;
+    }
+
+    const prompt = `I'm working on an assignment for ${courseLabel}, ${classHeader}. Here is the assignment line from the schedule:\n\n"${text}"\n\n${sourceNote}\n\n${getNotesPrompt("assignment")}`;
+
+    await generateReadingReport({
+      course: courseCode,
+      classLabel: cls.classLabel,
+      title: text.length > 60 ? text.slice(0, 60) + "…" : text,
+      prompt,
+      documentIds: attached.map(a => a.id),
+      btn,
+      idleLabel: "Complete"
+    });
+  };
+
+  run();
+}
+
 document.querySelectorAll("#scheduleCourseSwitch .schedule-course-btn").forEach(btn => {
   btn.addEventListener("click", () => {
     scheduleActiveCourse = btn.dataset.course;
@@ -7920,6 +8453,57 @@ document.addEventListener("selectionchange", () => {
   }
 });
 
+// ---- Word-style list shortcuts: Tab/Shift+Tab nests/un-nests a bullet
+// inside another bullet, and typing "- " at the start of a blank line turns
+// it into a bulleted list, the same autoformat Word applies. ----
+function textBeforeCaretInBlock(range, block){
+  const pre = document.createRange();
+  pre.selectNodeContents(block);
+  pre.setEnd(range.startContainer, range.startOffset);
+  return pre.toString();
+}
+
+getPagesContainer().addEventListener("keydown", (e) => {
+  const sel = window.getSelection();
+  if (!sel || !sel.rangeCount || !sel.isCollapsed) return;
+  const range = sel.getRangeAt(0);
+
+  if (e.key === "Tab"){
+    // Only take over Tab when the caret is inside a list item -- nest/un-nest
+    // that bullet the way Word does. Outside a list, leave Tab alone (its
+    // current, unhandled default) rather than changing existing behavior.
+    const node = range.startContainer;
+    const startEl = node.nodeType === Node.TEXT_NODE ? node.parentElement : node;
+    const li = startEl && startEl.closest && startEl.closest("li");
+    if (!li) return;
+    e.preventDefault();
+    document.execCommand(e.shiftKey ? "outdent" : "indent", false, null);
+    syncToolbarState();
+    schedulePageReflow();
+    return;
+  }
+
+  if (e.key === " "){
+    // "- " at the very start of a line (nothing else typed before it in this
+    // block) converts the current line into a bulleted list, mirroring
+    // Word's autoformat. Only fires on a plain text node so it can't
+    // misfire mid-word or inside existing markup.
+    const node = range.startContainer;
+    if (node.nodeType !== Node.TEXT_NODE) return;
+    if (textBeforeCaretInBlock(range, getFocusedPage()) !== "-") return;
+    e.preventDefault();
+    node.textContent = node.textContent.slice(0, range.startOffset - 1) + node.textContent.slice(range.startOffset);
+    const caret = document.createRange();
+    caret.setStart(node, range.startOffset - 1);
+    caret.collapse(true);
+    sel.removeAllRanges();
+    sel.addRange(caret);
+    document.execCommand("insertUnorderedList", false, null);
+    syncToolbarState();
+    schedulePageReflow();
+  }
+});
+
 // ---- Font color ----
 const fontColorInput = document.getElementById("fontColorInput");
 let savedSelectionRange = null;
@@ -8441,6 +9025,23 @@ async function storeRepoRootHandle(handle){
   } catch(e){ /* best-effort only -- Save/Open still work without this */ }
 }
 
+// Forgets the linked repo-root folder (e.g. after accidentally linking
+// "notes" itself instead of "lawgpt", which creates a nested notes/notes
+// the next time Save/Download runs) -- the next Save, Download, or Open
+// will show the directory picker again instead of reusing the bad handle.
+async function clearRepoRootHandle(){
+  repoRootHandlePromise = null;
+  try{
+    const db = await openLawgptHandleDb();
+    await new Promise((resolve, reject) => {
+      const tx = db.transaction(LAWGPT_HANDLE_STORE, "readwrite");
+      tx.objectStore(LAWGPT_HANDLE_STORE).delete(LAWGPT_ROOT_KEY);
+      tx.oncomplete = resolve;
+      tx.onerror = () => reject(tx.error);
+    });
+  } catch(e){ /* best-effort only */ }
+}
+
 async function verifyHandlePermission(handle, mode){
   try{
     const opts = { mode: mode || "read" };
@@ -8451,21 +9052,52 @@ async function verifyHandlePermission(handle, mode){
   }
 }
 
+// Confirms the picked folder is actually this app's own "lawgpt" folder
+// (the one containing lawgpt.html) and not some unrelated folder -- without
+// this, picking the wrong folder would silently create an empty, surprising
+// "notes" subfolder inside it the first time Save/Download ran, with no
+// indication anything had gone wrong.
+async function looksLikeRepoRoot(handle){
+  try{
+    await handle.getFileHandle("lawgpt.html");
+    return true;
+  } catch(e){
+    return false;
+  }
+}
+
 // Resolves to a handle on this repo's own root folder (the one containing
 // lawgpt.html), asking the user to link it -- once per browser profile --
 // the first time it's needed. Cached in-memory too, so a slow IndexedDB
 // round trip or a cancelled picker doesn't get repeated within one page
 // load; reload the page to try linking again after a cancel.
+//
+// Requests "readwrite" (not just "read") up front, at link time -- Save/
+// Download need to create/write into the notes/ subfolder, and asking for
+// write access here means that's the one permission prompt the browser
+// shows, instead of a second, unexplained one popping up later the first
+// time Download actually tries to write.
 let repoRootHandlePromise = null;
 async function getRepoRootHandle(){
   if (!window.showDirectoryPicker) return null;
   if (repoRootHandlePromise) return repoRootHandlePromise;
   repoRootHandlePromise = (async () => {
     const stored = await getStoredRepoRootHandle();
-    if (stored && await verifyHandlePermission(stored, "read")) return stored;
+    if (stored && await verifyHandlePermission(stored, "readwrite")) return stored;
     try{
-      alert('One-time setup: select this app\'s own "lawgpt" folder (the one containing lawgpt.html), so Save and Open can default to it from now on.');
-      const handle = await window.showDirectoryPicker({ id: "lawgpt-repo-root", startIn: "documents" });
+      // Deliberately NOT an alert()/confirm() here before the picker call --
+      // showDirectoryPicker() requires a live "user activation" (a recent
+      // real click), and a blocking dialog first can burn through that
+      // window by the time it's dismissed, making the picker call fail
+      // with a SecurityError that then silently falls back to a plain
+      // browser download. The explanation of what to pick (this app's
+      // "lawgpt" folder itself, not "notes" inside it) lives in the
+      // Settings panel's "Linked project folder" section instead.
+      const handle = await window.showDirectoryPicker({ id: "lawgpt-repo-root", startIn: "documents", mode: "readwrite" });
+      if (!(await looksLikeRepoRoot(handle))){
+        alert(`"${handle.name}" doesn't look like the "lawgpt" folder (no lawgpt.html inside it), so it wasn't linked -- Save/Download will use the browser's own download flow this time. Pick the "lawgpt" folder itself from Settings → Linked project folder.`);
+        return null;
+      }
       await storeRepoRootHandle(handle);
       return handle;
     } catch(err){
@@ -8475,9 +9107,9 @@ async function getRepoRootHandle(){
   return repoRootHandlePromise;
 }
 
-// The repo's "notes" subfolder (created if missing), for Save's default
-// location. Falls back to null -- caller uses a generic startIn -- if the
-// repo folder was never linked or that failed.
+// The repo's "notes" subfolder (created if missing), for Download/Save's
+// default location. Falls back to null -- caller uses a generic startIn --
+// if the repo folder was never linked or that failed.
 async function getNotesDirHandle(){
   const root = await getRepoRootHandle();
   if (!root) return null;
@@ -8531,8 +9163,13 @@ async function downloadDocument(triggerBtn){
 
   if (window.showSaveFilePicker){
     try{
-      // Defaults into this repo's own notes/ folder (see getNotesDirHandle
-      // above) once it's been linked; falls back to Documents otherwise.
+      // Opens the OS's native Save dialog so the user can actually choose
+      // where this goes, instead of it landing silently in Downloads.
+      // Defaults into this repo's own notes/ folder once that's been linked
+      // (see getNotesDirHandle) -- getRepoRootHandle already validates the
+      // linked folder and requests readwrite up front, so this shouldn't
+      // create a stray notes/ folder in the wrong place or re-prompt for
+      // permission on every click.
       const notesDir = await getNotesDirHandle();
       const handle = await window.showSaveFilePicker({
         suggestedName: defaultName,
@@ -8551,22 +9188,17 @@ async function downloadDocument(triggerBtn){
       return;
     } catch(err){
       if (err && err.name === "AbortError") return; // user cancelled the picker
-      // fall through to the fallback below if the picker isn't usable
+      // fall through to the plain-download fallback below if the picker isn't usable
     }
   }
 
-  // Fallback for browsers without the File System Access API: ask for a
-  // filename, then let the browser's own download flow handle the save
-  // location (per the browser's own download settings, typically Downloads).
-  // There's no handle to remember here, so Save will keep behaving like
-  // Download until this browser is used with a File System Access picker.
-  const chosen = window.prompt("Name this file:", defaultName);
-  if (!chosen) return;
-  const finalName = chosen.toLowerCase().endsWith("." + ext) ? chosen : chosen + "." + ext;
+  // Fallback for browsers without the File System Access API: plain browser
+  // download to its default location, since there's no way to open a real
+  // Explorer/Finder dialog without that API.
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = finalName;
+  a.download = defaultName;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);

@@ -1,0 +1,111 @@
+162
+Past, Prologue
+“The history of procedure is a series of attempts to solve the problems created by the … preceding generation’s procedural reforms.”* Nowhere is this statement truer than in the history of pleading. Modern pleading in federal court is governed by the Federal Rules. When the Federal Rules came into effect in 1938, the Rules governing pleading reflected a deliberate and radical rejection of centuries of pleading practice in the federal courts and, before that, the courts of England. To understand why the Federal Rules say what they say about pleading, we must first learn something about pleading before the Federal Rules. Below, we will read about pre-modern procedure (the traditional forms of pleading in the common law and equity courts of England, which carried over to the courts of the United States) and the attempts at reform in state courts (known as code pleading) that preceded the Federal Rules. As you read about these precursors to the Federal Rules, ask yourself: What were the strengths and weaknesses of these earlier approaches to pleading? How might a reformer, if writing rules on a blank slate, attempt to avoid the missteps of earlier systems of pleading?
+
+David L. Noll, A Reader’s Guide to Pre-Modern Procedure
+_________________________
+
+65 J. LEGAL EDUC. 414 (2015)
+
+One of the oddest features of American legal education is the gulf between the “civil procedure” taught in the first-year civil procedure course and the “civil procedure” students encounter elsewhere in the 1L curriculum. Every year, new law students learn how civil cases are litigated by studying the simplified procedural system established by the 1938 Federal Rules of Civil Procedure. At the same time, students learn contracts, property, and torts from cases like Byrne v. Boadle,2 which were decided under procedural systems that have gone the way of the dodo.
+
+Without an understanding of the old procedural systems, however, the reader can be left in the position of a Game of Thrones novice who stumbles into a chat room filled with George R. R. Martin fanatics. As characters and
+163
+procedural devices whiz past, the reader is left wondering which details matter, and which don’t.
+
+In an effort to help readers who find themselves in this position, this essay introduces the forms of civil procedure used in those cases (“pre-modern” procedure, for convenience). Pre-modern procedure is easier to understand if one has something to compare it to, so I begin with an overview of modern civil procedure. I then introduce the central concepts and terminology of pre-modern civil procedure, and close with an example.
+
+I. MODERN CIVIL PROCEDURE IN A NUTSHELL
+
+Most 1L civil procedure courses revolve around the Federal Rules of Civil Procedure. The Federal Rules were promulgated in 1938, are used in federal district courts across the nation, and serve as a model for most states’ procedure systems. Thus, understanding the Federal Rules goes a long way toward understanding U.S. civil procedure in general.
+
+The Federal Rules’ basic approach might be described as, “eh, let the trial judge work it out.” Through a series of pre-trial checkpoints, the Rules seek to sharpen the focus of a case and weed out cases where the plaintiff(the party seeking to change the status quo) can’t prevail. Throughout the litigation process, the trial judge has wide discretion over the way the case is litigated.
+
+It’s easiest to understand this through an example. Suppose that plaintiff Catelyn Stark sues defendant Cersei Lannister for a garden variety tort—say, the wrongful death of her husband Ned. The first stage of proceedings under the Federal Rules focuses on the documents that Stark and Lannister file at the beginning of the case. Stark will file a complaint, which tells the court the relief she wants and usually identifies the law that authorizes that relief. Lannister will respond by filing either a motion to dismiss (governed by Rule 12) or an answer (governed by Rule 8).
+
+The motion to dismiss permits the defendant to challenge the legal theory (or theories) that the plaintiff’s complaint invokes. For example, if the state where Stark sued didn’t recognize a cause of action for wrongful death, Lannister’s motion to dismiss would point out that fact and argue that even if the facts alleged in Stark’s complaint are true, the case has to be dismissed. * * *
+
+Once the court deals with any motions to dismiss, Lannister will file an answer that responds to the complaint’s allegations one by one. The answer can
+164
+also introduce theories, called affirmative defenses, that show why Stark can’t recover even if the allegations of the complaint are true.11 For example, Lannister might allege that, although she killed Stark, she was justified in doing so, because he posed an imminent danger to public order.
+
+After the answer is filed, the parties exchange documents, answer written questions posed by attorneys, and sit for depositions—meetings in which an attorney takes the testimony of a witness under oath. This process is called discovery and is governed by Rules 26 through 37. Its goal is to provide both sides with all the evidence relevant to the case and permit them to settle without having to go to trial.
+
+When discovery finishes, Lannister will move for summary judgment. Under Rule 56, the court may dismiss Stark’s wrongful death claim if Stark can’t point to evidence that could be used to prove the claim at trial. * * *
+
+* * *
+II. PRE-MODERN CIVIL PROCEDURE
+
+Thus we come to the main subject. What are the strange procedural devices that litter 1L casebooks like dead characters in a George R. R. Martin novel?
+
+A.   Law vs. Equity
+
+The first thing to know is that there were not one but two procedural systems used prior to the creation of modern procedural systems: “common law” procedure and “equity” procedure. The reason has to do with the historical development of the English courts.
+
+In the middle ages, the king exercised all the judicial and executive powers of government—and some legislative powers as well.19 There was no formal process for asking the king to resolve a dispute, so citizens who needed the state’s assistance appeared at royal court and petitioned for relief.
+
+Around the 13th century, the first courts of law evolved out of the king’s council. Instead of resolving disputes on a case-by-case basis, the king’s clerks
+165
+would issue a writ (or order) in the name of the king that directed a court to resolve a dispute in a particular way. For example, the “writ of right” directed the court to determine the owner of real estate by supervising a “trial by battle” between the competing claimants.20 Writs were customized to petitioners’ specific problems at first, but became standardized over time. As described below, the writs came to define a case’s “form of action,” which defined the kind of procedure the court would use, the kind of evidence the plaintiff had to present to recover, and the remedies the courts would award.
+
+Despite the creation of the law courts, citizens continued to petition the king for assistance in cases that weren’t covered by an established writ. Meanwhile Parliament, jealous of its own authority, restricted the king’s authority to issue new writs. The king authorized his chancellor to resolve the leftover petitions that weren’t covered by an established writ. This eventually led to the creation of an alternate court system, the courts of equity, for cases where the courts of law couldn’t provide an adequate remedy. In the courts of equity, cases were tried by the chancellor or master of rolls, not a judge and jury.
+
+When reading an old opinion, it’s easy to tell whether the case was decided by a court of law or court of equity. The first clue is the decisionmaker. As noted, cases at law were decided by a judge and jury whereas equity cases were decided by the chancellor or master of rolls. The second clue is the name of the court. The two main common law courts were the King’s Bench and the Court of Common Pleas. The two main courts of equity were the Court of Exchequer and Chancery, a name that continues to be used in Delaware.23
+
+The last clue to the kind of court is the remedy the court awarded. The prototypical remedy in an action at common law is money damages. Equity courts generally awarded injunctive relief—i.e., they ordered a party to do something or stop doing something.
+166
+All of these courts heard cases in London. But judges periodically would hear cases throughout England and Wales, in sittings known as assizes. If a difficult question of law arose, it might be referred to the collected judges of a court who would hear it en banc, i.e., sitting together. Especially difficult questions were sometimes heard by the twelve judges of the King’s Bench, Court of Exchequer, and Court of Common Pleas sitting in a kind of super en banc proceeding.
+
+B.   Common Law Procedure
+
+With the difference between law and equity in mind, we can turn to the procedural terminology used in old cases. Common law procedure is defined by three features, each of which generated its own terminology.
+
+1. The writ system. The first feature of common law procedure is the writ system. As noted above, a common law case began when the plaintiff obtained a writ from the king’s clerks that authorized a court to hear a case. The writ the plaintiff obtained also determined the case’s form of action—essentially, a bundle of marching orders that specified the substantive law, the procedure the court would follow, and the remedies the court could award if it found that the defendant violated the plaintiff’s rights.
+
+To appreciate the difference between a writ and a form of action, think of a baseball game. When the umpire proclaims, “Play ball!” at the beginning of the game, he directs the players to play a game of baseball. The rules that govern that game—its “form of action,” if you like—are not defined by the umpire’s direction to “Play ball!” but by the Major League Baseball rulebook, custom, and precedent. So too with writs and forms of action. Whereas a writ was the formal order that directed the case to go forward, the form of action was the body of law, precedent, and custom that defined how the litigants were to play the “game” picked out by the writ.
+
+Much of the confusing terminology in historical cases has to do with the writ or form of action that was at issue; because Parliament had limited the king’s authority to issue new writs, whether a novel fact pattern could be shoehorned into an existing writ was crucially important. For example, there was no cause of action for wrongful death at common law. Thus, in Stark’s lawsuit against Lannister, a judicial decision might focus on whether an action from wrongful death could be maintained through an action for “trespass”—the
+167
+common law cause of action for injuries directly caused by the wrongful act of another. Common law courts devoted enormous energy to such questions * * * .
+
+Appendix I lists eleven forms of action at common law. Because the form of action identified the theory of the case, the evidentiary showing that the plaintiff had to make to recover, and the remedy the court could award, identifying the form of action at issue in an old case will generally make the case easier to understand. For example, if the court identifies the case as one of “general assumpsit,” we know that plaintiff is seeking to recover damages for the breach of a promise. The court’s analysis will probably focus on whether there is an enforceable contractual obligation, whether the defendant performed satisfactorily, or another issue that comes up in contract disputes.
+
+2. The pleading system. The second feature of common law procedure was its elaborate pleading system. The common law pleading system sought to limit the number of issues in a case. Ideally, the exchange of pleadings would narrow the case to a single question that could either be decided by the court or put to a jury.
+
+The basic moves from common law pleading are familiar from modern civil procedure, but the terminology used to describe them is different. Continuing our example, Stark would begin by filing a declaration—the equivalent of a complaint—that expanded on the original writ she obtained from the royal court with details such as the time and place of injury. Lannister would respond by making a plea that challenged either the legal basis for the suit or the facts alleged in Stark’s declaration.
+
+A plea known as the demurrer (the second syllable rhymes with “fur,” not “cure”) performed a function similar to the modern motion to dismiss. It allowed the defendant to argue that the plaintiff was not entitled to relief even if the allegations in the declaration were true. Thus, in a jurisdiction that lacked a wrongful death statute, Lannister could obtain dismissal of Stark’s wrongful death suit through a demurrer which pointed out that, even if she killed the decedent, that fact did not support liability in tort.
+
+Another plea, the confession and avoidance, functioned similarly to a modern affirmative defense. Through this plea, Lannister could raise the argument that, even if she killed Ned, she was justified in doing so. The traverse functioned like a modern answer and provided an opportunity for the defendant to contest the declaration’s factual allegations. Thus, Lannister’s traverse might
+168
+contend that Ned died of natural causes, or that if someone cut off his head, it wasn’t a Lannister.
+
+Common law pleading differs most conspicuously from modern pleading in what happened after the first round of papers was exchanged. Instead of launching into discovery, Stark would respond with another pleading (the replication), to which Lannister would respond with another (the rejoinder), and so on. Through technical pleading rules, most of the potential issues in the case would be eliminated at the pleading stage, rather than being contested in later proceedings. The objective was to narrow the case to a single issue of law or fact that could be decided by a judge (if the issue was one of law) or jury (if the issue was one of fact). Many issues that would today be resolved later in litigation—who did what when, the appropriate theory of liability, the extent of damages, etc.—would, at common law, be decided on the basis of the pleadings.
+
+3. Trial and appeal. After the pleadings closed, any legal questions that remained would be decided by the court. Factual issues on which “issue was joined” would be decided by a jury. (Discovery was unavailable, and summary judgment was not introduced until 1855.)
+
+The first-level trial court was called the nisi prius court. After the parties put on their evidence, the defendant could move for a nonsuit or directed verdict. Attorneys thought of the nonsuit as a demurrer directed at the trial evidence. Just as Lannister’s demurrer would have argued that Stark was not entitled to relief based on the facts alleged in the declaration because the jurisdiction did not recognize liability for wrongful death, her motion for nonsuit would have argued that Stark couldn’t recover based on the evidence introduced at trial. When there was only one reasonable outcome, the directed verdict device allowed the judge to dictate the jury’s verdict. For example, if all the witnesses testified that it was a Tully and not a Lannister who killed Ned, the judge would direct a verdict for Lannister.
+
+If the jury returned a verdict in favor of Lannister, Stark could move for a judgment non obstante veredicto (JNOV)—literally, “judgment notwithstanding the verdict.” Even though the parties had presented evidence, this motion was based on the pleadings. It permitted Stark to ask for judgment based on a feature of the pleadings that emerged during trial, notwithstanding the jury’s verdict for Lannister. The corresponding defense-side motion was the motion for arrest of judgment. All of these devices—the nonsuit, directed verdict, JNOV,
+169
+and motion for arrest of judgment—have been consolidated in the modern motion for judgment as a matter of law.40
+
+After the nisi prius court entered judgment, the losing party could appeal. Parliament took an active role defining appellate courts’ jurisdiction throughout the seventeenth, eighteenth, and nineteenth centuries, so the forum in which an appeal was heard varied over time. In general, appeal began by bringing an issue before the court en banc and may have continued in an intermediate appellate court. A party who lost in an intermediate appellate court could pursue a further appeal to the House of Lords (the upper house of Parliament) in cases of exceptional importance.
+
+The appellate process began when the losing side obtained a writ addressed to the lower court. The appellate court would typically issue a rule nisi, an order that directed the party who won in the trial court to explain why the judgment should not be reversed or set aside. When the appellate court gave its decision, the rule nisi would be discharged if the party who won in the trial court (the appellee) successfully defended the judgment, or a rule absolute would issue, converting the rule nisi into the appellate court’s permanent ruling. A rule absolute reflected the appellate court’s decision that the trial court had erred in some respect, and that the outcome should be reversed or the case returned to the trial court for further proceedings.
+
+C.   Equity Procedure
+
+Because the 1938 Federal Rules of Procedure were modelled on the equity procedure system, procedure in old equity cases is easier to follow than procedure in cases at common law. An equity case was initiated through a bill (like a complaint) that described the petitioner’s (i.e., plaintiff’s) predicament at length. The respondent (defendant) would file a demurrer (like a motion to dismiss), a challenge to the legal sufficiency of the bill, or an answer, a response to the bill’s factual allegations.
+
+A central difference between common law and equity procedure was the evidence upon which cases were decided. Evidence in equity generally took the form of documents such as affidavits. Even when evidence started out as oral testimony, it would be reduced to writing.
+170
+Perhaps more important, the parties could collect evidence through a process that resembled modern discovery. The chancellor or master of rolls would make rulings as evidence became available, and order additional discovery if he thought more information was necessary to resolve an issue. The ensuing proceedings sometimes lasted for decades, as famously described in Charles Dickens’ Bleak House.48
+
+Eventually, the chancellor would enter a decree that set out his decision. Juries were not used in equity, a distinction preserved in the Seventh Amendment to the U.S. Constitution, which limits the right to a jury trial to suits at common law.49
+
+Until the nineteenth century, Chancery had only two judges, the chancellor and the master of rolls. A losing litigant could appeal from the latter to the former. In cases decided by the chancellor, a litigant could only ask him to reconsider his decision or seek review in the House of Lords.
+
+
+
+

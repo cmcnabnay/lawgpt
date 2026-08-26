@@ -50,14 +50,19 @@ function looksLikeText(buffer) {
 // matter what it looks like, which mis-parses hand-named files like
 // "CB pp. 45-125" (no real extension, just an abbreviation ending in a
 // period) — it would read "45-125" as the "extension" and chop the title
-// down to "CB pp". Real extensions are short alphanumeric tokens (pdf,
-// docx, txt...); a page range has a hyphen in it, so requiring
-// [a-z0-9]{1,8} here (same pattern canvas-routes.js uses for the same
-// purpose) leaves a file like that with no detected extension at all, and
-// its full original name as the title.
+// down to "CB pp". A whitelist of known extensions (rather than "any short
+// alphanumeric token") is what actually fixes this: a page-range suffix
+// like that fails the hyphen test either way, but so would something like
+// "Exercise 3.2.1" (no real extension) under a looser [a-z0-9]{1,8} rule —
+// the "1" after the last "." looks exactly like a valid 1-character
+// extension, and would wrongly chop the title down to "Exercise 3.2".
+// Matching only extensions we actually know how to handle (the keys of
+// EXT_TO_CONTENT_TYPE) means a citation or exercise number that happens to
+// end the filename is never mistaken for one.
 function extFromFileName(fileName) {
   const m = /\.([a-z0-9]{1,8})$/i.exec(fileName || "");
-  return m ? m[1].toLowerCase() : "";
+  const ext = m ? m[1].toLowerCase() : "";
+  return Object.prototype.hasOwnProperty.call(EXT_TO_CONTENT_TYPE, ext) ? ext : "";
 }
 
 async function scanLocalDocuments() {

@@ -57,11 +57,21 @@ const EXT_BY_CONTENT_TYPE = {
   "image/gif": "gif"
 };
 
+// Extensions this app actually recognizes -- the value side of
+// EXT_BY_CONTENT_TYPE above. Used to keep a trailing "." in a hand-typed
+// title (e.g. "Exercise 3.2.1", "R2 §§1, 2, 4") from being misread as a
+// real extension just because what follows the last "." happens to be
+// short and alphanumeric -- "1" or "4" pass that test as easily as "pdf"
+// does, which would wrongly chop a title like "Exercise 3.2.1" down to
+// "Exercise 3.2".
+const KNOWN_EXTENSIONS = new Set(Object.values(EXT_BY_CONTENT_TYPE));
+
 function extFromContentTypeOrTitle(contentType, title){
   const type = (contentType || "").split(";")[0].trim().toLowerCase();
   if (EXT_BY_CONTENT_TYPE[type]) return EXT_BY_CONTENT_TYPE[type];
   const m = /\.([a-z0-9]{1,8})$/i.exec(title || "");
-  return m ? m[1].toLowerCase() : "bin";
+  const ext = m ? m[1].toLowerCase() : "";
+  return KNOWN_EXTENSIONS.has(ext) ? ext : "bin";
 }
 
 // Canvas course names come through as long, semester-stamped titles (e.g.
@@ -104,7 +114,9 @@ function saveNativeFile(courseFolder, title, ext, buffer){
   try {
     const dir = path.join(DOCS_ROOT, courseFolder);
     fs.mkdirSync(dir, { recursive: true });
-    const base = sanitizeForFs(title.replace(/\.[a-z0-9]{1,8}$/i, "")) || "document";
+    const titleExtMatch = /\.([a-z0-9]{1,8})$/i.exec(title || "");
+    const titleHasKnownExt = titleExtMatch && KNOWN_EXTENSIONS.has(titleExtMatch[1].toLowerCase());
+    const base = sanitizeForFs(titleHasKnownExt ? title.slice(0, -titleExtMatch[0].length) : title) || "document";
     const fileName = `${base}.${ext}`;
     fs.writeFileSync(path.join(dir, fileName), buffer);
     return { fileName, filePath: path.join(courseFolder, fileName) };
@@ -311,12 +323,28 @@ router.post("/scrape", async (req, res) => {
         const ext = extFromContentTypeOrTitle(contentType, title);
         const nativeFile = saveNativeFile(courseFolderName, title, ext, buffer);
 
+        // Re-importing a file that's already indexed (by a prior import, or
+        // by local-scan picking it up off disk first) would otherwise leave
+        // a stale duplicate entry behind under the same filePath — replace
+        // it instead of piling on, same "one entry per file on disk"
+        // invariant local-scan.js keeps.
+        if (nativeFile) {
+          const existing = documentStore.getDocumentByFilePath(nativeFile.filePath);
+          if (existing) documentStore.removeDocument(existing.id);
+        }
+
         const document = documentStore.addDocument({
           title,
           url: finalUrl,
           contentType,
           text: extractError ? null : (extracted || null),
-          courseId: String(courseId),
+          // Use the same resolved folder slug local-scan.js and the
+          // Schedule tab's SCHEDULE_COURSE_TO_FOLDER mapping key off of
+          // (see lawgpt.html), not the raw numeric Canvas course id --
+          // otherwise a Canvas-imported document ends up in a different
+          // Documents-tab group than the same course's locally-scanned
+          // files, and never matches a Schedule reading's course filter.
+          courseId: courseFolderName,
           courseName: courseName || null,
           fileBuffer,
           fileName: nativeFile ? nativeFile.fileName : null,

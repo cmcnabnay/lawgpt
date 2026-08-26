@@ -1,0 +1,477 @@
+========================================
+Page 51
+========================================
+
+Chapter 3.2. Reading Cases
+
+10. Disposition. This is the judgment of this court. The Tenth Circuit affirmed the trial court's conviction of McBoyle. The result here is that the trial court verdict and sentence will remain unchanged here that judgment can also be found at the end of the case.
+
+11. Attorneys representing McBoyle. Harry F. Brown, Frank Dale, and Robert W. Hoyland represented McBoyle, defendant-appellant.
+
+12. Attorneys representing the U.S. government. Roy St. Lewis, Fred A. Wagoner, and William Earl Wiles represented the United States, petitioner-appellee.
+
+13. Panel members. Appeals are typically decided by a panel of three appellate judges. This appeal was decided by a three-judge panel made up of Judges Cotteral, Phillips, and McDermott.
+
+C. The Body of the Opinion
+
+14. Parts of the opinion. While some judicial opinions may differ a bit in structure, the body of most judicial opinions contain the following parts:
+
+• Facts
+• Issue or question presented
+• Holding
+• Reasoning
+• Judgment or disposition
+• Concurring and/or dissenting opinions, if any
+
+II. The Three-Step Process for Deep Reading
+
+Now that you have a picture of the typical parts of a case, you can begin reading. You can follow the three-step process for reading comprehension outlined in the introduction to this chapter for reading cases: (1) get context, (2) skim the case, and (3) read the case closely. Let's look at each step.
+
+A. Get Context
+
+Novice students—to their detriment—skip this step. However, context is very important. A case represents one legal principle within a larger system of rules. To understand where this one case—and the principle that it represents—fits, you must have a sense of the larger system of rules.
+
+You can get a sense of the larger system of rules in several ways. First, if the cite is part of a casebook for a course, you can review the table of contents. The table of contents will usually list the major legal concepts covered in each chapter. By locating the chapter within which the case appears, you will already know which legal concept relates to the case.
+
+A second way to get context is by reading the relevant portion of a treatise or commercial outline about the course subject matter. Once you know (by reviewing the table of contents) which legal concept the case relates to, you can read about that area of law in more detail in a treatise or commercial outline. Doing so will provide you more detail about the area of law that the case will address. In other words, you will have a sense of the forest before examining an individual tree—the case itself.
+
+Once you have a framework for the legal system within which this case resides, you are ready to read the case.
+
+========================================
+Page 52
+========================================
+
+Becoming a Legal Writer
+
+B. Skim the Case
+
+To read a case effectively, begin by skimming the surface of the case. Skimming will not only provide you with a framework for the case, but it will ultimately save you time. When you skim a case, look for the big concepts outlined below. Simply note where each part exists within the case, but avoid getting bogged down in the details. Doing so will allow you to see how the case is organized. Once you understand the organization and the big concepts of the case, you can slow down on the second read and focus on the details.
+
+C. Read the Case Closely
+
+Once you have outlined the structure of the case and the big concepts within it, you are now ready to read the case more closely. As you do, identify the following:
+
+• Specific legal issue the court is deciding
+• Relevant facts (those facts that led to the holding)
+• Holding in this case
+• Additional reasoning or rationale that connects the facts to the holding
+• Disposition
+• Any concurring or dissenting opinions
+
+III. Exercises
+
+The exercises below will help you to identify and work with the different parts of judicial opinions. They will also help you develop skills for critically reading cases.
+
+Exercise 3.2.1: Dissecting the Parts of a Case
+
+Reread the McBoyle case (above) and respond to the questions below:
+
+1. What were the relevant facts of the case?
+
+________________________________________
+________________________________________
+________________________________________
+________________________________________
+________________________________________
+
+2. What was the issue before the court?
+
+________________________________________
+________________________________________
+________________________________________
+
+========================================
+Page 53
+========================================
+
+Chapter 3.2. Reading Cases
+
+________________________________________
+________________________________________
+
+3. What did McBoyle's lawyers argue the term "vehicle" should include?
+
+________________________________________
+________________________________________
+________________________________________
+________________________________________
+
+4. What did the government argue the term "vehicle" should include?
+
+________________________________________
+________________________________________
+________________________________________
+________________________________________
+
+5. Which argument did the court find to be more convincing, and why?
+
+________________________________________
+________________________________________
+________________________________________
+________________________________________
+________________________________________
+
+========================================
+Page 54
+========================================
+
+Becoming a Legal Writer
+
+________________________________________
+________________________________________
+
+7. Do you agree more with the majority or the dissent? Why?
+
+________________________________________
+________________________________________
+________________________________________
+________________________________________
+________________________________________
+
+Exercise 3.2.2: Identifying a Holding
+
+Marietta Title Insurance Company v. Rath, State Court (2016)
+
+Plaintiff Marietta Title Insurance Co., with offices in Park County, brings this action against Paul Rath asserting breach of a noncompete covenant. Plaintiff seeks injunctive relief and asks that this Court permanently enjoin defendant from working in the title insurance business in the state of Utopia for two years. Plaintiff grounds its case upon the assertion that Rath's services were unique and, therefore, he should not be permitted to work for a competitor.
+
+Marietta hired Rath in 2012 as Senior Vice President in charge of several major sales accounts. On the first day of his employment, Rath signed a covenant not to compete, restricting him from working for another title insurance company for two years following his termination of employment services from Marietta. However, in August 2014, Rath abruptly terminated his employment with Marietta and signed on as senior vice president of a competitor, Charles Schwartz Title Co., also based in Park County.
+
+At the hearing, evidence was produced indicating that Rath had relationships with specific customers of his assigned accounts and that these customers would only engage Rath for Marietta business. Rath had a special knowledge of a computer program that was helpful for his customers' business. Rath had frequent contact with his customers. Rath's territory was limited to Park County. The accounts he oversaw were limited in the same geographic locales.
+
+In the state of Utopia, assuming a covenant by an employee not to compete is reasonable in time and geographic scope, enforcement will be granted to the extent necessary: (1) to prevent an employee's solicitation or disclosure of trade secrets; (2) to prevent an employee's release of confidential information regarding the employer's customers; or (3) in those cases where the employee's services to the employer are deemed special or unique. In a case where (1) is met, but not (2), Utopia courts have granted
+
+========================================
+Page 55
+========================================
+
+Chapter 3.2. Reading Cases
+
+injunctions to enforce covenants not to compete based upon the unique services of the defendants. In Matheson Savings Bank v. Jonas, the state court found that the former employee's relationships with the clients were special and qualified as unique services. The Jonas court deemed these relationships unique because the highly competitive banking industry and the rare talent that rose to the top of the banking world. In addition, the Matheson clients had regular contact with Jonas. Thus, the court granted injunctive relief.
+
+In analyzing whether an employee's services are unique, the focus is less on the uniqueness of the individual person and more on the employee's relationship to the employer's business and the clients.
+
+Here, facts produced at the hearing indicate that Rath's services were, and continue to be, unique. Therefore, this Court grants plaintiff's permanent injunction; however, defendant Rath is restricted from working for title insurance companies having offices within the geographic parameters of Park County only.
+
+1. According to the court, when are non-compete covenants enforced?
+
+________________________________________
+________________________________________
+________________________________________
+________________________________________
+
+2. What happened in the Jonas case?
+
+________________________________________
+________________________________________
+________________________________________
+________________________________________
+________________________________________
+
+3. What do you think the holding is in Rath? What facts does the court rely on in its holding?
+
+________________________________________
+________________________________________
+________________________________________
+
+========================================
+Page 56
+========================================
+
+Becoming a Legal Writer
+
+________________________________________
+________________________________________
+________________________________________
+
+Chapter 3.3
+Preparing Case Briefs
+
+I. Casebooks
+II. Format of a Case Brief
+   A. Typical Parts of a Case Brief
+   B. Sample Case Brief
+III. Exercises
+
+To read cases assigned for a law school course, you must first step back and understand the purpose of a doctrinal law school class. A doctrinal law school class is one that teaches "doctrine." The word "doctrine" refers to a system of principles. In most law school classrooms, you learn the doctrine—or system of principles—that relate to a particular area of law, such as the principles that relate to torts, criminal law, constitutional law, or civil procedure. (By contrast, other classes, such as Legal Research & Writing or Trial Practice, do not focus on a single area of law; rather, they focus on developing legal analysis and related skills through understanding doctrinal theory and providing opportunities for practice.)
+
+For most of your 1L classes, you will be reading from a casebook. This section provides you with an overview of what a casebook is—and is not—and how to get the most out of reading cases from your casebook to prepare for class.
+
+I. Casebooks
+
+A casebook is a legal textbook that uses actual edited appellate court cases and other legal documents to teach legal principles. In law school, virtually all professors teaching core doctrinal classes do so by using casebooks. Learning how these books work will help you get the most out of them as you do your weekly readings and prepare for class discussion.
+
+Casebooks contain the edited appellate cases, along with statutes, codes, and regulations that have led up to the development of modern legal doctrines. However, no two casebooks are alike, and different casebooks include different kinds of material in their pages and for different reasons. Figure 3.3.A, below, provides some advice to get the most out of your casebooks.
+
+========================================
+Page 57
+========================================
+[Note: Page 57 content appears embedded within page 56's image but attributed to the facing page — see Figure 3.3.A description below, continuing onto page 58]
+
+========================================
+Page 58
+========================================
+
+Becoming a Legal Writer
+
+Figure 3.3.A: Advice for Using Casebooks Effectively
+
+[Diagram: A four-step arrow flow]
+1. Get familiar with the casebook's layout
+2. Don't be afraid to take notes or add highlights in the casebook
+3. Read it right the first time
+4. Use supplementary materials recommended by your professors
+
+Let's examine each one:
+
+• Get familiar with the casebook's layout: Each book looks different, and some of those differences may change the way you read and relate to your book. Study the Table of Contents—it will tell you where you are and where you are going during the semester. The very placement of the case within the Table of Contents can help you target the relevant doctrine that the case illustrates; knowing why you are reading something will be just as beneficial to you as remembering the details of what you are reading.
+
+• Don't be afraid to take notes or add highlights in the casebook: As you get deeper into the text, it will become easier to get lost or miss key details. Having a method to identify material that is important—whether be making notes in the margins, highlighting key passages, or taking notes on a separate sheet of paper—will help you make sense of the text.
+
+• Read it right the first time: Using the reading for comprehension steps discussed in Chapter 3.2, Reading Cases, will help you read efficiently and effectively. While it may take a bit longer the first few times, putting in the time or effort necessary to learn what is important will help you better understand the material. It will also save you time before exams, as that initial effort will make reviewing much easier.
+
+• Use supplementary materials recommended by your professors: Some of your professors have listed other supplementary books and materials to go along with your casebook. While it may seem like an extra chore, you should read these materials. Supplementary materials will help illuminate key concepts or summarize principles in different ways from the casebook, which will help you understand and absorb the concepts more effectively.
+
+In a casebook class (think property, criminal law, or torts), the overarching goal for the semester is to learn the rules (or principles) that govern that area of law. To that end, each case that you will read will represent a legal principle. As you read a case, your goal will be to extract the legal principle represented in that case.
+
+Law professors have other goals for the class. Those goals may include teaching students how to:
+
+• identify the different parts of the case;
+• apply the rule from the case to a set of facts;
+• understand the principles of law represented in the case;
+
+========================================
+Page 59
+========================================
+
+Chapter 3.3. Preparing Case Briefs
+
+• understand policies underlying the law;
+• identify the parties and the arguments being made;
+• distinguish between relevant and irrelevant facts; and
+• understand the implications of the court's holding on future cases.
+
+Thus, when reading a case to prepare for a law school class, you will need to prepare for the major goal—understanding the legal principle that the case represents—and prepare for other educational goals your professor may have.
+
+To that end, many students "brief" cases to prepare for class. Preparing a case brief is a form of note taking. The case brief will help you remember the key points of a case and respond to your professor's questions during class. Putting in too much information will weigh you down and keep you from remembering the important or salient facts. Conversely, you cannot ignore key facts just to save space or shorten the briefing process. It's a process that depends on the complexity of the case. As a rule of thumb, your case brief may range anywhere from half a page to over a page long. Going any longer may mean that you have included too many superfluous details.
+
+II. Format of a Case Brief
+
+No one perfect format exists for briefing cases.1 Each professor will want you to remember different kinds of details for that professor's course, so what works best in one class may not work well in another. Modify the format as you need to satisfy the demands of each professor. You may find that considering the following suggestions is a good place to start:
+
+A. Typical Parts of a Case Brief
+
+1. Name of the case. The heading identifies the case, helps you locate it quickly and refreshes your memory. Begin with the name of the case. Then, designate the parties (1) as they were in the trial court, (2) their status on appeal, and (3) the relationship that gave rise to the controversy.
+
+Lowell v. Trent
+P/Π/Appellant/Landlord v. D/Δ/Appellee/Tenant
+
+The name of the case tells us that Lowell (the landlord) is suing Trent (the tenant). At the trial level, Lowell was the plaintiff (P, π) and Trent was the defendant (D, Δ). Trent won the case, and Lowell appealed. Lowell is thus the appellant (or petitioner). Trent responded to the appeal, and is the appellee (or respondent).
+
+Courts may refer to the parties either by the designation below (plaintiff, defendant), by their designation on appeal (appellant/petitioner, appellee/respondent) or both, which may be confusing. Do whatever you find helpful to keep track of the parties. It may be useful to identify the parties by their relationship (landlord/tenant; employer/employee; automobile driver/accident victim) both to help you keep track of them and to quickly refresh your memory as to the facts of the case.
+
+2. Court. You will find it helpful to note which court decided the case and whether it is a trial, an intermediate, or the highest court. Also note whether it is a federal or state court.
+
+1. Much information in this chapter had its origins in a handout, Navigating Your 1L Year, based on materials from the LWI Idea Bank and various LWI conferences.
+
+========================================
+Page 60
+========================================
+
+Becoming a Legal Writer
+
+3. Year of decision. This provides historical context.
+
+4. Facts. Include events that led one party to initiate legal proceedings against the other. Briefly summarize the facts as they appeared at trial, and include only relevant or key facts—specifically, those that relate to the problem at hand. One guide to identifying relevant facts is to ask: If this fact were changed, would the court reach a different conclusion? To help you get started, and to check your understanding of the facts, ask yourself:
+
+• What happened between the parties?
+• What cause of action (legal theory, claim, charge, argument) does the plaintiff have?
+• What facts are relevant to plaintiff's claim?
+• How did the defendant respond?
+• Did the defendant assert defenses or claims against the plaintiff?
+• What does the plaintiff/appellant want the court to do?
+• What facts are most relevant to the defense's arguments?
+
+If the professor asks, "What are the facts of this case?" or "What happened in this case?" you should not answer, "Plaintiff is suing the defendant." Begin, instead, in a way that identifies the plaintiff, the salient facts, and the cause of action. For example: A landlord (Jones) is suing her tenant (Smith) for breach of contract due to the tenant's failure to pay rent.
+
+5. Procedural history. The procedural history is the history of the case as it developed through litigation up to the current point in time. When summarizing the procedural history, trace the stages of litigation until you reach the present court's decision. You may want to ask whether any of the questions below apply to the case you are reading:
+
+• What is the plaintiff claiming?
+• What happened in the court(s) below?
+• Was the original action tried before a jury or before a judge alone?
+• Was summary judgment or a directed verdict granted for one party?
+• Which party was successful?
+• What was the final disposition of the case in the trial court?
+
+Remember to consider only those facts or issues that are most salient or relevant. Detailing every document or motion filed with the district court will not help you understand the basic events that occurred in the litigation process.
+
+6. Issue. The issue is the question (or questions) the court is called upon to decide in order to resolve the dispute between the parties. Since you will be primarily reading appellate court cases, concentrate on the issue or issues in controversy on appeal rather than those already handled at the district court level. Learning to spot and correctly state the issue takes time and practice, and it is a major reason why briefing cases is so important. A good statement of the issue or question presented considers whether a particular law, rule, or definition requires a particular outcome or finding when it is applied to the facts of the case. Start by asking the broadest legal question first:
+
+• Did the defendant have the intent to cause injury, as required for a second-degree burglary?
+
+========================================
+Page 61
+========================================
+
+Chapter 3.3. Preparing Case Briefs
+
+• Did the advertisement constitute an offer under contract law?
+
+Then, incorporate the key facts. You should also phrase the question in a way that suggests what the outcome might be.
+
+• Did the defendant have the intent to cause injury, as required for a second-degree burglary, when, as he fled from the complainant's apartment, he let out a karate yell and threw her to the ground?
+• Did the advertisement for a one-day-only sale for one genuine lapin stole, worth $26, for $1 constitute an offer under contract law?
+
+7. Holding. The holding is the answer to the question asked in the issue. The holding may include a one-word answer (yes or no), but should also include the key facts that led to the decision. A holding may be stated narrowly or broadly, and that may depend upon the court's intention. A court does not need to answer every issue presented to it. It may be necessary to dispose of an issue, and it has precedential value only on those points (and only within that jurisdiction). When considering the holding, ask yourself what actually happened to the case and to the parties involved when the court issued its ruling. Below are some questions that may help:
+
+• After the court answered the question presented, what happened?
+• Did it affirm the lower court, reverse its decision, or remand (send the case back) for further proceedings?
+• Did the court award damages? If so, to whom, for what, and how much?
+• Did the court issue an injunction, order a hearing, impose a prison term, or require some other action to take place?
+
+8. Rationale or reasoning. In this section, you must try to identify the court's explanation and justification for its holding. DO NOT merely quote from the court's opinion. Force yourself to state in your own words what you think the court's reasons are for deciding the case the way it did. Given the common law decisional process, a court can follow precedent or it can develop a new rule. This can result in a wide range of possible outcomes.
+
+If the decision follows precedent, the reasoning will justify applying the existing rule. The court may compare the present case to the precedent case and conclude that the significant facts are identical, thereby requiring the application of the precedent rule. It could also conclude that, although the facts are not identical, they are sufficiently similar to justify the same result. Alternatively, the court could conclude that the significant facts are not sufficiently similar to justify to its facts and thereby refuse to follow it. Or a court can decide not to follow a lower court decision, stating policy considerations. You may want to ask yourself the following questions:
+
+• What are the stated grounds for the court's decision?
+• Do the stated grounds seem to be the real reasons for the decision?
+• Does the case follow or depart from precedent?
+• If the case involved a statute, did the court consider the legislative intent? Did the court uphold or strike down the statute?
+
+========================================
+Page 62
+========================================
+
+Becoming a Legal Writer
+
+9. Separate Opinions and Dissents. Sometimes, especially in cases dealing with controversial subjects, the judges considering the case will not agree on the appropriate outcome. In these cases, judges may write additional opinions explaining their own point of view. Separate opinions generally agree with the majority, either entirely or in part, and dissents generally disagree either in whole or in part.
+
+Because they do not express the majority will of the court's opinion, separate opinions and dissents are not binding legal precedent. However, they can still have some persuasive value for scholars and for judges as they are considering future cases. When a case contains a separate opinion or a dissent, note what it is in the court's opinion that prompted the separate opinion, as they may foreshadow alternative approaches, identify relevant political and legal controversies, or signal a future shift in a legal rule.
+
+10. Public policy. Courts do not always provide policy, but when they do, it will be stated in terms of what is best for the public at large. Public policy may be phrased as why a rulemaking body intended a certain result. Alternatively, this can be included in the rationale since it likely affected why the court reached its decision.
+
+11. Takeaway rule from this case. This important part of the case brief will be critical for your course outlines for exam preparation. For legal writing, it will help you with understanding how to apply this precedent case to your client's facts.2 You may want to ask yourself questions such as:
+
+• Does this case follow the general rule?
+• Does this case extend the general rule to cover new facts?
+• Does this case distinguish or narrow the rule so that it does not apply to the facts of the case at bar?
+• Does this case justify overruling the old general rule and instead adopt a more modern rule?
+
+12. Disposition. This is what the court's ultimate decision was in the case. For example, did the court affirm, reverse, remand, or vacate the decision below? Did the court grant a motion?
+
+13. Dicta. You will want to note, if present, reasons given by the court on tangential matters other than the facts or issue before the court. Dicta is not present in every case, and it is not binding on future cases.
+
+B. Sample Case Brief
+
+In Exercise 3.2.2 for Chapter 3.2, Reading Cases, you read the case of Marietta Title Insurance Company v. Rath to understand how to extract an implied holding from a case. Let's look at that case again, this time in the context of a case brief:
+
+Sample Case Brief for Marietta Title Ins. Co. v. Rath
+
+Name of the case: Marietta Title Insurance Co. v. Rath
+Court: State Court
+Year of Decision: 2016
+
+2. For study purposes, extracting this "takeaway" rule is very useful to your case reading. Later in the semester, incorporate this takeaway rule into your course outlines to study for law school exams.
+
+========================================
+Page 63
+========================================
+
+Chapter 3.3. Preparing Case Briefs
+
+Parties: Plaintiff Marietta Title—an insurance company; Defendant is former employee—Rath
+
+Procedural History: In trial court, Plaintiff seeks to enjoin Defendant
+
+Facts:
+1. P hired D as Senior VP, and D signed a covenant-not-to-compete agreement, restricting him from working for another title insurance co. for two years following termination.
+2. D terminated employment and signed on with competitor, also same city.
+3. Evidence revealed D had relationships with specific customers assigned to his accounts and they would engage only him.
+4. Also, D had knowledge of computer programs relating to clients' accounts and D had frequent contact with clients.
+
+Issue: Whether D's services were sufficiently unique so that the court would grant P's request for an injunction to prevent D from violating the terms of the covenant not to compete.
+
+Holding: Rath's services were similarly unique; therefore, P's request for injunction should be granted. The court doesn't explicitly state why it held this way but considered evidence that Rath had relationships with specific customers of his assigned accounts and that these customers would engage only Rath for Marietta business. Furthermore, Rath had knowledge of computer programs that benefited the customers, and Rath had frequent contact with his customers.
+
+Reasoning:
+1. Courts have granted injunctions to enforce covenants not to compete based upon the unique services of the defendants, provided that the restrictive covenant was reasonable.
+2. In Matheson, the court found that the former employee's relationships with the clients were special and qualified as unique services. Relationships were unique because of the highly competitive banking industry and rare talent.
+3. Also relevant in Matheson was that clients had regular contact with the employee.
+
+Disposition: P's request for injunctive relief granted, and D is restricted from working with competitor.
+
+Takeaway Rule: In Utopia, covenants not to compete will be enforced when the former employee had unique services such as relationships with clients, frequent contact with clients, and when the employee possessed rare talents, such as having a special knowledge of a computer program useful to clients.
+
+Remember, case briefs are yours and need to be suited to your learning style. Although many case briefs include the above parts, the format differs from person to person. Some people will type up a case brief on a separate piece of paper. Some will highlight their casebook with different colors representing the different parts. Others will draw pictures
+
+========================================
+Page 64
+========================================
+
+Becoming a Legal Writer
+
+or a flow chart. The format of a case brief does not matter. What is important is that your case brief—no matter the format—helps you understand the case and how it fits within the larger legal landscape.
+
+III. Exercises
+
+The exercises below will give you practice dissecting the parts of a case and preparing for class discussion. The exercises enable you to evaluate different types and forms of case briefs so you can determine which will be most helpful to you.
+
+Exercise 3.3.1: Evaluating the Content of Case Briefs
+
+Review the two sample case briefs below, which are based on the McBoyle v. United States case that you examined in Chapter 3.2, Reading Cases. Then, evaluate whether you believe case brief 1 or 2 would best help you respond to questions in class. Indicate your thoughts by answering the questions that follow the sample case briefs.
+
+Case Brief 1
+
+McBoyle v. United States
+Appellant/Defendant v. Appellee/Plaintiff
+
+Decided: August 18, 1930
+U.S. Court of Appeals for the 10th Circuit
+Judge Phillips
+
+Facts:
+• On July 2, 1926, Defendant hired Lacey to work at his commercial airport in Galena, Illinois.
+• In October 1926, at Defendant's request, Lacey went to Ottawa, Illinois, to steal a Waco airplane from Aircraft Corporation.
+• Lacey flew the stolen plane to Galena and arrived on October 6, 1926.
+• On October 6, 1926, Lacey flew the airplane to Guymon, Oklahoma, per McBoyle's instructions.
+• While in Guymon, McBoyle instructed Lacey to sell or store the stolen airplane and come back to Galena. They communicated with each other via telegraph.
+• When Lacey returned to Galena, McBoyle instructed him to take to Guymon one of his airplanes (a Waco airplane of the same make and model as the stolen airplane).
+• McBoyle claimed that the telegraph referred to liquor in the airplane, not the airplane itself.
+
+Procedural History:
+• Defendant was convicted and sentenced for violation of the National Motor Vehicle Theft Act, 18 U.S.C. § 408, in the U.S. District Court for the Western District of Oklahoma.
+• In the indictment, Defendant was charged with causing the transport of in-
+
+========================================
+Page 65
+========================================
+
+Chapter 3.3. Preparing Case Briefs
+
+terstate commerce from Ottawa, Illinois to Guymon, Oklahoma. The interstate commerce was a stolen Waco airplane, property of the U.S. Aircraft Corp.
+
+Issue:
+• Whether the Waco airplane is classified as a "motor vehicle" as it is defined in the National Motor Vehicle Theft Act, which states: "the term 'motor vehicle' when used in this section shall include an automobile, motor cycle, or any other self-propelled vehicle not designated for running on rails."
+
+Holding:
+• "Any other self-propelled vehicle" in the National Motor Vehicle Theft Act includes an airplane and any other like means of conveyance or transportation self-propelled and is of the same general class as an automobile and a motorcycle.
+
+Reasoning:
+The Court looked to the derivation of "vehicle" and the definition of "vehicle" to reach its holding. In the Century Dictionary, a "vehicle" is "any receptacle, or means of transport, in which something is carried or conveyed, or travels." Webster's Dictionary, a vehicle is a means of conveyance, especially on land. Corpus Juris defined a vehicle as a self-powered vehicle used for carrying passengers or materials. "Vehicle" is derived from the Latin "vehiculum," which means ship or carriage.
+
+The Court adopted a broad definition of "vehicle" to include an airplane. It reached this conclusion because an airplane is self-propelled, as required by the statute, and designed to carry passengers and cargo from one place to another. Additionally, the Court analogized an airplane to an automobile because both serve the same general purpose and it is of the same kind and class as the enumerated motor vehicles.
+
+Although Defendant contended that a "vehicle" only includes modes of transportation on the ground under the doctrine of ejusdem generis, the Court did not agree. Because the statute included the phrase "any other self-propelled vehicle," the Court reached its broad definition.
+
+Separate Opinions and Dissents:
+Judge Cotteral, dissenting.
+The judge agreed with the Defendant and applied the rule of ejusdem generis. Under the doctrine, although an airplane is self-propelled, and it is a vehicle, it is not classified with an automobile or motorcycle. Additionally, while automobiles were commonly stolen, airplanes were not. The judge reasoned that Congress sought to draft a statute to deter automobile theft, and not airplane theft, because it was not a common problem.
+
+Case Brief 2
+
+Case Brief for McBoyle v. United States
+
+Facts:
+• McBoyle (D) operated a commercial airline out of Galena, Illinois, in 1926.
+• D hired Lacey as an aviator in 1926.
+• D induced Lacey to steal a Waco airplane from the Aircraft Corporation in Ottawa, Illinois, and fly it back to Galena, where D changed the serial number of the plane to conceal its identity.
+

@@ -1,0 +1,124 @@
+========================================
+Page 3
+========================================
+
+Chapter 1
+Assessing a Client's Case
+
+I. Investigating a Client's Case
+II. Drafting an Objective Analysis
+III. Exercises
+
+Imagine you graduate from law school and open up your own law practice. A stranger knocks on your door. She is a prospective client and wants you to take her case. Do you do it? Before answering that question, you will need to investigate her case and analyze whether her claims are likely to succeed. That is, if this client files a complaint in court, what is the likelihood that a judge or jury would find in her favor? If she seeks to negotiate a settlement, what is the likelihood that she could reach a satisfactory settlement?
+
+For many reasons, a lawyer's first step after meeting a client is to assess the client's case. One reason to pause and assess is that, for many lawyers, their practice is a business. As a business person, the lawyer must determine whether a client's case is financially worthwhile (and ethically appropriate) to take on. Thus, in private practice, before deciding whether to take the client's claim, you would want to first investigate the client's claim and then objectively assess the strengths and weaknesses of the client's claim.
+
+Lawyers who are not in private practice must also stop to assess a case before proceeding. Imagine you are an attorney at a nonprofit organization that investigates environmental hazards. Before committing your organization to litigation, you would want to assess the proposed claims to ensure that you are allocating your firm's resources in the most appropriate way. Thus, for all lawyers, practical self-interest requires an initial assessment.
+
+More importantly, lawyers have an ethical duty to assess the strengths and weaknesses of a client's case before proceeding. The Model Rules of Professional Conduct require lawyers to exercise independent professional judgment and provide a client with candid advice.2 And lawyers cannot assert a legal claim unless there is a viable legal and factual basis for doing so.2
+
+1. Model Rules of Prof'l Conduct r. 2.1 (Am. Bar Ass'n 2018). Each state adopts its own version of the Rules of Professional Conduct; therefore, the rules vary from state to state.
+2. Model Rules of Prof'l Conduct r. 3.1 (Am. Bar Ass'n 2018) (prohibiting lawyers from advancing frivolous claims or defenses).
+
+========================================
+Page 4
+========================================
+
+Becoming a Legal Writer
+
+For all of these reasons, an attorney must investigate a claim and objectively assess its strengths and weaknesses before proceeding. This chapter introduces you to those steps in a lawyer's practice: How does an attorney investigate a client's claim? And what does an objective analysis of a client's claim look like?
+
+Those two steps—investigating a client's claim and producing a polished, objective analysis—represent the first and last steps of a process that allows an attorney to objectively assess a client's case. The purpose of this chapter is to give you experience with that first step—investigating a client's claim—and a look at the last step: producing a polished written analysis—so that you will have a sense of the road ahead. Table 1.A provides a more detailed overview of the steps in the process that allow an attorney to produce a polished objective assessment of a client's claims.
+
+Table 1.A: The Process of Analyzing and Evaluating Your Client's Legal Question
+
+Stage of the Process | Steps
+Investigate a client's case | 1. Investigate the facts
+   • Understand your client's factual situation by asking questions about who, what, when, where, and why.
+   • Determine the client's concerns and goals.
+   • Consider legal claims that the facts may support.
+   2. Research the law
+   • Find the sources of law that will apply to your client's case.
+   • Critically read the relevant authorities.
+   • Determine legal claims that are supported by the facts.
+Prepare to write | 3. Organize your authorities
+   • Organize to understand the relationship among the relevant authorities by using a case chart or other method.
+   • Outline the legal principles at issue and the legal authorities that will guide your analysis of the client's legal question.
+Produce a polished objective analysis | 4. Draft your work product
+   • Determine whether you need to draft a memorandum of law, an email, or a client letter.
+   • Draft.
+   5. Edit and polish your draft
+   • Review the relevant authorities to ensure your analysis is consistent.
+   • Edit the substance of the draft to ensure your argument is complete and logically ordered.
+   • Polish to weed out words that might confuse and to eliminate errors in grammar, punctuation, legal style, and citation.
+   • Reread one last time carefully before submitting to your supervising attorney.
+
+I. Investigating a Client's Case
+
+After addressing any ethical issues that may prevent you from taking the case, the first step in assessing a client's case is to gather information. The information to be gathered is usually of two kinds: facts and law. The two are interdependent. The facts of a client's case determine the law that will be relevant. Meanwhile, the law determines which facts will be relevant. Thus, as you know more about the facts, you can expand your legal research to look for other legal theories, or you can toss out legal theories that are inapplicable to the
+
+========================================
+Page 5
+========================================
+
+Chapter 1. Assessing a Client's Case
+
+facts of the case. Similarly, as you know more about the law that might be relevant, you can expand your factual investigation to determine whether the facts will support a particular claim, or you can dive deeper into the facts to search for additional support for a legal claim.
+
+At the beginning of your legal career, your knowledge about the law will have less depth and, therefore, you will likely find yourself seesawing between fact investigation and legal investigation. As your knowledge of the law deepens and expands, you will have greater ability to gather the relevant facts more immediately. With time and experience, your legal research will likely be focused on particular or novel aspects of your client's case rather than on learning entirely new areas of law.
+
+II. Drafting an Objective Analysis
+
+As you are researching the facts and law and organizing your authorities, you will begin to assess the strength of your client's case. Whether you are working in a solo office or as a junior attorney in a larger legal practice, you will undoubtedly need to communicate your analysis to your client or a senior attorney. This communication summarizing your analysis can be done in many ways. You may, for example, communicate your analysis orally. Often, though, attorneys will communicate and memorialize their analysis in either an "interoffice memorandum" ("memo" for short) or an email.
+
+III. Exercises
+
+Two fact patterns below will give you the opportunity to meet clients, think about the information that you need to gather, and decide how you would gather that information. As you read, think about not only the information that the potential client can give you, but what other information you might be able to collect from other sources.
+
+Exercise 1.1: Investigating Ethan Tseng's Potential Claim for IIED
+
+Mr. Ethan Tseng, a nineteen-year-old college student, is a prospective client of your firm. You and another attorney in your office, Carla Perez, meet with Mr. Tseng for an initial interview. He tells you that his college professor, Dr. Susan Fume, has been posting "terrible, absolutely terrible" things on social media about her experiences teaching a class in North Carolina. The things she has said have made him "sick." He wants to know whether he can sue her under North Carolina law and if you will take the case.
+
+Questions:
+
+1. What initial questions should you and Carla ask Mr. Tseng about the facts of the case?
+
+________________________________________
+________________________________________
+________________________________________
+________________________________________
+
+========================================
+Page 6
+========================================
+
+Becoming a Legal Writer
+
+After conducting some research, you learn that the most appropriate claim would be a tort action for intentional infliction of emotional distress. In North Carolina, a claim for intentional infliction of emotional distress requires a plaintiff to prove that the defendant's conduct: (1) was extreme and outrageous, (2) was intended to cause severe emotional distress, and (3) did cause severe emotional distress. See Woodruff v. Miller, 307 S.E.2d 176, 178 (N.C. Ct. App. 1983). A plaintiff can prove intent by showing the defendant's "reckless indifference to the likelihood that he will cause emotional distress." Bryant v. Thalhimer Bros., 437 S.E.2d 519, 522–23 (N.C. Ct. App. 1993). A person acts "recklessly" if that person acts "in deliberate disregard of the high degree of probability that injury will follow." Dickens v. Puryear, 276 S.E.2d 325, 333 (N.C. 1981).
+
+Now that you understand the elements of the cause of action, your supervisor suggests that you focus on element (1) for now: Was the conduct extreme and outrageous?
+
+Questions (continued):
+
+2. What questions do you now ask of Mr. Tseng as you narrow your facts under element (1)?
+
+________________________________________
+________________________________________
+________________________________________
+________________________________________
+________________________________________
+
+3. If Mr. Tseng brings a claim against Dr. Fume, who would be the plaintiff, and who would be the defendant?
+
+Plaintiff ________________________________________
+Defendant ________________________________________
+
+Now, you conduct a little more research and find the following case:
+
+Briggs v. Rosenthal
+327 S.E.2d 308 (N.C. Ct. App. 1985).
+
+Plaintiffs' complaint is premised on the theory of intentional infliction of emotional distress. In summary, the complaint alleges that their only son, Warren Briggs, Jr., died in an automobile accident on 30 June 1982. In October 1982 defendant Rosenthal wrote an article about Warren, which was published by defendant Sun Publishing Company in a magazine-periodical called The Sun. According to the complaint, the article described several unpleasant characteristics of Warren in a manner calculated to cause outrage, it was published recklessly and irresponsibly, and defendants knew or should have known that the article would cause great pain to plaintiffs.
+
+In the article, "Saying Goodbye to Warren," defendant Rosenthal described his
+

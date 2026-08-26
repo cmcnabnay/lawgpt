@@ -216,7 +216,7 @@ app.post("/api/chat", async (req, res) => {
       });
     }
 
-    const { model, input, documentIds } = req.body || {};
+    const { model, input, documentIds, allowGeneralKnowledge } = req.body || {};
 
     if (!model || !input) {
       return res.status(400).json({
@@ -281,10 +281,16 @@ app.post("/api/chat", async (req, res) => {
     }
     textDocuments.push(...searchedDocuments);
 
-    // Build reference material from the text-only documents.
+    // Build reference material from the text-only documents. Label each one
+    // with its real on-disk file name (including extension) rather than
+    // doc.title (which is that same name with the extension stripped off) --
+    // the model is asked to cite this exact SOURCE label back in its
+    // "Document" field, and a bare title like "CB pp 87-93" doesn't tell the
+    // user whether to go looking for a .txt, .pdf, or .docx when they want
+    // to reopen the actual file later.
     const context = textDocuments
       .map(doc => {
-        return `SOURCE: ${doc.title}\n\n${doc.text}`;
+        return `SOURCE: ${doc.fileName || doc.title}\n\n${doc.text}`;
       })
       .join("\n\n---\n\n");
 
@@ -293,7 +299,7 @@ app.post("/api/chat", async (req, res) => {
     // attached specific document(s) (e.g. a reading-notes request, where
     // the whole point is "summarize exactly this reading") versus an
     // open-ended chat question with no particular document pinned.
-    const developerText = hasAttachedDocuments
+    const developerText = hasAttachedDocuments && !allowGeneralKnowledge
       ? "You are LawGPT. The document(s) below were explicitly attached by the user as the assigned reading for this request — " +
         "they are not general reference material, they are the source you must work from. " +
         "Base your answer strictly and only on the attached document(s). " +
@@ -301,6 +307,13 @@ app.post("/api/chat", async (req, res) => {
         "Do not use your own background/general knowledge to fill in gaps or substitute for content the attached document(s) don't actually contain. " +
         "If the attached document(s) don't fully cover something the user asked about, say plainly that the attached material doesn't cover it, rather than filling the gap yourself. " +
         "If you rely on the attached document, identify it by name. " +
+        "Some source material may be attached below as full PDF files rather than pasted text — treat those as the complete, authoritative version of that document, not an excerpt. " +
+        "Do not open your response with introductory filler (\"Sure!\", \"Here are your notes\", \"Certainly!\", etc.) — begin directly with the substantive content. " +
+        "Do not refer to yourself as an AI, a language model, or an assistant anywhere in the response."
+      : hasAttachedDocuments
+      ? "You are LawGPT. The document(s) below were explicitly attached by the user as context for this request. " +
+        "Treat them as authoritative for anything they cover, and identify the attached document by name when you rely on it. " +
+        "If the user's question goes beyond what the attached document(s) actually contain, answer it anyway using your own general legal knowledge rather than refusing or saying it isn't addressed — just make clear when you're drawing on outside knowledge rather than the attached material. " +
         "Some source material may be attached below as full PDF files rather than pasted text — treat those as the complete, authoritative version of that document, not an excerpt. " +
         "Do not open your response with introductory filler (\"Sure!\", \"Here are your notes\", \"Certainly!\", etc.) — begin directly with the substantive content. " +
         "Do not refer to yourself as an AI, a language model, or an assistant anywhere in the response."
