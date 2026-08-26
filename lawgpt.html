@@ -1018,39 +1018,70 @@
     --page-margin-right: 96px;
     --page-margin-bottom: 96px;
     --page-margin-left: 96px;
+    --page-gap: 28px;
     display:flex;
     flex-direction:column;
     align-items:center;
-    gap:28px;
+  }
+  /* One continuous contenteditable region (#docEditor) flows the whole
+     document -- there is no per-page DOM split anymore, so native selection
+     and Backspace/Delete work seamlessly across what looks like a page
+     break. Pagination is purely visual: reflowPagesNow() (see script below)
+     measures the flow and inserts non-editable .page-break-spacer blocks
+     wherever a page's content would overflow, sized so the following
+     content lands exactly at the next page's top margin. The repeating
+     background paints the parchment/gap pattern behind that same flow so
+     each stretch between spacers reads as its own sheet. */
+  .doc-flow-wrap{
+    position:relative;
+    width:var(--page-width);
+    flex-shrink:0;
   }
   .doc-page{
-    width:var(--page-width);
-    max-width:var(--page-width);
-    height:var(--page-height);
-    background:var(--parchment);
     color:#2a2418;
     font-family:Georgia, 'Times New Roman', serif;
     font-size:11pt;
     line-height:1.75;
+    outline:none;
+  }
+  .doc-editor-flow{
+    width:100%;
     padding:var(--page-margin-top) var(--page-margin-right) var(--page-margin-bottom) var(--page-margin-left);
-    border:1px solid var(--hairline);
     border-radius:2px;
     box-shadow:0 8px 30px rgba(0,0,0,0.35);
-    outline:none;
-    position:relative;
-    overflow:hidden;
-    flex-shrink:0;
+    background-repeat:repeat-y;
+    /* background-size must match the gradient's own last stop exactly --
+       repeating-linear-gradient has no fixed tile size of its own, so
+       background-size is what defines one tile; if it doesn't match the
+       stop range below, the browser rescales the whole tile to fit,
+       throwing off the page-height alignment this depends on. */
+    background-size:100% calc(var(--page-height) + var(--page-gap));
+    background-image:repeating-linear-gradient(
+      to bottom,
+      var(--parchment) 0,
+      var(--parchment) calc(var(--page-height) - 16px),
+      rgba(0,0,0,0.08) var(--page-height),
+      var(--ink) var(--page-height),
+      var(--ink) calc(var(--page-height) + var(--page-gap))
+    );
   }
-  .doc-page::after{
-    content: "Page " attr(data-page-number);
+  .page-break-spacer{
+    display:block;
+    width:100%;
+  }
+  .page-number-overlay{
     position:absolute;
-    left:0; right:0; bottom:14px;
+    inset:0;
+    pointer-events:none;
+  }
+  .page-number-label{
+    position:absolute;
+    left:0; right:0;
     text-align:center;
     font-family:'IBM Plex Mono',monospace;
     font-size:9.5px;
     letter-spacing:0.08em;
     color:#8a7f63;
-    pointer-events:none;
   }
   .zoom-control{
     position:absolute;
@@ -1472,6 +1503,146 @@ pre code {
   margin:22px 0 8px;
 }
 .doc-group-label:first-child{ margin-top:0; }
+
+/* ---------- TASKS (Outlook email -> task list -> plan -> deliverable) ---------- */
+.tasks-view{
+  flex:1;
+  min-height:0;
+  overflow-y:auto;
+  padding:28px 32px 48px;
+}
+.tasks-wrap{
+  max-width:820px;
+  margin:0 auto;
+}
+.tasks-connect-bar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  background:var(--ink-2);
+  border:1px solid var(--hairline);
+  border-radius:var(--radius);
+  padding:14px 16px;
+  margin-bottom:16px;
+}
+.tasks-connect-status{
+  font-size:12.5px;
+  color:var(--text-muted);
+}
+.tasks-connect-status.connected{ color:#8fbf8f; }
+.tasks-connect-actions{ display:flex; gap:10px; flex:0 0 auto; }
+.tasks-connect-actions button{
+  font-size:12px;
+  font-weight:600;
+  padding:8px 14px;
+  border-radius:var(--radius);
+  cursor:pointer;
+  white-space:nowrap;
+  border:1px solid var(--hairline);
+  background:none;
+  color:var(--text-light);
+}
+.tasks-connect-actions button.primary{ background:var(--brass); color:var(--ink); border-color:var(--brass); }
+.tasks-connect-actions button:hover{ border-color:var(--brass-dim); color:var(--brass); }
+.tasks-connect-actions button.primary:hover{ color:var(--ink); }
+.tasks-connect-actions button:disabled{ opacity:0.55; cursor:default; }
+.tasks-setup-note{
+  font-size:11.5px;
+  line-height:1.6;
+  color:var(--text-muted);
+  margin:10px 0 0;
+}
+.tasks-setup-note code{ font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--brass-dim); }
+.tasks-setup-note ol{ margin:6px 0 0; padding-left:20px; }
+.tasks-setup-note li{ margin-bottom:4px; }
+.tasks-scan-row{ display:flex; align-items:center; gap:12px; margin-bottom:18px; }
+.tasks-scan-row button{
+  background:var(--brass);
+  color:var(--ink);
+  border:none;
+  padding:9px 16px;
+  font-weight:600;
+  font-size:12.5px;
+  border-radius:var(--radius);
+  cursor:pointer;
+}
+.tasks-scan-row button:disabled{ opacity:0.6; cursor:default; }
+.tasks-scan-status{ font-size:12px; color:var(--text-muted); }
+.tasks-scan-status.err{ color:#d98b8b; }
+.task-card{
+  background:var(--ink-2);
+  border:1px solid var(--hairline);
+  border-radius:var(--radius);
+  padding:14px 16px;
+  margin-bottom:12px;
+}
+.task-card-head{ display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }
+.task-card-title{ font-size:14px; font-weight:600; color:var(--text-light); margin-bottom:4px; }
+.task-card-reason{ font-size:12.5px; color:var(--text-muted); line-height:1.5; margin-bottom:6px; }
+.task-card-source{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:11px;
+  color:var(--text-muted);
+}
+.task-card-actions{ flex:0 0 auto; display:flex; flex-direction:column; gap:6px; }
+.task-card-actions button{
+  font-size:11.5px;
+  font-weight:600;
+  padding:6px 12px;
+  border-radius:var(--radius);
+  cursor:pointer;
+  white-space:nowrap;
+  border:1px solid var(--hairline);
+  background:none;
+  color:var(--text-light);
+}
+.task-card-actions button:hover{ border-color:var(--brass-dim); color:var(--brass); }
+.task-card-actions button:disabled{ opacity:0.55; cursor:default; }
+.task-plan{
+  margin-top:12px;
+  padding-top:12px;
+  border-top:1px solid var(--hairline);
+}
+.task-plan-label{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:10px;
+  letter-spacing:0.1em;
+  text-transform:uppercase;
+  color:var(--brass-dim);
+  margin-bottom:6px;
+}
+.task-plan-steps{ margin:0 0 10px; padding-left:20px; font-size:12.5px; line-height:1.6; color:var(--text-light); }
+.task-plan-steps li{ margin-bottom:3px; }
+.task-plan-draft{
+  width:100%;
+  min-height:140px;
+  background:var(--ink);
+  border:1px solid var(--hairline);
+  color:var(--text-light);
+  padding:10px;
+  border-radius:var(--radius);
+  font-family:Georgia, 'Times New Roman', serif;
+  font-size:13px;
+  line-height:1.6;
+  resize:vertical;
+  margin-bottom:10px;
+}
+.task-plan-draft:focus{ outline:none; border-color:var(--brass-dim); }
+.task-plan-actions{ display:flex; gap:10px; }
+.task-plan-actions button{
+  font-size:11.5px;
+  font-weight:600;
+  padding:7px 14px;
+  border-radius:var(--radius);
+  cursor:pointer;
+  border:1px solid var(--hairline);
+  background:none;
+  color:var(--text-light);
+}
+.task-plan-actions button.primary{ background:var(--brass); color:var(--ink); border-color:var(--brass); }
+.task-plan-actions button:hover{ border-color:var(--brass-dim); color:var(--brass); }
+.task-plan-actions button.primary:hover{ color:var(--ink); }
 
 /* ---------- NOTES ---------- */
 .notes-view{
@@ -2150,6 +2321,7 @@ pre code {
       <button class="view-tab" id="tabEditor" data-view="editor">Draft &amp; Compile</button>
       <button class="view-tab" id="tabSchedule" data-view="schedule">Schedule</button>
       <button class="view-tab" id="tabDocuments" data-view="documents">Documents</button>
+      <button class="view-tab" id="tabTasks" data-view="tasks">Tasks</button>
       <button class="view-tab" id="tabNotes" data-view="notes">Notes</button>
       <button class="view-tab" id="tabDatabase" data-view="database">Database</button>
       <button class="settings-gear-btn" id="settingsGearBtn" aria-label="Settings" title="API key settings">
@@ -2224,6 +2396,13 @@ pre code {
           <span class="swatch" id="fontColorSwatch"></span>
           <input type="color" id="fontColorInput" value="#7a2331">
         </div>
+
+        <div class="rt-color-wrap" title="Highlight color">
+          <span class="glyph">H</span>
+          <span class="swatch" id="highlightColorSwatch" style="background:#fff59d;"></span>
+          <input type="color" id="highlightColorInput" value="#fff59d">
+        </div>
+        <button class="rt-btn" id="btnRemoveHighlight" title="Remove highlight">&#9099;</button>
 
         <div class="rt-divider"></div>
 
@@ -2344,7 +2523,10 @@ pre code {
       <div class="editor-body">
         <div class="doc-page-wrap">
           <div id="docPages">
-            <div id="docEditor" class="doc-page" contenteditable="true" data-page-number="1" data-placeholder="Begin drafting here. Whatever you write &mdash; formatting included &mdash; will be reproduced by the compiled program you download."></div>
+            <div id="docFlowWrap" class="doc-flow-wrap">
+              <div id="docEditor" class="doc-page doc-editor-flow" contenteditable="true" data-placeholder=""></div>
+              <div id="pageNumberOverlay" class="page-number-overlay" aria-hidden="true"></div>
+            </div>
           </div>
         </div>
         <div class="table-ctx-menu" id="tableCtxMenu">
@@ -2411,11 +2593,75 @@ pre code {
       </div>
     </div>
 
+    <div class="tasks-view" id="tasksView" style="display:none;">
+      <div class="tasks-wrap">
+        <div class="tasks-connect-bar">
+          <div>
+            <div class="documents-title" style="margin-bottom:2px;">Email Tasks</div>
+            <div class="tasks-connect-status" id="tasksConnectStatus">Checking Outlook connection…</div>
+          </div>
+          <div class="tasks-connect-actions">
+            <button type="button" id="tasksConnectBtn">Connect Outlook</button>
+            <button type="button" id="tasksDisconnectBtn" style="display:none;">Disconnect</button>
+          </div>
+        </div>
+
+        <details class="doc-import-card" id="tasksSetupCard">
+          <summary>Outlook setup (one-time)</summary>
+          <div class="doc-import-body">
+            <p class="doc-import-note">
+              Reading your inbox requires a Microsoft Graph connection, which means registering a free
+              "app" for LawGPT under your own Microsoft account — this can't be done from here, it's a
+              one-time manual step in Microsoft's own portal. Uses read-only <code>Mail.Read</code> access;
+              LawGPT never sends mail or modifies your mailbox.
+            </p>
+            <p class="tasks-setup-note">
+              <strong>If this is a school/work account:</strong> your IT admin may need to approve the
+              app (grant admin consent) before it will work — some tenants block this for students entirely.
+            </p>
+            <p class="tasks-setup-note">Steps, in <a href="https://portal.azure.com" target="_blank" rel="noopener">portal.azure.com</a>:</p>
+            <ol class="tasks-setup-note">
+              <li>Azure Active Directory (Entra ID) → App registrations → New registration. Name it anything (e.g. "LawGPT").</li>
+              <li>Supported account types: pick "Accounts in this organizational directory only" if your org restricts multi-tenant apps, otherwise "Accounts in any organizational directory and personal Microsoft accounts."</li>
+              <li>Redirect URI: platform "Web", value <code>http://localhost:3000/api/outlook/callback</code>.</li>
+              <li>After creation, copy the "Application (client) ID" and, if you picked single-tenant, the "Directory (tenant) ID" below.</li>
+              <li>Certificates &amp; secrets → New client secret → copy its <strong>Value</strong> (shown once) below.</li>
+              <li>API permissions → Add a permission → Microsoft Graph → Delegated → add <code>Mail.Read</code>, <code>User.Read</code>, <code>offline_access</code> → then "Grant admin consent" (this is the step that needs IT approval on a locked-down school tenant).</li>
+            </ol>
+            <label for="tasksClientId">Client ID</label>
+            <input type="text" id="tasksClientId" placeholder="Application (client) ID" autocomplete="off" spellcheck="false">
+            <label for="tasksClientSecret">Client secret</label>
+            <input type="password" id="tasksClientSecret" placeholder="Client secret value" autocomplete="off" spellcheck="false">
+            <label for="tasksTenantId">Tenant ID (leave blank to keep whatever's already set; use "consumers" for a personal-account-only app)</label>
+            <input type="text" id="tasksTenantId" placeholder="common" autocomplete="off" spellcheck="false">
+            <label for="tasksMailFolder">Mail folder to scan (leave blank for Inbox)</label>
+            <input type="text" id="tasksMailFolder" placeholder="Inbox" autocomplete="off" spellcheck="false">
+            <p class="tasks-setup-note">Useful if you're forwarding mail from another account into a dedicated folder (via an Outlook rule) and want Scan Inbox to read only that folder, not your whole personal inbox.</p>
+            <div class="doc-import-actions">
+              <button type="button" id="tasksSaveConfigBtn">Save Outlook settings</button>
+              <span class="doc-import-status" id="tasksConfigStatus"></span>
+            </div>
+          </div>
+        </details>
+
+        <div class="tasks-scan-row">
+          <button type="button" id="tasksScanBtn" disabled>Scan Inbox</button>
+          <span class="tasks-scan-status" id="tasksScanStatus"></span>
+        </div>
+
+        <div class="doc-list" id="tasksList"></div>
+      </div>
+    </div>
+
     <div class="notes-view" id="notesView" style="display:none;">
       <aside class="notes-sidebar" id="notesSidebar">
         <div class="notes-sidebar-label">Reading Reports</div>
         <div class="notes-sidebar-empty" id="notesSidebarEmpty">No saved reports yet. Click "Notes" on a reading in the Schedule tab to generate one.</div>
         <div class="notes-sidebar-list" id="notesSidebarList"></div>
+        <div class="backup-row">
+          <button class="backup-btn" id="notesBackupExportBtn" title="Save your entire docket (every matter and message) to a file you keep">Backup &#8681;</button>
+          <button class="backup-btn" id="notesBackupImportBtn" title="Load a docket previously saved with Backup">Restore &#8613;</button>
+        </div>
       </aside>
       <div class="notes-main">
         <div class="notes-toolbar">
@@ -2434,6 +2680,7 @@ pre code {
                   <div class="notes-report-cost" id="notesReportCost" style="display:none;"></div>
                 </div>
                 <div class="notes-report-actions">
+                  <button type="button" id="notesReportCopyBtn" title="Copy the entire report to the clipboard">Copy</button>
                   <button type="button" id="notesReportOpenEditorBtn" title="Open this AI-generated report in the Draft &amp; Compile editor">Open in Editor</button>
                   <button type="button" class="primary" id="notesReportSaveBtn">Save</button>
                   <button type="button" id="notesReportDeleteBtn" style="display:none;">Delete</button>
@@ -2805,6 +3052,14 @@ let reportCounter = 0;
 // time a real saved docket (one that actually reaches this line) loads.
 let customNotesPrompts = {};
 
+// Email-derived tasks (Tasks tab: Outlook inbox scan -> task list -> plan ->
+// approve/modify -> deliverable in the editor). Declared here for the same
+// TDZ reason as customNotesPrompts above -- loadState() assigns to these
+// directly and runs at top level before the script reaches their "natural"
+// spot further down.
+let emailTasks = [];
+let taskCounter = 0;
+
 const STORAGE_KEY = "lawgpt.docket.v1";
 
 // Some environments (private browsing, certain embedded/app-shell WebViews,
@@ -2834,7 +3089,7 @@ function showStorageWarning(){
 // Called after anything that changes matters/messages/active selection.
 function persistState(){
   try{
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ matters, matterCounter, activeMatterId, savedReports, reportCounter, customNotesPrompts, savedAt: Date.now() }));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ matters, matterCounter, activeMatterId, savedReports, reportCounter, customNotesPrompts, emailTasks, taskCounter, savedAt: Date.now() }));
   } catch(e){
     // Storage can fail (private browsing, quota exceeded, disabled storage, etc.)
     // — chat still works for the session, it just won't be remembered.
@@ -2863,6 +3118,8 @@ function loadState(){
     savedReports = Array.isArray(saved.savedReports) ? saved.savedReports : [];
     reportCounter = typeof saved.reportCounter === "number" ? saved.reportCounter : savedReports.length;
     customNotesPrompts = (saved.customNotesPrompts && typeof saved.customNotesPrompts === "object") ? saved.customNotesPrompts : {};
+    emailTasks = Array.isArray(saved.emailTasks) ? saved.emailTasks : [];
+    taskCounter = typeof saved.taskCounter === "number" ? saved.taskCounter : emailTasks.length;
     return true;
   } catch(e){
     console.warn("LawGPT: couldn't load saved chat history.", e);
@@ -3202,12 +3459,14 @@ function setView(view){
   const editorView = document.getElementById("editorView");
   const scheduleView = document.getElementById("scheduleView");
   const documentsView = document.getElementById("documentsView");
+  const tasksView = document.getElementById("tasksView");
   const notesView = document.getElementById("notesView");
   const databaseView = document.getElementById("databaseView");
   const tabChat = document.getElementById("tabChat");
   const tabEditor = document.getElementById("tabEditor");
   const tabSchedule = document.getElementById("tabSchedule");
   const tabDocuments = document.getElementById("tabDocuments");
+  const tabTasks = document.getElementById("tabTasks");
   const tabNotes = document.getElementById("tabNotes");
   const tabDatabase = document.getElementById("tabDatabase");
 
@@ -3215,12 +3474,14 @@ function setView(view){
   editorView.style.display = "none";
   scheduleView.style.display = "none";
   documentsView.style.display = "none";
+  tasksView.style.display = "none";
   notesView.style.display = "none";
   databaseView.style.display = "none";
   tabChat.classList.remove("active");
   tabEditor.classList.remove("active");
   tabSchedule.classList.remove("active");
   tabDocuments.classList.remove("active");
+  tabTasks.classList.remove("active");
   tabNotes.classList.remove("active");
   tabDatabase.classList.remove("active");
 
@@ -3240,6 +3501,10 @@ function setView(view){
     documentsView.style.display = "block";
     tabDocuments.classList.add("active");
     refreshDocumentsList();
+  } else if (view === "tasks"){
+    tasksView.style.display = "block";
+    tabTasks.classList.add("active");
+    initTasksView();
   } else if (view === "notes"){
     notesView.style.display = "flex";
     tabNotes.classList.add("active");
@@ -3258,6 +3523,7 @@ document.getElementById("tabChat").addEventListener("click", () => setView("chat
 document.getElementById("tabEditor").addEventListener("click", () => setView("editor"));
 document.getElementById("tabSchedule").addEventListener("click", () => setView("schedule"));
 document.getElementById("tabDocuments").addEventListener("click", () => setView("documents"));
+document.getElementById("tabTasks").addEventListener("click", () => setView("tasks"));
 document.getElementById("tabNotes").addEventListener("click", () => setView("notes"));
 document.getElementById("tabDatabase").addEventListener("click", () => setView("database"));
 
@@ -3916,7 +4182,36 @@ document.getElementById("dbSqlInput").addEventListener("keydown", (e) => {
 // currentReport is whatever is showing in the report panel right now: either
 // a freshly generated report (currentReport.id is null until Saved), or a
 // previously saved one loaded from the sidebar (currentReport.id set).
+//
+// Before the report is explicitly Saved (added to the permanent savedReports
+// list, itself part of persistState()'s localStorage blob), it used to live
+// only in this JS variable -- gone on any reload, and absent from Backup,
+// even though it might represent real generated content the user hasn't
+// gotten around to clicking "Save" on yet. persistCurrentReportDraft() below
+// mirrors whatever's currently open into its own localStorage key on every
+// render, and it's restored here at startup, so nothing sits only "in
+// memory" regardless of whether it's been explicitly Saved.
+const CURRENT_REPORT_DRAFT_KEY = "lawgpt.currentReportDraft";
 let currentReport = null;
+try{
+  const draftRaw = localStorage.getItem(CURRENT_REPORT_DRAFT_KEY);
+  if (draftRaw) currentReport = JSON.parse(draftRaw);
+} catch(e){ /* corrupt/unavailable draft -- ignore, Notes just opens empty */ }
+
+function persistCurrentReportDraft(){
+  try{
+    if (!currentReport){
+      localStorage.removeItem(CURRENT_REPORT_DRAFT_KEY);
+    } else if (!currentReport.loading){
+      // Skip persisting the transient "Generating..." placeholder -- restoring
+      // that on a later reload would show a spinner that can never finish
+      // (the in-flight request belonged to the old page load). Whatever draft
+      // existed before this generation started is left in place until the
+      // result (or failure) settles and overwrites it below.
+      localStorage.setItem(CURRENT_REPORT_DRAFT_KEY, JSON.stringify(currentReport));
+    }
+  } catch(e){ /* best-effort only -- Backup/Restore remains the guaranteed path */ }
+}
 
 // Which of the Notes tab's right-column panels is showing, if either --
 // null (neither; the placeholder shows instead), "table", or "chat". Both
@@ -3999,6 +4294,7 @@ const COURSE_FOLDER_ORDER = ["civpro", "contracts", "torts", "lss"];
 const collapsedNotesFolders = new Set();
 
 function renderReportPanel(){
+  persistCurrentReportDraft();
   renderReportSidebar();
   syncCaseForm();
   renderNotesChat();
@@ -4131,6 +4427,32 @@ function renderReportSidebar(){
 // Sends the AI-generated report itself (currentReport.content) into the
 // Draft & Compile editor, rendered with the same paragraph/code-block
 // formatting formatContent() gives it in the chat and report views.
+document.getElementById("notesReportCopyBtn").addEventListener("click", async () => {
+  if (!currentReport || currentReport.loading || currentReport.failed) return;
+  const btn = document.getElementById("notesReportCopyBtn");
+  const bodyEl = document.getElementById("notesReportBody");
+  const html = bodyEl.innerHTML;
+  const text = bodyEl.innerText;
+  try{
+    if (navigator.clipboard && window.ClipboardItem){
+      await navigator.clipboard.write([
+        new ClipboardItem({
+          "text/html": new Blob([html], { type: "text/html" }),
+          "text/plain": new Blob([text], { type: "text/plain" })
+        })
+      ]);
+    } else {
+      await navigator.clipboard.writeText(text);
+    }
+    const original = btn.textContent;
+    btn.textContent = "Copied ✓";
+    setTimeout(() => { btn.textContent = original; }, 1500);
+  } catch (err){
+    console.error("Copy failed:", err);
+    alert("Couldn't copy to the clipboard. Your browser may be blocking clipboard access.");
+  }
+});
+
 document.getElementById("notesReportOpenEditorBtn").addEventListener("click", () => {
   if (!currentReport || currentReport.loading || currentReport.failed) return;
   loadFormattedTextIntoEditor(currentReport.content);
@@ -8107,36 +8429,61 @@ function composeDocumentText(blocks, useAnsi){
 }
 
 // ---- Multi-page pagination (auto page breaks, like Word) ----
-// #docPages holds one or more .doc-page contenteditable divs. Each page has a
-// fixed height (set via CSS custom properties on #docPages so margin changes
-// apply document-wide). When a page's content overflows its box, the
-// overflowing block-level nodes are moved onto the next page (creating one if
-// needed); when a page has spare room, content is pulled back from the next
-// page. This is block-level pagination (paragraphs/tables/list items move as
-// whole units) rather than a true mid-paragraph text reflow, which keeps the
-// implementation robust while still giving the page-by-page feel of a word
-// processor — including in the compiled output (see composeDocumentText).
+// #docEditor is a SINGLE continuous contenteditable region -- there is no
+// per-page DOM split, so native selection and Backspace/Delete work
+// seamlessly across what looks like a page break (a separate contenteditable
+// per page, which is what this used to be, is its own "editing host" in
+// every browser: a drag-selection can't extend from one into another, and
+// Backspace at the start of one has nothing "before" it to reach into).
+//
+// Pagination is purely visual, layered on top of that one continuous flow:
+// reflowPagesNow() measures each top-level block's rendered position and
+// inserts a non-editable .page-break-spacer immediately before whichever
+// block would overflow the current page, sized so the following content
+// lands exactly at the next page's top margin. The repeating background on
+// .doc-editor-flow (see CSS) paints the parchment/gap pattern behind that
+// same flow so each stretch between spacers still reads as its own sheet,
+// and #pageNumberOverlay draws the "Page N" labels (a CSS ::after per page
+// can't work anymore since there's no longer one element per page).
 function getPagesContainer(){ return document.getElementById("docPages"); }
-function getPages(){ return Array.from(document.querySelectorAll("#docPages > .doc-page")); }
-function getFocusedPage(){
-  const pages = getPages();
-  const active = document.activeElement;
-  const found = pages.find(p => p === active || p.contains(active));
-  return found || pages[pages.length - 1] || pages[0];
+function getDocEditor(){ return document.getElementById("docEditor"); }
+// Kept for the toolbar/table/paste code that asks "which page has focus" --
+// there's only ever one editable region now, so this always resolves to it.
+function getFocusedPage(){ return getDocEditor(); }
+
+function isPageBreakSpacer(node){
+  return node.nodeType === 1 && node.classList.contains("page-break-spacer");
 }
-function createPageElement(){
-  const page = document.createElement("div");
-  page.className = "doc-page";
-  page.contentEditable = "true";
-  return page;
+function createPageBreakSpacer(heightPx){
+  const el = document.createElement("div");
+  el.className = "page-break-spacer";
+  el.contentEditable = "false";
+  el.style.height = Math.max(0, heightPx) + "px";
+  return el;
 }
-function renumberPages(){
-  getPages().forEach((p, i) => p.setAttribute("data-page-number", String(i + 1)));
+
+// Compatibility shim for the compiler/export code below (compileToSource),
+// which still thinks in terms of "one page = one chunk of blocks, in order,
+// with a break between each": splits the live flow into detached, cloned
+// containers at each spacer. Detached/cloned since callers only ever read
+// .innerHTML or walk child nodes (collectBlocks) -- never need live layout.
+function getPages(){
+  const editor = getDocEditor();
+  const groups = [[]];
+  Array.from(editor.childNodes).forEach(node => {
+    if (isPageBreakSpacer(node)){ groups.push([]); return; }
+    groups[groups.length - 1].push(node);
+  });
+  return groups.map(nodes => {
+    const div = document.createElement("div");
+    nodes.forEach(n => div.appendChild(n.cloneNode(true)));
+    return div;
+  });
 }
+
 function resetToSinglePage(){
-  const pages = getPages();
-  for (let i = 1; i < pages.length; i++) pages[i].remove();
-  renumberPages();
+  const editor = getDocEditor();
+  Array.from(editor.querySelectorAll(":scope > .page-break-spacer")).forEach(s => s.remove());
 }
 
 let pageReflowTimer = null;
@@ -8145,66 +8492,76 @@ function schedulePageReflow(){
   pageReflowTimer = setTimeout(reflowPagesNow, 220);
 }
 
-function reflowPagesNow(){
-  const container = getPagesContainer();
-  if (!container) return;
-  let pages = getPages();
-  if (!pages.length) return;
+function rebuildPageNumberOverlay(pageHeight, gap){
+  const overlay = document.getElementById("pageNumberOverlay");
+  if (!overlay) return;
+  const editor = getDocEditor();
+  const spacerCount = editor.querySelectorAll(":scope > .page-break-spacer").length;
+  const totalPages = spacerCount + 1;
+  overlay.innerHTML = "";
+  for (let i = 0; i < totalPages; i++){
+    const label = document.createElement("div");
+    label.className = "page-number-label";
+    label.style.top = (i * (pageHeight + gap) + pageHeight - 26) + "px";
+    label.textContent = "Page " + (i + 1);
+    overlay.appendChild(label);
+  }
+}
 
-  // Save the caret (by DOM node reference) so it can be restored after nodes
-  // are reparented between pages — Range boundaries follow the node, not a
-  // tree position, so this survives being moved (not cloned) to a new parent.
+function reflowPagesNow(){
+  const editor = getDocEditor();
+  const container = getPagesContainer();
+  if (!editor || !container) return;
+
+  const cs = getComputedStyle(container);
+  const pageHeight = parseFloat(cs.getPropertyValue("--page-height")) || 1056;
+  const marginTop = parseFloat(cs.getPropertyValue("--page-margin-top")) || 96;
+  const marginBottom = parseFloat(cs.getPropertyValue("--page-margin-bottom")) || 96;
+  const gap = parseFloat(cs.getPropertyValue("--page-gap")) || 28;
+  const contentHeight = Math.max(50, pageHeight - marginTop - marginBottom);
+
+  // Save the caret by DOM node reference. Inserting a spacer as a new
+  // sibling never touches the nodes the caret lives in, so (unlike the old
+  // per-page model, which had to reparent live nodes between separate
+  // contenteditable hosts) the Range stays valid the whole time -- this is
+  // just a safety net for the rare case a mutation below invalidates it.
   const sel = window.getSelection();
   let caret = null;
-  if (sel && sel.rangeCount && container.contains(sel.anchorNode)){
+  if (sel && sel.rangeCount && editor.contains(sel.anchorNode)){
     caret = { a: sel.anchorNode, ao: sel.anchorOffset, f: sel.focusNode, fo: sel.focusOffset };
   }
 
-  const MAX_ITER = 50000;
-  let iter = 0;
+  // Strip existing spacers so measurements reflect the unbroken flow --
+  // relative distances between the remaining (real) children are unaffected
+  // by pagination, so this can be recomputed from scratch every time rather
+  // than incrementally pushing/pulling content, which used to be needed only
+  // because moving content between separate contenteditable pages was
+  // expensive/risky. A plain sibling insert isn't, so a full recompute is
+  // both simpler and cheaper here.
+  Array.from(editor.querySelectorAll(":scope > .page-break-spacer")).forEach(s => s.remove());
 
-  // 1. Push overflowing trailing content forward onto later pages.
-  for (let i = 0; i < pages.length && iter < MAX_ITER; i++){
-    let page = pages[i];
-    while (iter < MAX_ITER && page.scrollHeight > page.clientHeight + 1 && page.childNodes.length > 1){
-      iter++;
-      const last = page.lastChild;
-      let next = pages[i + 1];
-      if (!next){
-        next = createPageElement();
-        container.appendChild(next);
-        pages.push(next);
+  const children = Array.from(editor.children); // top-level content is always block elements
+  if (children.length){
+    const editorTop = editor.getBoundingClientRect().top;
+    let pageStart = marginTop; // where the current virtual page's content began, in unbroken-flow coordinates
+    const inserts = [];
+    children.forEach((child, idx) => {
+      const r = child.getBoundingClientRect();
+      const top = r.top - editorTop;
+      const bottom = r.bottom - editorTop;
+      // idx > 0 guard: never break before the very first block -- there's
+      // nothing before it to leave on a prior page. A single block taller
+      // than a page is left to overflow rather than looping forever.
+      if (idx > 0 && (bottom - pageStart) > contentHeight){
+        inserts.push({ before: child, height: pageHeight + gap - (top - pageStart) });
+        pageStart = top;
       }
-      next.insertBefore(last, next.firstChild);
-    }
+    });
+    inserts.forEach(({ before, height }) => editor.insertBefore(createPageBreakSpacer(height), before));
   }
 
-  // 2. Pull content back from later pages while there's spare room.
-  for (let i = 0; i < pages.length - 1 && iter < MAX_ITER; i++){
-    let page = pages[i];
-    let next = pages[i + 1];
-    while (iter < MAX_ITER && next && next.childNodes.length){
-      const first = next.firstChild;
-      page.appendChild(first);
-      iter++;
-      if (page.scrollHeight > page.clientHeight + 1){
-        // Didn't actually fit — put it back and stop trying for this page.
-        next.insertBefore(first, next.firstChild);
-        break;
-      }
-    }
-  }
-
-  // 3. Drop now-empty trailing pages (always keep at least the first page).
-  pages = getPages();
-  for (let i = pages.length - 1; i > 0; i--){
-    const p = pages[i];
-    const onlyEmptyBr = p.childNodes.length === 1 && p.firstChild.nodeType === 1 && p.firstChild.tagName === "BR";
-    if (p.childNodes.length === 0 || onlyEmptyBr) p.remove(); else break;
-  }
-
-  renumberPages();
   updateDocPlaceholder();
+  rebuildPageNumberOverlay(pageHeight, gap);
 
   if (caret && document.contains(caret.a)){
     try{
@@ -8218,9 +8575,8 @@ function reflowPagesNow(){
 }
 
 function updateDocPlaceholder(){
-  const pages = getPages();
-  const totalText = pages.map(p => p.textContent).join("").trim();
-  pages.forEach((p, i) => p.setAttribute("data-empty", (i === 0 && totalText.length === 0) ? "true" : "false"));
+  const editor = getDocEditor();
+  editor.setAttribute("data-empty", editor.textContent.trim().length === 0 ? "true" : "false");
 }
 updateDocPlaceholder();
 getPagesContainer().addEventListener("input", () => {
@@ -8504,6 +8860,54 @@ getPagesContainer().addEventListener("keydown", (e) => {
   }
 });
 
+// ---- Backspace/Delete across a page break ----
+// A .page-break-spacer sits inline in the flow as a non-editable ("atomic")
+// node. Browsers treat contenteditable=false children specially for a
+// *collapsed*-caret Backspace/Delete right next to them (typically deleting
+// the atomic node itself, like an embedded image, rather than reaching past
+// it to merge the surrounding text) -- so without this, backspacing at the
+// start of the first line on a page would just eat the page break instead of
+// merging into the end of the previous page's last line, the way it would if
+// no page break happened to fall there. Removing the (purely automatic,
+// reflow-inserted) spacer just before the native key handling runs makes the
+// two blocks plain adjacent siblings again, so the browser's own merge logic
+// does the right thing -- reflow puts a spacer back afterward if one's still
+// needed.
+function blockTextLength(block){
+  let total = 0;
+  const walker = document.createTreeWalker(block, NodeFilter.SHOW_TEXT, null);
+  let n;
+  while ((n = walker.nextNode())) total += n.textContent.length;
+  return total;
+}
+getPagesContainer().addEventListener("keydown", (e) => {
+  if (e.key !== "Backspace" && e.key !== "Delete") return;
+  const sel = window.getSelection();
+  if (!sel || !sel.rangeCount || !sel.isCollapsed) return;
+  const range = sel.getRangeAt(0);
+  const editor = getDocEditor();
+  if (!editor.contains(range.startContainer)) return;
+
+  const block = findLineContainer(range.startContainer, editor);
+  if (block === editor) return; // caret isn't inside a block child (nothing to skip past)
+
+  if (e.key === "Backspace"){
+    if (lineCharOffset(editor, range.startContainer, range.startOffset) !== 0) return;
+    const prev = block.previousSibling;
+    if (prev && isPageBreakSpacer(prev)){
+      prev.remove();
+      schedulePageReflow();
+    }
+  } else {
+    if (lineCharOffset(editor, range.startContainer, range.startOffset) !== blockTextLength(block)) return;
+    const next = block.nextSibling;
+    if (next && isPageBreakSpacer(next)){
+      next.remove();
+      schedulePageReflow();
+    }
+  }
+});
+
 // ---- Font color ----
 const fontColorInput = document.getElementById("fontColorInput");
 let savedSelectionRange = null;
@@ -8528,6 +8932,72 @@ fontColorInput.addEventListener("input", (e) => {
   document.execCommand("foreColor", false, e.target.value);
   document.getElementById("fontColorSwatch").style.background = e.target.value;
   savedSelectionRange = grabSelection();
+});
+
+// ---- Highlight color (Word-style text highlighting) ----
+const highlightColorInput = document.getElementById("highlightColorInput");
+function applyHighlight(color){
+  const editor = getFocusedPage();
+  editor.focus();
+  if (savedSelectionRange){
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(savedSelectionRange);
+  }
+  // Firefox/Chrome use "hiliteColor"; older/IE-derived engines only support "backColor".
+  if (!document.execCommand("hiliteColor", false, color)){
+    document.execCommand("backColor", false, color);
+  }
+  savedSelectionRange = grabSelection();
+}
+highlightColorInput.addEventListener("input", (e) => {
+  applyHighlight(e.target.value);
+  document.getElementById("highlightColorSwatch").style.background = e.target.value;
+});
+document.getElementById("btnRemoveHighlight").addEventListener("click", () => {
+  applyHighlight("transparent");
+});
+
+// ---- Sanitize pasted content ----
+// Text copied from elsewhere in the app (e.g. the Notes reading-report panel,
+// which is styled light-text-on-dark-background for the app's dark theme)
+// brings inline color/background styles with it on copy. Pasted verbatim into
+// the parchment-colored, dark-text doc page, that shows up as white text on a
+// black highlight. Strip color/background styling from pasted HTML so pasted
+// text always inherits the doc page's own look, regardless of source.
+function sanitizePastedHtml(html){
+  const container = document.createElement("div");
+  container.innerHTML = html;
+  container.querySelectorAll("style, meta, link, script").forEach(el => el.remove());
+  container.querySelectorAll("*").forEach(el => {
+    el.removeAttribute("class");
+    el.removeAttribute("id");
+    if (el.tagName === "FONT") el.removeAttribute("color");
+    if (el.hasAttribute("style")){
+      const style = el.style;
+      style.removeProperty("color");
+      style.removeProperty("background");
+      style.removeProperty("background-color");
+      style.removeProperty("-webkit-text-fill-color");
+      style.removeProperty("text-shadow");
+      if (!style.length) el.removeAttribute("style");
+    }
+  });
+  return container.innerHTML;
+}
+getPagesContainer().addEventListener("paste", (e) => {
+  e.preventDefault();
+  const html = e.clipboardData && e.clipboardData.getData("text/html");
+  let insertHtml;
+  if (html){
+    insertHtml = sanitizePastedHtml(html);
+  } else {
+    const text = (e.clipboardData && e.clipboardData.getData("text/plain")) || "";
+    insertHtml = escapeHtml(text).replace(/\n/g, "<br>");
+  }
+  document.execCommand("insertHTML", false, insertHtml);
+  updateDocPlaceholder();
+  schedulePageReflow();
 });
 
 // ---- Insert table ----
@@ -9272,7 +9742,7 @@ document.getElementById("saveDocBtn").addEventListener("click", saveDocument);
 // docket. Some browsers/app-shells accept localStorage writes during a
 // session but don't keep them after the app fully closes; this sidesteps
 // that entirely by letting the person save their own copy of the data. ----
-document.getElementById("backupExportBtn").addEventListener("click", () => {
+function exportBackup(){
   const payload = { app: "LawGPT", version: 1, exportedAt: new Date().toISOString(), matters, matterCounter, activeMatterId, savedReports, reportCounter, customNotesPrompts };
   const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json;charset=utf-8" });
   const url = URL.createObjectURL(blob);
@@ -9284,11 +9754,19 @@ document.getElementById("backupExportBtn").addEventListener("click", () => {
   a.click();
   a.remove();
   URL.revokeObjectURL(url);
-});
-
-document.getElementById("backupImportBtn").addEventListener("click", () => {
+}
+function triggerImportBackup(){
   document.getElementById("backupImportInput").click();
-});
+}
+
+// The docket sidebar (where Backup/Restore originally lived) is hidden
+// entirely while the Notes tab is open (see hide-app-sidebar), so the Notes
+// sidebar gets its own pair of buttons wired to the same underlying logic
+// rather than duplicating it.
+document.getElementById("backupExportBtn").addEventListener("click", exportBackup);
+document.getElementById("backupImportBtn").addEventListener("click", triggerImportBackup);
+document.getElementById("notesBackupExportBtn").addEventListener("click", exportBackup);
+document.getElementById("notesBackupImportBtn").addEventListener("click", triggerImportBackup);
 document.getElementById("backupImportInput").addEventListener("change", async (e) => {
   const file = e.target.files[0];
   e.target.value = "";
@@ -9435,11 +9913,20 @@ function loadFormattedTextIntoEditor(text){
 }
 
 // Inverse of loadPlainTextIntoEditor: reads the editor's current content
-// back out as plain text (across every page, in order), so a file opened as
+// back out as plain text, one line per top-level block, so a file opened as
 // .txt (or any other extension with no specific importer) can be saved back
-// verbatim, one line per block.
+// verbatim. Reads .innerText directly off the live editor's own top-level
+// children (skipping page-break spacers) rather than going through
+// getPages() -- that helper hands back detached clones for the compiler,
+// and .innerText needs live layout to mean anything.
 function getEditorPlainText(){
-  return getPages().map(p => p.innerText).join("\n").replace(/\r\n/g, "\n");
+  const editor = getDocEditor();
+  const parts = [];
+  editor.childNodes.forEach(n => {
+    if (isPageBreakSpacer(n)) return;
+    parts.push(n.nodeType === 1 ? n.innerText : (n.textContent || ""));
+  });
+  return parts.join("\n").replace(/\r\n/g, "\n");
 }
 
 function extractBodyHtml(htmlText){
@@ -9711,6 +10198,325 @@ async function openDocumentFile(file, handle){
     openBtn.disabled = false;
   }
 }
+
+// ====== TASKS TAB: Outlook inbox -> task list -> plan -> deliverable ======
+// Read-only Microsoft Graph access via lawgpt-proxy/outlook-routes.js (OAuth
+// connect/callback + /api/outlook/messages). Nothing here ever sends mail or
+// modifies the mailbox. Two AI calls per task, both through the existing
+// generic /api/chat proxy (same one Notes reading reports use), each asked
+// to answer with raw JSON: one classifies which recent emails need action
+// and produces a task list, the other turns one task into a concrete plan
+// plus a full first-draft deliverable. Nothing runs automatically past that
+// point -- approving a plan just opens the (editable) draft in the Draft &
+// Compile editor, the same way a Notes reading report's "Open in Editor"
+// button does; the user still reviews/edits/compiles/sends it themselves.
+
+// Pulls a JSON value out of a model response that's supposed to be raw JSON
+// but might still come wrapped in a ```json fence despite being told not to.
+function extractJsonFromModelText(text){
+  if (!text) throw new Error("Empty response from the model.");
+  let cleaned = text.trim();
+  const fenceMatch = cleaned.match(/```(?:json)?\s*([\s\S]*?)```/i);
+  if (fenceMatch) cleaned = fenceMatch[1].trim();
+  return JSON.parse(cleaned);
+}
+
+async function refreshOutlookStatus(){
+  const statusEl = document.getElementById("tasksConnectStatus");
+  const connectBtn = document.getElementById("tasksConnectBtn");
+  const disconnectBtn = document.getElementById("tasksDisconnectBtn");
+  const scanBtn = document.getElementById("tasksScanBtn");
+  try{
+    const res = await fetch(PROXY_ORIGIN + "/api/outlook/status");
+    const data = await res.json();
+    if (data.connected){
+      statusEl.textContent = "Connected" + (data.email ? " as " + data.email : "") + ".";
+      statusEl.classList.add("connected");
+      connectBtn.style.display = "none";
+      disconnectBtn.style.display = "inline-block";
+      scanBtn.disabled = false;
+    } else if (data.configured){
+      statusEl.textContent = "Outlook is set up but not connected yet.";
+      statusEl.classList.remove("connected");
+      connectBtn.style.display = "inline-block";
+      connectBtn.disabled = false;
+      disconnectBtn.style.display = "none";
+      scanBtn.disabled = true;
+    } else {
+      statusEl.textContent = 'Not set up yet — open "Outlook setup" below.';
+      statusEl.classList.remove("connected");
+      connectBtn.style.display = "inline-block";
+      connectBtn.disabled = true;
+      disconnectBtn.style.display = "none";
+      scanBtn.disabled = true;
+    }
+  } catch(e){
+    statusEl.textContent = "Couldn't reach the local proxy server.";
+    statusEl.classList.remove("connected");
+  }
+}
+
+document.getElementById("tasksConnectBtn").addEventListener("click", () => {
+  window.location.href = PROXY_ORIGIN + "/api/outlook/connect";
+});
+document.getElementById("tasksDisconnectBtn").addEventListener("click", async () => {
+  if (!confirm("Disconnect Outlook? You'll need to reconnect to scan your inbox again.")) return;
+  try{ await fetch(PROXY_ORIGIN + "/api/outlook/disconnect", { method: "POST" }); } catch(e){ /* best-effort */ }
+  refreshOutlookStatus();
+});
+document.getElementById("tasksSaveConfigBtn").addEventListener("click", async () => {
+  const clientId = document.getElementById("tasksClientId").value.trim();
+  const clientSecret = document.getElementById("tasksClientSecret").value.trim();
+  const tenantId = document.getElementById("tasksTenantId").value.trim();
+  const mailFolder = document.getElementById("tasksMailFolder").value.trim();
+  const statusEl = document.getElementById("tasksConfigStatus");
+  const btn = document.getElementById("tasksSaveConfigBtn");
+  if (!clientId || !clientSecret){
+    statusEl.textContent = "Client ID and secret are both required.";
+    statusEl.className = "doc-import-status err";
+    return;
+  }
+  btn.disabled = true;
+  statusEl.textContent = "Saving…";
+  statusEl.className = "doc-import-status";
+  try{
+    const res = await fetch(PROXY_ORIGIN + "/api/outlook/config", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ clientId, clientSecret, tenantId, mailFolder })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error((data.error && data.error.message) || "Failed to save.");
+    statusEl.textContent = "Saved.";
+    statusEl.className = "doc-import-status ok";
+    document.getElementById("tasksClientSecret").value = "";
+    document.getElementById("tasksSetupCard").removeAttribute("open");
+    refreshOutlookStatus();
+  } catch(err){
+    statusEl.textContent = err.message;
+    statusEl.className = "doc-import-status err";
+  } finally {
+    btn.disabled = false;
+  }
+});
+
+document.getElementById("tasksScanBtn").addEventListener("click", scanInboxForTasks);
+
+async function scanInboxForTasks(){
+  const btn = document.getElementById("tasksScanBtn");
+  const statusEl = document.getElementById("tasksScanStatus");
+  btn.disabled = true;
+  statusEl.className = "tasks-scan-status";
+  statusEl.textContent = "Fetching recent emails…";
+  try{
+    const msgRes = await fetch(PROXY_ORIGIN + "/api/outlook/messages?top=25");
+    const msgData = await msgRes.json();
+    if (!msgRes.ok) throw new Error((msgData.error && msgData.error.message) || "Failed to fetch messages.");
+    const messages = msgData.messages || [];
+    if (!messages.length){
+      statusEl.textContent = "Inbox is empty (or nothing in the top 25).";
+      return;
+    }
+
+    statusEl.textContent = `Reviewing ${messages.length} email(s) for action items…`;
+    const model = document.getElementById("modelSelect").value;
+    const emailBlock = messages.map((m, i) =>
+      `[${i}] messageId: ${m.id}\nFrom: ${m.from}\nSubject: ${m.subject}\nReceived: ${m.receivedAt}\nBody:\n${m.bodyText}`
+    ).join("\n\n---\n\n");
+    const prompt =
+      "Below are recent emails from the user's inbox. Identify ONLY the emails that require the recipient to take some " +
+      "action (e.g. produce a document, respond with specific information, complete an assignment, prepare something " +
+      "ahead of a deadline, fill out a form). Skip anything purely informational, a newsletter, an automated " +
+      "notification, or anything that doesn't ask the recipient to do something.\n\n" +
+      "Respond with ONLY a raw JSON array (no markdown code fences, no commentary before or after) where each element is:\n" +
+      '{"messageId": "<the messageId exactly as given>", "title": "<short imperative task title, under 10 words>", ' +
+      '"reason": "<one sentence on why this needs action>", "deliverableHint": "<short phrase for what should be produced, or empty string if none>"}\n\n' +
+      "If no emails require action, respond with an empty JSON array: []\n\nEmails:\n\n" + emailBlock;
+
+    const res = await fetch(PROXY_ORIGIN + "/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ model, input: prompt })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error((data.error && data.error.message) || "Request failed.");
+    let identified;
+    try{ identified = extractJsonFromModelText(extractText(data)); }
+    catch(e){ throw new Error("The model's response wasn't valid JSON, so no tasks could be extracted. Try scanning again."); }
+    if (!Array.isArray(identified)) throw new Error("Unexpected response shape from the model.");
+
+    const messagesById = new Map(messages.map(m => [m.id, m]));
+    let addedCount = 0;
+    identified.forEach(item => {
+      if (!item || !item.messageId || !messagesById.has(item.messageId)) return;
+      if (emailTasks.some(t => t.messageId === item.messageId)) return; // already have this one
+      const source = messagesById.get(item.messageId);
+      taskCounter++;
+      emailTasks.unshift({
+        id: "t" + Date.now() + taskCounter,
+        messageId: item.messageId,
+        title: String(item.title || "Untitled task").slice(0, 200),
+        reason: String(item.reason || ""),
+        deliverableHint: String(item.deliverableHint || ""),
+        sourceSubject: source.subject,
+        sourceFrom: source.from,
+        sourceBodyText: source.bodyText,
+        receivedAt: source.receivedAt,
+        status: "new", // new | planned | approved | dismissed
+        plan: null,
+        createdAt: new Date().toISOString()
+      });
+      addedCount++;
+    });
+
+    persistState();
+    renderTasksList();
+    statusEl.textContent = addedCount
+      ? `Found ${addedCount} new task(s) needing action.`
+      : "No new action items found in the most recent emails.";
+  } catch(err){
+    statusEl.textContent = err.message;
+    statusEl.className = "tasks-scan-status err";
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function renderTasksList(){
+  const list = document.getElementById("tasksList");
+  const active = emailTasks.filter(t => t.status !== "dismissed");
+  if (!active.length){
+    list.innerHTML = `<div class="doc-empty">No tasks yet. Connect Outlook above, then click "Scan Inbox".</div>`;
+    return;
+  }
+  list.innerHTML = "";
+  active.forEach(task => {
+    const card = document.createElement("div");
+    card.className = "task-card";
+    const received = task.receivedAt ? new Date(task.receivedAt).toLocaleString() : "";
+    card.innerHTML = `
+      <div class="task-card-head">
+        <div style="min-width:0;">
+          <div class="task-card-title">${escapeHtml(task.title)}</div>
+          <div class="task-card-reason">${escapeHtml(task.reason)}</div>
+          <div class="task-card-source">From ${escapeHtml(task.sourceFrom)} — "${escapeHtml(task.sourceSubject)}"${received ? " — " + escapeHtml(received) : ""}</div>
+        </div>
+        <div class="task-card-actions">
+          <button type="button" data-action="plan" data-id="${task.id}">${task.plan ? "Regenerate Plan" : "Generate Plan"}</button>
+          <button type="button" data-action="dismiss" data-id="${task.id}">Dismiss</button>
+        </div>
+      </div>
+      ${task.plan ? renderPlanHtml(task) : ""}
+    `;
+    list.appendChild(card);
+  });
+
+  list.querySelectorAll('[data-action="plan"]').forEach(btn => btn.addEventListener("click", () => generatePlanForTask(btn.dataset.id, btn)));
+  list.querySelectorAll('[data-action="dismiss"]').forEach(btn => btn.addEventListener("click", () => dismissTask(btn.dataset.id)));
+  list.querySelectorAll('[data-action="approve"]').forEach(btn => btn.addEventListener("click", () => approveTaskPlan(btn.dataset.id)));
+}
+
+function renderPlanHtml(task){
+  const steps = Array.isArray(task.plan.steps) ? task.plan.steps : [];
+  return `
+    <div class="task-plan">
+      <div class="task-plan-label">Plan</div>
+      <ol class="task-plan-steps">${steps.map(s => `<li>${escapeHtml(s)}</li>`).join("")}</ol>
+      <div class="task-plan-label">Deliverable draft — review or edit before approving</div>
+      <textarea class="task-plan-draft" id="draft-${task.id}">${escapeHtml(task.plan.deliverableDraft || "")}</textarea>
+      <div class="task-plan-actions">
+        <button type="button" class="primary" data-action="approve" data-id="${task.id}">Approve → Open in Editor</button>
+      </div>
+    </div>
+  `;
+}
+
+async function generatePlanForTask(taskId, btn){
+  const task = emailTasks.find(t => t.id === taskId);
+  if (!task) return;
+  if (btn){ btn.disabled = true; btn.textContent = "Generating…"; }
+  try{
+    const model = document.getElementById("modelSelect").value;
+    const prompt =
+      "A task was identified from this email that requires the recipient to take action.\n\n" +
+      `Task: ${task.title}\nWhy it needs action: ${task.reason}\n` +
+      `What it should likely produce: ${task.deliverableHint || "(not specified — use your judgment based on the email)"}\n\n` +
+      `Original email — From: ${task.sourceFrom}\nSubject: ${task.sourceSubject}\nBody:\n${task.sourceBodyText}\n\n` +
+      "Produce a short plan for completing this task, plus a full first-draft of the actual deliverable itself (not just an " +
+      "outline or description) based on the information in the email — write it as complete, usable content the recipient " +
+      "can review and send/submit, not a description of what to write.\n\n" +
+      "Respond with ONLY raw JSON (no markdown fences, no commentary):\n" +
+      '{"steps": ["<step 1>", "<step 2>", "..."], "deliverableTitle": "<short title for this deliverable>", "deliverableDraft": "<the full drafted deliverable text>"}';
+
+    const res = await fetch(PROXY_ORIGIN + "/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ model, input: prompt })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error((data.error && data.error.message) || "Request failed.");
+    const plan = extractJsonFromModelText(extractText(data));
+    task.plan = {
+      steps: Array.isArray(plan.steps) ? plan.steps.map(String) : [],
+      deliverableTitle: String(plan.deliverableTitle || task.title),
+      deliverableDraft: String(plan.deliverableDraft || "")
+    };
+    task.status = "planned";
+    persistState();
+    renderTasksList();
+  } catch(err){
+    alert("Couldn't generate a plan for this task: " + err.message);
+    if (btn){ btn.disabled = false; btn.textContent = task.plan ? "Regenerate Plan" : "Generate Plan"; }
+  }
+}
+
+function approveTaskPlan(taskId){
+  const task = emailTasks.find(t => t.id === taskId);
+  if (!task || !task.plan) return;
+  // Pick up any edits made in the textarea before approving.
+  const textarea = document.getElementById("draft-" + taskId);
+  const finalText = textarea ? textarea.value : task.plan.deliverableDraft;
+  task.plan.deliverableDraft = finalText;
+  task.status = "approved";
+  persistState();
+
+  loadFormattedTextIntoEditor(finalText);
+  document.getElementById("docTitle").value = task.plan.deliverableTitle || task.title;
+  savedFileHandle = null;
+  savedFileLang = null;
+  savedFileExt = null;
+  updateDocPlaceholder();
+  syncToolbarState();
+  setView("editor");
+  renderTasksList();
+}
+
+function dismissTask(taskId){
+  const task = emailTasks.find(t => t.id === taskId);
+  if (!task) return;
+  if (!confirm(`Dismiss task "${task.title}"?`)) return;
+  task.status = "dismissed";
+  persistState();
+  renderTasksList();
+}
+
+function initTasksView(){
+  refreshOutlookStatus();
+  renderTasksList();
+}
+
+// If we just came back from the Outlook OAuth redirect (see
+// lawgpt-proxy/outlook-routes.js's /callback route), land on the Tasks tab
+// and surface any error it reported instead of silently staying on Chat.
+(function handleOutlookRedirectBack(){
+  const params = new URLSearchParams(window.location.search);
+  const err = params.get("outlookError");
+  if (window.location.hash === "#tasks" || err){
+    setView("tasks");
+    if (err) window.setTimeout(() => alert("Couldn't connect Outlook: " + err), 0);
+    window.history.replaceState({}, "", window.location.pathname);
+  }
+})();
 </script>
 </body>
 </html>

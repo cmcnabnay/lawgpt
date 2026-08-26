@@ -1,2 +1,4 @@
 .env_me
+.env
 node_modules/
+outlook-tokens.json

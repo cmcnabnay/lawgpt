@@ -19,6 +19,9 @@ const canvasRoutes = require("./canvas-routes");
 const extractText = canvasRoutes.extractText;
 const DOCS_ROOT = canvasRoutes.DOCS_ROOT;
 
+// Outlook (Microsoft Graph) integration for the Tasks tab.
+const outlookRoutes = require("./outlook-routes");
+
 // Creates the express application
 const app = express();
 
@@ -35,6 +38,21 @@ app.use(express.json({ limit: "30mb" }));
 
 // Take all routes defined by canvas-routes.js and attach them underneath /api/canvas
 app.use("/api/canvas", canvasRoutes);
+app.use("/api/outlook", outlookRoutes);
+
+// Serves lawgpt.html itself over http://localhost:3000 instead of leaving
+// the user to open it as a file:// page. The File System Access API's
+// persisted directory-handle permissions (used by Save/Download/Open in the
+// editor) can't be silently re-verified on a file:// origin -- Chromium
+// always shows a scary "wants to view and edit files from the last time you
+// visited this site" reconnection screen there, and there's no way to
+// suppress it from JS. On a real http origin, the same stored handle is
+// re-verified quietly via queryPermission(). lawgpt.html is fully
+// self-contained (inline CSS/JS, no local assets) so this only needs to
+// serve that one file -- not the whole repo -- to avoid exposing notes/
+// or documents/ over HTTP.
+const LAWGPT_HTML_PATH = path.join(__dirname, "..", "lawgpt.html");
+app.get(["/", "/lawgpt.html"], (req, res) => res.sendFile(LAWGPT_HTML_PATH));
 
 const PORT = process.env.PORT || 3000;
 const OPENAI_URL = "https://api.openai.com/v1/responses";
@@ -159,6 +177,11 @@ function upsertEnvKey(key) {
     lines.join("\n") + "\n",
     { mode: 0o600 }
   );
+  // { mode } above only takes effect when the file doesn't already exist --
+  // it's a no-op on an existing file's permissions, and .env almost always
+  // already exists by the time this runs, so chmod explicitly to actually
+  // lock it down.
+  fs.chmodSync(ENV_PATH, 0o600);
 }
 
 // Lets the Settings panel show "key configured" without ever exposing the
