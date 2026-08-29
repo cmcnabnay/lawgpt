@@ -86,10 +86,22 @@ const COURSE_FOLDER_ALIASES = [
   { match: /torts/i, folder: "torts" },
 ];
 
-function resolveCourseFolderName(courseName, courseId){
+// Runs COURSE_FOLDER_ALIASES against an arbitrary string (a Canvas course
+// name, or -- for email-routes.js -- an email's subject+body) and returns
+// the matched folder slug, or null if nothing matched. Factored out of
+// resolveCourseFolderName so callers that don't want its "fall back to a
+// sanitized course name" behavior (email import has no course name to fall
+// back to) can use the same matching logic directly.
+function matchCourseFolder(text){
   for (const { match, folder } of COURSE_FOLDER_ALIASES){
-    if (match.test(courseName || "")) return folder;
+    if (match.test(text || "")) return folder;
   }
+  return null;
+}
+
+function resolveCourseFolderName(courseName, courseId){
+  const matched = matchCourseFolder(courseName);
+  if (matched) return matched;
   return sanitizeForFs(courseName || `Course ${courseId}`) || `Course ${courseId}`;
 }
 
@@ -374,8 +386,29 @@ router.post("/scrape", async (req, res) => {
   }
 });
 
+// Document-type extensions only -- deliberately excludes the image types
+// also listed in EXT_BY_CONTENT_TYPE (jpg/png/gif), which exist there for
+// Canvas file downloads but would otherwise cause email-routes.js to save
+// every signature logo or tracking pixel as a "document".
+const DOCUMENT_EXTENSIONS = new Set([
+  "pdf", "doc", "docx", "ppt", "pptx", "xls", "xlsx", "odt", "ods", "txt", "html"
+]);
+
+function isDocumentAttachment(filename, contentType){
+  const ext = extFromContentTypeOrTitle(contentType, filename);
+  return DOCUMENT_EXTENSIONS.has(ext);
+}
+
 module.exports = router;
 // Attached so server.js can reuse the same PDF/HTML/docx/txt text extractor
 // for the editor's generic "open a PDF" flow, without duplicating it.
 module.exports.extractText = extractText;
 module.exports.DOCS_ROOT = DOCS_ROOT;
+// Attached so email-routes.js can reuse the same "save the native file to
+// disk under documents/<course>/" logic, course-folder matching, and
+// document-vs-image attachment filter that Canvas import uses, instead of
+// duplicating them.
+module.exports.saveNativeFile = saveNativeFile;
+module.exports.matchCourseFolder = matchCourseFolder;
+module.exports.isDocumentAttachment = isDocumentAttachment;
+module.exports.extFromContentTypeOrTitle = extFromContentTypeOrTitle;

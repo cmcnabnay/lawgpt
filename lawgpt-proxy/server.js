@@ -19,6 +19,9 @@ const canvasRoutes = require("./canvas-routes");
 const extractText = canvasRoutes.extractText;
 const DOCS_ROOT = canvasRoutes.DOCS_ROOT;
 
+// Loads code from email-routes.js
+const emailRoutes = require("./email-routes");
+
 // Creates the express application
 const app = express();
 
@@ -35,6 +38,9 @@ app.use(express.json({ limit: "30mb" }));
 
 // Take all routes defined by canvas-routes.js and attach them underneath /api/canvas
 app.use("/api/canvas", canvasRoutes);
+
+// Take all routes defined by email-routes.js and attach them underneath /api/email
+app.use("/api/email", emailRoutes);
 
 const PORT = process.env.PORT || 3000;
 const OPENAI_URL = "https://api.openai.com/v1/responses";
