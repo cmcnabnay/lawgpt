@@ -1,0 +1,62 @@
+299
+INTRODUCTORY NOTE TO GLOBAL TECHNOLOGY & TRADING V. TECH MAHINDRA AND BEECK V. AQUASLIDE ’N’ DIVE
+Dilemmas arise when a party seeks to amend a complaint long after an action has gotten underway. Parties invest time and effort in contesting a set of issues (whatever was raised by the pleadings), but then an amendment to the complaint or answer changes what—or even whom—the lawsuit is about.
+
+Thus, the late arrival of a new pleading means that some of the parties’ efforts in contesting the old pleadings may have been for nothing. Yet if the amendment more accurately identifies the facts and issues in dispute, amendment serves the goal of facilitating the ultimate resolution of the claims on the merits. But what if the amendment clarifies an issue, or corrects a factual allegation, that is so crucial that the outcome of the entire case hangs on the court’s ruling on the motion for leave to amend? The next two cases, Global Technology & Trading v. Tech Mahindra and Beeck v. Aquaslide ’N’ Dive, each involve this scenario.
+
+Both complaints and answers can be amended. As it happens, the next two cases, Global Technology & Trading and Beeck, involve amendments to answers rather than amendments to a complaint. As you read these cases, consider the extent to which this difference affects the analysis.
+
+Global Technology & Trading, Inc. v. Tech Mahindra Ltd.
+_________________________
+
+789 F.3d 730 (7th Cir. 2015)
+
+EASTERBROOK, CIRCUIT JUDGE.
+
+The Illinois Business Brokers Act of 1995 requires brokers for the sale of businesses in the state to register. 815 ILCS 307/10–10. Brokerage agreements must be in writing. 815 ILCS 307/10–35. Promises to pay unregistered brokers for their services are unenforceable. 815 ILCS 307/10–60. Global Technology & Trading, Inc., apparently was unaware of this statute when it orally agreed with Satyam Computer Services to act as a broker in the purchase of Bridge Strategy Group, LLC, a business operating in Illinois. (Satyam, based in India, is now known as Tech Mahindra; we use its old name for congruence with the district court’s opinion and the parties’ submissions.)
+
+300
+Global brokered the acquisition, but Satyam refused to pay for its services. Global sued * * *, seeking a 3% commission (about $600,000). Satyam * * * contended that Bridge Strategy had compensated Global for its services as an intermediary and that it had never promised any additional compensation. The lack of a writing, according to Satyam, reflects the fact that there is no agreement, period.
+
+Pleadings were exchanged and discovery conducted. When the litigation was four years old, Satyam filed a motion for summary judgment with a brand new argument: that Global is not registered under the Business Brokers Act and for this reason, as well as the oral nature of the promise Global sought to enforce, the Act blocks any relief. Global was taken aback; apparently its lawyers, like its principals, had never heard of the Business Brokers Act. Global has not denied that the Act, if applied, dooms this lawsuit. But it maintains that the Act is an affirmative defense, which under Rule 8(c) had to appear in Satyam’s answer to the complaint. By waiting four years to invoke the Act, Global insists, Satyam has forfeited its benefit.
+
+Rule 8(c) says that a defendant “must” include all affirmative defenses in the answer to the complaint. The district court analogized § 307/10–35 (the written-contract requirement) to a Statute of Frauds and concluded that the Business Brokers Act is an affirmative defense. But the court added that Rule 8(c) does not specify a consequence for a litigant’s failure to include an affirmative defense in an answer. Several of our decisions hold that a district court may (though it need not) permit an untimely affirmative defense, provided the plaintiff does not suffer prejudice from the delay. See, e.g., Williams v. Lampe, 399 F.3d 867, 871 (7th Cir. 2005); Schmidt v. Eagle Waste & Recycling, Inc., 599 F.3d 626, 632 (7th Cir. 2010). Most other circuits follow the same approach.
+
+Williams and Schmidt add that the expense of conducting a suit does not count as prejudice; what they mean by “prejudice” is a reduction in the plaintiff’s ability to meet the defense on the merits—if, say, a witness has died, or documents have been destroyed, during the time between when the defense should have been raised and when it was actually raised. Finding that Global had not suffered prejudice, the district court excused Satyam’s delay and entered judgment in its favor.
+
+Global contends that Williams and similar decisions are inconsistent with the language of Rule 8(c), which says that affirmative defenses “must” be raised
+301
+no later than the answer to the complaint. Yet Rule 8(c) does not provide a consequence for delay. * * * Rule 12(h)(1) * * * says that four specific defenses are waived by their omission from the answer or a motion governed by Rule 12(g)(2). Affirmative defenses under Rule 8(c) are not on the list of those waived by omission.
+
+* * * Until shortly before Satyam filed its motion, no one knew about the Business Brokers Act. Global and its lawyers, Satyam and its lawyers, and the judge all were in the dark about a statute that has been called a pitfall for the unwary. Professional business brokers doubtless know about the Act and follow its rules, but someone who occasionally or rarely serves as an intermediary may not. [Rule 6(b)(1)(B) provides that] district judges have discretion when evaluating claims of excusable neglect; had the judge been asked to exercise that discretion, he would not have abused it by allowing Satyam to invoke the Act belatedly. As a practical matter, that’s what the district judge did by relying on Williams and similar decisions.
+
+Alternatively, the district court might have turned to Rule 15(a)(2), which provides that judges may allow pleadings to be amended and “should freely give leave when justice so requires.” The only circuit that has nominally rejected the approach of Williams and Schmidt has reached the same functional result by using Rule 15(a)(2) to allow belated amendments to add affirmative defenses. See Jackson v. District of Columbia, 254 F.3d 262, 267 (D.C. Cir. 2001). Jackson says that the district judge should allow the amendment when that would not prejudice the plaintiff’s opportunity to address the merits. That’s the Williams and Schmidt approach by another name.
+
+Global observes that litigation should be efficiently managed, see Rule 1, and that it is inefficient to allow matters to last for four years longer than necessary. That’s true enough, but it takes chutzpah for Global to blame Satyam. Had Global’s lawyers done better legal research before suing, they would have recognized that the Business Brokers Act makes recovery impossible. The bills Global has footed in this suit stem from its own lawyers’ poor preparation. Global should count itself lucky that the district court did not impose a sanction for filing what is, with knowledge of the Act, a frivolous suit. For their part, Satyam’s lawyers failed to track down the Business Brokers Act early in the litigation, but that delay carries a self-inflicted penalty: under the American Rule, Satyam must bear its own legal fees for the extra years this suit lingered. It is unnecessary for the judiciary to be stingy with extensions of the Rule 8(c)
+302
+deadline, or with amendments under Rule 15(a)(2), since both plaintiffs and defendants want to recognize and raise affirmative defenses as soon as possible, in order to cut their own legal bills.
+
+We need not decide whether the Business Brokers Act is an affirmative defense for the purpose of Rule 8(c). We decline to overrule Williams and similar decisions. District judges have authority to authorize a litigant to assert an affirmative defense despite its omission from the answer. That authority was not abused in this case.
+
+AFFIRMED.
+
+
+
+•A court may permit a defendant to raise an untimely affirmative defense if there is no prejudice to the plaintiff
+
+•Rule 15(a)(2) gives judges discretion to permit the amendment of pleadings “when justice so requires”
+
+Go online for bullet points on the background and holding of Global Tech. & Trading v. Tech Mahindra.
+
+Beeck v. Aquaslide ’N’ Dive Corp.
+_________________________
+
+562 F.2d 537 (8th Cir. 1977)
+
+Before BRIGHT and HENLEY, CIRCUIT JUDGES, and BENSON, DISTRICT JUDGE.*
+
+BENSON, DISTRICT JUDGE.
+
+This case is an appeal from the trial court’s1 exercise of discretion on procedural matters in a diversity personal injury action.
+
+

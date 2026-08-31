@@ -1,4 +1,3 @@
-.env_me
 node_modules/
 email-state.json
 msal-token-cache.json

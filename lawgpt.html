@@ -537,6 +537,34 @@
   .settings-prompt-textarea:focus{ outline:none; border-color:var(--brass-dim); }
   .settings-prompt-hint{ font-size:11.5px; color:var(--text-muted); margin:0 0 14px; min-height:14px; }
 
+  /* Assignment "Context" modal (appendCompleteButton/openAssignmentContextModal)
+     and the document picker it and "Replace document" both share
+     (openDocumentPicker). */
+  .context-doc-list{ display:flex; flex-direction:column; gap:6px; margin-bottom:10px; }
+  .context-doc-item{
+    display:flex; align-items:center; justify-content:space-between; gap:8px;
+    background:var(--ink); border:1px solid var(--hairline); border-radius:var(--radius);
+    padding:8px 10px; font-size:12.5px; color:var(--text-light);
+  }
+  .context-doc-remove{
+    background:none; border:none; color:var(--text-muted); cursor:pointer;
+    font-size:15px; line-height:1; padding:0 2px;
+  }
+  .context-doc-remove:hover{ color:#d98b8b; }
+  .context-doc-empty{ font-size:12.5px; color:var(--text-muted); margin-bottom:10px; }
+  .context-prompt-textarea{ min-height:120px; }
+  .doc-picker-list{
+    display:flex; flex-direction:column; gap:4px;
+    max-height:300px; overflow-y:auto; margin-bottom:14px;
+    border:1px solid var(--hairline); border-radius:var(--radius); padding:4px;
+  }
+  .doc-picker-item{
+    background:none; border:none; text-align:left; color:var(--text-light);
+    font-size:12.5px; padding:8px 10px; border-radius:2px; cursor:pointer;
+  }
+  .doc-picker-item:hover{ background:var(--ink); color:var(--brass); }
+  .doc-picker-empty{ font-size:12.5px; color:var(--text-muted); padding:8px 10px; }
+
   .sidebar-toggle{
     display:flex; align-items:center; justify-content:center;
     width:34px;height:34px;
@@ -1093,17 +1121,17 @@
     user-select:none;
   }
   .zoom-value:hover{ color:var(--brass); }
-  .doc-page[data-empty="true"]::before{
-    content: attr(data-placeholder);
-    color:#8a7f63;
-    pointer-events:none;
-  }
   .doc-page b, .doc-page strong{ font-weight:700; }
   .doc-page i, .doc-page em{ font-style:italic; }
   .doc-page blockquote{ margin:0 0 0 40px; border:none; padding:0; }
   .doc-page ul, .doc-page ol{ margin:0 0 0.6em 0; padding-left:32px; }
   .doc-page ul ul, .doc-page ol ol, .doc-page ul ol, .doc-page ol ul{ margin-bottom:0; }
   .doc-page li{ margin-bottom:0.15em; }
+  /* One line of an imported multi-line block (see formatParagraph) -- kept
+     as tight as .doc-page li above so splitting a <br>-joined paragraph
+     into one <p> per line (for per-line pagination) doesn't visibly add
+     paragraph-sized gaps between what used to be plain line breaks. */
+  .doc-page p.doc-line{ margin:0 0 0.15em 0; }
   @media (max-width: 860px){
     textarea.doc-page{ padding:30px 24px; min-height:500px; }
     .doc-page-wrap{ padding:20px 12px; }
@@ -1265,16 +1293,7 @@ pre code {
   white-space:nowrap;
 }
 .schedule-notes-btn:hover{ border-color:var(--brass-dim); color:var(--brass); }
-.schedule-attach-select{
-  flex:0 0 auto;
-  max-width:160px;
-  background:var(--ink-3);
-  border:1px solid var(--hairline);
-  color:var(--text-muted);
-  font-size:11px;
-  padding:5px 6px;
-  border-radius:var(--radius);
-}
+.schedule-context-btn.has-context{ border-color:var(--brass-dim); color:var(--brass); }
 .schedule-banner-card{
   background:var(--ink-3);
   border:1px solid var(--brass-dim);
@@ -1371,7 +1390,8 @@ pre code {
   margin:0 0 6px;
 }
 .doc-import-body input[type="text"],
-.doc-import-body input[type="password"]{
+.doc-import-body input[type="password"],
+.doc-import-body select{
   width:100%;
   background:var(--ink);
   border:1px solid var(--hairline);
@@ -1382,7 +1402,8 @@ pre code {
   font-size:12.5px;
   margin-bottom:12px;
 }
-.doc-import-body input:focus{ outline:none; border-color:var(--brass-dim); }
+.doc-import-body input:focus,
+.doc-import-body select:focus{ outline:none; border-color:var(--brass-dim); }
 .doc-import-actions{
   display:flex;
   align-items:center;
@@ -1850,6 +1871,32 @@ pre code {
 .notes-report-body p:last-child{ margin-bottom:0; }
 .notes-report-body ul, .notes-report-body ol{ margin:0 0 12px; padding-left:20px; }
 
+/* A markdown pipe table (e.g. the Case Comparisons grid) rendered as a real
+   <table> by tryRenderMarkdownTable/formatParagraph, instead of the raw
+   "| cell | cell |" text -- which is unreadable outside a monospace font.
+   Shared by the chat bubble and the report panel; .doc-page already styles
+   plain <table> for the Draft & Compile editor. */
+.bubble table, .notes-report-body table{
+  border-collapse:collapse;
+  margin:10px 0 14px;
+  width:100%;
+  table-layout:fixed;
+}
+.bubble table td, .bubble table th,
+.notes-report-body table td, .notes-report-body table th{
+  border:1px solid var(--hairline);
+  padding:7px 10px;
+  vertical-align:top;
+  text-align:left;
+  overflow-wrap:break-word;
+  word-wrap:break-word;
+}
+.bubble table th, .notes-report-body table th{
+  background:rgba(255,255,255,0.05);
+  font-weight:700;
+  color:var(--parchment);
+}
+
 /* Follow-up chat, scoped to whichever Reading Report is open (see
    currentReport.chat / renderNotesChat in the Notes tab script). */
 .notes-chat-panel{
@@ -2164,6 +2211,19 @@ pre code {
 
     <div class="settings-divider"></div>
 
+    <h2>Email settings</h2>
+    <p>The application (client) ID of the Azure AD app registration the Email tab signs in with (see <code>lawgpt-proxy/setup-email-auth.js</code>) — not a secret, just an identifier, saved to the same <code>.env</code> file as the OpenAI key above. Changing it doesn't sign you out; run the setup script again afterward if you're pointing at a different app registration.</p>
+    <div class="settings-form">
+      <label for="settingsEmailClientIdInput">Email client ID</label>
+      <input type="text" id="settingsEmailClientIdInput" placeholder="12345678-1234-1234-1234-123456789abc" autocomplete="off" spellcheck="false">
+      <div class="settings-status" id="settingsEmailClientIdStatus"></div>
+      <div class="settings-actions">
+        <button id="settingsEmailClientIdSaveBtn">Save client ID</button>
+      </div>
+    </div>
+
+    <div class="settings-divider"></div>
+
     <h2>Notes prompts</h2>
     <p>Each Schedule "Notes" button sends one of these prompts to the model, chosen by how that reading is classified (the second pill next to it). Edit a prompt below to change what gets asked for that type from now on, or reset it back to the built-in version. "Assignment" is the prompt the "Complete" button sends instead — it tells the model to do the assignment, not summarize it. Tasks (bring an item, attend something) don't get a button at all, so they have no prompt to edit.</p>
     <div class="settings-form">
@@ -2198,6 +2258,38 @@ pre code {
     </div>
   </div>
 </div>
+
+<div class="modal-overlay" id="assignmentContextOverlay" style="display:none;">
+  <div class="modal modal-wide">
+    <h2>Assignment context</h2>
+    <p>Add any documents this assignment needs beyond its own instructions, and write anything else the model should know. Saved context is sent together with the assignment's own matched document (if any) whenever you click Complete.</p>
+    <div class="settings-form">
+      <label>Context documents</label>
+      <div class="context-doc-list" id="assignmentContextDocList"></div>
+      <button type="button" class="btn-secondary" id="assignmentContextAddDocBtn">+ Add document</button>
+      <label for="assignmentContextPromptTextarea" style="margin-top:16px;">Context prompt</label>
+      <textarea class="settings-prompt-textarea context-prompt-textarea" id="assignmentContextPromptTextarea" placeholder="Anything else the model should know before completing this assignment…" spellcheck="true"></textarea>
+      <div class="settings-actions">
+        <button type="button" id="assignmentContextSaveBtn">Save</button>
+        <button type="button" class="btn-secondary" id="assignmentContextCloseBtn">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="docPickerOverlay" style="display:none;">
+  <div class="modal">
+    <h2 id="docPickerTitle">Choose a document</h2>
+    <div class="settings-form">
+      <input type="text" id="docPickerSearch" placeholder="Search documents…" autocomplete="off">
+      <div class="doc-picker-list" id="docPickerList"></div>
+      <div class="settings-actions">
+        <button type="button" class="btn-secondary" id="docPickerCloseBtn">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
   <aside class="sidebar" id="sidebar">
     <button class="sidebar-collapse-btn" id="sidebarCollapseBtn" aria-label="Collapse docket" title="Collapse panel">&#10094;</button>
     <button class="sidebar-close-btn" id="sidebarCloseBtn" aria-label="Close docket" title="Close panel">&#10005;</button>
@@ -2229,10 +2321,52 @@ pre code {
     <div class="sidebar-foot">
       <label for="modelSelect">Model</label>
       <select class="model-select" id="modelSelect">
-        <option value="gpt-4o">gpt-4o &mdash; balanced</option>
-        <option value="gpt-4o-mini" selected>gpt-4o-mini &mdash; fast</option>
-        <option value="gpt-4.1">gpt-4.1 &mdash; drafting</option>
-        <option value="o3-mini">o3-mini &mdash; reasoning</option>
+        <optgroup label="GPT-5.x">
+          <option value="gpt-5.6-luna">gpt-5.6-luna</option>
+          <option value="gpt-5.6-sol">gpt-5.6-sol</option>
+          <option value="gpt-5.6-terra">gpt-5.6-terra</option>
+          <option value="gpt-5.5-pro">gpt-5.5-pro</option>
+          <option value="gpt-5.5">gpt-5.5</option>
+          <option value="gpt-5.4-pro">gpt-5.4-pro</option>
+          <option value="gpt-5.4">gpt-5.4</option>
+          <option value="gpt-5.4-mini">gpt-5.4-mini</option>
+          <option value="gpt-5.4-nano">gpt-5.4-nano</option>
+          <option value="gpt-5.3-codex">gpt-5.3-codex</option>
+          <option value="gpt-5.3-chat-latest">gpt-5.3-chat-latest</option>
+          <option value="gpt-5.2-pro">gpt-5.2-pro</option>
+          <option value="gpt-5.2">gpt-5.2</option>
+          <option value="gpt-5.2-codex">gpt-5.2-codex</option>
+          <option value="gpt-5.2-chat-latest">gpt-5.2-chat-latest</option>
+          <option value="gpt-5.1-codex-max">gpt-5.1-codex-max</option>
+          <option value="gpt-5.1-codex">gpt-5.1-codex</option>
+          <option value="gpt-5.1-codex-mini">gpt-5.1-codex-mini</option>
+          <option value="gpt-5.1">gpt-5.1</option>
+          <option value="gpt-5.1-chat-latest">gpt-5.1-chat-latest</option>
+        </optgroup>
+        <optgroup label="GPT-5">
+          <option value="gpt-5-pro">gpt-5-pro</option>
+          <option value="gpt-5">gpt-5</option>
+          <option value="gpt-5-mini">gpt-5-mini</option>
+          <option value="gpt-5-nano">gpt-5-nano</option>
+          <option value="gpt-5-codex">gpt-5-codex</option>
+          <option value="gpt-5-chat-latest">gpt-5-chat-latest</option>
+        </optgroup>
+        <optgroup label="Reasoning (o-series)">
+          <option value="o1-pro">o1-pro</option>
+          <option value="o1">o1</option>
+          <option value="o3">o3</option>
+          <option value="o3-mini">o3-mini</option>
+          <option value="o4-mini">o4-mini</option>
+        </optgroup>
+        <optgroup label="GPT-4.x">
+          <option value="gpt-4.1">gpt-4.1 &mdash; drafting</option>
+          <option value="gpt-4.1-mini">gpt-4.1-mini</option>
+          <option value="gpt-4.1-nano">gpt-4.1-nano</option>
+          <option value="gpt-4o">gpt-4o &mdash; balanced</option>
+          <option value="gpt-4o-mini" selected>gpt-4o-mini &mdash; fast</option>
+          <option value="gpt-4-turbo">gpt-4-turbo</option>
+          <option value="gpt-4">gpt-4</option>
+        </optgroup>
       </select>
     </div>
   </aside>
@@ -2439,7 +2573,7 @@ pre code {
       <div class="editor-body">
         <div class="doc-page-wrap">
           <div id="docPages" contenteditable="true">
-            <div id="docEditor" class="doc-page" data-page-number="1" data-placeholder="Begin drafting here. Whatever you write &mdash; formatting included &mdash; will be reproduced by the compiled program you download."></div>
+            <div id="docEditor" class="doc-page" data-page-number="1"></div>
           </div>
         </div>
         <div class="table-ctx-menu" id="tableCtxMenu">
@@ -2475,6 +2609,10 @@ pre code {
         <div id="scheduleBody"></div>
       </div>
     </div>
+    <div class="table-ctx-menu" id="scheduleDocCtxMenu">
+      <button type="button" id="scheduleDocCtxReplace">Replace document</button>
+      <button type="button" id="scheduleDocCtxRemove">Remove document</button>
+    </div>
 
     <div class="documents-view" id="documentsView" style="display:none;">
       <div class="documents-wrap">
@@ -2490,9 +2628,14 @@ pre code {
           <div class="doc-import-body">
             <p class="doc-import-note">Runs on the local proxy server (never in this browser tab). Your Canvas session cookie is used once for this import and is never written to disk or logged.</p>
             <label for="docImportBaseUrl">Canvas base URL</label>
-            <input type="text" id="docImportBaseUrl" placeholder="https://canvas.yourschool.edu" autocomplete="off" spellcheck="false">
-            <label for="docImportCourseId">Course ID</label>
-            <input type="text" id="docImportCourseId" placeholder="35179" autocomplete="off" spellcheck="false">
+            <input type="text" id="docImportBaseUrl" placeholder="https://canvas.yourschool.edu" autocomplete="off" spellcheck="false" value="https://canvas.uh.edu">
+            <label for="docImportCourseId">Course</label>
+            <select id="docImportCourseId">
+              <option value="35179">Civil Procedure (35179)</option>
+              <option value="3774">Lawyering Skills and Strategies (3774)</option>
+              <option value="37289">Contracts (37289)</option>
+              <option value="36787">Torts (36787)</option>
+            </select>
             <label for="docImportCookie">Session cookie value</label>
             <input type="password" id="docImportCookie" placeholder="canvas_session cookie value" autocomplete="off" spellcheck="false">
             <div class="doc-import-actions">
@@ -2687,10 +2830,14 @@ return ctor.prototype=parent.prototype,child.prototype=new ctor,child.__super__=
 const API_URL = "http://localhost:3000/api/chat";
 const PROXY_ORIGIN = "http://localhost:3000";
 
-// Standard (non-batch) OpenAI API pricing, USD per 1M tokens, for the
-// models in #modelSelect. Update these if OpenAI changes pricing or a new
-// model is added to that dropdown -- there's no pricing endpoint in the
-// API itself, so this has to be kept in sync by hand.
+// Standard (non-batch) OpenAI API pricing, USD per 1M tokens. There's no
+// pricing endpoint in the API itself, so this has to be kept in sync by
+// hand -- costFromUsage() below returns null (cost just isn't shown, rather
+// than shown wrong) for any #modelSelect entry missing here, which as of
+// this writing is every model except these two: pricing wasn't added for
+// the rest of the dropdown's models since confirming current, correct
+// figures for each wasn't practical to do reliably from within this
+// session -- fill in real numbers from OpenAI's pricing page as needed.
 const MODEL_PRICING = {
   "gpt-4o":      { input: 2.50, cachedInput: 1.25, output: 10.00 },
   "gpt-4o-mini": { input: 0.15, cachedInput: 0.075, output: 0.60 }
@@ -2749,10 +2896,39 @@ async function refreshKeyStatus(){
   }
 }
 
+const settingsEmailClientIdInput = document.getElementById("settingsEmailClientIdInput");
+const settingsEmailClientIdStatus = document.getElementById("settingsEmailClientIdStatus");
+
+function setSettingsEmailClientIdStatus(msg, kind){
+  settingsEmailClientIdStatus.textContent = msg;
+  settingsEmailClientIdStatus.className = "settings-status" + (kind ? " " + kind : "");
+}
+
+// Unlike the OpenAI key (always shown blank so it's never re-displayed once
+// saved), a client ID isn't a secret -- pre-filling the input with whatever
+// is currently in effect lets it double as a "what's set right now" display,
+// and makes editing an existing value straightforward.
+async function refreshEmailClientIdStatus(){
+  try{
+    const res = await fetch(PROXY_ORIGIN + "/api/email-client-id-status");
+    const data = await res.json();
+    if (data.configured){
+      settingsEmailClientIdInput.value = data.clientId;
+      setSettingsEmailClientIdStatus("Client ID configured.", "ok");
+    } else {
+      settingsEmailClientIdInput.value = "";
+      setSettingsEmailClientIdStatus("No client ID configured yet.", "");
+    }
+  } catch(e){
+    setSettingsEmailClientIdStatus("Couldn't reach the proxy server — is it running?", "err");
+  }
+}
+
 function openSettings(){
   settingsApiKeyInput.value = "";
   settingsOverlay.style.display = "flex";
   refreshKeyStatus();
+  refreshEmailClientIdStatus();
   refreshFolderStatus();
   settingsApiKeyInput.focus();
   populateSettingsPromptEditor();
@@ -2867,6 +3043,30 @@ document.getElementById("settingsSaveBtn").addEventListener("click", async () =>
     setSettingsStatus(`Saved — key ending in ...${data.last4}.`, "ok");
   } catch(e){
     setSettingsStatus("Couldn't reach the proxy server — is it running?", "err");
+  }
+});
+
+document.getElementById("settingsEmailClientIdSaveBtn").addEventListener("click", async () => {
+  const clientId = settingsEmailClientIdInput.value.trim();
+  if (!clientId){
+    setSettingsEmailClientIdStatus("Paste a client ID first.", "err");
+    return;
+  }
+  setSettingsEmailClientIdStatus("Saving...", "");
+  try{
+    const res = await fetch(PROXY_ORIGIN + "/api/email-client-id", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ clientId })
+    });
+    const data = await res.json();
+    if (!res.ok){
+      setSettingsEmailClientIdStatus(data.error?.message || "Save failed.", "err");
+      return;
+    }
+    setSettingsEmailClientIdStatus("Saved.", "ok");
+  } catch(e){
+    setSettingsEmailClientIdStatus("Couldn't reach the proxy server — is it running?", "err");
   }
 });
 
@@ -3168,16 +3368,88 @@ function formatParagraph(para){
   // are told to emit between repeated blocks) renders as blank vertical
   // space between sections instead of a literal line of hyphens.
   if (/^\s*-{3,}\s*$/.test(para)) return "<p>&nbsp;</p>";
+  const tableHtml = tryRenderMarkdownTable(para);
+  if (tableHtml) return tableHtml;
   const escaped = escapeHtml(para);
   const headingMatch = /^[ \t]*#{1,6}[ \t]+(.*)$/.exec(escaped);
   if (headingMatch && !headingMatch[1].includes("\n")){
     return `<p class="notes-heading"><strong>${boldInline(headingMatch[1])}</strong></p>`;
   }
-  return `<p>${escaped.split("\n").map(boldInline).join("<br>")}</p>`;
+  const lines = escaped.split("\n");
+  if (lines.length === 1) return `<p>${boldInline(lines[0])}</p>`;
+  // A multi-line chunk (e.g. a case/rule/definition brief's Facts, Issue,
+  // Holding, ... fields, one per source line with no blank line between
+  // them) used to become one <p> with the lines <br>-joined together. The
+  // page-reflow pagination (schedulePageReflow) only ever moves a *whole*
+  // top-level page child to the next page, never splits inside one -- so
+  // that single giant paragraph either fit entirely or jumped whole to the
+  // next page, leaving a large gap behind it on the page it left. Emitting
+  // one <p class="doc-line"> per line (kept visually tight by that class,
+  // same spacing .doc-page li already uses) makes each line its own
+  // top-level child, so reflow can fill a page down to its very last line
+  // before breaking instead of leaving one big multi-line block dangling.
+  return lines.map(line => `<p class="doc-line">${boldInline(line)}</p>`).join("");
 }
 
 function boldInline(line){
-  return line.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+  // escapeHtml (run on the raw text before this) turns a literal <b>/</b> --
+  // the bold markup the current notes templates ask the model for -- into
+  // "&lt;b&gt;"/"&lt;/b&gt;", so it has to be matched in its escaped form
+  // here. The model doesn't always close the tag cleanly (e.g. it has been
+  // seen writing "</:" instead of "</b>:"), so this tries progressively
+  // looser matches rather than requiring a perfectly-formed closing tag --
+  // the alternative is raw "<b>"/"</" fragments leaking into the visible
+  // notes, which is worse than a bold span ending up slightly mis-sized.
+  return line
+    // A well-formed pair.
+    .replace(/&lt;b&gt;([\s\S]*?)&lt;\/b&gt;/gi, "<strong>$1</strong>")
+    // A garbled close ("</:", "</B>", "</" with nothing after, ...) -- ends
+    // the bold span at the "</", discarding whatever malformed fragment
+    // follows up to (and including) the next "&gt;", if there is one. The
+    // "&gt;" has to be grouped as (?:&gt;)? rather than written "&gt;?" --
+    // "?" alone would only make the trailing ";" optional, not the whole
+    // 4-character "&gt;" sequence, since a quantifier binds to just the one
+    // atom before it.
+    .replace(/&lt;b&gt;([\s\S]*?)&lt;\/[a-zA-Z]*(?:&gt;)?/gi, "<strong>$1</strong>")
+    // No closing tag at all before the line ends -- bold the remainder
+    // rather than leave the opening tag visible.
+    .replace(/&lt;b&gt;([\s\S]*)$/gi, "<strong>$1</strong>")
+    // Anything that still looks like a "b" tag at this point is an orphan
+    // (a stray close with no matching open, or a leftover fragment) -- drop
+    // it rather than show it.
+    .replace(/&lt;\/?b&gt;/gi, "")
+    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+}
+
+// Detects a GitHub/Markdown-style pipe table -- a header row, a "|---|---|"
+// separator row, then any number of data rows (e.g. the grid the Case
+// Comparisons section asks for) -- and renders it as a real <table> instead
+// of leaving the raw "| cell | cell |" text, which reads as a jumble outside
+// a monospace font since columns never actually line up. Returns null when
+// `para` doesn't look like a table, so formatParagraph falls through to its
+// normal handling.
+function tryRenderMarkdownTable(para){
+  const lines = para.split("\n").map(l => l.trim()).filter(Boolean);
+  if (lines.length < 2 || !lines[0].includes("|")) return null;
+  const isSeparatorRow = (l) => /^\|?\s*:?-{1,}:?\s*(\|\s*:?-{1,}:?\s*)*\|?$/.test(l);
+  if (!isSeparatorRow(lines[1])) return null;
+
+  const splitRow = (l) => {
+    let row = l;
+    if (row.startsWith("|")) row = row.slice(1);
+    if (row.endsWith("|")) row = row.slice(0, -1);
+    return row.split("|").map(c => c.trim());
+  };
+  const cellHtml = (c) => boldInline(escapeHtml(c || ""));
+
+  const headerCells = splitRow(lines[0]);
+  const bodyRows = lines.slice(2).filter(l => l.includes("|")).map(splitRow);
+
+  const thead = `<thead><tr>${headerCells.map(c => `<th>${cellHtml(c)}</th>`).join("")}</tr></thead>`;
+  const tbody = bodyRows.length
+    ? `<tbody>${bodyRows.map(row => `<tr>${headerCells.map((_, i) => `<td>${cellHtml(row[i])}</td>`).join("")}</tr>`).join("")}</tbody>`
+    : "";
+  return `<table>${thead}${tbody}</table>`;
 }
 
 function escapeHtml(str){
@@ -3665,26 +3937,78 @@ function normalizeReportLabel(s){
 // normalized text is in `candidateNorms`, in any of the three conventions
 // above. `remainder` captures same-line text after "Label: " so a field
 // stated as "Document: CB pp 35-51" isn't lost (its body never reaches a
-// following line).
+// following line). The candidateNorms check applies to all three
+// conventions -- a bare "**Roberson v. Rochester Folding Box Co.**" heading
+// (the case's own name, not a field) must NOT become a marker, or it both
+// swallows the real name (parseCasesFromReport treats a block's first line
+// as the name only when that line isn't itself a marker) and produces a
+// bogus marker no field's fieldMap will ever match.
 function findReportFieldMarkers(lines, candidateNorms){
   const markers = [];
   lines.forEach((line, i) => {
     const trimmed = line.trim();
     let label = null, remainder = "";
     let m = /^#{1,4}\s+(.+?)\s*$/.exec(trimmed);
-    if (m){ label = m[1]; }
+    if (m && candidateNorms.has(normalizeReportLabel(m[1]))){ label = m[1]; }
     if (label == null){
-      m = /^\*\*(.+?)\*\*:?\s*$/.exec(trimmed);
-      if (m){ label = m[1]; }
+      // The current templates bold a field's own on-its-own-line heading
+      // with literal <b></b> tags rather than markdown "**" -- both are
+      // checked since older saved reports still use "**".
+      m = /^\*\*(.+?)\*\*:?\s*$/.exec(trimmed) || /^<b>(.+?)<\/b>:?\s*$/i.exec(trimmed);
+      if (m && candidateNorms.has(normalizeReportLabel(m[1]))){ label = m[1]; }
     }
     if (label == null){
-      m = /^\*{0,2}([A-Za-z][A-Za-z'/.() ]{1,45}?)\*{0,2}:\s*(.*)$/.exec(trimmed);
+      // "- <b>Label</b>: value" or "- <b>Label</b>" with no colon at all
+      // (e.g. Facts/Procedural Posture, whose body is itself a bulleted
+      // list on the following lines rather than inline text) -- colon is
+      // optional ONLY in this <b> branch because the explicit tags are
+      // themselves what disambiguates a real field label from ordinary
+      // bulleted prose; the untagged branch below has no such signal, so it
+      // still requires a colon to avoid misreading prose as a heading.
+      m = /^(?:[-*•]\s+|\d+[.)]\s+)?<b>([A-Za-z][A-Za-z'/.() ]{1,45}?)<\/b>:?\s*(.*)$/i.exec(trimmed);
+      if (m && candidateNorms.has(normalizeReportLabel(m[1]))){ label = m[1]; remainder = m[2]; }
+    }
+    if (label == null){
+      // "Label: value", optionally under a leading list marker ("- ", "* ",
+      // "1. ") -- the model very often bullets every field on its own line
+      // (e.g. "- **Document:** CB pp 1-40.txt") rather than giving each
+      // field its own heading with the body on the following line(s). The
+      // bold markup's closing "**" can land either before or after the
+      // colon ("**Document**:" vs "**Document:**", both seen in practice),
+      // so both an optional \*{0,2} before AND after the colon are needed --
+      // stripping only one side left the other's asterisks stuck onto the
+      // captured value (e.g. a Document field of "** CB pp 1-40.txt").
+      m = /^(?:[-*•]\s+|\d+[.)]\s+)?\*{0,2}([A-Za-z][A-Za-z'/.() ]{1,45}?)\*{0,2}:\*{0,2}\s*(.*)$/.exec(trimmed);
       if (m && candidateNorms.has(normalizeReportLabel(m[1]))){ label = m[1]; remainder = m[2]; }
     }
     if (label == null) return;
     markers.push({ norm: normalizeReportLabel(label), raw: label, line: i, remainder });
   });
   return markers;
+}
+
+// A field's raw body text is either a single value -- sometimes wrapped in
+// one redundant bullet, e.g. a field given as its own heading with a single
+// bullet as the body ("**Facts**\n\n* Ms. Roberson was...") -- or a genuine
+// multi-item list (e.g. Requirements: "1. ...\n\n    2. ..."). These need
+// opposite handling: the wrapped-single-value case should have its one
+// marker stripped so the box doesn't start with a stray "* ", but a real
+// list must keep EVERY item's own marker -- stripping only the first (the
+// previous, single-marker-strip behavior) silently ate item 1's own "1."
+// while leaving item 2 exactly as typed, indentation and all, since the
+// prompts ask the model to indent a multi-item list beneath its header. Two
+// or more lines that themselves start with a list marker is what tells
+// these apart.
+function normalizeFieldBody(body){
+  const nonBlankLines = body.split("\n").map(l => l.trim()).filter(Boolean);
+  const listItemCount = nonBlankLines.filter(l => /^(?:[-*•]|\d+[.)])\s+/.test(l)).length;
+  if (listItemCount >= 2){
+    // A real list: every line trimmed (no indentation) and blank lines
+    // between items dropped, but every marker (and any non-marker
+    // continuation line) kept.
+    return nonBlankLines.join("\n");
+  }
+  return body.replace(/^(?:[-*•]|\d+[.)])\s+/, "");
 }
 
 // Extracts {outputKey: bodyText} from one block of text, given a map of
@@ -3699,9 +4023,18 @@ function extractReportFields(blockText, fieldMap){
     const marker = markers.find(mk => norms.includes(mk.norm));
     if (!marker) return "";
     const next = markers.find(mk => mk.line > marker.line);
-    const endLine = next ? next.line : lines.length;
+    let endLine = next ? next.line : lines.length;
+    // The last field in a block (often Exceptions) has nothing after it but
+    // the "---" line the prompts use to separate one rule/case/definition
+    // from the next (see splitReportBlocks/splitRuleBlocks) -- without this,
+    // that separator ends up swallowed into the field's own value instead
+    // of being stopped at, since there's no next field marker to bound it.
+    for (let i = marker.line + 1; i < endLine; i++){
+      if (/^\s*-{3,}\s*$/.test(lines[i])){ endLine = i; break; }
+    }
     const rest = lines.slice(marker.line + 1, endLine).join("\n");
-    return [marker.remainder, rest].filter(Boolean).join("\n").trim();
+    const body = [marker.remainder, rest].filter(Boolean).join("\n").trim();
+    return normalizeFieldBody(body);
   };
 
   const fields = {};
@@ -3721,6 +4054,52 @@ function splitReportBlocks(sectionText){
   if (blocks.length) return blocks;
   const whole = String(sectionText || "").trim();
   return whole ? [whole] : [];
+}
+
+// Rule-specific alternative to splitReportBlocks() above. The prompt asks the
+// model to separate each rule with a "---" line, but that instruction is easy
+// for the model to drop, especially across many rules in one reading -- and
+// when it does, splitReportBlocks() falls back to treating the ENTIRE section
+// as one block. Because every rule's fields repeat in the same fixed order
+// (Source, Document, Statement, ...), extractReportFields() on that combined
+// block still finds a plausible-looking value for every field -- just always
+// the first rule's -- so the bug is silent: only one rule ever reaches the
+// "Fill from Report" dropdown (or it never appears, since one block means no
+// dropdown at all) and every other rule in the reading is unreachable.
+//
+// Every rule block reliably starts with its own "**Rule ...**" (or "#### Rule
+// ...") heading per the template, so that heading is a far more robust
+// boundary than "---": split on it directly, tolerating "---" being present,
+// absent, or only sometimes present. Falls back to a plain, undecorated
+// "Rule ..." line (no ** or #) for older/degenerate reports, and finally to
+// splitReportBlocks()'s "---"/whole-text behavior if no rule heading is found
+// at all.
+function splitRuleBlocks(sectionText){
+  const text = String(sectionText || "");
+  const lines = text.split("\n");
+  const isDecoratedRuleHeading = (trimmed) => {
+    const m = /^#{1,4}\s+(.+?)\s*$/.exec(trimmed) || /^\*\*(.+?)\*\*:?\s*$/.exec(trimmed) || /^<b>(.+?)<\/b>:?\s*$/i.exec(trimmed);
+    return m && /^rule\b/i.test(m[1].trim());
+  };
+  const isPlainRuleHeading = (trimmed) => /^rule\b/i.test(trimmed);
+
+  const headingLines = lines.reduce((acc, line, i) => {
+    if (isDecoratedRuleHeading(line.trim())) acc.push(i);
+    return acc;
+  }, []);
+  const usePlain = !headingLines.length;
+  const finalHeadingLines = usePlain
+    ? lines.reduce((acc, line, i) => { if (isPlainRuleHeading(line.trim())) acc.push(i); return acc; }, [])
+    : headingLines;
+
+  if (!finalHeadingLines.length) return splitReportBlocks(sectionText);
+
+  return finalHeadingLines
+    .map((lineIdx, i) => {
+      const end = i + 1 < finalHeadingLines.length ? finalHeadingLines[i + 1] : lines.length;
+      return lines.slice(lineIdx, end).join("\n").trim();
+    })
+    .filter(Boolean);
 }
 
 // Locates a top-level numbered section ("### 4. CASES", "# 3. CASE BRIEF",
@@ -3748,7 +4127,11 @@ function extractReportSection(text, titleMatchers){
 // with its actual name as a bare heading, rather than literally writing the
 // field label ("Case Name:", "Rule:", ...) the template asked for.
 function firstNonBlankLine(block){
-  return (block.split("\n").map(l => l.trim()).find(Boolean) || "").replace(/^#{1,4}\s+/, "").replace(/^\*+|\*+$/g, "").trim();
+  return (block.split("\n").map(l => l.trim()).find(Boolean) || "")
+    .replace(/^#{1,4}\s+/, "")
+    .replace(/^<b>/i, "").replace(/<\/b>\s*$/i, "")
+    .replace(/^\*+|\*+$/g, "")
+    .trim();
 }
 
 function parseCasesFromReport(reportText, report){
@@ -3779,7 +4162,12 @@ function parseCasesFromReport(reportText, report){
     const blockLines = block.split("\n");
     const firstLineIdx = blockLines.findIndex(l => l.trim());
     const firstLineIsField = markers.some(mk => mk.line === firstLineIdx);
-    const first = firstNonBlankLine(block);
+    // The current Case Format wraps the whole heading -- label and value
+    // together -- in one <b>Case Name: ...</b> line (unlike a field like
+    // Source, whose label alone is bolded), so firstNonBlankLine's tag
+    // stripping above leaves "Case Name: Lucy v. Zehmer" here; strip that
+    // literal label prefix to get just the name itself.
+    const first = firstNonBlankLine(block).replace(/^case name\s*:?\s*/i, "");
     let name = (!firstLineIsField && first) ? first : "";
     if (!name && fields.__name) name = fields.__name.split(/\n|,/)[0].trim();
     if (!name) name = `Case ${idx + 1}`;
@@ -3792,7 +4180,7 @@ function parseCasesFromReport(reportText, report){
 function parseRulesFromReport(reportText, report){
   const section = extractReportSection(reportText, [/rules and legal principles/i, /^rules$/i, /important legal concepts/i]);
   const courseLabel = CASE_COURSE_LABELS[report.course] || report.course || "";
-  return splitReportBlocks(section).map((block, idx) => {
+  return splitRuleBlocks(section).map((block, idx) => {
     const { fields } = extractReportFields(block, {
       source: ["source"],
       document: ["document"],
@@ -3808,7 +4196,7 @@ function parseRulesFromReport(reportText, report){
     let name = "";
     for (const line of lines){
       const trimmed = line.trim();
-      const m = /^#{1,4}\s+(.+?)\s*$/.exec(trimmed) || /^\*\*(.+?)\*\*:?\s*$/.exec(trimmed);
+      const m = /^#{1,4}\s+(.+?)\s*$/.exec(trimmed) || /^\*\*(.+?)\*\*:?\s*$/.exec(trimmed) || /^<b>(.+?)<\/b>:?\s*$/i.exec(trimmed);
       if (m && /^rule\b/i.test(m[1])){ name = m[1].replace(/^rule\s*\d*[.:)]?\s*/i, "").trim(); break; }
     }
     if (!name){
@@ -3821,27 +4209,36 @@ function parseRulesFromReport(reportText, report){
 }
 
 function parseDefinitionsFromReport(reportText, report){
-  const section = extractReportSection(reportText, [/definitions and terminology/i, /important terms/i]);
+  const section = extractReportSection(reportText, [/definitions and terminology/i, /^definitions$/i, /important terms/i]);
   const courseLabel = CASE_COURSE_LABELS[report.course] || report.course || "";
   return splitReportBlocks(section).map((block, idx) => {
+    // __term catches the model keeping the prompt template's literal "Term"
+    // label and stating the actual term as that field's value instead of
+    // using it as the block's own heading -- e.g. "**Term:** Tort" inline,
+    // or "**Term**" on its own line with "Tort" as the body underneath.
     const { fields } = extractReportFields(block, {
+      __term: ["term", "terms"],
       definition: ["definition"],
       significance: ["significance", "meaning", "meaning in this case", "why it matters"],
       distinction: ["distinction"]
     });
-    // The term itself is normally the block's own heading (e.g. "**Offer**"),
-    // not restated as a literal "Term:" label.
-    let name = "";
-    for (const line of block.split("\n")){
-      const trimmed = line.trim();
-      const m = /^#{1,4}\s+(.+?)\s*$/.exec(trimmed) || /^\*\*(.+?)\*\*:?\s*$/.exec(trimmed);
-      if (m && !/^(term|definition|significance|distinction|meaning|why it matters)\b/i.test(m[1])){ name = m[1].trim(); break; }
+    // Try the literal "Term:"/"Terms:" field first -- unambiguous when
+    // present. Otherwise the term itself is normally the block's own
+    // heading (e.g. "**Offer**"), not restated as a separate label.
+    let name = fields.__term ? fields.__term.split(/\n|,/)[0].trim() : "";
+    if (!name){
+      for (const line of block.split("\n")){
+        const trimmed = line.trim();
+        const m = /^#{1,4}\s+(.+?)\s*$/.exec(trimmed) || /^\*\*(.+?)\*\*:?\s*$/.exec(trimmed) || /^<b>(.+?)<\/b>:?\s*$/i.exec(trimmed);
+        if (m && !/^(term|terms|definition|significance|distinction|meaning|why it matters)\b/i.test(m[1])){ name = m[1].trim(); break; }
+      }
     }
     if (!name){
       const first = firstNonBlankLine(block);
-      if (!/^(term|definition|significance|distinction|meaning|why it matters)\b/i.test(first)) name = first;
+      if (!/^(term|terms|definition|significance|distinction|meaning|why it matters)\b/i.test(first)) name = first;
     }
     if (!name) name = `Term ${idx + 1}`;
+    delete fields.__term;
     return { label: name, values: { term: name, course: courseLabel, ...fields } };
   });
 }
@@ -4300,9 +4697,13 @@ document.getElementById("notesReportCloseBtn").addEventListener("click", () => {
 // it round-trips through Save/persistState like the rest of the report, and
 // resets automatically whenever currentReport is swapped for a different
 // (or no) report.
-function buildNotesChatInput(report, question){
-  const history = (report.chat || [])
-    .filter(m => !m.failed)
+function buildNotesChatInput(report, question, historyLimit){
+  let chatHistory = (report.chat || []).filter(m => !m.failed);
+  // historyLimit caps how many past turns are included, keeping the most
+  // recent ones -- used to retry with less context when the full history
+  // no longer fits the model's context window (see sendNotesChatMessage).
+  if (typeof historyLimit === "number") chatHistory = chatHistory.slice(-historyLimit);
+  const history = chatHistory
     .map(m => (m.role === "user" ? "Q: " : "A: ") + m.content)
     .join("\n\n");
   return [
@@ -4374,14 +4775,19 @@ async function sendNotesChatMessage(){
   currentReport.chatPending = true;
   renderNotesChat();
 
-  try{
-    const model = document.getElementById("modelSelect").value;
+  // Each answer in a long-running chat re-sends the full conversation
+  // history as context, which is unbounded and can eventually exceed the
+  // model's context window. Rather than just failing the message when that
+  // happens, retry once with the history dropped entirely (keeping only the
+  // attached notes/documents and the current question, which are never
+  // trimmed) so the question still gets answered.
+  async function attemptSend(historyLimit){
     const res = await fetch(PROXY_ORIGIN + "/api/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         model,
-        input: buildNotesChatInput(currentReport, question),
+        input: buildNotesChatInput(currentReport, question, historyLimit),
         documentIds: currentReport.documentIds || [],
         // Overrides the proxy's default "attached documents = strict,
         // document-only answers" instruction for this one request -- see
@@ -4395,7 +4801,23 @@ async function sendNotesChatMessage(){
     const data = await res.json();
     if (!res.ok){
       const errMsg = (data && data.error && data.error.message) ? data.error.message : "Request failed.";
-      throw new Error(errMsg);
+      const err = new Error(errMsg);
+      err.code = data && data.error && data.error.code;
+      throw err;
+    }
+    return data;
+  }
+
+  const model = document.getElementById("modelSelect").value;
+  try{
+    let data;
+    try{
+      data = await attemptSend();
+    } catch(err){
+      const isContextOverflow = /context.length|context_length_exceeded|maximum context|too (long|many tokens)/i
+        .test(String(err.code || "") + " " + err.message);
+      if (!isContextOverflow) throw err;
+      data = await attemptSend(0);
     }
     currentReport.chat.push({ role: "assistant", content: extractText(data), cost: costFromUsage(data.usage, model) });
   } catch(err){
@@ -4651,9 +5073,12 @@ document.getElementById("docImportBtn").addEventListener("click", async () => {
     if (!res.ok) throw new Error((data && data.error) || "Import failed.");
 
     const items = Array.isArray(data.items) ? data.items : [];
-    const imported = items.filter(i => i.id).length;
-    const failed = items.length - imported;
-    statusEl.textContent = `Imported ${imported} document${imported === 1 ? "" : "s"}${failed ? `, ${failed} skipped/failed` : ""}.`;
+    const alreadyImported = items.filter(i => i.alreadyImported).length;
+    const imported = items.filter(i => i.id && !i.alreadyImported).length;
+    const failed = items.length - imported - alreadyImported;
+    statusEl.textContent = `Imported ${imported} new document${imported === 1 ? "" : "s"}` +
+      (alreadyImported ? `, ${alreadyImported} already up to date` : "") +
+      (failed ? `, ${failed} skipped/failed` : "") + ".";
     statusEl.className = "doc-import-status ok";
     document.getElementById("docImportCookie").value = "";
     await refreshDocumentsList();
@@ -4860,30 +5285,37 @@ const NOTES_PROMPT_TEXTBOOK = `You are my law school reading-notes assistant.
 
 Read the entire assigned reading carefully and create detailed, exam-oriented notes. Your goal is NOT merely to summarize the reading. Your goal is to turn the reading into a structured set of notes that I can use to understand the doctrine, prepare for class, brief the cases, and study for an exam.
 
-### 1. BIG PICTURE
+FORMATTING: Use <b> to start bold text and </b> to end it (do not use markdown asterisks for bold). Use "-" for every bullet point. A field's own heading (e.g. <b>Rule: ...</b>, <b>Case Name: ...</b>, <b>[Term]</b>) has no bullet and is not indented. Every subheader beneath it (Source, Document, Statement, Legal Question, Requirements, Application, Exceptions, Facts, Procedural Posture, etc.) is bulleted with "-" but is NOT indented. When a subheader has a single value, put that value on the same line right after its colon (e.g. "- Document: CB pp. 68-85"). When a subheader has multiple values as a bulleted or numbered list, put the list on the following lines, indented beneath the subheader, one item per line.
+
+### 1. Overview
 
 Start with a concise explanation of:
 
-* What legal subject/doctrine this reading addresses
-* What the author/casebook is trying to teach
-* The major questions or problems the reading addresses
-* How the different cases, statutes, rules, or examples fit together
+- What legal subject/doctrine this reading addresses
+- What the author/casebook is trying to teach
+- The major questions or problems the reading addresses
+- How the different cases, statutes, rules, or examples fit together
 
-### 2. RULES AND LEGAL PRINCIPLES
+### 2. Rules
 
-Identify every important legal rule or principle in the reading — this section is not limited to rules that come from a case; include rules stated directly by the textbook/casebook narrative, Restatement/UCC provisions, and rules established or applied by any case in the reading. Every rule discussed in a case brief in the CASES section below must also appear here in full, under the same name/number used there (see the CASES section's Rule field). State every rule using exactly this format:
+Identify every important legal rule or principle in the reading — this section is not limited to rules that come from a case; include rules stated directly by the textbook/casebook narrative, Restatement/UCC provisions, and rules established or applied by any case in the reading. Every rule discussed in a case brief in the Cases section below must also appear here in full, under the same name/number used there (see the Cases section's Rule field). State every rule using exactly this format:
 
-**Rule [citation/section, or a short descriptive name if the source doesn't cite one]**
+<b>Rule: [citation/section, or a short descriptive name if the source doesn't cite one]</b>
 
-- **Source:** Restatement / UCC / case holding / textbook narrative — say which, and cite the specific provision, case, or passage it comes from.
-- **Document:** Name the exact file this rule comes from, using its full file name and extension exactly as it appears in the SOURCE: label of the attached material (e.g., "CB pp 87-93.txt", "Lucy v Zehmer.pdf") — not a paraphrase and not the generic "assigned reading." If multiple documents are attached, identify which one this particular rule is drawn from.
-- **Statement:** State the rule in one or two sentences. Preserve any qualifying language the source uses — don't flatten a qualifier like "materially different" into "different," or otherwise simplify away a distinction the source drew deliberately.
-- **Legal Question:** What legal question does the rule answer?
-- **Requirements:** Break the rule into its component parts. If the source states it as a single element rather than a multi-part test, say so rather than forcing it into a list.
-- **Application:** How the rule actually gets used in practice — what question a court or party invokes it to answer, and what triggers reliance on it.
-- **Exceptions:** Anything that narrows the rule, carves out a category, or states when it does not apply. Pull this from comments, caveats, or surrounding text, not just the black-letter statement.
+- <b>Source</b>: Restatement / UCC / case holding / textbook narrative — say which, and cite the specific provision, case, or passage it comes from.
+- <b>Document</b>: Name the exact file this rule comes from, using its full file name and extension exactly as it appears in the SOURCE: label of the attached material (e.g., CB pp 87-93.txt, Lucy v Zehmer.pdf) — not a paraphrase and not the generic "assigned reading." If multiple documents are attached, identify which one this particular rule is drawn from.
+- <b>Statement</b>: State the rule in one or two sentences. Preserve any qualifying language the source uses — don't flatten a qualifier like "materially different" into "different," or otherwise simplify away a distinction the source drew deliberately.
+- <b>Legal Question</b>: What legal question does the rule answer?
+- <b>Requirements</b>: If the rule has a single requirement, state it directly after the colon. If it has multiple requirements, list them as a numbered list indented beneath this header:
+    1. [requirement 1]
+    2. [requirement 2]
+    ...
+- <b>Application</b>: How the rule actually gets used in practice — what question a court or party invokes it to answer, and what triggers reliance on it.
+- <b>Exceptions</b>: Anything that narrows the rule, carves out a category, or states when it does not apply. Pull this from comments, caveats, or surrounding text, not just the black-letter statement.
 
 Separate each rule from the next with a line containing only three hyphens (---), so each rule is a distinct, clearly-bounded block.
+
+Do not end any sentence in this section with a period — the only exception is the Legal Question, which may end with "?" if phrased as a question.
 
 Also distinguish the rule from related rules when useful.
 
@@ -4891,7 +5323,7 @@ Do not omit a rule simply because it appears obvious.
 
 When the reading gives a rule through a case rather than stating it explicitly, identify the rule that can reasonably be inferred from the case.
 
-### 3. CASE NARRATIVE
+### 3. Case Narrative
 
 For every case in the reading, before the structured case brief in the next section, give a plain narrative summary — a few paragraphs of prose (not a bulleted list) that tell the story of the case the way you'd explain it out loud. Make sure the narrative explicitly covers:
 
@@ -4903,134 +5335,121 @@ For every case in the reading, before the structured case brief in the next sect
 
 If the opinion doesn't state a date or location, say so rather than guessing. This is the version to read first for a quick, intuitive grasp of the case before working through the structured brief.
 
-### 4. CASES
+### 4. Cases
 
 For every case, create a separate case brief containing exactly these fields, in exactly this order:
 
-**Case Name**
+<b>Case Name: [full case name, court, date, and authoring judge if stated]</b>
 
-* Full case name, court, date, and authoring judge if stated.
-
-**Document**
-
-* Name the exact file this case comes from, using its full file name and extension exactly as it appears in the SOURCE: label of the attached material (e.g., "CB pp 87-93.txt", "Lucy v Zehmer.pdf") — not a paraphrase and not the generic "assigned reading." If multiple documents are attached, identify which one this case is drawn from.
-
-**Course**
-
-* Name the course this reading belongs to, if that's apparent from context.
-
-**Facts**
-
-* Include only legally significant facts.
-* Do not omit facts that matter to the court's reasoning.
-
-**Procedural Posture**
-
-* What happened in the lower court?
-* What is the current court reviewing or deciding?
-
-**Issue**
-
-* State the legal question the court had to answer.
-
-**Holding**
-
-* Give the court's answer to the legal issue.
-
-**Rule**
-
-* Give the SHORT form only: **[Source]: [Statement]** — a single line naming the rule's source and stating it in one sentence (e.g., "Restatement (Second) § 39: A counteroffer constitutes a rejection of the original offer and creates a new offer for the original offeror to accept."). Do NOT repeat the full Document/Legal Question/Requirements/Application/Exceptions breakdown here — that full version belongs in the RULES AND LEGAL PRINCIPLES section above, and this rule must appear there in full (add it there if it isn't already listed).
-
-**Reasoning**
-
-* Explain step-by-step why the court reached its conclusion.
-* Identify the facts the court considered important.
-* Identify competing arguments when the opinion discusses them.
-
-**Plaintiff's/Appellee's Arguments**
-
-* What did this party argue, and what facts or rule did they rely on?
-
-**Defendant/Appellant's Arguments**
-
-* What did this party argue, and what facts or rule did they rely on?
-
-**Disposition**
-
-* What did the court ultimately do?
-
-**Importance**
-
-* Explain why this case appears in the assigned reading and what I should learn from it.
+- <b>Document</b>: Name the exact file this case comes from, using its full file name and extension exactly as it appears in the SOURCE: label of the attached material (e.g., CB pp 87-93.txt, Lucy v Zehmer.pdf) — not a paraphrase and not the generic "assigned reading." If multiple documents are attached, identify which one this case is drawn from.
+- <b>Course</b>: Name the course this reading belongs to, if that's apparent from context.
+- <b>Facts</b>
+    - [legally significant fact — what happened, what the plaintiff did, what the defendant did, relevant dates]
+    - [fact that became important to the court's reasoning]
+    - ...
+- <b>Procedural Posture</b>
+    - [what happened in the lower court]
+    - [what the current court is reviewing or deciding]
+    - ...
+- <b>Issue</b>: State the legal question the court had to answer, as a precise question (prefer "Whether ___").
+- <b>Holding</b>: Give the court's answer to the legal issue.
+- <b>Rule</b>: State the rule's name/citation followed by its one-sentence statement — e.g., "Restatement (Second) § 39: A counteroffer constitutes a rejection of the original offer and creates a new offer for the original offeror to accept." Do NOT repeat the full Document/Legal Question/Requirements/Application/Exceptions breakdown here — that belongs in the Rules section above, and this rule must appear there in full under this same name/citation (add it there if it isn't already listed).
+- <b>Reasoning</b>: If the court's reasoning is one point, state it directly after the colon. If it proceeds in multiple steps, list them indented beneath this header:
+    - [reasoning step]
+    - ...
+- <b>Plaintiff's/Appellee's Arguments</b>: What did this party argue, and what facts or rule did they rely on? If there's a single argument, state it after the colon; if there are several, list them indented beneath this header:
+    - [argument]
+    - ...
+- <b>Defendant/Appellant's Arguments</b>: Same as above.
+    - [argument]
+    - ...
+- <b>Disposition</b>: What did the court ultimately do?
+- <b>Importance</b>: Explain why this case appears in the assigned reading and what I should learn from it.
 
 Separate each case brief from the next with a line containing only three hyphens (---), so each case is a distinct, clearly-bounded block.
 
-### 5. DEFINITIONS AND TERMINOLOGY
+Do not end any sentence in this section with a period — the only exception is the Issue, which may end with "?" if phrased as a question.
+
+### 5. Definitions
 
 Identify important legal terminology. State each term using exactly this format:
 
-**Term**
+<b>[Term]</b>
 
-* **Definition:** Give a clear definition.
-* **Significance:** Explain its significance in this reading.
-* **Distinction:** Distinguish it from similar concepts when necessary.
+- <b>Definition</b>: Give a clear definition.
+- <b>Significance</b>: Explain its significance in this reading.
+- <b>Distinction</b>: Distinguish it from similar concepts when necessary.
 
 Separate each term from the next with a line containing only three hyphens (---), so each term is a distinct, clearly-bounded block.
 
-### 6. CASE COMPARISONS AND DOCTRINAL DEVELOPMENT
+Do not end any sentence in this section with a period.
+
+### 6. Precedent
+
+For every prior case that a case in this reading relies upon in its reasoning, identify:
+
+<b>[Prior Case Name]</b>
+
+- <b>Rule from prior case</b>: What rule did that case establish?
+- <b>Relevant facts</b>: What facts mattered in that case?
+- <b>How it's used here</b>: Does the citing case follow it, apply it, extend it, limit it, distinguish it, or reject an argument based on it?
+- <b>Why it matters here</b>: Explain why the precedent is important to the citing case's decision.
+
+Do NOT give full case briefs for minor cases that are merely cited in passing. Focus detailed treatment on precedents that actually influence a case's reasoning.
+
+### 7. Case Comparisons
 
 Explain how the cases relate to one another.
 
 Specifically identify:
 
-* Cases that establish similar rules
-* Cases that limit or distinguish another case
-* Cases that appear to conflict
-* How the doctrine develops from one case to the next
-* Important factual distinctions
-* Important distinctions in legal reasoning
+- Cases that establish similar rules
+- Cases that limit or distinguish another case
+- Cases that appear to conflict
+- How the doctrine develops from one case to the next
+- Important factual distinctions
+- Important distinctions in legal reasoning
 
 Do not simply list the cases independently.
 
-### 7. EXAMPLES / HYPOTHETICALS
+### 8. Examples and Hypotheticals
 
 If the reading contains examples or hypotheticals, explain:
 
-* The facts
-* The legal issue
-* The applicable rule
-* The result
-* Why the example matters
+- The facts
+- The legal issue
+- The applicable rule
+- The result
+- Why the example matters
 
-If useful, create a small number of additional hypothetical examples to illustrate difficult rules, but clearly label anything you create yourself with the heading **Added Hypothetical (not in the reading):**.
+If useful, create a small number of additional hypothetical examples to illustrate difficult rules, but clearly label anything you create yourself with the heading <b>Added Hypothetical (not in the reading)</b>.
 
-### 8. POLICY AND COMPETING ARGUMENTS
+### 9. Policy and Competing Arguments
 
 Identify important policy arguments on both sides of disputed issues.
 
 Separate:
 
-* What the court/text actually says
-* What is an argument or interpretation
-* What you are inferring
+- What the court/text actually says
+- What is an argument or interpretation
+- What you are inferring
 
 Do not present an inference as though it were stated by the source.
 
-### 9. EXAM-RELEVANT TAKEAWAYS
+### 10. Exam Analysis
 
-End with a section called **"What I Need to Know"** containing the most important material from the reading.
+Explain how the rules and cases in this reading could appear on a law school exam.
 
-Prioritize:
+- <b>Rule(s) to remember</b>: [the rule(s) most likely to be tested]
+- <b>Facts that should trigger the rule</b>: [what fact pattern signals this rule applies]
+- <b>Analytical steps</b>:
+    1. [step 1]
+    2. [step 2]
+    ...
+- <b>Common mistake</b>: [a mistake students commonly make with this material]
+- <b>Possible exam twist</b>: [a variation that would complicate the analysis]
 
-1. Rules
-2. Elements/tests
-3. Exceptions
-4. Important distinctions
-5. Major cases and what each contributes
-6. Recurring analytical frameworks
-7. Common points of confusion
-
-Do not fill this section with trivial facts.
+Do not invent an unrelated hypothetical. Base the exam analysis on the legal reasoning actually used in the reading.
 
 Do not open the response with introductory filler ("Sure!", "Here are your notes", "Certainly!", etc.) — start directly with the notes content. Do not refer to yourself as an AI, a language model, or an assistant anywhere in the notes.
 
@@ -5044,7 +5463,7 @@ Use headings, bullet points, tables, and bolded terms where they improve readabi
 
 When quoting the reading, use quotations sparingly and preserve the original wording. Otherwise, explain the material in clear language.
 
-Most importantly: **do not give me a generic summary. Give me structured law-school study notes that preserve the rules, reasoning, distinctions, and doctrinal relationships that I would need to know for class and an exam.**`;
+Most importantly: <b>do not give me a generic summary. Give me structured law-school study notes that preserve the rules, reasoning, distinctions, and doctrinal relationships that I would need to know for class and an exam.</b>`;
 
 const NOTES_PROMPT_CASE = `You are my law school reading-notes assistant.
 
@@ -5064,7 +5483,9 @@ Your goal is to create notes that allow me to:
 
 Be extremely faithful to the assigned reading. Do not add outside law unless I specifically ask for it.
 
-# 1. BIG PICTURE
+FORMATTING: Use <b> to start bold text and </b> to end it (do not use markdown asterisks for bold). Use "-" for every bullet point. A field's own heading (e.g. <b>Rule: ...</b>, <b>Case Name: ...</b>, <b>[Term]</b>) has no bullet and is not indented. Every subheader beneath it (Source, Document, Statement, Legal Question, Requirements, Application, Exceptions, Facts, Procedural Posture, etc.) is bulleted with "-" but is NOT indented. When a subheader has a single value, put that value on the same line right after its colon (e.g. "- Document: CB pp. 68-85"). When a subheader has multiple values as a bulleted or numbered list, put the list on the following lines, indented beneath the subheader, one item per line.
+
+# 1. Overview
 
 Start with a concise explanation of:
 
@@ -5078,7 +5499,32 @@ Then give me a short "Case in One Sentence" that captures the basic holding.
 
 Do not begin with unnecessary background or a generic explanation of the area of law.
 
-# 2. CASE NARRATIVE
+# 2. Rules
+
+Identify every important legal rule the court uses or establishes — this includes the rule(s) the court applies to decide the case, any rule it draws from precedent, and any rule it distinguishes or rejects along the way. Every rule discussed in the case brief below must also appear here in full, under the same name/citation used there (see the Case Brief section's Rule field). State every rule using exactly this format:
+
+<b>Rule: [citation/section, or a short descriptive name if the opinion doesn't cite one]</b>
+
+- <b>Source</b>: Restatement / UCC / case holding / textbook narrative — here this will normally be a case holding (this case or the precedent it relies on); name the case if the opinion identifies one.
+- <b>Document</b>: Name the exact file this rule comes from, using its full file name and extension exactly as it appears in the SOURCE: label of the attached material (e.g., CB pp 87-93.txt, Lucy v Zehmer.pdf) — not a paraphrase and not the generic "assigned reading."
+- <b>Statement</b>: State the rule in one or two sentences. Preserve any qualifying language the opinion uses — don't flatten a qualifier like "materially different" into "different," or otherwise simplify away a distinction the court drew deliberately.
+- <b>Legal Question</b>: What legal question does the rule answer?
+- <b>Requirements</b>: If the rule has a single requirement, state it directly after the colon. If it has multiple requirements, list them as a numbered list indented beneath this header:
+    1. [requirement 1]
+    2. [requirement 2]
+    ...
+- <b>Application</b>: How the rule actually gets used in practice — what question a court or party invokes it to answer, and what triggers reliance on it.
+- <b>Exceptions</b>: Anything that narrows the rule, carves out a category, or states when it does not apply. Pull this from concurrences, caveats, or surrounding discussion, not just the black-letter statement.
+
+Separate each rule from the next with a line containing only three hyphens (---), so each rule is a distinct, clearly-bounded block.
+
+Do not end any sentence in this section with a period — the only exception is the Legal Question, which may end with "?" if phrased as a question.
+
+If the rule comes from precedent, identify the precedent and explain how the current court uses it.
+
+If the court distinguishes between two different standards, make that distinction explicit.
+
+# 3. Case Narrative
 
 Before the structured case brief in the next section, give a plain narrative summary — a few paragraphs of prose (not a bulleted list) that tell the story of the case the way you'd explain it out loud. Make sure the narrative explicitly covers:
 
@@ -5090,224 +5536,68 @@ Before the structured case brief in the next section, give a plain narrative sum
 
 If the opinion doesn't state a date or location, say so rather than guessing. This is the version to read first for a quick, intuitive grasp of the case before working through the structured brief.
 
-# 3. CASE BRIEF
-
-Create a complete case brief using the following structure.
-
-## Case Name
-
-Include:
-- Full case name
-- Court
-- Date
-- Judge/authoring judge if stated
-
-## Document
-
-Name the exact file this case comes from, using its full file name and extension exactly as it appears in the SOURCE: label of the attached material (e.g., "CB pp 87-93.txt", "Lucy v Zehmer.pdf") — not a paraphrase and not the generic "assigned reading." If multiple documents are attached, identify which one this case is drawn from.
-
-## Course
-
-Name the course this reading belongs to, if that's apparent from context.
-
-## Facts
-
-Identify only the legally significant facts.
-
-Include:
-- What happened
-- What the plaintiff did
-- What the defendant did
-- Facts that became important to the court's legal analysis
-- Relevant dates
-- Facts that distinguish this case from the precedent discussed by the court
-
-Do NOT simply reproduce the factual narrative.
-
-Organize the facts chronologically when dates matter.
-
-## Procedural Posture
-
-Explain exactly how the case reached the current court.
-
-Identify:
-
-- What happened in the trial court
-- What motion or ruling was involved
-- Which party won/lost at each stage
-- Whether this is an appeal, interlocutory appeal, petition, etc.
-- What the current court is reviewing
-
-Be especially precise about who is appealing and what decision they are challenging.
-
-## Issue
-
-State the legal issue as a precise question.
-
-Prefer:
-
-"Whether _________."
-
-Do not state the issue as a vague description of the dispute.
-
-If there are multiple issues, identify the primary issue and any secondary issues.
-
-## Holding
-
-State exactly what the court held.
-
-Distinguish the holding from:
-- The facts
-- The parties' arguments
-- Dicta
-- Background law
-
-Give the holding in one or two clear sentences first, then explain it if necessary.
-
-## Rule
-
-This is one of the MOST IMPORTANT sections.
-
-Identify every important legal rule the court uses. State every rule using exactly this format:
-
-**Rule [citation/section, or a short descriptive name if the opinion doesn't cite one]**
-
-- **Source:** Restatement / UCC / case holding / textbook narrative — here this will normally be a case holding (this case or the precedent it relies on); name the case if the opinion identifies one.
-- **Document:** Name the exact file this rule comes from, using its full file name and extension exactly as it appears in the SOURCE: label of the attached material (e.g., "CB pp 87-93.txt", "Lucy v Zehmer.pdf") — not a paraphrase and not the generic "assigned reading."
-- **Statement:** State the rule in one or two sentences. Preserve any qualifying language the opinion uses — don't flatten a qualifier like "materially different" into "different," or otherwise simplify away a distinction the court drew deliberately.
-- **Legal Question:** What legal question does the rule answer?
-- **Requirements:** Break the rule into its component parts. If the opinion states it as a single element rather than a multi-part test, say so rather than forcing it into a list.
-- **Application:** How the rule actually gets used in practice — what question a court or party invokes it to answer, and what triggers reliance on it.
-- **Exceptions:** Anything that narrows the rule, carves out a category, or states when it does not apply. Pull this from concurrences, caveats, or surrounding discussion, not just the black-letter statement.
-
-If the rule comes from precedent, identify the precedent and explain how the current court uses it.
-
-If the court distinguishes between two different standards, make that distinction explicit.
-
-## Reasoning
-
-This is one of the MOST IMPORTANT sections.
-
-Explain the court's reasoning step-by-step.
-
-For each major step:
-
-1. What legal rule did the court identify?
-2. What facts did the court consider?
-3. How did the court connect the facts to the rule?
-4. What conclusion did the court draw?
-5. How did precedent affect the analysis?
-
-Do not merely say "the court applied the rule."
-
-Explain HOW the court applied it.
-
-## Plaintiff's/Appellee's Arguments
-
-- What did this party argue?
-- What rule or interpretation did they rely on?
-- What facts did they emphasize?
-
-## Defendant/Appellant's Arguments
-
-- What did this party argue?
-- What rule or interpretation did they rely on?
-- What facts did they emphasize?
-
-Then explain which argument the court accepted and why.
-
-## Disposition
-
-State exactly what the court did.
-
-Examples:
-
-- Affirmed
-- Reversed
-- Vacated
-- Remanded
-- Granted summary judgment
-- Denied summary judgment
-
-Explain what the disposition means for the parties.
-
-## Importance
-
-Explain why this case appears in the assigned reading and what I should learn from it.
-
-# 4. PROCEDURAL DOCTRINE
-
-If the case involves a procedural doctrine or procedural standard, explain it separately.
-
-For example:
-
-- Summary judgment
-- Pleading
-- Personal jurisdiction
-- Subject-matter jurisdiction
-- Venue
-- Discovery
-- Appealability
-- Statute of limitations
-- Burden shifting
-
-For each procedural doctrine:
-
-- State the rule
-- Explain the standard
-- Identify who bears the burden
-- Explain how the court applies the standard
-- Identify any important limitations or exceptions
-
-Do not assume I already understand the procedural terminology.
-
-# 5. SUBSTANTIVE LEGAL DOCTRINE
-
-Identify the underlying substantive legal doctrine involved in the case.
-
-Explain:
-
-- The governing legal rule
-- Its elements
-- Exceptions
-- Limitations
-- How the procedural issue interacts with the substantive issue
-
-Clearly distinguish substantive law from procedural law when both appear.
-
-# 6. PRECEDENT
+# 4. Case Brief
+
+Create a complete case brief using exactly this format:
+
+<b>Case Name: [full case name, court, date, and authoring judge if stated]</b>
+
+- <b>Document</b>: Name the exact file this case comes from, using its full file name and extension exactly as it appears in the SOURCE: label of the attached material (e.g., CB pp 87-93.txt, Lucy v Zehmer.pdf) — not a paraphrase and not the generic "assigned reading." If multiple documents are attached, identify which one this case is drawn from.
+- <b>Course</b>: Name the course this reading belongs to, if that's apparent from context.
+- <b>Facts</b>
+    - [legally significant fact — what happened, what the plaintiff did, what the defendant did, relevant dates]
+    - [fact that became important to the court's legal analysis]
+    - [fact that distinguishes this case from the precedent discussed by the court]
+    - ...
+- <b>Procedural Posture</b>
+    - [what happened in the trial court, what motion or ruling was involved, which party won or lost]
+    - [what happened at each subsequent court the case was appealed to, in order]
+    - [what the current court is reviewing]
+- <b>Issue</b>: State the legal issue as a precise question (prefer "Whether ___"). If there are multiple issues, identify the primary issue and any secondary issues.
+- <b>Holding</b>: State exactly what the court held, in one or two clear sentences.
+- <b>Rule</b>: State the rule's name/citation followed by its one-sentence statement — e.g., "Restatement (Second) § 39: A counteroffer constitutes a rejection of the original offer and creates a new offer for the original offeror to accept." Do NOT repeat the full Document/Legal Question/Requirements/Application/Exceptions breakdown here — that belongs in the Rules section above, and this rule must appear there in full under this same name/citation (add it there if it isn't already listed).
+- <b>Reasoning</b>: If the court's reasoning is one point, state it directly after the colon. If it proceeds in multiple steps, list them indented beneath this header, explaining for each step what legal rule the court identified, what facts it considered, how it connected the facts to the rule, and what conclusion it drew:
+    - [reasoning step]
+    - ...
+- <b>Plaintiff's/Appellee's Arguments</b>: What did this party argue, and what facts or rule did they rely on? If there's a single argument, state it after the colon; if there are several, list them indented beneath this header:
+    - [argument]
+    - ...
+- <b>Defendant/Appellant's Arguments</b>: Same as above, then explain which argument the court accepted and why.
+    - [argument]
+    - ...
+- <b>Disposition</b>: State exactly what the court did (e.g. affirmed, reversed, vacated, remanded, granted/denied summary judgment) and what it means for the parties.
+- <b>Importance</b>: Explain why this case appears in the assigned reading and what I should learn from it.
+
+Do not end any sentence in this section with a period — the only exception is the Issue, which may end with "?" if phrased as a question.
+
+# 5. Definitions
+
+Identify important legal terms used in the opinion. State each term using exactly this format:
+
+<b>[Term]</b>
+
+- <b>Definition</b>: Give a clear definition.
+- <b>Meaning in this case</b>: Explain what the term means in the context of this opinion.
+- <b>Why it matters</b>: Explain why I should know it.
+
+Include procedural terms, doctrinal terms, and specialized legal terminology. Separate each term from the next with a line containing only three hyphens (---), so each term is a distinct, clearly-bounded block.
+
+Do not end any sentence in this section with a period.
+
+# 6. Precedent
 
 For every prior case that the court relies upon in its reasoning, identify:
 
-### Prior Case Name
+<b>[Prior Case Name]</b>
 
-**Rule from prior case:**
+- <b>Rule from prior case</b>: What rule did that case establish?
+- <b>Relevant facts</b>: What facts mattered in that case?
+- <b>How the current court uses it</b>: Does the current court follow it, apply it, extend it, limit it, distinguish it, or reject an argument based on it?
+- <b>Why it matters here</b>: Explain why the precedent is important to the current court's decision.
 
-What rule did that case establish?
+Do NOT give full case briefs for minor cases that are merely cited in passing. Focus detailed treatment on precedents that actually influence the court's reasoning.
 
-**Relevant facts:**
-
-What facts mattered in that case?
-
-**How the current court uses it:**
-
-Does the current court:
-- Follow it?
-- Apply it?
-- Extend it?
-- Limit it?
-- Distinguish it?
-- Reject an argument based on it?
-
-**Why it matters here:**
-
-Explain why the precedent is important to the current court's decision.
-
-Do NOT give full case briefs for minor cases that are merely cited in passing.
-
-Focus detailed treatment on precedents that actually influence the court's reasoning.
-
-# 7. CASE COMPARISON
+# 7. Case Comparisons
 
 Compare the current case with the important precedent discussed in the opinion.
 
@@ -5326,134 +5616,44 @@ Then explain the most important factual and legal distinction in plain English.
 
 Pay particular attention to whether a factual difference changes the legal result.
 
-# 8. FACTS THAT MATTER
+# 8. Examples and Hypotheticals
 
-Create a section called:
+If the opinion poses or discusses a hypothetical, explain:
 
-"Facts That Actually Mattered to the Court"
+- The facts
+- The legal issue
+- The applicable rule
+- The result
+- Why the example matters
 
-Separate important facts from background facts.
+If useful, create a small number of additional hypothetical examples to illustrate a difficult point in the court's reasoning, but clearly label anything you create yourself with the heading <b>Added Hypothetical (not in the reading)</b>.
 
-For each important fact, explain:
-
-- What the fact was
-- Where it appears in the court's reasoning
-- Why it mattered
-- What might happen if that fact were different
-
-This is extremely important for exam preparation.
-
-# 9. COUNTERFACTUALS / CHANGED FACTS
-
-Identify facts that, if changed, could potentially change the result.
-
-For each one:
-
-**Original fact:**
-...
-
-**Changed fact:**
-...
-
-**Likely effect:**
-...
-
-**Why:**
-...
-
-Only make inferences that are reasonably supported by the court's reasoning.
-
-Clearly label any hypothetical analysis as an inference rather than something the court actually held.
-
-# 10. DEFINITIONS AND TERMINOLOGY
-
-Identify important legal terms used in the opinion.
-
-For each:
-
-**Term**
-
-**Definition:**
-
-Give a clear definition.
-
-**Meaning in this case:**
-
-Explain what the term means in the context of this opinion.
-
-**Why it matters:**
-
-Explain why I should know it.
-
-Include terms such as procedural terms, doctrinal terms, and specialized legal terminology.
-
-# 11. POLICY AND COMPETING ARGUMENTS
+# 9. Policy and Competing Arguments
 
 Identify policy considerations if the court discusses them or if they are clearly relevant to the court's reasoning.
 
 Separate:
 
-**What the court actually says**
+- What the court actually says
+- What is an argument or interpretation
+- What you are inferring
 
-from
+Do not attribute a policy argument to the court unless the opinion actually makes it. For disputed issues, explain the strongest argument on both sides.
 
-**Argument/inference**
-
-Do not attribute a policy argument to the court unless the opinion actually makes it.
-
-For disputed issues, explain the strongest argument on both sides.
-
-# 12. EXAM ANALYSIS
+# 10. Exam Analysis
 
 Explain how this case could appear on a law school exam.
 
-Give me:
-
-### Rule to remember
-
-...
-
-### Facts that should trigger the rule
-
-...
-
-### Analytical steps
-
-1. ...
-2. ...
-3. ...
-4. ...
-
-### Common mistake
-
-...
-
-### Possible exam twist
-
-...
+- <b>Rule to remember</b>: [the rule most likely to be tested]
+- <b>Facts that should trigger the rule</b>: [what fact pattern signals this rule applies]
+- <b>Analytical steps</b>:
+    1. [step 1]
+    2. [step 2]
+    ...
+- <b>Common mistake</b>: [a mistake students commonly make with this material]
+- <b>Possible exam twist</b>: [a variation that would complicate the analysis]
 
 Do not invent an unrelated hypothetical. Base the exam analysis on the legal reasoning actually used by the court.
-
-# 13. WHAT I NEED TO KNOW
-
-End with a section titled exactly:
-
-"What I Need to Know"
-
-Prioritize:
-
-1. The holding
-2. The governing rule
-3. The procedural posture
-4. The important facts
-5. The court's reasoning
-6. The important precedent
-7. The key factual distinction
-8. The important terminology
-9. The strongest argument for each side
-10. How the rule could be tested on an exam
-
-Keep this section concise enough to use as a last-minute study sheet.
 
 Do not open the response with introductory filler ("Sure!", "Here are your notes", "Certainly!", etc.) — start directly with the notes content. Do not refer to yourself as an AI, a language model, or an assistant anywhere in the notes.
 
@@ -5607,25 +5807,34 @@ These are NOT case readings and NOT textbook chapters. Do not create case briefs
 
 The purpose of these notes is to help me quickly understand and remember the legal rules before Contracts class.
 
-## 1. RULES
+FORMATTING: Use <b> to start bold text and </b> to end it (do not use markdown asterisks for bold). Use "-" for every bullet point. A field's own heading (e.g. <b>Rule: ...</b>, <b>[Term]</b>) has no bullet and is not indented. Every subheader beneath it (Source, Document, Statement, Legal Question, Requirements, Application, Exceptions) is bulleted with "-" but is NOT indented. When a subheader has a single value, put that value on the same line right after its colon (e.g. "- Document: CB pp. 68-85"). When a subheader has multiple values as a bulleted or numbered list, put the list on the following lines, indented beneath the subheader, one item per line.
+
+## 1. Rules
 
 For every Restatement section, UCC provision, or other legal rule in the assigned reading, state it using exactly this format:
 
-**Rule [citation/section, or a descriptive name if uncited]**
+<b>Rule: [citation/section, or a descriptive name if uncited]</b>
 
-- **Source:** Restatement / UCC / case holding / textbook narrative — say which, and cite the specific section or provision.
-- **Document:** Name the exact file this rule comes from, using its full file name and extension exactly as it appears in the SOURCE: label of the attached material (e.g., "CB pp 87-93.txt", "Lucy v Zehmer.pdf") — not a paraphrase and not the generic "assigned reading." If multiple documents are attached, identify which one this particular rule is drawn from.
-- **Statement:** State the rule in one or two sentences. Preserve any qualifying language the source uses — don't flatten a qualifier like "materially different" into "different," or otherwise simplify away a distinction the source drew deliberately.
-- **Legal Question:** What legal question does the rule answer?
-- **Requirements:** Break the rule into its component parts. If the source states it as a single element rather than a multi-part test, say so rather than forcing it into a list.
-- **Application:** How the rule actually gets used in practice — what question a court or party invokes it to answer, and what triggers reliance on it.
-- **Exceptions:** Anything that narrows the rule, carves out a category, or states when it does not apply. Pull this from comments, caveats, or surrounding text, not just the black-letter statement.
+- <b>Source</b>: Restatement / UCC / case holding / textbook narrative — say which, and cite the specific section or provision.
+- <b>Document</b>: Name the exact file this rule comes from, using its full file name and extension exactly as it appears in the SOURCE: label of the attached material (e.g., CB pp 87-93.txt, Lucy v Zehmer.pdf) — not a paraphrase and not the generic "assigned reading." If multiple documents are attached, identify which one this particular rule is drawn from.
+- <b>Statement</b>: State the rule in one or two sentences. Preserve any qualifying language the source uses — don't flatten a qualifier like "materially different" into "different," or otherwise simplify away a distinction the source drew deliberately.
+- <b>Legal Question</b>: What legal question does the rule answer?
+- <b>Requirements</b>: If the rule has a single requirement, state it directly after the colon. If it has multiple requirements, list them as a numbered list indented beneath this header:
+    1. [requirement 1]
+    2. [requirement 2]
+    ...
+- <b>Application</b>: How the rule actually gets used in practice — what question a court or party invokes it to answer, and what triggers reliance on it.
+- <b>Exceptions</b>: Anything that narrows the rule, carves out a category, or states when it does not apply. Pull this from comments, caveats, or surrounding text, not just the black-letter statement.
+
+Separate each rule from the next with a line containing only three hyphens (---), so each rule is a distinct, clearly-bounded block.
+
+Do not end any sentence in this section with a period — the only exception is the Legal Question, which may end with "?" if phrased as a question.
 
 Preserve the terminology used by the source.
 
 Do not replace the legal rule with an oversimplified statement that loses important qualifications.
 
-## 2. IMPORTANT DISTINCTIONS
+## 2. Important Distinctions
 
 Identify any distinctions that I need to understand.
 
@@ -5644,35 +5853,30 @@ For each distinction, briefly explain the difference and why it matters.
 
 Only include distinctions actually supported by the assigned reading or necessary to understand the rule.
 
-## 3. EXAMPLES
+## 3. Examples
 
 Give a short, simple hypothetical illustrating each major rule.
 
 Use this format:
 
-**Example:**
+<b>Example</b>: Facts → Application of rule → Result
 
-Facts → Application of rule → Result
-
-Clearly label examples that you create as:
-
-**Added Hypothetical (not in the reading)**
+Clearly label examples that you create as <b>Added Hypothetical (not in the reading)</b>.
 
 Do not create complicated hypotheticals. The purpose is simply to make the rule easier to understand.
 
-## 4. IMPORTANT TERMS
+## 4. Important Terms
 
-Identify important Contracts terminology appearing in the reading.
+Identify important Contracts terminology appearing in the reading. State each term using exactly this format:
 
-For each term:
+<b>[Term]</b>
 
-**Term:**
-**Meaning:**
-**Why it matters:**
+- <b>Meaning</b>: [meaning]
+- <b>Why it matters</b>: [why it matters]
 
-Keep definitions concise.
+Keep definitions concise. Do not end any sentence in this section with a period.
 
-## 5. HOW THE RULES FIT TOGETHER
+## 5. How the Rules Fit Together
 
 Briefly explain how the rules in the assigned reading relate to one another.
 
@@ -5680,11 +5884,9 @@ If one rule qualifies, modifies, or follows from another rule, point that out.
 
 Do NOT force connections that the reading does not support.
 
-## 6. WHAT I NEED TO KNOW
+## 6. What I Need to Know
 
-End with a short section titled:
-
-**What I Need to Know**
+End with a short section titled <b>What I Need to Know</b>.
 
 List the most important things to remember from the reading.
 
@@ -5873,6 +6075,179 @@ function classifyLssAssignment(text){
   return "assignment";
 }
 
+// ---- Manual document-match overrides ----
+// A schedule reading's document-match badge (appendDocMatchBadge etc. below)
+// is normally computed fresh on every render by title/page-range matching
+// against documentsCache. That auto-match is sometimes wrong (two readings
+// whose titles overlap) or simply missing (a document that doesn't follow
+// the page-range filename convention), so right-clicking a badge -- matched
+// OR "No document found" -- lets the user override it by hand: "Remove
+// document" forces "No document found" even if something matches, "Replace
+// document" forces one specific document regardless of what auto-matching
+// would have found. Both are the same override, keyed by the exact (course,
+// identifying text) pair the matching functions themselves already take as
+// arguments -- findLocalCanvasMatches/findLocalPageMatches/
+// findLocalTortsPageMatch/findCanvasDocumentMatches below all check it
+// directly, so this isn't just cosmetic on the badge: the same Notes/
+// Complete buttons that attach a document see the override too, since they
+// call those exact same matching functions. A value of `undefined` (key
+// absent) means no override; `null` means explicitly no document; a string
+// is the id of the document forced onto this reading.
+const DOC_OVERRIDES_KEY = "lawgpt.scheduleDocOverrides";
+let docOverrides = new Map();
+try {
+  const savedDocOverrides = JSON.parse(localStorage.getItem(DOC_OVERRIDES_KEY));
+  if (savedDocOverrides && typeof savedDocOverrides === "object"){
+    Object.entries(savedDocOverrides).forEach(([k, v]) => docOverrides.set(k, v));
+  }
+} catch(e){ /* fall back to no overrides */ }
+
+function persistDocOverrides(){
+  try{
+    const obj = {};
+    docOverrides.forEach((v, k) => { obj[k] = v; });
+    localStorage.setItem(DOC_OVERRIDES_KEY, JSON.stringify(obj));
+  } catch(e){ /* non-critical UI preference */ }
+}
+function docMatchKey(courseCode, identifyingText){
+  return courseCode + "␟" + String(identifyingText || "").trim().toLowerCase();
+}
+function setDocOverride(courseCode, identifyingText, value){
+  docOverrides.set(docMatchKey(courseCode, identifyingText), value);
+  persistDocOverrides();
+}
+// Returns undefined when there's no override (caller should fall back to its
+// normal matching logic), or an array of matched docs (empty when the
+// override is an explicit "no document", one doc when it's a forced
+// replacement) resolved against `pool`.
+function overriddenDocs(courseCode, identifyingText, pool){
+  const key = docMatchKey(courseCode, identifyingText);
+  if (!docOverrides.has(key)) return undefined;
+  const override = docOverrides.get(key);
+  if (override === null) return [];
+  const doc = (pool || documentsCache).find(d => d.id === override);
+  return doc ? [doc] : [];
+}
+
+// Floating "Replace document" / "Remove document" menu shared by every
+// doc-match badge (see appendDocMatchBadge/appendLssDocMatchBadge/
+// appendTortsDocMatchBadge below) -- same show/hide/position idiom as
+// #tableCtxMenu in the editor.
+const scheduleDocCtxMenu = document.getElementById("scheduleDocCtxMenu");
+const scheduleDocCtxRemoveBtn = document.getElementById("scheduleDocCtxRemove");
+let scheduleDocCtxHandlers = null;
+function hideScheduleDocCtxMenu(){
+  scheduleDocCtxMenu.classList.remove("show");
+  scheduleDocCtxHandlers = null;
+}
+function showScheduleDocCtxMenu(x, y, { canRemove, onRemove, onReplace }){
+  scheduleDocCtxHandlers = { onRemove, onReplace };
+  scheduleDocCtxRemoveBtn.style.display = canRemove ? "" : "none";
+  scheduleDocCtxMenu.classList.add("show");
+  const menuRect = scheduleDocCtxMenu.getBoundingClientRect();
+  const left = Math.min(x, window.innerWidth - menuRect.width - 8);
+  const top = Math.min(y, window.innerHeight - menuRect.height - 8);
+  scheduleDocCtxMenu.style.left = Math.max(8, left) + "px";
+  scheduleDocCtxMenu.style.top = Math.max(8, top) + "px";
+}
+document.getElementById("scheduleDocCtxReplace").addEventListener("click", () => {
+  if (scheduleDocCtxHandlers) scheduleDocCtxHandlers.onReplace();
+  hideScheduleDocCtxMenu();
+});
+scheduleDocCtxRemoveBtn.addEventListener("click", () => {
+  if (scheduleDocCtxHandlers) scheduleDocCtxHandlers.onRemove();
+  hideScheduleDocCtxMenu();
+});
+document.addEventListener("click", (e) => {
+  if (scheduleDocCtxMenu.contains(e.target)) return;
+  hideScheduleDocCtxMenu();
+});
+document.addEventListener("scroll", hideScheduleDocCtxMenu, true);
+window.addEventListener("resize", hideScheduleDocCtxMenu);
+
+// Renders a doc-match badge's visible state from a resolved doc list --
+// shared by the initial render in appendDocMatchBadge/appendLssDocMatchBadge/
+// appendTortsDocMatchBadge and by wireDocMatchBadgeMenu's in-place updates
+// after the user removes or replaces the match, so both paths stay in sync.
+function renderDocMatchBadgeContent(badge, matches, missingTitle){
+  const label = matches.length ? matches.map(m => m.title).join("; ") : "No document found";
+  badge.className = "schedule-page-badge " + (matches.length ? "matched" : "missing");
+  badge.textContent = label;
+  badge.title = matches.length ? label : (missingTitle || "No matching document");
+}
+
+// Wires the right-click "Replace document" / "Remove document" menu onto a
+// badge. `getMatches` re-derives the current match list on demand (calling
+// the same override-aware matching function the badge's initial render
+// used), so this always reflects live state rather than a stale closure.
+function wireDocMatchBadgeMenu(badge, courseCode, identifyingText, missingTitle, getMatches){
+  badge.addEventListener("contextmenu", (e) => {
+    e.preventDefault();
+    const current = getMatches();
+    showScheduleDocCtxMenu(e.clientX, e.clientY, {
+      canRemove: current.length > 0,
+      onRemove: () => {
+        setDocOverride(courseCode, identifyingText, null);
+        renderDocMatchBadgeContent(badge, [], missingTitle);
+      },
+      onReplace: () => {
+        openDocumentPicker(courseCode, (doc) => {
+          setDocOverride(courseCode, identifyingText, doc.id);
+          renderDocMatchBadgeContent(badge, [doc], missingTitle);
+        });
+      }
+    });
+  });
+}
+
+// ---- Document picker modal ----
+// Shared by "Replace document" above and the assignment Context modal's
+// "+ Add document" button below -- a simple searchable list scoped to one
+// course's documents (docsForCourse), since every schedule item this is
+// used from is itself scoped to one course.
+let docPickerCourseCode = null;
+let docPickerOnPick = null;
+function openDocumentPicker(courseCode, onPick){
+  docPickerCourseCode = courseCode;
+  docPickerOnPick = onPick;
+  document.getElementById("docPickerSearch").value = "";
+  renderDocPickerList("");
+  document.getElementById("docPickerOverlay").style.display = "flex";
+  document.getElementById("docPickerSearch").focus();
+}
+function closeDocumentPicker(){
+  document.getElementById("docPickerOverlay").style.display = "none";
+  docPickerCourseCode = null;
+  docPickerOnPick = null;
+}
+function renderDocPickerList(query){
+  const list = document.getElementById("docPickerList");
+  list.innerHTML = "";
+  const q = query.trim().toLowerCase();
+  const pool = docsForCourse(docPickerCourseCode, documentsCache).filter(d => !q || d.title.toLowerCase().includes(q));
+  if (!pool.length){
+    const empty = document.createElement("div");
+    empty.className = "doc-picker-empty";
+    empty.textContent = "No documents found.";
+    list.appendChild(empty);
+    return;
+  }
+  pool.forEach(doc => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "doc-picker-item";
+    btn.textContent = doc.title;
+    btn.addEventListener("click", () => {
+      const onPick = docPickerOnPick;
+      closeDocumentPicker();
+      if (onPick) onPick(doc);
+    });
+    list.appendChild(btn);
+  });
+}
+document.getElementById("docPickerSearch").addEventListener("input", (e) => renderDocPickerList(e.target.value));
+document.getElementById("docPickerCloseBtn").addEventListener("click", closeDocumentPicker);
+
 function renderSchedule(){
   const note = document.getElementById("scheduleNote");
   const body = document.getElementById("scheduleBody");
@@ -5940,21 +6315,17 @@ const DOC_MATCH_KINDS = new Set(["case", "textbook", "reading", "restatement", "
 function appendDocMatchBadge(row, kind, text, pagesRaw, courseCode){
   if (!DOC_MATCH_KINDS.has(kind)) return;
 
-  let matches = null;
-  if (kind === "textbook" || kind === "restatement"){
-    const found = findLocalPageMatches(pagesRaw, courseCode);
-    matches = found.length ? found : null;
-  } else {
-    const found = findLocalCanvasMatches(text, courseCode);
-    matches = found.length ? found : null;
-  }
+  // The identifying text overrides/matching are keyed by must be the same
+  // value the matching call uses -- pagesRaw for textbook/restatement (which
+  // match by page range), text otherwise (which match by title).
+  const isPageKind = kind === "textbook" || kind === "restatement";
+  const identifyingText = isPageKind ? pagesRaw : text;
+  const getMatches = () => isPageKind ? findLocalPageMatches(pagesRaw, courseCode) : findLocalCanvasMatches(text, courseCode);
 
-  const label = matches ? matches.map(m => m.title).join("; ") : "No document found";
   const badge = document.createElement("span");
-  badge.className = "schedule-page-badge " + (matches ? "matched" : "missing");
-  badge.textContent = label;
-  badge.title = matches ? label : (pagesRaw ? `Looking for: ${pagesRaw}` : "No matching document");
+  renderDocMatchBadgeContent(badge, getMatches(), pagesRaw ? `Looking for: ${pagesRaw}` : "No matching document");
   row.appendChild(badge);
+  wireDocMatchBadgeMenu(badge, courseCode, identifyingText, pagesRaw ? `Looking for: ${pagesRaw}` : "No matching document", getMatches);
 }
 
 // LSS equivalent: every LSS reading/assignment (BLW textbook pages included
@@ -5964,13 +6335,11 @@ function appendDocMatchBadge(row, kind, text, pagesRaw, courseCode){
 // page-range filename convention for LSS.
 function appendLssDocMatchBadge(row, kind, text, courseCode){
   if (!DOC_MATCH_KINDS.has(kind)) return;
-  const matches = findLocalCanvasMatches(text, courseCode);
-  const label = matches.length ? matches.map(m => m.title).join("; ") : "No document found";
+  const getMatches = () => findLocalCanvasMatches(text, courseCode);
   const badge = document.createElement("span");
-  badge.className = "schedule-page-badge " + (matches.length ? "matched" : "missing");
-  badge.textContent = label;
-  badge.title = label;
+  renderDocMatchBadgeContent(badge, getMatches(), "No matching document");
   row.appendChild(badge);
+  wireDocMatchBadgeMenu(badge, courseCode, text, "No matching document", getMatches);
 }
 
 function renderCivProSchedule(body){
@@ -6089,11 +6458,14 @@ function renderContractsSchedule(body){
   });
 }
 
-// One card per week (see TORTS_SCHEDULE): a "Textbook" kind badge, plus the
-// week's own page range as a second badge -- shown directly rather than via
-// appendDocMatchBadge's file lookup, since there's no per-reading file
-// naming convention for Torts to match against yet (only the syllabus
-// itself is in documents/torts/).
+// One card per week (see TORTS_SCHEDULE). Unlike CivPro/Contracts, a single
+// Torts reading's "pages" field can carry several semicolon-separated page
+// ranges (e.g. "pp. 40-88; 114-142") because the professor assigns multiple
+// non-contiguous chunks for one week -- each range is saved to documents/
+// torts/ as its own file. So instead of one appendDocMatchBadge pill/button
+// per reading (which would either attach every range's text to one prompt,
+// or only the first), Torts gets one matched/missing pill and one Notes
+// button per range -- see splitTortsPageTokens/appendTortsDocMatchBadge.
 function renderTortsSchedule(body){
   body.innerHTML = "";
   TORTS_SCHEDULE.forEach(cls => {
@@ -6117,33 +6489,49 @@ function renderTortsSchedule(body){
     card.appendChild(head);
 
     cls.readings.forEach(r => {
-      const row = document.createElement("div");
-      row.className = "schedule-reading-row";
+      const textRow = document.createElement("div");
+      textRow.className = "schedule-reading-row";
 
       const text = document.createElement("div");
       text.className = "schedule-reading-text";
       text.textContent = r.text;
-      row.appendChild(text);
+      textRow.appendChild(text);
+      card.appendChild(textRow);
 
       const kind = classifyTortsReading(r.text, r.pages);
-      appendKindBadge(row, kind);
-      if (r.pages){
+
+      if (kind === "textbook"){
+        // One row per page range, not one crowded row for the whole
+        // reading -- each range is its own file/button, so each gets its
+        // own "Textbook [range] Notes" line underneath the reading text.
+        splitTortsPageTokens(r.pages).forEach(token => {
+          const rangeRow = document.createElement("div");
+          rangeRow.className = "schedule-reading-row";
+          appendKindBadge(rangeRow, kind);
+          appendTortsDocMatchBadge(rangeRow, token);
+
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "schedule-notes-btn";
+          btn.textContent = "Notes";
+          btn.addEventListener("click", (e) => generateTortsNotes(cls, r, token, e.currentTarget));
+          rangeRow.appendChild(btn);
+
+          card.appendChild(rangeRow);
+        });
+      } else if (r.pages){
+        // Non-textbook Torts readings (none exist yet, but kept for
+        // whatever isn't a "pp. ..." citation) still get a plain page badge
+        // -- there's no file-matching convention for them to mirror.
+        const pagesRow = document.createElement("div");
+        pagesRow.className = "schedule-reading-row";
+        appendKindBadge(pagesRow, kind);
         const pagesBadge = document.createElement("span");
         pagesBadge.className = "schedule-page-badge";
         pagesBadge.textContent = r.pages;
-        row.appendChild(pagesBadge);
+        pagesRow.appendChild(pagesBadge);
+        card.appendChild(pagesRow);
       }
-
-      if (kind === "textbook"){
-        const btn = document.createElement("button");
-        btn.type = "button";
-        btn.className = "schedule-notes-btn";
-        btn.textContent = "Notes";
-        btn.addEventListener("click", (e) => generateTortsNotes(cls, r, kind, e.currentTarget));
-        row.appendChild(btn);
-      }
-
-      card.appendChild(row);
     });
 
     body.appendChild(card);
@@ -6338,14 +6726,20 @@ async function findCanvasDocumentMatches(queryText, courseCode){
   } catch(e){
     return []; // proxy not reachable
   }
-  return findDocumentMatches(queryText, docsForCourse(courseCode, docs));
+  const scoped = docsForCourse(courseCode, docs);
+  const override = overriddenDocs(courseCode, queryText, scoped);
+  if (override !== undefined) return override;
+  return findDocumentMatches(queryText, scoped);
 }
 
 // Synchronous counterpart used for schedule pills — matches against
 // whatever's already in documentsCache instead of firing a network request
 // per row (see refreshDocumentsCacheQuietly, which keeps that cache warm).
 function findLocalCanvasMatches(queryText, courseCode){
-  return findDocumentMatches(queryText, docsForCourse(courseCode, documentsCache));
+  const scoped = docsForCourse(courseCode, documentsCache);
+  const override = overriddenDocs(courseCode, queryText, scoped);
+  if (override !== undefined) return override;
+  return findDocumentMatches(queryText, scoped);
 }
 
 async function fetchCanvasDocumentText(id){
@@ -6393,10 +6787,12 @@ function normalizePageToken(str){
 }
 
 function findLocalPageMatches(pagesStr, courseCode){
+  const pool = docsForCourse(courseCode, documentsCache);
+  const override = overriddenDocs(courseCode, pagesStr, pool);
+  if (override !== undefined) return override;
   const tokens = String(pagesStr || "").split(/;\s*/).map(normalizePageToken).filter(Boolean);
   if (!tokens.length) return [];
 
-  const pool = docsForCourse(courseCode, documentsCache);
   const matches = [];
   for (const token of tokens){
     const doc = pool.find(d => normalizePageToken(d.title) === token);
@@ -6414,17 +6810,31 @@ function normalizeTortsPageToken(str){
   return normalizePageToken(str).replace(/^pp\.?/i, "");
 }
 
-function findLocalTortsPageMatches(pagesStr){
-  const tokens = String(pagesStr || "").split(/;\s*/).map(normalizeTortsPageToken).filter(Boolean);
-  if (!tokens.length) return [];
+// Splits a Torts "pages" field ("pp. 40-88; 114-142") into its individual,
+// normalized range tokens ("40-88", "114-142") -- one per file/button/badge.
+function splitTortsPageTokens(pagesStr){
+  return String(pagesStr || "").split(/;\s*/).map(normalizeTortsPageToken).filter(Boolean);
+}
 
+function findLocalTortsPageMatch(token){
   const pool = docsForCourse("torts", documentsCache);
-  const matches = [];
-  for (const token of tokens){
-    const doc = pool.find(d => normalizeTortsPageToken(d.title) === token);
-    if (doc) matches.push(doc);
-  }
-  return matches;
+  const override = overriddenDocs("torts", token, pool);
+  if (override !== undefined) return override[0] || null;
+  return pool.find(d => normalizeTortsPageToken(d.title) === token) || null;
+}
+
+// Torts equivalent of appendDocMatchBadge, scoped to a single page-range
+// token rather than a whole reading -- see splitTortsPageTokens above for
+// why Torts needs one pill (and one Notes button) per range.
+function appendTortsDocMatchBadge(row, token){
+  const getMatches = () => { const doc = findLocalTortsPageMatch(token); return doc ? [doc] : []; };
+  const missingTitle = `Looking for: pp. ${token}`;
+  const badge = document.createElement("span");
+  const matches = getMatches();
+  renderDocMatchBadgeContent(badge, matches, missingTitle);
+  row.appendChild(badge);
+  wireDocMatchBadgeMenu(badge, "torts", token, missingTitle, getMatches);
+  return matches[0] || null;
 }
 
 function generateCivProNotes(cls, reading, kind, btn){
@@ -6521,7 +6931,12 @@ function generateContractsNotes(cls, reading, kind, btn){
   run();
 }
 
-function generateTortsNotes(cls, reading, kind, btn){
+// token is a single normalized page range (e.g. "40-88") out of reading's
+// possibly-multiple semicolon-separated ranges -- see splitTortsPageTokens.
+// Each range gets its own button/report/attachment rather than bundling
+// every range in reading.pages into one prompt, since each range is its own
+// file under documents/torts/ covering a distinct chunk of the casebook.
+function generateTortsNotes(cls, reading, token, btn){
   const classHeader = cls.classLabel + (cls.topic ? " — " + cls.topic : "");
 
   const generalFallback = `Using your general knowledge of the topics and cases in the syllabus outline above (if you recognize them) and the surrounding context of a 1L Torts course, draft a short reading note I can use before class:\n1. A brief summary of what this reading likely covers and why it's assigned at this point in the course.\n2. The key doctrinal point(s) a student should be able to state afterward.\n3. 3-5 questions to test myself against once I've actually done the reading.\n\nBe explicit about your confidence level, and flag anything you're not sure about, since I haven't given you the actual reading. Do not open the response with introductory filler ("Sure!", "Here are your notes", etc.) — start directly with the content. Do not refer to yourself as an AI, a language model, or an assistant.`;
@@ -6531,13 +6946,13 @@ function generateTortsNotes(cls, reading, kind, btn){
     let instructions;
     let documentIds = [];
 
-    const matches = findLocalTortsPageMatches(reading.pages);
-    if (matches.length){
-      documentIds = matches.map(m => m.id);
-      sourceNote = `The assigned pages are Christie, et al., Cases and Materials on The Law of Torts, 6th ed., ${reading.pages}. The reading text for ${matches.length > 1 ? "these page ranges is" : "this page range is"} attached below in full.`;
+    const doc = findLocalTortsPageMatch(token);
+    if (doc){
+      documentIds = [doc.id];
+      sourceNote = `The assigned pages are Christie, et al., Cases and Materials on The Law of Torts, 6th ed., pp. ${token}. The reading text for this page range is attached below in full.`;
       instructions = getNotesPrompt("textbook");
     } else {
-      sourceNote = `The assigned pages are Christie, et al., Cases and Materials on The Law of Torts, 6th ed., ${reading.pages}. I couldn't find a local file matching this page range in the documents/torts folder, so I don't have the text of those pages loaded, and you won't either.`;
+      sourceNote = `The assigned pages are Christie, et al., Cases and Materials on The Law of Torts, 6th ed., pp. ${token}. I couldn't find a local file matching this page range in the documents/torts folder, so I don't have the text of those pages loaded, and you won't either.`;
       instructions = generalFallback;
     }
 
@@ -6547,7 +6962,9 @@ function generateTortsNotes(cls, reading, kind, btn){
     // is what fixes a real failure mode: given only the attached pages, the
     // model would brief whichever case it happened to notice first (e.g.
     // Robertson v. Rochester Box) and stop, silently skipping the rest of
-    // the week's cases even though they're in the same attached reading.
+    // the week's cases even though they're in the same attached reading. The
+    // outline covers the whole week, not just this one range, so the model
+    // is told to only brief what's actually in the attached pages below.
     const prompt = `I'm prepping for Torts, ${classHeader}.\n\n` +
       `Syllabus outline for this week (the topics and cases this assignment is organized around):\n${reading.text}\n\n` +
       `${sourceNote}\n\n` +
@@ -6556,7 +6973,7 @@ function generateTortsNotes(cls, reading, kind, btn){
     await generateReadingReport({
       course: "torts",
       classLabel: cls.classLabel,
-      title: cls.topic || reading.text,
+      title: (cls.topic || reading.text) + ` (pp. ${token})`,
       prompt,
       documentIds,
       btn
@@ -6612,56 +7029,162 @@ function generateLSSNotes(cls, assignment, kind, btn){
 // next to the button, for material the assignment references but that
 // wouldn't fuzzy-match the assignment text itself (e.g. a client email a
 // case-briefing assignment depends on).
-function appendCompleteButton(row, cls, text, courseCode){
-  const select = document.createElement("select");
-  select.className = "schedule-attach-select";
-  select.title = "Optionally attach another document from this course as extra context";
+// ---- Assignment context ----
+// Per-assignment saved context: any number of extra documents plus a free-
+// text prompt, edited via the "Context" modal and sent alongside the
+// assignment's own auto-matched document (if any) when Complete runs. Keyed
+// the same way doc overrides are (course + the assignment's own text), and
+// persisted the same way, since both are per-schedule-item state that needs
+// to survive a reload.
+const ASSIGNMENT_CONTEXT_KEY = "lawgpt.assignmentContext";
+let assignmentContextStore = new Map();
+try {
+  const savedContext = JSON.parse(localStorage.getItem(ASSIGNMENT_CONTEXT_KEY));
+  if (savedContext && typeof savedContext === "object"){
+    Object.entries(savedContext).forEach(([k, v]) => assignmentContextStore.set(k, v));
+  }
+} catch(e){ /* fall back to no saved context */ }
 
-  const noneOpt = document.createElement("option");
-  noneOpt.value = "";
-  noneOpt.textContent = "+ Attach context doc";
-  select.appendChild(noneOpt);
+function persistAssignmentContext(){
+  try{
+    const obj = {};
+    assignmentContextStore.forEach((v, k) => { obj[k] = v; });
+    localStorage.setItem(ASSIGNMENT_CONTEXT_KEY, JSON.stringify(obj));
+  } catch(e){ /* non-critical UI preference */ }
+}
+function getAssignmentContext(courseCode, text){
+  const saved = assignmentContextStore.get(docMatchKey(courseCode, text));
+  return saved ? { documentIds: saved.documentIds || [], prompt: saved.prompt || "" } : { documentIds: [], prompt: "" };
+}
+function hasAssignmentContext(courseCode, text){
+  const ctx = getAssignmentContext(courseCode, text);
+  return ctx.documentIds.length > 0 || Boolean(ctx.prompt.trim());
+}
 
-  docsForCourse(courseCode, documentsCache).forEach(doc => {
-    const opt = document.createElement("option");
-    opt.value = doc.id;
-    opt.textContent = doc.title;
-    select.appendChild(opt);
+// In-memory draft while the Context modal is open -- only written back to
+// assignmentContextStore (and localStorage) on Save, so Close discards
+// unsaved edits.
+let contextModalCourseCode = null;
+let contextModalText = null;
+let contextModalDraft = null;
+let contextModalOnSaved = null;
+
+function openAssignmentContextModal(courseCode, text, onSaved){
+  contextModalCourseCode = courseCode;
+  contextModalText = text;
+  contextModalOnSaved = onSaved;
+  const saved = getAssignmentContext(courseCode, text);
+  contextModalDraft = { documentIds: saved.documentIds.slice(), prompt: saved.prompt };
+  document.getElementById("assignmentContextPromptTextarea").value = contextModalDraft.prompt;
+  renderAssignmentContextDocList();
+  document.getElementById("assignmentContextOverlay").style.display = "flex";
+}
+function closeAssignmentContextModal(){
+  document.getElementById("assignmentContextOverlay").style.display = "none";
+  contextModalCourseCode = null;
+  contextModalText = null;
+  contextModalDraft = null;
+  contextModalOnSaved = null;
+}
+function renderAssignmentContextDocList(){
+  const list = document.getElementById("assignmentContextDocList");
+  list.innerHTML = "";
+  if (!contextModalDraft.documentIds.length){
+    const empty = document.createElement("div");
+    empty.className = "context-doc-empty";
+    empty.textContent = "No context documents added yet.";
+    list.appendChild(empty);
+  }
+  contextModalDraft.documentIds.forEach(id => {
+    const doc = documentsCache.find(d => d.id === id);
+    const row = document.createElement("div");
+    row.className = "context-doc-item";
+    const label = document.createElement("span");
+    label.textContent = doc ? doc.title : "(document no longer available)";
+    row.appendChild(label);
+    const removeBtn = document.createElement("button");
+    removeBtn.type = "button";
+    removeBtn.className = "context-doc-remove";
+    removeBtn.textContent = "×";
+    removeBtn.title = "Remove this context document";
+    removeBtn.addEventListener("click", () => {
+      contextModalDraft.documentIds = contextModalDraft.documentIds.filter(x => x !== id);
+      renderAssignmentContextDocList();
+    });
+    row.appendChild(removeBtn);
+    list.appendChild(row);
   });
-  row.appendChild(select);
+}
+document.getElementById("assignmentContextAddDocBtn").addEventListener("click", () => {
+  openDocumentPicker(contextModalCourseCode, (doc) => {
+    if (!contextModalDraft.documentIds.includes(doc.id)) contextModalDraft.documentIds.push(doc.id);
+    renderAssignmentContextDocList();
+  });
+});
+document.getElementById("assignmentContextSaveBtn").addEventListener("click", () => {
+  contextModalDraft.prompt = document.getElementById("assignmentContextPromptTextarea").value;
+  assignmentContextStore.set(docMatchKey(contextModalCourseCode, contextModalText), {
+    documentIds: contextModalDraft.documentIds.slice(),
+    prompt: contextModalDraft.prompt
+  });
+  persistAssignmentContext();
+  if (contextModalOnSaved) contextModalOnSaved();
+  closeAssignmentContextModal();
+});
+document.getElementById("assignmentContextCloseBtn").addEventListener("click", closeAssignmentContextModal);
+
+function appendCompleteButton(row, cls, text, courseCode){
+  const contextBtn = document.createElement("button");
+  contextBtn.type = "button";
+  contextBtn.className = "schedule-notes-btn schedule-context-btn";
+  contextBtn.title = "Add context documents or notes for this assignment";
+  const refreshContextBtn = () => {
+    const has = hasAssignmentContext(courseCode, text);
+    contextBtn.textContent = "Context";
+    contextBtn.classList.toggle("has-context", has);
+  };
+  refreshContextBtn();
+  contextBtn.addEventListener("click", () => openAssignmentContextModal(courseCode, text, refreshContextBtn));
+  row.appendChild(contextBtn);
 
   const btn = document.createElement("button");
   btn.type = "button";
   btn.className = "schedule-notes-btn";
   btn.textContent = "Complete";
-  btn.addEventListener("click", (e) => completeAssignment(cls, text, courseCode, select.value || null, e.currentTarget));
+  btn.addEventListener("click", (e) => completeAssignment(cls, text, courseCode, e.currentTarget));
   row.appendChild(btn);
 }
 
-function completeAssignment(cls, text, courseCode, extraDocId, btn){
+function completeAssignment(cls, text, courseCode, btn){
   const classHeader = cls.classLabel + (cls.date ? " (" + cls.date + ")" : "") + (cls.topic ? " — " + cls.topic : "");
   const courseLabel = courseCode === "civpro" ? "Civil Procedure" : courseCode === "contracts" ? "Contracts" : courseCode === "torts" ? "Torts" : "Lawyering Skills & Strategies";
 
   const run = async () => {
     const founds = await lookupCanvasMatches(btn, text, courseCode, "Complete");
     const attached = founds.slice();
+    const originalCount = attached.length;
 
-    if (extraDocId && !attached.some(f => f.id === extraDocId)){
-      const extraDoc = documentsCache.find(d => d.id === extraDocId);
-      if (extraDoc){
-        const extraText = await fetchCanvasDocumentText(extraDocId);
-        if (extraText) attached.push({ id: extraDoc.id, title: extraDoc.title, text: extraText });
-      }
+    const context = getAssignmentContext(courseCode, text);
+    for (const docId of context.documentIds){
+      if (attached.some(a => a.id === docId)) continue;
+      const doc = documentsCache.find(d => d.id === docId);
+      if (!doc) continue;
+      const docText = await fetchCanvasDocumentText(docId);
+      if (docText) attached.push({ id: doc.id, title: doc.title, text: docText });
     }
 
     let sourceNote;
     if (attached.length){
-      sourceNote = `Attached: ${attached.map(a => `"${a.title}"`).join(", ")}. The first is the assignment's own instructions/context (matched by the assignment text); any others are additional context I chose to attach.`;
+      sourceNote = originalCount
+        ? `Attached: ${attached.map(a => `"${a.title}"`).join(", ")}. The first ${originalCount > 1 ? `${originalCount} are` : "is"} the assignment's own instructions/context (matched by the assignment text); any others are context document(s) I chose to attach.`
+        : `Attached: ${attached.map(a => `"${a.title}"`).join(", ")}. I couldn't find the assignment's own instructions among the imported materials, so these are context document(s) I chose to attach instead.`;
     } else {
       sourceNote = `I couldn't find a matching document for this assignment among the materials imported into this app, and didn't attach a context document manually either, so you don't have the actual instructions or context text — only this one line from the schedule.`;
     }
 
-    const prompt = `I'm working on an assignment for ${courseLabel}, ${classHeader}. Here is the assignment line from the schedule:\n\n"${text}"\n\n${sourceNote}\n\n${getNotesPrompt("assignment")}`;
+    const contextPromptText = context.prompt.trim() ? `\n\nAdditional context from me:\n${context.prompt.trim()}` : "";
+
+    const prompt = `I'm working on an assignment for ${courseLabel}, ${classHeader}. Here is the assignment line from the schedule:\n\n"${text}"\n\n${sourceNote}${contextPromptText}\n\n${getNotesPrompt("assignment")}`;
 
     await generateReadingReport({
       course: courseCode,
@@ -8488,27 +9011,25 @@ function reflowPagesNow(){
   let pages = getPages();
   if (!pages.length) return;
 
-  // Save the caret (by DOM node reference) so it can be restored after nodes
-  // are reparented between pages — Range boundaries follow the node, not a
-  // tree position, so this survives being moved (not cloned) to a new parent.
-  const sel = window.getSelection();
-  let caret = null;
-  if (sel && sel.rangeCount && container.contains(sel.anchorNode)){
-    caret = { a: sel.anchorNode, ao: sel.anchorOffset, f: sel.focusNode, fo: sel.focusOffset };
-  }
+  // Deliberately NOT saving/restoring the caret around the reparenting below.
+  // A Selection Range's boundaries are (node, offset) pairs that track the
+  // node itself -- moving a node to a new parent via appendChild/insertBefore
+  // (as pages 1-2 below do) does not invalidate an existing Range/Selection
+  // pointing into it; the caret just silently ends up on whichever page the
+  // node now lives on, with no extra work needed. A previous version of this
+  // function re-applied the selection with sel.addRange() whenever anything
+  // moved, meaning to "restore" the caret -- but the caret was never actually
+  // lost, so that call was pure redundancy, and it's an expensive one:
+  // addRange() makes the browser re-run its scroll-selection-into-view
+  // logic. Since step 2 below (pulling content back from later pages) finds
+  // *something* to move on nearly every reflow of any multi-page document
+  // (almost no page is ever pixel-perfectly full), that redundant addRange()
+  // was firing on nearly every keystroke, including Enter -- which is what
+  // was actually forcing the scroll position to "jump", even while typing
+  // at the top of a page nowhere near the moved content.
 
   const MAX_ITER = 50000;
   let iter = 0;
-  // Whether any node actually got reparented/removed below -- the common
-  // case (typing well within a page, including pressing Enter) touches
-  // nothing here. Re-applying the selection when nothing moved is not just
-  // pointless, it's actively harmful: calling addRange() makes the browser
-  // re-run its scroll-selection-into-view logic, which after a fresh Enter
-  // (a new block just appeared) tends to nudge the scroll position down
-  // even though the caret never left the viewport -- the page visibly
-  // "jumps" on every Enter press. Only touching the selection when a page
-  // boundary actually moved content keeps that jump from happening.
-  let changed = false;
 
   // 1. Push overflowing trailing content forward onto later pages.
   for (let i = 0; i < pages.length && iter < MAX_ITER; i++){
@@ -8523,7 +9044,6 @@ function reflowPagesNow(){
         pages.push(next);
       }
       next.insertBefore(last, next.firstChild);
-      changed = true;
     }
   }
 
@@ -8540,7 +9060,6 @@ function reflowPagesNow(){
         next.insertBefore(first, next.firstChild);
         break;
       }
-      changed = true;
     }
   }
 
@@ -8549,21 +9068,11 @@ function reflowPagesNow(){
   for (let i = pages.length - 1; i > 0; i--){
     const p = pages[i];
     const onlyEmptyBr = p.childNodes.length === 1 && p.firstChild.nodeType === 1 && p.firstChild.tagName === "BR";
-    if (p.childNodes.length === 0 || onlyEmptyBr){ p.remove(); changed = true; } else break;
+    if (p.childNodes.length === 0 || onlyEmptyBr) p.remove(); else break;
   }
 
   renumberPages();
   updateDocPlaceholder();
-
-  if (changed && caret && document.contains(caret.a)){
-    try{
-      const range = document.createRange();
-      range.setStart(caret.a, caret.ao);
-      range.setEnd(caret.f || caret.a, caret.fo != null ? caret.fo : caret.ao);
-      sel.removeAllRanges();
-      sel.addRange(range);
-    } catch(e){ /* best-effort caret restore only */ }
-  }
 }
 
 function updateDocPlaceholder(){
@@ -8818,6 +9327,46 @@ getPagesContainer().addEventListener("keydown", (e) => {
   if (!sel || !sel.rangeCount || !sel.isCollapsed) return;
   const range = sel.getRangeAt(0);
 
+  if (e.key === "Enter"){
+    // Word never scrolls the view when the cursor's new position is going
+    // to be visible anyway -- it only scrolls when the cursor would
+    // otherwise land off-screen. Left alone, the browser's native
+    // scroll-into-view for a freshly-created line can be far more
+    // aggressive than that (reflowPagesNow's own comment covers one now-
+    // fixed cause of this; this guards the general case regardless of what
+    // triggers it). Rather than trying to prevent the native Enter action
+    // and reimplement it, let it run, then next frame -- after any
+    // browser-driven scrolling has already happened -- undo that scroll if
+    // the new caret position would still have been fully visible without
+    // it, i.e. the scroll wasn't actually needed.
+    const scroller = document.querySelector(".doc-page-wrap");
+    if (scroller){
+      const beforeTop = scroller.scrollTop;
+      requestAnimationFrame(() => {
+        const afterTop = scroller.scrollTop;
+        if (afterTop === beforeTop) return;
+        const sel2 = window.getSelection();
+        if (!sel2 || !sel2.rangeCount) return;
+        const caretRange = sel2.getRangeAt(0);
+        const caretRect = caretRange.getClientRects()[0] || caretRange.getBoundingClientRect();
+        if (!caretRect || caretRect.height === 0) return;
+        const wrapRect = scroller.getBoundingClientRect();
+        // caretRect is measured post-scroll. Scrolling scrollTop back down
+        // to beforeTop moves the viewport back up by this same delta, which
+        // moves everything's on-screen position DOWN by delta (not up) --
+        // so reverting adds delta to the caret's current viewport position,
+        // it doesn't subtract it.
+        const delta = afterTop - beforeTop;
+        const wouldBeTop = caretRect.top + delta;
+        const wouldBeBottom = caretRect.bottom + delta;
+        if (wouldBeTop >= wrapRect.top && wouldBeBottom <= wrapRect.bottom){
+          scroller.scrollTop = beforeTop;
+        }
+      });
+    }
+    return;
+  }
+
   if (e.key === "Tab"){
     // Only take over Tab when the caret is inside a list item -- nest/un-nest
     // that bullet the way Word does. Outside a list, leave Tab alone (its
@@ -8851,8 +9400,47 @@ getPagesContainer().addEventListener("keydown", (e) => {
     document.execCommand("insertUnorderedList", false, null);
     syncToolbarState();
     schedulePageReflow();
+    return;
+  }
+
+  if (e.key === "Backspace"){
+    // Guards against a real browser quirk, not our own pagination code:
+    // .doc-page divs are plain block-level children of the single
+    // #docPages editing host (see the comment above getFocusedPage), not
+    // separate editing roots the browser specially protects. When the
+    // caret is at the absolute start of the document -- nothing at all
+    // before it, not even an empty paragraph -- and Backspace runs its
+    // default action, the browser tries to merge the current block
+    // backward into "whatever precedes it"; finding nothing, it can just
+    // delete the enclosing block itself, which for us means the entire
+    // first .doc-page div (border, shadow, "Page 1" footer and all)
+    // vanishes. Word does nothing when you backspace at the very start of
+    // a document, so match that: block it outright rather than letting
+    // the browser improvise. Backspacing at the start of page 2+ is left
+    // alone -- that's a normal cross-page merge, not this bug.
+    const node = range.startContainer;
+    const startEl = node.nodeType === Node.TEXT_NODE ? node.parentElement : node;
+    const page = startEl && startEl.closest && startEl.closest(".doc-page");
+    if (page && getPages()[0] === page && isCollapsedAtPageStart(range, page)){
+      e.preventDefault();
+    }
   }
 });
+
+// True if `range` (collapsed) sits at the very first possible caret
+// position inside `page` -- offset 0, and no earlier sibling at any level
+// between the caret and the page itself. Content-type-agnostic (works the
+// same for text, a leading <br>, an empty <p>, a list, etc.) since it just
+// walks the DOM structure rather than inspecting text content.
+function isCollapsedAtPageStart(range, page){
+  if (range.startOffset !== 0) return false;
+  let node = range.startContainer;
+  while (node && node !== page){
+    if (node.previousSibling) return false;
+    node = node.parentNode;
+  }
+  return node === page;
+}
 
 // ---- Font color ----
 const fontColorInput = document.getElementById("fontColorInput");

@@ -1,0 +1,198 @@
+192
+Twiqbal
+On the list of the greatest portmanteaus of the twenty-first century, Twiqbal deserves a place on the list alongside Brexit and chillax. When Bell Atlantic v. Twombly was handed down in May 2007, it came as a shock to the bench and bar alike and led to an uproar among lawyers and academics, who saw it as a stark break with long-standing pleading practice. Ferocious debate only intensified when, almost exactly two years later, the Supreme Court decided Ashcroft v. Iqbal. Today, Twombly is one of the most-cited cases in history, with Iqbal close behind.
+
+Bell Atlantic Corporation v. Twombly
+_________________________
+
+550 U.S. 544 (2007)
+
+[SOUTER, J., delivered the opinion of the Court, in which ROBERTS, C. J., and SCALIA, KENNEDY, THOMAS, BREYER, and ALITO, JJ., joined.]
+
+Liability under § 1 of the Sherman Act, 15 U.S.C. § 1, requires a “contract, combination …, or conspiracy, in restraint of trade or commerce.” The question in this putative class action is whether a § 1 complaint can survive a motion to dismiss when it alleges that major telecommunications providers engaged in certain parallel conduct unfavorable to competition, absent some factual context suggesting agreement, as distinct from identical, independent action. We hold that such a complaint should be dismissed.
+
+I
+
+The upshot of the 1984 divestiture of the American Telephone & Telegraph Company’s (AT & T) local telephone business was a system of regional service monopolies (variously called “Regional Bell Operating Companies,” “Baby Bells,” or “Incumbent Local Exchange Carriers” (ILECs)), and a separate, competitive market for long-distance service from which the ILECs were excluded. More than a decade later, Congress withdrew approval of the ILECs’ monopolies by enacting the Telecommunications Act of 1996 (1996 Act), which “fundamentally restructure[d] local telephone markets” and “subject[ed] [ILECs] to a host of duties intended to facilitate market entry.” In recompense, the 1996 Act set conditions for authorizing ILECs to enter the long-distance market.
+
+193
+“Central to the [new] scheme [was each ILEC’s] obligation … to share its network with competitors,” which came to be known as “competitive local exchange carriers” (CLECs). * * *
+
+Respondents William Twombly and Lawrence Marcus (hereinafter plaintiffs) represent a putative class consisting of all “subscribers of local telephone and/or high speed internet services … from February 8, 1996 to present.” Amended Complaint (“Complaint”) ¶ 53. In this action against petitioners, a group of ILECs,1 plaintiffs seek treble damages and declaratory and injunctive relief for claimed violations of § 1 of the Sherman Act, 15 U.S.C. § 1, which prohibits “[e]very contract, combination in the form of trust or otherwise, or conspiracy, in restraint of trade or commerce among the several States, or with foreign nations.”
+
+The complaint alleges that the ILECs conspired to restrain trade in two ways, each supposedly inflating charges for local telephone and high-speed Internet services. Plaintiffs say, first, that the ILECs “engaged in parallel conduct” in their respective service areas to inhibit the growth of upstart CLECs. Complaint ¶ 47. Their actions allegedly included making unfair agreements with the CLECs for access to ILEC networks, providing inferior connections to the networks, overcharging, and billing in ways designed to sabotage the CLECs’ relations with their own customers. According to the complaint, the ILECs’ “compelling common motivatio[n]” to thwart the CLECs’ competitive efforts naturally led them to form a conspiracy; “[h]ad any one [ILEC] not sought to prevent CLECs … from competing effectively …, the resulting greater competitive inroads into that [ILEC’s] territory would have revealed the degree to which competitive entry by CLECs would have been successful in the other territories in the absence of such conduct.” Id., ¶ 50.
+
+Second, the complaint charges agreements by the ILECs to refrain from competing against one another. These are to be inferred from the ILECs’ common failure “meaningfully [to] pursu[e]” “attractive business opportunit[ies]” in contiguous markets where they possessed “substantial competitive advantages,” id., ¶¶ 40–41, and from a statement of Richard Notebaert, chief executive officer (CEO) of the ILEC Qwest, that competing in the territory of another
+194
+ILEC “ ‘might be a good way to turn a quick dollar but that doesn’t make it right,’ ” id., ¶ 42.
+
+The complaint couches its ultimate allegations this way:
+
+“In the absence of any meaningful competition between the [ILECs] in one another’s markets, and in light of the parallel course of conduct that each engaged in to prevent competition from CLECs within their respective local telephone and/or high speed internet services markets and the other facts and market circumstances alleged above, Plaintiffs allege upon information and belief that [the ILECs] have entered into a contract, combination or conspiracy to prevent competitive entry in their respective local telephone and/or high speed internet services markets and have agreed not to compete with one another and otherwise allocated customers and markets to one another.” Id., ¶ 51.
+
+The United States District Court for the Southern District of New York dismissed the complaint for failure to state a claim upon which relief can be granted. The District Court acknowledged that “plaintiffs may allege a conspiracy by citing instances of parallel business behavior that suggest an agreement,” but emphasized that “while ‘[c]ircumstantial evidence of consciously parallel behavior may have made heavy inroads into the traditional judicial attitude toward conspiracy[, …] “conscious parallelism” has not yet read conspiracy out of the Sherman Act entirely.’ ” Thus, the District Court understood that allegations of parallel business conduct, taken alone, do not state a claim under § 1; plaintiffs must allege additional facts that “ten[d] to exclude independent self-interested conduct as an explanation for defendants’ parallel behavior.” The District Court found plaintiffs’ allegations of parallel ILEC actions to discourage competition inadequate because “the behavior of each ILEC in resisting the incursion of CLECs is fully explained by the ILEC’s own interests in defending its individual territory.” As to the ILECs’ supposed agreement against competing with each other, the District Court found that the complaint does not “alleg[e] facts … suggesting that refraining from competing in other territories as CLECs was contrary to [the ILECs’] apparent economic interests, and consequently [does] not rais[e] an inference that [the ILECs’] actions were the result of a conspiracy.”
+
+The Court of Appeals for the Second Circuit reversed * * * .
+195
+We granted certiorari to address the proper standard for pleading an antitrust conspiracy through allegations of parallel conduct, and now reverse.
+
+II
+
+A
+
+Because § 1 of the Sherman Act “does not prohibit [all] unreasonable restraints of trade … but only restraints effected by a contract, combination, or conspiracy,” Copperweld Corp. v. Independence Tube Corp., 467 U.S. 752, 775 (1984), “[t]he crucial question” is whether the challenged anticompetitive conduct “stem[s] from independent decision or from an agreement, tacit or express,” Theatre Enterprises v. Paramount Film Distributing Corp., 346 U.S. 537, 540 (1954). While a showing of parallel “business behavior is admissible circumstantial evidence from which the fact finder may infer agreement,” it falls short of “conclusively establish[ing] agreement or … itself constitut[ing] a Sherman Act offense.” Id. at 540–541. Even “conscious parallelism,” a common reaction of “firms in a concentrated market [that] recogniz[e] their shared economic interests and their interdependence with respect to price and output decisions” is “not in itself unlawful.” Brooke Group Ltd. v. Brown & Williamson Tobacco Corp., 509 U.S. 209, 227 (1993).
+
+The inadequacy of showing parallel conduct or interdependence, without more, mirrors the ambiguity of the behavior: consistent with conspiracy, but just as much in line with a wide swath of rational and competitive business strategy unilaterally prompted by common perceptions of the market. Accordingly, we have previously hedged against false inferences from identical behavior at a number of points in the trial sequence. An antitrust conspiracy plaintiff with evidence showing nothing beyond parallel conduct is not entitled to a directed verdict; proof of a § 1 conspiracy must include evidence tending to exclude the possibility of independent action; and at the summary judgment stage a § 1 plaintiff’s offer of conspiracy evidence must tend to rule out the possibility that the defendants were acting independently, see Matsushita Elec. Industrial Co. v. Zenith Radio Corp., 475 U.S. 574 (1986).
+
+B
+
+This case presents the antecedent question of what a plaintiff must plead in order to state a claim under § 1 of the Sherman Act. Federal Rule of Civil Procedure 8(a)(2) requires only “a short and plain statement of the claim showing
+196
+that the pleader is entitled to relief,” in order to “give the defendant fair notice of what the … claim is and the grounds upon which it rests,” Conley v. Gibson, 355 U.S. 41, 47 (1957). While a complaint attacked by a Rule 12(b)(6) motion to dismiss does not need detailed factual allegations, a plaintiff’s obligation to provide the “grounds” of his “entitle[ment] to relief” requires more than labels and conclusions, and a formulaic recitation of the elements of a cause of action will not do. Factual allegations must be enough to raise a right to relief above the speculative level,3 on the assumption that all the allegations in the complaint are true (even if doubtful in fact).
+
+In applying these general standards to a § 1 claim, we hold that stating such a claim requires a complaint with enough factual matter (taken as true) to suggest that an agreement was made. Asking for plausible grounds to infer an agreement does not impose a probability requirement at the pleading stage; it simply calls for enough fact to raise a reasonable expectation that discovery will reveal evidence of illegal agreement. And, of course, a well-pleaded complaint may proceed even if it strikes a savvy judge that actual proof of those facts is improbable, and “that a recovery is very remote and unlikely.” In identifying facts that are suggestive enough to render a § 1 conspiracy plausible, we have the benefit of the prior rulings and considered views of leading commentators, already quoted, that lawful parallel conduct fails to bespeak unlawful agreement. It makes sense to say, therefore, that an allegation of parallel conduct and a bare assertion of conspiracy will not suffice. Without more, parallel conduct does not suggest conspiracy, and a conclusory allegation of agreement at some unidentified point does not supply facts adequate to show illegality. Hence, when allegations of parallel conduct are set out in order to make a § 1 claim, they must be placed in a context that raises a suggestion of a preceding agreement, not merely parallel conduct that could just as well be independent action.
+
+The need at the pleading stage for allegations plausibly suggesting (not merely consistent with) agreement reflects the threshold requirement of Rule 8(a)(2) that the “plain statement” possess enough heft to “sho[w] that the pleader is entitled to relief.” A statement of parallel conduct, even conduct consciously
+197
+undertaken, needs some setting suggesting the agreement necessary to make out a § 1 claim; without that further circumstance pointing toward a meeting of the minds, an account of a defendant’s commercial efforts stays in neutral territory. An allegation of parallel conduct is thus much like a naked assertion of conspiracy in a § 1 complaint: it gets the complaint close to stating a claim, but without some further factual enhancement it stops short of the line between possibility and plausibility of “entitle[ment] to relief.”
+
+We alluded to the practical significance of the Rule 8 entitlement requirement in Dura Pharmaceuticals, Inc. v. Broudo, 544 U.S. 336 (2005), when we explained that something beyond the mere possibility of loss causation must be alleged, lest a plaintiff with “a largely groundless claim” be allowed to “take up the time of a number of other people, with the right to do so representing an in terrorem increment of the settlement value.” So, when the allegations in a complaint, however true, could not raise a claim of entitlement to relief, “this basic deficiency should … be exposed at the point of minimum expenditure of time and money by the parties and the court.” 5 Wright & Miller § 1216, at 233–234; see also Asahi Glass Co. v. Pentech Pharmaceuticals, Inc., 289 F.Supp.2d 986, 995 (N.D. Ill. 2003) (Posner, J., sitting by designation) (“[S]ome threshold of plausibility must be crossed at the outset before a patent antitrust case should be permitted to go into its inevitably costly and protracted discovery phase”).
+
+Thus, it is one thing to be cautious before dismissing an antitrust complaint in advance of discovery, but quite another to forget that proceeding to antitrust discovery can be expensive. As we indicated over 20 years ago in Associated Gen. Contractors of Cal., Inc. v. Carpenters, 459 U.S. 519, 528 n. 17 (1983), “a district court must retain the power to insist upon some specificity in pleading before allowing a potentially massive factual controversy to proceed.” That potential expense is obvious enough in the present case: plaintiffs represent a putative class of at least 90 percent of all subscribers to local telephone or high-speed Internet service in the continental United States, in an action against America’s largest telecommunications firms (with many thousands of employees generating reams and gigabytes of business records) for unspecified (if any) instances of antitrust violations that allegedly occurred over a period of seven years.
+
+It is no answer to say that a claim just shy of a plausible entitlement to relief can, if groundless, be weeded out early in the discovery process through “careful case management,” [see dissent, infra], given the common lament that the success of judicial supervision in checking discovery abuse has been on the
+195
+We granted certiorari to address the proper standard for pleading an antitrust conspiracy through allegations of parallel conduct, and now reverse.
+
+II
+
+A
+
+Because § 1 of the Sherman Act “does not prohibit [all] unreasonable restraints of trade … but only restraints effected by a contract, combination, or conspiracy,” Copperweld Corp. v. Independence Tube Corp., 467 U.S. 752, 775 (1984), “[t]he crucial question” is whether the challenged anticompetitive conduct “stem[s] from independent decision or from an agreement, tacit or express,” Theatre Enterprises v. Paramount Film Distributing Corp., 346 U.S. 537, 540 (1954). While a showing of parallel “business behavior is admissible circumstantial evidence from which the fact finder may infer agreement,” it falls short of “conclusively establish[ing] agreement or … itself constitut[ing] a Sherman Act offense.” Id. at 540–541. Even “conscious parallelism,” a common reaction of “firms in a concentrated market [that] recogniz[e] their shared economic interests and their interdependence with respect to price and output decisions” is “not in itself unlawful.” Brooke Group Ltd. v. Brown & Williamson Tobacco Corp., 509 U.S. 209, 227 (1993).
+
+The inadequacy of showing parallel conduct or interdependence, without more, mirrors the ambiguity of the behavior: consistent with conspiracy, but just as much in line with a wide swath of rational and competitive business strategy unilaterally prompted by common perceptions of the market. Accordingly, we have previously hedged against false inferences from identical behavior at a number of points in the trial sequence. An antitrust conspiracy plaintiff with evidence showing nothing beyond parallel conduct is not entitled to a directed verdict; proof of a § 1 conspiracy must include evidence tending to exclude the possibility of independent action; and at the summary judgment stage a § 1 plaintiff’s offer of conspiracy evidence must tend to rule out the possibility that the defendants were acting independently, see Matsushita Elec. Industrial Co. v. Zenith Radio Corp., 475 U.S. 574 (1986).
+
+B
+
+This case presents the antecedent question of what a plaintiff must plead in order to state a claim under § 1 of the Sherman Act. Federal Rule of Civil Procedure 8(a)(2) requires only “a short and plain statement of the claim showing
+196
+that the pleader is entitled to relief,” in order to “give the defendant fair notice of what the … claim is and the grounds upon which it rests,” Conley v. Gibson, 355 U.S. 41, 47 (1957). While a complaint attacked by a Rule 12(b)(6) motion to dismiss does not need detailed factual allegations, a plaintiff’s obligation to provide the “grounds” of his “entitle[ment] to relief” requires more than labels and conclusions, and a formulaic recitation of the elements of a cause of action will not do. Factual allegations must be enough to raise a right to relief above the speculative level,3 on the assumption that all the allegations in the complaint are true (even if doubtful in fact).
+
+In applying these general standards to a § 1 claim, we hold that stating such a claim requires a complaint with enough factual matter (taken as true) to suggest that an agreement was made. Asking for plausible grounds to infer an agreement does not impose a probability requirement at the pleading stage; it simply calls for enough fact to raise a reasonable expectation that discovery will reveal evidence of illegal agreement. And, of course, a well-pleaded complaint may proceed even if it strikes a savvy judge that actual proof of those facts is improbable, and “that a recovery is very remote and unlikely.” In identifying facts that are suggestive enough to render a § 1 conspiracy plausible, we have the benefit of the prior rulings and considered views of leading commentators, already quoted, that lawful parallel conduct fails to bespeak unlawful agreement. It makes sense to say, therefore, that an allegation of parallel conduct and a bare assertion of conspiracy will not suffice. Without more, parallel conduct does not suggest conspiracy, and a conclusory allegation of agreement at some unidentified point does not supply facts adequate to show illegality. Hence, when allegations of parallel conduct are set out in order to make a § 1 claim, they must be placed in a context that raises a suggestion of a preceding agreement, not merely parallel conduct that could just as well be independent action.
+
+The need at the pleading stage for allegations plausibly suggesting (not merely consistent with) agreement reflects the threshold requirement of Rule 8(a)(2) that the “plain statement” possess enough heft to “sho[w] that the pleader is entitled to relief.” A statement of parallel conduct, even conduct consciously
+197
+undertaken, needs some setting suggesting the agreement necessary to make out a § 1 claim; without that further circumstance pointing toward a meeting of the minds, an account of a defendant’s commercial efforts stays in neutral territory. An allegation of parallel conduct is thus much like a naked assertion of conspiracy in a § 1 complaint: it gets the complaint close to stating a claim, but without some further factual enhancement it stops short of the line between possibility and plausibility of “entitle[ment] to relief.”
+
+We alluded to the practical significance of the Rule 8 entitlement requirement in Dura Pharmaceuticals, Inc. v. Broudo, 544 U.S. 336 (2005), when we explained that something beyond the mere possibility of loss causation must be alleged, lest a plaintiff with “a largely groundless claim” be allowed to “take up the time of a number of other people, with the right to do so representing an in terrorem increment of the settlement value.” So, when the allegations in a complaint, however true, could not raise a claim of entitlement to relief, “this basic deficiency should … be exposed at the point of minimum expenditure of time and money by the parties and the court.” 5 Wright & Miller § 1216, at 233–234; see also Asahi Glass Co. v. Pentech Pharmaceuticals, Inc., 289 F.Supp.2d 986, 995 (N.D. Ill. 2003) (Posner, J., sitting by designation) (“[S]ome threshold of plausibility must be crossed at the outset before a patent antitrust case should be permitted to go into its inevitably costly and protracted discovery phase”).
+
+Thus, it is one thing to be cautious before dismissing an antitrust complaint in advance of discovery, but quite another to forget that proceeding to antitrust discovery can be expensive. As we indicated over 20 years ago in Associated Gen. Contractors of Cal., Inc. v. Carpenters, 459 U.S. 519, 528 n. 17 (1983), “a district court must retain the power to insist upon some specificity in pleading before allowing a potentially massive factual controversy to proceed.” That potential expense is obvious enough in the present case: plaintiffs represent a putative class of at least 90 percent of all subscribers to local telephone or high-speed Internet service in the continental United States, in an action against America’s largest telecommunications firms (with many thousands of employees generating reams and gigabytes of business records) for unspecified (if any) instances of antitrust violations that allegedly occurred over a period of seven years.
+
+It is no answer to say that a claim just shy of a plausible entitlement to relief can, if groundless, be weeded out early in the discovery process through “careful case management,” [see dissent, infra], given the common lament that the success of judicial supervision in checking discovery abuse has been on the
+198
+modest side. See, e.g., Easterbrook, Discovery as Abuse, 69 B.U.L.Rev. 635, 638 (1989) (“Judges can do little about impositional discovery when parties control the legal claims to be presented and conduct the discovery themselves”). And it is self-evident that the problem of discovery abuse cannot be solved by “careful scrutiny of evidence at the summary judgment stage,” much less “lucid instructions to juries,” [see dissent, infra]; the threat of discovery expense will push cost-conscious defendants to settle even anemic cases before reaching those proceedings. Probably, then, it is only by taking care to require allegations that reach the level suggesting conspiracy that we can hope to avoid the potentially enormous expense of discovery in cases with no “reasonably founded hope that the [discovery] process will reveal relevant evidence” to support a § 1 claim. Dura, 544 U.S. at 347.
+
+Plaintiffs do not, of course, dispute the requirement of plausibility and the need for something more than merely parallel behavior explained in Theatre Enterprises, Monsanto, and Matsushita, and their main argument against the plausibility standard at the pleading stage is its ostensible conflict with an early statement of ours construing Rule 8. Justice Black’s opinion for the Court in Conley v. Gibson spoke not only of the need for fair notice of the grounds for entitlement to relief but of “the accepted rule that a complaint should not be dismissed for failure to state a claim unless it appears beyond doubt that the plaintiff can prove no set of facts in support of his claim which would entitle him to relief.” This “no set of facts” language can be read in isolation as saying that any statement revealing the theory of the claim will suffice unless its factual impossibility may be shown from the face of the pleadings; and the Court of Appeals appears to have read Conley in some such way when formulating its understanding of the proper pleading standard, see 425 F.3d, at 106, 114 (invoking Conley’s “no set of facts” language in describing the standard for dismissal).
+
+On such a focused and literal reading of Conley’s “no set of facts,” a wholly conclusory statement of claim would survive a motion to dismiss whenever the pleadings left open the possibility that a plaintiff might later establish some “set of [undisclosed] facts” to support recovery. * * *
+
+Seeing this, a good many judges and commentators have balked at taking the literal terms of the Conley passage as a pleading standard. See, e.g., Car Carriers, 745 F.2d, at 1106 (“Conley has never been interpreted literally” and, “[i]n practice, a complaint … must contain either direct or inferential allegations
+199
+respecting all the material elements necessary to sustain recovery under some viable legal theory”).
+
+We could go on, but there is no need to pile up further citations to show that Conley’s “no set of facts” language has been questioned, criticized, and explained away long enough. To be fair to the Conley Court, the passage should be understood in light of the opinion’s preceding summary of the complaint’s concrete allegations, which the Court quite reasonably understood as amply stating a claim for relief. But the passage so often quoted fails to mention this understanding on the part of the Court, and after puzzling the profession for 50 years, this famous observation has earned its retirement. The phrase is best forgotten as an incomplete, negative gloss on an accepted pleading standard: once a claim has been stated adequately, it may be supported by showing any set of facts consistent with the allegations in the complaint. Conley, then, described the breadth of opportunity to prove what an adequate complaint claims, not the minimum standard of adequate pleading to govern a complaint’s survival.
+
+III
+
+When we look for plausibility in this complaint, we agree with the District Court that plaintiffs’ claim of conspiracy in restraint of trade comes up short. To begin with, the complaint leaves no doubt that plaintiffs rest their § 1 claim on descriptions of parallel conduct and not on any independent allegation of actual agreement among the ILECs. Although in form a few stray statements speak directly of agreement, on fair reading these are merely legal conclusions resting on the prior allegations. * * * The nub of the complaint, then, is the ILECs’ parallel behavior, consisting of steps to keep the CLECs out and manifest disinterest in becoming CLECs themselves, and its sufficiency turns on the suggestions raised by this conduct when viewed in light of common economic experience.
+
+We think that nothing contained in the complaint invests either the action or inaction alleged with a plausible suggestion of conspiracy. As to the ILECs’ supposed agreement to disobey the 1996 Act and thwart the CLECs’ attempts to compete, we agree with the District Court that nothing in the complaint intimates that the resistance to the upstarts was anything more than the natural, unilateral reaction of each ILEC intent on keeping its regional dominance. The 1996 Act did more than just subject the ILECs to competition; it obliged them to subsidize their competitors with their own equipment at wholesale
+200
+rates. The economic incentive to resist was powerful, but resisting competition is routine market conduct, and even if the ILECs flouted the 1996 Act in all the ways the plaintiffs allege, there is no reason to infer that the companies had agreed among themselves to do what was only natural anyway; so natural, in fact, that if alleging parallel decisions to resist competition were enough to imply an antitrust conspiracy, pleading a § 1 violation against almost any group of competing businesses would be a sure thing.
+
+* * *
+
+Plaintiffs’ second conspiracy theory rests on the competitive reticence among the ILECs themselves in the wake of the 1996 Act, which was supposedly passed in the “hop[e] that the large incumbent local monopoly companies … might attack their neighbors’ service areas, as they are the best situated to do so.” Complaint ¶ 38. Contrary to hope, the ILECs declined “to enter each other’s service territories in any significant way,” Complaint ¶ 38, and the local telephone and high-speed Internet market remains highly compartmentalized geographically, with minimal competition. Based on this state of affairs, and perceiving the ILECs to be blessed with “especially attractive business opportunities” in surrounding markets dominated by other ILECs, the plaintiffs assert that the ILECs’ parallel conduct was “strongly suggestive of conspiracy.” Id., ¶ 40.
+
+But it was not suggestive of conspiracy, not if history teaches anything. In a traditionally unregulated industry with low barriers to entry, sparse competition among large firms dominating separate geographical segments of the market could very well signify illegal agreement, but here we have an obvious alternative explanation. In the decade preceding the 1996 Act and well before that, monopoly was the norm in telecommunications, not the exception. The ILECs were born in that world, doubtless liked the world the way it was, and surely knew the adage about him who lives by the sword. Hence, a natural explanation for the noncompetition alleged is that the former Government-sanctioned monopolists were sitting tight, expecting their neighbors to do the same thing.
+
+* * *
+
+Here * * * we do not require heightened fact pleading of specifics, but only enough facts to state a claim to relief that is plausible on its face. Because the plaintiffs here have not nudged their claims across the line from conceivable to plausible, their complaint must be dismissed.
+
+201
+* * *
+
+The judgment of the Court of Appeals for the Second Circuit is reversed, and the case is remanded for further proceedings consistent with this opinion.
+
+It is so ordered.
+
+JUSTICE STEVENS, with whom JUSTICE GINSBURG joins except as to Part IV, dissenting.
+
+In the first paragraph of its 23-page opinion the Court states that the question to be decided is whether allegations that “major telecommunications providers engaged in certain parallel conduct unfavorable to competition” suffice to state a violation of § 1 of the Sherman Act. The answer to that question has been settled for more than 50 years. If that were indeed the issue, a summary reversal citing Theatre Enterprises, Inc. v. Paramount Film Distributing Corp., 346 U.S. 537 (1954), would adequately resolve this case. As Theatre Enterprises held, parallel conduct is circumstantial evidence admissible on the issue of conspiracy, but it is not itself illegal.
+
+Thus, this is a case in which there is no dispute about the substantive law. If the defendants acted independently, their conduct was perfectly lawful. If, however, that conduct is the product of a horizontal agreement among potential competitors, it was unlawful. The plaintiffs have alleged such an agreement and, because the complaint was dismissed in advance of answer, the allegation has not even been denied. Why, then, does the case not proceed? Does a judicial opinion that the charge is not “plausible” provide a legally acceptable reason for dismissing the complaint? I think not.
+
+* * *
+
+Under rules of procedure that have been well settled since well before our decision in Theatre Enterprises, a judge ruling on a defendant’s motion to dismiss a complaint “must accept as true all of the factual allegations contained in the complaint.” * * *
+
+The Court and petitioners’ legal team are no doubt correct that the parallel conduct alleged is consistent with the absence of any contract, combination, or conspiracy. But that conduct is also entirely consistent with the presence of the illegal agreement alleged in the complaint. * * *
+
+202
+Two practical concerns presumably explain the Court’s dramatic departure from settled procedural law. Private antitrust litigation can be enormously expensive, and there is a risk that jurors may mistakenly conclude that evidence of parallel conduct has proved that the parties acted pursuant to an agreement when they in fact merely made similar independent decisions. Those concerns merit careful case management, including strict control of discovery, careful scrutiny of evidence at the summary judgment stage, and lucid instructions to juries; they do not, however, justify the dismissal of an adequately pleaded complaint without even requiring the defendants to file answers denying a charge that they in fact engaged in collective decisionmaking. More importantly, they do not justify an interpretation of Federal Rule of Civil Procedure 12(b)(6) that seems to be driven by the majority’s appraisal of the plausibility of the ultimate factual allegation rather than its legal sufficiency.
+I
+
+Rule 8(a)(2) of the Federal Rules requires that a complaint contain “a short and plain statement of the claim showing that the pleader is entitled to relief.” The Rule did not come about by happenstance, and its language is not inadvertent. The English experience with Byzantine special pleading rules—illustrated by the hypertechnical Hilary rules of 1834—made obvious the appeal of a pleading standard that was easy for the common litigant to understand and sufficed to put the defendant on notice as to the nature of the claim against him and the relief sought. Stateside, David Dudley Field developed the highly influential New York Code of 1848, which required “[a] statement of the facts constituting the cause of action, in ordinary and concise language, without repetition, and in such a manner as to enable a person of common understanding to know what is intended.” Substantially similar language appeared in the Federal Equity Rules adopted in 1912. See Fed. Equity Rule 25 (requiring “a short and simple statement of the ultimate facts upon which the plaintiff asks relief, omitting any mere statement of evidence”).
+
+A difficulty arose, however, in that the Field Code and its progeny required a plaintiff to plead “facts” rather than “conclusions,” a distinction that proved far easier to say than to apply. As commentators have noted,
+
+“it is virtually impossible logically to distinguish among ‘ultimate facts,’ ‘evidence,’ and ‘conclusions.’ Essentially any allegation in a pleading must be an assertion that certain occurrences took place.
+
+203
+The pleading spectrum, passing from evidence through ultimate facts to conclusions, is largely a continuum varying only in the degree of particularity with which the occurrences are described.” Weinstein & Distler, Comments on Procedural Reform: Drafting Pleading Rules, 57 Colum. L.Rev. 518, 520–521 (1957).
+
+Rule 8 was directly responsive to this difficulty. Its drafters intentionally avoided any reference to “facts” or “evidence” or “conclusions.”
+
+Under the relaxed pleading standards of the Federal Rules, the idea was not to keep litigants out of court but rather to keep them in. The merits of a claim would be sorted out during a flexible pretrial process and, as appropriate, through the crucible of trial. * * *
+
+* * *
+
+II
+
+* * *
+
+Petitioners have not requested that the Conley formulation be retired, nor have any of the six amici who filed briefs in support of petitioners. I would not rewrite the Nation’s civil procedure textbooks and call into doubt the pleading rules of most of its States without far more informed deliberation as to the costs of doing so. Congress has established a process—a rulemaking process—for revisions of that order. See 28 U.S.C. §§ 2072–2074.
+
+* * *
+
+III
+
+The Court does not suggest that an agreement to do what the plaintiffs allege would be permissible under the antitrust laws. Nor does the Court hold that these plaintiffs have failed to allege an injury entitling them to sue for damages under those laws. Rather, the theory on which the Court permits dismissal is that, so far as the Federal Rules are concerned, no agreement has been alleged at all. This is a mind-boggling conclusion.
+
+As the Court explains, prior to the enactment of the Telecommunications Act of 1996 the law prohibited the defendants from competing with each other. The new statute was enacted to replace a monopolistic market with a competitive one. The Act did not merely require the regional monopolists to
+204
+take affirmative steps to facilitate entry to new competitors; it also permitted the existing firms to compete with each other and to expand their operations into previously forbidden territory. Each of the defendants decided not to take the latter step. That was obviously an extremely important business decision, and I am willing to presume that each company acted entirely independently in reaching that decision. I am even willing to entertain the majority’s belief that any agreement among the companies was unlikely. But the plaintiffs allege in three places in their complaint that the ILECs did in fact agree both to prevent competitors from entering into their local markets and to forgo competition with each other. And as the Court recognizes, at the motion to dismiss stage, a judge assumes “that all the allegations in the complaint are true (even if doubtful in fact).”
+
+The majority circumvents this obvious obstacle to dismissal by pretending that it does not exist. The Court admits that “in form a few stray statements in the complaint speak directly of agreement,” but disregards those allegations by saying that “on fair reading these are merely legal conclusions resting on the prior allegations” of parallel conduct. The Court’s dichotomy between factual allegations and “legal conclusions” is the stuff of a bygone era. That distinction was a defining feature of code pleading, but was conspicuously abolished when the Federal Rules were enacted in 1938. * * *
+
+* * *
+
+To be clear, if I had been the trial judge in this case, I would not have permitted the plaintiffs to engage in massive discovery based solely on the allegations in this complaint. * * *
+
+Respondents in this case proposed a plan of “phased discovery” limited to the existence of the alleged conspiracy and class certification. Two petitioners rejected the plan. Whether or not respondents’ proposed plan was sensible, it was an appropriate subject for negotiation.13
+
+205
+* * *
+
+IV
+
+* * *
+
+The transparent policy concern that drives the decision is the interest in protecting antitrust defendants—who in this case are some of the wealthiest corporations in our economy—from the burdens of pretrial discovery. Even if it were not apparent that the legal fees petitioners have incurred in arguing the merits of their Rule 12(b) motion have far exceeded the cost of limited discovery, or that those discovery costs would burden respondents as well as petitioners, that concern would not provide an adequate justification for this law-changing decision. For in the final analysis it is only a lack of confidence in the ability of trial judges to control discovery, buttressed by appellate judges’ independent appraisal of the plausibility of profoundly serious factual allegations, that could account for this stark break from precedent.
+
+* * *
+
+Accordingly, I respectfully dissent.
+
+

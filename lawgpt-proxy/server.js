@@ -21,6 +21,7 @@ const DOCS_ROOT = canvasRoutes.DOCS_ROOT;
 
 // Loads code from email-routes.js
 const emailRoutes = require("./email-routes");
+const { getEmailConfig } = require("./email-auth");
 
 // Creates the express application
 const app = express();
@@ -131,9 +132,10 @@ function requireLocalhost(req, res, next) {
   next();
 }
 
-// Writes/updates OPENAI_API_KEY in .env without disturbing any other
-// lines already in the file (e.g. PORT).
-function upsertEnvKey(key) {
+// Writes/updates a single NAME=value line in .env without disturbing any
+// other lines already in the file (e.g. PORT) -- shared by the OpenAI key
+// and Email client ID settings below, both saved the same way.
+function upsertEnvVar(name, value) {
   let lines = [];
 
   if (fs.existsSync(ENV_PATH)) {
@@ -141,18 +143,19 @@ function upsertEnvKey(key) {
   }
 
   let found = false;
+  const prefix = `${name}=`;
 
   lines = lines.map(line => {
-    if (line.startsWith("OPENAI_API_KEY=")) {
+    if (line.startsWith(prefix)) {
       found = true;
-      return `OPENAI_API_KEY=${key}`;
+      return `${prefix}${value}`;
     }
 
     return line;
   });
 
   if (!found) {
-    lines.push(`OPENAI_API_KEY=${key}`);
+    lines.push(`${prefix}${value}`);
   }
 
   // Drop stray trailing blank lines, then write back with one trailing newline.
@@ -193,13 +196,55 @@ app.post("/api/key", requireLocalhost, (req, res) => {
   }
 
   try {
-    upsertEnvKey(newKey.trim());
+    upsertEnvVar("OPENAI_API_KEY", newKey.trim());
     apiKey = newKey.trim();
 
     res.json({
       ok: true,
       last4: apiKey.slice(-4)
     });
+  } catch (err) {
+    console.error("Failed to write .env:", err);
+
+    res.status(500).json({
+      error: {
+        message: "Saved in memory, but couldn't write .env to disk."
+      }
+    });
+  }
+});
+
+// Lets the Settings panel show whatever EMAIL_CLIENT_ID is currently in
+// effect (see email-auth.js's getEmailConfig -- ~/.bashrc wins over .env, so
+// this reports whichever of the two is actually being used). Unlike the
+// OpenAI key, a client ID isn't a secret -- it's the public identifier of
+// the Azure AD app registration (see setup-email-auth.js) -- so it's fine to
+// send the real value back, not just a masked tail.
+app.get("/api/email-client-id-status", (req, res) => {
+  const { clientId } = getEmailConfig();
+  res.json({ configured: Boolean(clientId), clientId: clientId || null });
+});
+
+app.post("/api/email-client-id", requireLocalhost, (req, res) => {
+  const { clientId: newClientId } = req.body || {};
+  const trimmed = typeof newClientId === "string" ? newClientId.trim() : "";
+
+  if (!trimmed || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(trimmed)) {
+    return res.status(400).json({
+      error: {
+        message: "That doesn't look like a valid Azure AD application (client) ID -- it should be a GUID like 12345678-1234-1234-1234-123456789abc."
+      }
+    });
+  }
+
+  try {
+    upsertEnvVar("EMAIL_CLIENT_ID", trimmed);
+    // getEmailConfig() reads process.env fresh on every call (see
+    // email-auth.js), so updating it here is enough to take effect
+    // immediately -- no restart needed, same as the OpenAI key above.
+    process.env.EMAIL_CLIENT_ID = trimmed;
+
+    res.json({ ok: true, clientId: trimmed });
   } catch (err) {
     console.error("Failed to write .env:", err);
 

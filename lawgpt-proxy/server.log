@@ -1,0 +1,3 @@
+◇ injected env (4) from .env // tip: ⌘ suppress logs { quiet: true }
+Proxy listening on http://localhost:3000
+Indexed 83 local document(s) from documents/.

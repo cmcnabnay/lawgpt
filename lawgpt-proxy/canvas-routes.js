@@ -116,6 +116,18 @@ function sanitizeForFs(str){
     .slice(0, 120);
 }
 
+// The filename a title maps to on disk, minus its extension -- factored out
+// of saveNativeFile() so the /scrape route below can predict a Canvas item's
+// eventual on-disk name from its title ALONE (before downloading anything)
+// and check whether that name is already sitting in documents/<course>/,
+// without duplicating this exact stripping logic in two places and having
+// them drift out of sync.
+function deriveBaseName(title){
+  const titleExtMatch = /\.([a-z0-9]{1,8})$/i.exec(title || "");
+  const titleHasKnownExt = titleExtMatch && KNOWN_EXTENSIONS.has(titleExtMatch[1].toLowerCase());
+  return sanitizeForFs(titleHasKnownExt ? title.slice(0, -titleExtMatch[0].length) : title) || "document";
+}
+
 // Writes `buffer` to disk under documents/<courseFolder>/<title>.<ext>,
 // overwriting any existing file of the same name (re-importing a course is
 // treated as refreshing its materials, not accumulating duplicates).
@@ -126,9 +138,7 @@ function saveNativeFile(courseFolder, title, ext, buffer){
   try {
     const dir = path.join(DOCS_ROOT, courseFolder);
     fs.mkdirSync(dir, { recursive: true });
-    const titleExtMatch = /\.([a-z0-9]{1,8})$/i.exec(title || "");
-    const titleHasKnownExt = titleExtMatch && KNOWN_EXTENSIONS.has(titleExtMatch[1].toLowerCase());
-    const base = sanitizeForFs(titleHasKnownExt ? title.slice(0, -titleExtMatch[0].length) : title) || "document";
+    const base = deriveBaseName(title);
     const fileName = `${base}.${ext}`;
     fs.writeFileSync(path.join(dir, fileName), buffer);
     return { fileName, filePath: path.join(courseFolder, fileName) };
@@ -276,6 +286,22 @@ router.post("/scrape", async (req, res) => {
     }
     const courseFolderName = resolveCourseFolderName(courseName, courseId);
 
+    // Only fetch items from Canvas that aren't already sitting in
+    // documents/<courseFolderName>/ -- re-importing a course used to
+    // re-download, re-extract, and re-save EVERY item on EVERY import, even
+    // ones that hadn't changed since the last one. A lazy require (rather
+    // than a top-of-file one) sidesteps a load-order circular dependency:
+    // local-scan.js itself requires this module (for extractText/DOCS_ROOT),
+    // so requiring it back at module-load time here would hand local-scan.js
+    // an incomplete version of this module's exports; by request time both
+    // modules are already fully loaded, so this just resolves from cache.
+    const { scanLocalDocuments } = require("./local-scan");
+    await scanLocalDocuments().catch(() => {}); // pick up anything dropped into documents/ by hand since the last scan
+    const existingByBaseName = new Map();
+    for (const doc of documentStore.getDocumentsByCourse(courseFolderName)) {
+      if (doc.fileName) existingByBaseName.set(deriveBaseName(doc.fileName).toLowerCase(), doc);
+    }
+
     const links = [];
     $(".context_module_item").each((_, el) => {
       const a = $(el).find("a.ig-title").first();
@@ -288,6 +314,23 @@ router.post("/scrape", async (req, res) => {
 
     const items = [];
     for (const { title, href } of links.slice(0, MAX_ITEMS)) {
+      const existing = existingByBaseName.get(deriveBaseName(title).toLowerCase());
+      if (existing) {
+        items.push({
+          id: existing.id,
+          title: existing.title,
+          url: existing.url,
+          contentType: existing.contentType,
+          text: existing.text,
+          courseId: existing.courseId,
+          courseName: existing.courseName,
+          hasOriginalFile: Boolean(existing.fileBuffer),
+          hasNativeFile: Boolean(existing.filePath),
+          error: null,
+          alreadyImported: true
+        });
+        continue;
+      }
       const itemUrl = href.startsWith("http") ? href : baseUrl + href;
       try {
         const itemRes = await canvasGet(baseUrl, itemUrl, cookie);
