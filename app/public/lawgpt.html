@@ -1304,6 +1304,46 @@ pre code {
   color:var(--parchment);
   font-weight:500;
 }
+/* Deliberately distinct from schedule-class-card -- quizzes are their own
+   box (own accent color, no reading rows), separate from class sessions,
+   even though buildCivProTimeline() slots them in among the classes by
+   date. Accent matches the "task" badge color used elsewhere for symmetry. */
+.schedule-quiz-card{
+  background:var(--ink-2);
+  border:1px solid #5a3a5a;
+  border-radius:var(--radius);
+  padding:14px 18px;
+  margin-bottom:12px;
+}
+.schedule-quiz-head{
+  display:flex;
+  align-items:baseline;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-bottom:6px;
+}
+.schedule-quiz-title{
+  font-family:'Fraunces',serif;
+  font-size:15.5px;
+  font-weight:600;
+  color:var(--text-light);
+  flex:1 1 auto;
+}
+.schedule-quiz-date{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:11px;
+  color:#c9a0d9;
+  white-space:nowrap;
+}
+.schedule-quiz-meta{
+  font-size:12px;
+  color:var(--text-muted);
+  margin-bottom:10px;
+}
+.schedule-quiz-actions{
+  display:flex;
+  gap:8px;
+}
 
 /* ---------- DOCUMENTS ---------- */
 .documents-view{
@@ -1521,15 +1561,6 @@ pre code {
 }
 .email-status.ok{ color:#8fbf8f; }
 .email-status.err{ color:#d98b8b; }
-.email-section-label{
-  font-family:'IBM Plex Mono',monospace;
-  font-size:11px;
-  letter-spacing:0.1em;
-  text-transform:uppercase;
-  color:var(--brass-dim);
-  margin:22px 0 8px;
-}
-.email-section-label:first-of-type{ margin-top:0; }
 .email-list{ display:flex; flex-direction:column; gap:10px; }
 .email-course-badge{
   display:inline-block;
@@ -1545,35 +1576,94 @@ pre code {
 }
 .email-assignment-card{
   display:flex;
-  align-items:flex-start;
-  gap:14px;
+  flex-direction:column;
+  gap:12px;
   background:var(--ink-2);
   border:1px solid var(--hairline);
   border-radius:var(--radius);
   padding:14px 16px;
 }
+.email-card-top{ display:flex; align-items:flex-start; gap:14px; }
 .email-card-main{ flex:1; min-width:0; }
+.email-plan-block{
+  border-top:1px solid var(--hairline);
+  padding-top:12px;
+}
+.email-plan-label{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:10.5px;
+  letter-spacing:0.06em;
+  text-transform:uppercase;
+  color:var(--brass-dim);
+  margin-bottom:6px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+}
+.email-plan-textarea{
+  width:100%;
+  min-height:90px;
+  resize:vertical;
+  background:var(--ink);
+  border:1px solid var(--hairline);
+  color:var(--text-light);
+  padding:9px 10px;
+  border-radius:var(--radius);
+  font-family:'IBM Plex Mono',monospace;
+  font-size:12px;
+  line-height:1.55;
+}
+.email-plan-textarea:focus{ outline:none; border-color:var(--brass-dim); }
+.email-plan-error{ font-size:12px; color:#d98b8b; margin-top:6px; }
+.email-view-body{
+  white-space:pre-wrap;
+  word-wrap:break-word;
+  max-height:55vh;
+  overflow-y:auto;
+  background:var(--ink);
+  border:1px solid var(--hairline);
+  border-radius:var(--radius);
+  padding:12px 14px;
+  margin-top:10px;
+  font-size:13px;
+  line-height:1.6;
+}
+.email-delete-btn{ color:#d98b8b; }
+.email-plan-actions{
+  display:flex;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:8px;
+}
+.email-plan-actions button{
+  font-size:11.5px;
+  font-weight:600;
+  padding:6px 12px;
+  border-radius:var(--radius);
+  cursor:pointer;
+  white-space:nowrap;
+  border:1px solid var(--hairline);
+  background:none;
+  color:var(--text-light);
+}
+.email-plan-actions button:hover{ border-color:var(--brass-dim); color:var(--brass); }
+.email-plan-actions button:disabled{ opacity:0.5; cursor:default; }
+.email-plan-actions .email-agent-run-btn{ background:var(--brass); color:var(--ink); border:none; }
+.email-agent-status{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:11px;
+  text-transform:uppercase;
+  letter-spacing:0.04em;
+  color:var(--text-muted);
+}
+.email-agent-status.launched{ color:#8fbf8f; }
 .email-snippet{
   font-size:12.5px;
   line-height:1.6;
   color:var(--text-muted);
   margin-top:6px;
-}
-.email-message-row{
-  display:flex;
-  align-items:center;
-  flex-wrap:wrap;
-  gap:6px 14px;
-  background:var(--ink-2);
-  border:1px solid var(--hairline);
-  border-radius:var(--radius);
-  padding:10px 16px;
-}
-.email-message-subject{
-  font-size:13px;
-  color:var(--text-light);
-  flex:1;
-  min-width:160px;
 }
 .email-done-btn{
   font-size:11.5px;
@@ -2212,13 +2302,23 @@ pre code {
     <div class="settings-divider"></div>
 
     <h2>Email settings</h2>
-    <p>The application (client) ID of the Azure AD app registration the Email tab signs in with (see <code>lawgpt-proxy/setup-email-auth.js</code>) — not a secret, just an identifier, saved to the same <code>.env</code> file as the OpenAI key above. Changing it doesn't sign you out; run the setup script again afterward if you're pointing at a different app registration.</p>
+    <p>The application (client) ID of the Azure AD app registration the Email tab signs in with (see <code>app/src/setup-email-auth.js</code>) — not a secret, just an identifier, saved to the same <code>.env</code> file as the OpenAI key above. Changing it doesn't sign you out; run the setup script again afterward if you're pointing at a different app registration.</p>
     <div class="settings-form">
       <label for="settingsEmailClientIdInput">Email client ID</label>
       <input type="text" id="settingsEmailClientIdInput" placeholder="12345678-1234-1234-1234-123456789abc" autocomplete="off" spellcheck="false">
       <div class="settings-status" id="settingsEmailClientIdStatus"></div>
       <div class="settings-actions">
         <button id="settingsEmailClientIdSaveBtn">Save client ID</button>
+      </div>
+    </div>
+
+    <p>The mailbox folder the Email tab syncs from (case-insensitive, checked among top-level folders and Inbox's children). Defaults to "Forwarded" if left blank.</p>
+    <div class="settings-form">
+      <label for="settingsEmailFolderInput">Email folder</label>
+      <input type="text" id="settingsEmailFolderInput" placeholder="Forwarded" autocomplete="off" spellcheck="false">
+      <div class="settings-status" id="settingsEmailFolderStatus"></div>
+      <div class="settings-actions">
+        <button id="settingsEmailFolderSaveBtn">Save folder</button>
       </div>
     </div>
 
@@ -2272,6 +2372,24 @@ pre code {
       <div class="settings-actions">
         <button type="button" id="assignmentContextSaveBtn">Save</button>
         <button type="button" class="btn-secondary" id="assignmentContextCloseBtn">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="quizScrapeOverlay" style="display:none;">
+  <div class="modal modal-wide">
+    <h2>Scrape quiz from Canvas — <span id="quizScrapeTitle"></span></h2>
+    <p>This starts a real attempt on this quiz in Canvas to read its questions and answer choices, then leaves that attempt open/unsubmitted — nothing gets filled out or submitted on your behalf. Your session cookie is used once for this and is never written to disk or logged.</p>
+    <div class="settings-form">
+      <label for="quizScrapeBaseUrl">Canvas base URL</label>
+      <input type="text" id="quizScrapeBaseUrl" placeholder="https://canvas.yourschool.edu" autocomplete="off" spellcheck="false">
+      <label for="quizScrapeCookie">Session cookie value</label>
+      <input type="password" id="quizScrapeCookie" placeholder="_normandy_session value, or the full Cookie header" autocomplete="off" spellcheck="false">
+      <div class="settings-actions">
+        <button type="button" id="quizScrapeRunBtn">Scrape questions</button>
+        <button type="button" class="btn-secondary" id="quizScrapeCloseBtn">Close</button>
+        <span class="doc-import-status" id="quizScrapeStatus"></span>
       </div>
     </div>
   </div>
@@ -2378,9 +2496,9 @@ pre code {
       <button class="view-tab" id="tabEditor" data-view="editor">Draft &amp; Compile</button>
       <button class="view-tab" id="tabSchedule" data-view="schedule">Schedule</button>
       <button class="view-tab" id="tabDocuments" data-view="documents">Documents</button>
-      <button class="view-tab" id="tabEmail" data-view="email">Email</button>
       <button class="view-tab" id="tabNotes" data-view="notes">Notes</button>
       <button class="view-tab" id="tabDatabase" data-view="database">Database</button>
+      <button class="view-tab" id="tabEmail" data-view="email">Email</button>
       <button class="settings-gear-btn" id="settingsGearBtn" aria-label="Settings" title="API key settings">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z" stroke="currentColor" stroke-width="1.5"/>
@@ -2573,7 +2691,7 @@ pre code {
       <div class="editor-body">
         <div class="doc-page-wrap">
           <div id="docPages" contenteditable="true">
-            <div id="docEditor" class="doc-page" data-page-number="1"></div>
+            <div id="docEditor" class="doc-page" data-page-number="1"><div><br></div></div>
           </div>
         </div>
         <div class="table-ctx-menu" id="tableCtxMenu">
@@ -2612,6 +2730,7 @@ pre code {
     <div class="table-ctx-menu" id="scheduleDocCtxMenu">
       <button type="button" id="scheduleDocCtxReplace">Replace document</button>
       <button type="button" id="scheduleDocCtxRemove">Remove document</button>
+      <button type="button" id="scheduleDocCtxAuto">Auto-detect document</button>
     </div>
 
     <div class="documents-view" id="documentsView" style="display:none;">
@@ -2637,7 +2756,7 @@ pre code {
               <option value="36787">Torts (36787)</option>
             </select>
             <label for="docImportCookie">Session cookie value</label>
-            <input type="password" id="docImportCookie" placeholder="canvas_session cookie value" autocomplete="off" spellcheck="false">
+            <input type="password" id="docImportCookie" placeholder="_normandy_session value, or the full Cookie header" autocomplete="off" spellcheck="false">
             <div class="doc-import-actions">
               <button type="button" id="docImportBtn">Import course materials</button>
               <span class="doc-import-status" id="docImportStatus"></span>
@@ -2660,11 +2779,18 @@ pre code {
         </div>
         <div class="email-status" id="emailStatus"></div>
 
-        <div class="email-section-label">Assignments</div>
-        <div class="email-list" id="emailAssignmentList"></div>
+        <div class="email-list" id="emailList"></div>
+      </div>
+    </div>
 
-        <div class="email-section-label">All synced emails</div>
-        <div class="email-list" id="emailMessageList"></div>
+    <div class="modal-overlay" id="emailViewOverlay" style="display:none;">
+      <div class="modal modal-wide">
+        <h2 id="emailViewSubject"></h2>
+        <div class="doc-card-meta" id="emailViewMeta"></div>
+        <div class="email-view-body" id="emailViewBody"></div>
+        <div class="settings-actions">
+          <button type="button" id="emailViewCloseBtn">Close</button>
+        </div>
       </div>
     </div>
 
@@ -2826,21 +2952,59 @@ return ctor.prototype=parent.prototype,child.prototype=new ctor,child.__super__=
 <script>
 // ====== CONFIGURATION ======
 // The real API key lives only in the proxy server's environment variable
-// (see lawgpt-proxy/server.js) -- never in this file.
+// (see app/src/server.js) -- never in this file.
 const API_URL = "http://localhost:3000/api/chat";
 const PROXY_ORIGIN = "http://localhost:3000";
 
-// Standard (non-batch) OpenAI API pricing, USD per 1M tokens. There's no
-// pricing endpoint in the API itself, so this has to be kept in sync by
-// hand -- costFromUsage() below returns null (cost just isn't shown, rather
-// than shown wrong) for any #modelSelect entry missing here, which as of
-// this writing is every model except these two: pricing wasn't added for
-// the rest of the dropdown's models since confirming current, correct
-// figures for each wasn't practical to do reliably from within this
-// session -- fill in real numbers from OpenAI's pricing page as needed.
+// Standard (non-batch) OpenAI API pricing, USD per 1M tokens, from
+// https://developers.openai.com/api/docs/pricing (checked 2026-09-03).
+// There's no pricing endpoint in the API itself, so this has to be kept in
+// sync by hand -- costFromUsage() below returns null (cost just isn't
+// shown, rather than shown wrong) for any #modelSelect entry missing here.
+// -codex/-chat-latest/-mini/-max variants that aren't priced separately on
+// the pricing page bill at the same rate as the base snapshot they're
+// built on, so they reuse that entry below. Models with no prompt-caching
+// discount (the "pro" tier and o1-pro) use their input price as the cached
+// rate too, since the pricing page lists no separate cached figure for them.
 const MODEL_PRICING = {
-  "gpt-4o":      { input: 2.50, cachedInput: 1.25, output: 10.00 },
-  "gpt-4o-mini": { input: 0.15, cachedInput: 0.075, output: 0.60 }
+  "gpt-5.6-sol":          { input: 4.00,  cachedInput: 0.40,  output: 20.00 },
+  "gpt-5.6-terra":        { input: 2.00,  cachedInput: 0.20,  output: 12.00 },
+  "gpt-5.6-luna":         { input: 0.20,  cachedInput: 0.02,  output: 1.20 },
+  "gpt-5.5-pro":          { input: 30.00, cachedInput: 30.00, output: 180.00 },
+  "gpt-5.5":              { input: 5.00,  cachedInput: 0.50,  output: 30.00 },
+  "gpt-5.4-pro":          { input: 30.00, cachedInput: 30.00, output: 180.00 },
+  "gpt-5.4":              { input: 2.50,  cachedInput: 0.25,  output: 15.00 },
+  "gpt-5.4-mini":         { input: 0.75,  cachedInput: 0.075, output: 4.50 },
+  "gpt-5.4-nano":         { input: 0.20,  cachedInput: 0.02,  output: 1.25 },
+  "gpt-5.3-codex":        { input: 1.75,  cachedInput: 0.175, output: 14.00 },
+  "gpt-5.3-chat-latest":  { input: 1.75,  cachedInput: 0.175, output: 14.00 },
+  "gpt-5.2-pro":          { input: 21.00, cachedInput: 21.00, output: 168.00 },
+  "gpt-5.2":              { input: 1.75,  cachedInput: 0.175, output: 14.00 },
+  "gpt-5.2-codex":        { input: 1.75,  cachedInput: 0.175, output: 14.00 },
+  "gpt-5.2-chat-latest":  { input: 1.75,  cachedInput: 0.175, output: 14.00 },
+  "gpt-5.1-codex-max":    { input: 1.25,  cachedInput: 0.125, output: 10.00 },
+  "gpt-5.1-codex":        { input: 1.25,  cachedInput: 0.125, output: 10.00 },
+  "gpt-5.1-codex-mini":   { input: 1.25,  cachedInput: 0.125, output: 10.00 },
+  "gpt-5.1":              { input: 1.25,  cachedInput: 0.125, output: 10.00 },
+  "gpt-5.1-chat-latest":  { input: 1.25,  cachedInput: 0.125, output: 10.00 },
+  "gpt-5-pro":            { input: 15.00, cachedInput: 15.00, output: 120.00 },
+  "gpt-5":                { input: 1.25,  cachedInput: 0.125, output: 10.00 },
+  "gpt-5-mini":           { input: 0.25,  cachedInput: 0.025, output: 2.00 },
+  "gpt-5-nano":           { input: 0.05,  cachedInput: 0.005, output: 0.40 },
+  "gpt-5-codex":          { input: 1.25,  cachedInput: 0.125, output: 10.00 },
+  "gpt-5-chat-latest":    { input: 1.25,  cachedInput: 0.125, output: 10.00 },
+  "o1-pro":               { input: 150.00, cachedInput: 150.00, output: 600.00 },
+  "o1":                   { input: 15.00, cachedInput: 7.50,  output: 60.00 },
+  "o3":                   { input: 2.00,  cachedInput: 0.50,  output: 8.00 },
+  "o3-mini":              { input: 1.10,  cachedInput: 0.55,  output: 4.40 },
+  "o4-mini":              { input: 1.10,  cachedInput: 0.275, output: 4.40 },
+  "gpt-4.1":              { input: 2.00,  cachedInput: 0.50,  output: 8.00 },
+  "gpt-4.1-mini":         { input: 0.40,  cachedInput: 0.10,  output: 1.60 },
+  "gpt-4.1-nano":         { input: 0.10,  cachedInput: 0.025, output: 0.40 },
+  "gpt-4o":               { input: 2.50,  cachedInput: 1.25,  output: 10.00 },
+  "gpt-4o-mini":          { input: 0.15,  cachedInput: 0.075, output: 0.60 },
+  "gpt-4-turbo":          { input: 10.00, cachedInput: 10.00, output: 30.00 },
+  "gpt-4":                { input: 30.00, cachedInput: 30.00, output: 60.00 }
 };
 
 // The Responses API returns token usage on every response (data.usage);
@@ -2924,11 +3088,35 @@ async function refreshEmailClientIdStatus(){
   }
 }
 
+const settingsEmailFolderInput = document.getElementById("settingsEmailFolderInput");
+const settingsEmailFolderStatus = document.getElementById("settingsEmailFolderStatus");
+
+function setSettingsEmailFolderStatus(msg, kind){
+  settingsEmailFolderStatus.textContent = msg;
+  settingsEmailFolderStatus.className = "settings-status" + (kind ? " " + kind : "");
+}
+
+// Like refreshEmailClientIdStatus -- the folder name isn't a secret, so
+// pre-filling the input with whatever's currently in effect (including the
+// "Forwarded" default when nothing's been saved) lets it double as a
+// "what's set right now" display.
+async function refreshEmailFolderStatus(){
+  try{
+    const res = await fetch(PROXY_ORIGIN + "/api/email-folder-status");
+    const data = await res.json();
+    settingsEmailFolderInput.value = data.folder || "";
+    setSettingsEmailFolderStatus(`Currently syncing "${data.folder}".`, "ok");
+  } catch(e){
+    setSettingsEmailFolderStatus("Couldn't reach the proxy server — is it running?", "err");
+  }
+}
+
 function openSettings(){
   settingsApiKeyInput.value = "";
   settingsOverlay.style.display = "flex";
   refreshKeyStatus();
   refreshEmailClientIdStatus();
+  refreshEmailFolderStatus();
   refreshFolderStatus();
   settingsApiKeyInput.focus();
   populateSettingsPromptEditor();
@@ -3067,6 +3255,30 @@ document.getElementById("settingsEmailClientIdSaveBtn").addEventListener("click"
     setSettingsEmailClientIdStatus("Saved.", "ok");
   } catch(e){
     setSettingsEmailClientIdStatus("Couldn't reach the proxy server — is it running?", "err");
+  }
+});
+
+document.getElementById("settingsEmailFolderSaveBtn").addEventListener("click", async () => {
+  const folder = settingsEmailFolderInput.value.trim();
+  if (!folder){
+    setSettingsEmailFolderStatus("Type a folder name first.", "err");
+    return;
+  }
+  setSettingsEmailFolderStatus("Saving...", "");
+  try{
+    const res = await fetch(PROXY_ORIGIN + "/api/email-folder", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ folder })
+    });
+    const data = await res.json();
+    if (!res.ok){
+      setSettingsEmailFolderStatus(data.error?.message || "Save failed.", "err");
+      return;
+    }
+    setSettingsEmailFolderStatus(`Saved — now syncing "${data.folder}".`, "ok");
+  } catch(e){
+    setSettingsEmailFolderStatus("Couldn't reach the proxy server — is it running?", "err");
   }
 });
 
@@ -3621,6 +3833,10 @@ function setView(view){
   if (view === "editor"){
     editorView.style.display = "flex";
     tabEditor.classList.add("active");
+    // See primeRepoRootPermission -- re-verifies a previously-linked
+    // project folder's permission now, on this gesture, so Download's own
+    // click later doesn't lose its user-activation window to that prompt.
+    primeRepoRootPermission();
   } else if (view === "schedule"){
     scheduleView.style.display = "block";
     tabSchedule.classList.add("active");
@@ -3659,7 +3875,7 @@ document.getElementById("tabDatabase").addEventListener("click", () => setView("
 
 // ====== ROW EDITOR (Notes tab) ======
 // Structured row editor for any table in Supabase's public schema, via the
-// local proxy's generic /api/db/:table routes (see lawgpt-proxy/server.js)
+// local proxy's generic /api/db/:table routes (see app/src/server.js)
 // -- the Supabase key never reaches this page. Tables and their columns are
 // discovered live (dbTables, loaded by loadDbTables()), not hardcoded. Every
 // table is a plain freestanding editor with a picker for existing rows and
@@ -5091,7 +5307,7 @@ document.getElementById("docImportBtn").addEventListener("click", async () => {
 });
 
 // ====== EMAIL TAB ======
-// Synced-message metadata comes from lawgpt-proxy/email-routes.js, which
+// Synced-message metadata comes from app/src/email-routes.js, which
 // persists it server-side (see email-store.js) so it survives a page
 // reload. Downloaded attachments are indexed into the same document store
 // Canvas import uses, so they're looked up here via documentsCache (the
@@ -5139,56 +5355,24 @@ async function refreshEmailMessages(){
     emailMessagesCache = data.messages || [];
 
     if (!data.configured){
-      statusEl.textContent = "Mailbox isn't signed in yet — run `node lawgpt-proxy/setup-email-auth.js` from a terminal once to connect it.";
+      statusEl.textContent = "Mailbox isn't signed in yet — run `node app/src/setup-email-auth.js` from a terminal once to connect it.";
       statusEl.className = "email-status err";
     }
 
-    renderEmailAssignments();
-    renderEmailMessageList();
+    renderEmailList();
   } catch(e){
-    document.getElementById("emailAssignmentList").innerHTML = `<div class="doc-empty">Couldn't reach the proxy server to load email — is it running? (${escapeHtml(e.message)})</div>`;
-    document.getElementById("emailMessageList").innerHTML = "";
+    document.getElementById("emailList").innerHTML = `<div class="doc-empty">Couldn't reach the proxy server to load email — is it running? (${escapeHtml(e.message)})</div>`;
   }
 }
 
-function renderEmailAssignments(){
-  const list = document.getElementById("emailAssignmentList");
-  const pending = emailMessagesCache.filter(m => m.isAssignment && !m.done);
-
-  if (!pending.length){
-    list.innerHTML = `<div class="doc-empty">No open assignments from email.</div>`;
-    return;
-  }
-
-  list.innerHTML = "";
-  pending.forEach(msg => {
-    const card = document.createElement("div");
-    card.className = "email-assignment-card";
-    const dateLabel = msg.date ? new Date(msg.date).toLocaleString() : "";
-
-    card.innerHTML = `
-      <div class="email-card-main">
-        <span class="email-course-badge">${escapeHtml(emailCourseLabel(msg.courseFolder))}</span>
-        <div class="doc-card-title">${escapeHtml(msg.subject)}</div>
-        <div class="doc-card-meta">
-          <span>${escapeHtml(msg.from || "")}</span>
-          ${dateLabel ? `<span>${escapeHtml(dateLabel)}</span>` : ""}
-        </div>
-        ${msg.assignmentSnippet ? `<div class="email-snippet">${escapeHtml(msg.assignmentSnippet)}</div>` : ""}
-      </div>
-      <div class="doc-card-actions">
-        ${emailDocumentButtonsHtml(msg.documentIds)}
-        <button type="button" class="email-done-btn">Mark done</button>
-      </div>`;
-
-    attachEmailDocumentButtonListeners(card);
-    card.querySelector(".email-done-btn").addEventListener("click", () => markEmailDone(msg.id));
-    list.appendChild(card);
-  });
-}
-
-function renderEmailMessageList(){
-  const list = document.getElementById("emailMessageList");
+// One unified list of every synced email, regardless of whether it was
+// keyword-flagged as an assignment or marked done -- no separate
+// "assignments" vs "all emails" split. Each card still gets the plan/agent
+// tools (generating a plan and sending it to the agent works the same for
+// any email, not just ones that got auto-flagged), plus View (the full
+// email in a popup) and Delete (removes it here and in the actual mailbox).
+function renderEmailList(){
+  const list = document.getElementById("emailList");
 
   if (!emailMessagesCache.length){
     list.innerHTML = `<div class="doc-empty">No synced emails yet. Click "Sync now" above.</div>`;
@@ -5197,39 +5381,185 @@ function renderEmailMessageList(){
 
   list.innerHTML = "";
   emailMessagesCache.forEach(msg => {
-    const row = document.createElement("div");
-    row.className = "email-message-row";
+    const card = document.createElement("div");
+    card.className = "email-assignment-card";
+    card.setAttribute("data-msg-id", msg.id);
     const dateLabel = msg.date ? new Date(msg.date).toLocaleString() : "";
-    const docCount = (msg.documentIds || []).length;
 
-    row.innerHTML = `
-      <span class="email-course-badge">${escapeHtml(emailCourseLabel(msg.courseFolder))}</span>
-      <span class="email-message-subject">${escapeHtml(msg.subject)}</span>
-      <span class="doc-card-meta">
-        ${dateLabel ? `<span>${escapeHtml(dateLabel)}</span>` : ""}
-        ${docCount ? `<span>${docCount} document${docCount === 1 ? "" : "s"} downloaded</span>` : ""}
-        ${msg.isAssignment ? `<span>${msg.done ? "Assignment (done)" : "Assignment"}</span>` : ""}
-      </span>`;
+    card.innerHTML = `
+      <div class="email-card-top">
+        <div class="email-card-main">
+          <span class="email-course-badge">${escapeHtml(emailCourseLabel(msg.courseFolder))}</span>
+          <div class="doc-card-title">${escapeHtml(msg.subject)}</div>
+          <div class="doc-card-meta">
+            <span>${escapeHtml(msg.from || "")}</span>
+            ${dateLabel ? `<span>${escapeHtml(dateLabel)}</span>` : ""}
+            ${msg.done ? `<span>Done</span>` : ""}
+          </div>
+          ${msg.assignmentSnippet ? `<div class="email-snippet">${escapeHtml(msg.assignmentSnippet)}</div>` : ""}
+        </div>
+        <div class="doc-card-actions">
+          ${emailDocumentButtonsHtml(msg.documentIds)}
+          <button type="button" class="email-view-btn">View</button>
+          <button type="button" class="email-done-btn">${msg.done ? "Mark not done" : "Mark done"}</button>
+          <button type="button" class="email-delete-btn">Delete</button>
+        </div>
+      </div>
+      ${emailPlanBlockHtml(msg)}`;
 
-    list.appendChild(row);
+    attachEmailDocumentButtonListeners(card);
+    card.querySelector(".email-view-btn").addEventListener("click", () => openEmailView(msg));
+    card.querySelector(".email-done-btn").addEventListener("click", () => markEmailDone(msg.id, !msg.done));
+    card.querySelector(".email-delete-btn").addEventListener("click", () => deleteEmailMessage(msg.id, msg.subject));
+    attachEmailPlanListeners(card, msg);
+    list.appendChild(card);
   });
 }
 
-async function markEmailDone(id){
+// Shows the full synced email (subject/from/date and the complete body
+// text stored at sync time -- see MAX_BODY_CHARS in email-routes.js) in a
+// popup, since the card itself only shows a short flagged-sentence snippet.
+function openEmailView(msg){
+  const dateLabel = msg.date ? new Date(msg.date).toLocaleString() : "";
+  document.getElementById("emailViewSubject").textContent = msg.subject || "(no subject)";
+  document.getElementById("emailViewMeta").innerHTML =
+    `<span>${escapeHtml(msg.from || "")}</span>${dateLabel ? `<span>${escapeHtml(dateLabel)}</span>` : ""}`;
+  document.getElementById("emailViewBody").textContent = msg.body || "(No body text.)";
+  document.getElementById("emailViewOverlay").style.display = "flex";
+}
+function closeEmailView(){
+  document.getElementById("emailViewOverlay").style.display = "none";
+}
+document.getElementById("emailViewCloseBtn").addEventListener("click", closeEmailView);
+document.getElementById("emailViewOverlay").addEventListener("click", (e) => {
+  if (e.target === document.getElementById("emailViewOverlay")) closeEmailView();
+});
+
+// Deletes the email from Outlook itself (Graph's DELETE moves it to Deleted
+// Items, same as deleting it by hand) and, only once that succeeds, from
+// this app's local store -- irreversible from here, hence the confirm.
+async function deleteEmailMessage(id, subject){
+  if (!confirm(`Delete "${subject || "this email"}"? This deletes it from your actual Outlook mailbox too, not just this app. This can't be undone.`)) return;
+  try{
+    const res = await fetch(PROXY_ORIGIN + "/api/email/messages/" + encodeURIComponent(id), { method: "DELETE" });
+    const data = await res.json();
+    if (!res.ok) throw new Error((data && data.error && data.error.message) || "Delete failed.");
+    emailMessagesCache = emailMessagesCache.filter(m => String(m.id) !== String(id));
+    renderEmailList();
+  } catch(e){
+    alert("Couldn't delete this email: " + e.message);
+  }
+}
+
+// The plan block rendered inside each assignment card: an editable textarea
+// holding the (LLM-drafted or hand-edited) plan, a "Regenerate" button, and
+// a "Send to agent" button that opens a real terminal running Claude Code
+// server-side -- there's no log to show here since the terminal is where
+// that output actually goes; this just remembers that it was launched.
+function emailPlanBlockHtml(msg){
+  const status = msg.agentStatus || "idle";
+  const hasPlan = Boolean((msg.plan || "").trim());
+
+  return `
+    <div class="email-plan-block">
+      <div class="email-plan-label">
+        <span>Plan</span>
+        ${status === "launched" ? `<span class="email-agent-status launched">${escapeHtml(emailAgentStatusLabel(msg))}</span>` : ""}
+      </div>
+      <textarea class="email-plan-textarea" placeholder="No plan yet -- click Generate plan.">${escapeHtml(msg.plan || "")}</textarea>
+      ${msg.planError ? `<div class="email-plan-error">${escapeHtml(msg.planError)}</div>` : ""}
+      <div class="email-plan-actions">
+        <button type="button" class="email-plan-generate-btn">${hasPlan ? "Regenerate plan" : "Generate plan"}</button>
+        <button type="button" class="email-agent-run-btn" ${hasPlan ? "" : "disabled"}>Send to agent</button>
+      </div>
+    </div>`;
+}
+
+function emailAgentStatusLabel(msg){
+  if (msg.agentStatus !== "launched") return "";
+  const time = msg.agentStartedAt ? new Date(msg.agentStartedAt).toLocaleTimeString() : "";
+  const terminal = msg.agentTerminal ? ` (${msg.agentTerminal})` : "";
+  return `Sent to agent${terminal}${time ? " at " + time : ""}`;
+}
+
+function attachEmailPlanListeners(card, msg){
+  const textarea = card.querySelector(".email-plan-textarea");
+  const generateBtn = card.querySelector(".email-plan-generate-btn");
+  const runBtn = card.querySelector(".email-agent-run-btn");
+
+  textarea.addEventListener("blur", () => saveEmailPlan(msg.id, textarea.value));
+  generateBtn.addEventListener("click", () => generateEmailPlan(msg.id, generateBtn));
+  runBtn.addEventListener("click", () => runEmailAgent(msg.id, textarea.value));
+}
+
+function updateCachedMessage(updated){
+  if (!updated || !updated.id) return;
+  const idx = emailMessagesCache.findIndex(m => String(m.id) === String(updated.id));
+  if (idx !== -1) emailMessagesCache[idx] = { ...emailMessagesCache[idx], ...updated };
+}
+
+async function saveEmailPlan(id, plan){
+  try{
+    const res = await fetch(PROXY_ORIGIN + "/api/email/messages/" + encodeURIComponent(id) + "/plan", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ plan })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error((data && data.error && data.error.message) || "Couldn't save plan.");
+    updateCachedMessage(data);
+    renderEmailList();
+  } catch(e){
+    alert("Couldn't save the plan: " + e.message);
+  }
+}
+
+async function generateEmailPlan(id, btn){
+  if (btn){ btn.disabled = true; btn.textContent = "Generating…"; }
+  try{
+    const res = await fetch(PROXY_ORIGIN + "/api/email/messages/" + encodeURIComponent(id) + "/plan", { method: "POST" });
+    const data = await res.json();
+    updateCachedMessage(data);
+    if (!res.ok) throw new Error((data && data.error && data.error.message) || (data && data.planError) || "Couldn't generate a plan.");
+  } catch(e){
+    // The error is already stored server-side as planError and rendered
+    // inline in the card, so nothing else to show here.
+  } finally {
+    renderEmailList();
+  }
+}
+
+async function runEmailAgent(id, planText){
+  // The plan the user is currently looking at may not be saved yet (e.g.
+  // they edited it and immediately hit "Send to agent" without tabbing
+  // away first) -- save it before running so the agent gets what's on
+  // screen.
+  await saveEmailPlan(id, planText);
+  try{
+    const res = await fetch(PROXY_ORIGIN + "/api/email/messages/" + encodeURIComponent(id) + "/agent/run", { method: "POST" });
+    const data = await res.json();
+    if (!res.ok) throw new Error((data && data.error && data.error.message) || "Couldn't open a terminal for the agent.");
+    updateCachedMessage(data);
+    renderEmailList();
+  } catch(e){
+    alert("Couldn't send this to the agent: " + e.message);
+  }
+}
+
+async function markEmailDone(id, done){
   try{
     const res = await fetch(PROXY_ORIGIN + "/api/email/messages/" + encodeURIComponent(id) + "/done", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ done: true })
+      body: JSON.stringify({ done })
     });
     if (!res.ok) throw new Error("Server returned " + res.status);
     const updated = await res.json();
     const idx = emailMessagesCache.findIndex(m => String(m.id) === String(updated.id));
     if (idx !== -1) emailMessagesCache[idx] = updated;
-    renderEmailAssignments();
-    renderEmailMessageList();
+    renderEmailList();
   } catch(e){
-    alert("Couldn't mark this as done: " + e.message);
+    alert("Couldn't update this email: " + e.message);
   }
 }
 
@@ -5253,8 +5583,7 @@ document.getElementById("emailSyncBtn").addEventListener("click", async () => {
     statusEl.className = "email-status ok";
 
     emailMessagesCache = data.messages || [];
-    renderEmailAssignments();
-    renderEmailMessageList();
+    renderEmailList();
     if (data.documentsDownloaded) await refreshDocumentsList();
   } catch(e){
     statusEl.textContent = e.message;
@@ -5303,7 +5632,7 @@ Identify every important legal rule or principle in the reading — this section
 <b>Rule: [citation/section, or a short descriptive name if the source doesn't cite one]</b>
 
 - <b>Source</b>: Restatement / UCC / case holding / textbook narrative — say which, and cite the specific provision, case, or passage it comes from.
-- <b>Document</b>: Name the exact file this rule comes from, using its full file name and extension exactly as it appears in the SOURCE: label of the attached material (e.g., CB pp 87-93.txt, Lucy v Zehmer.pdf) — not a paraphrase and not the generic "assigned reading." If multiple documents are attached, identify which one this particular rule is drawn from.
+- <b>Document</b>: Copy the file name character-for-character from the SOURCE: label of the attached material, including its extension (e.g., CB pp 87-93.txt, Lucy v Zehmer.pdf) — the literal on-disk file name, with no quotation marks around it, no paraphrase, no abbreviation, and not the generic "assigned reading." If multiple documents are attached, identify which one this particular rule is drawn from.
 - <b>Statement</b>: State the rule in one or two sentences. Preserve any qualifying language the source uses — don't flatten a qualifier like "materially different" into "different," or otherwise simplify away a distinction the source drew deliberately.
 - <b>Legal Question</b>: What legal question does the rule answer?
 - <b>Requirements</b>: If the rule has a single requirement, state it directly after the colon. If it has multiple requirements, list them as a numbered list indented beneath this header:
@@ -5341,7 +5670,7 @@ For every case, create a separate case brief containing exactly these fields, in
 
 <b>Case Name: [full case name, court, date, and authoring judge if stated]</b>
 
-- <b>Document</b>: Name the exact file this case comes from, using its full file name and extension exactly as it appears in the SOURCE: label of the attached material (e.g., CB pp 87-93.txt, Lucy v Zehmer.pdf) — not a paraphrase and not the generic "assigned reading." If multiple documents are attached, identify which one this case is drawn from.
+- <b>Document</b>: Copy the file name character-for-character from the SOURCE: label of the attached material, including its extension (e.g., CB pp 87-93.txt, Lucy v Zehmer.pdf) — the literal on-disk file name, with no quotation marks around it, no paraphrase, no abbreviation, and not the generic "assigned reading." If multiple documents are attached, identify which one this case is drawn from.
 - <b>Course</b>: Name the course this reading belongs to, if that's apparent from context.
 - <b>Facts</b>
     - [legally significant fact — what happened, what the plaintiff did, what the defendant did, relevant dates]
@@ -5506,7 +5835,7 @@ Identify every important legal rule the court uses or establishes — this inclu
 <b>Rule: [citation/section, or a short descriptive name if the opinion doesn't cite one]</b>
 
 - <b>Source</b>: Restatement / UCC / case holding / textbook narrative — here this will normally be a case holding (this case or the precedent it relies on); name the case if the opinion identifies one.
-- <b>Document</b>: Name the exact file this rule comes from, using its full file name and extension exactly as it appears in the SOURCE: label of the attached material (e.g., CB pp 87-93.txt, Lucy v Zehmer.pdf) — not a paraphrase and not the generic "assigned reading."
+- <b>Document</b>: Copy the file name character-for-character from the SOURCE: label of the attached material, including its extension (e.g., CB pp 87-93.txt, Lucy v Zehmer.pdf) — the literal on-disk file name, with no quotation marks around it, no paraphrase, no abbreviation, and not the generic "assigned reading."
 - <b>Statement</b>: State the rule in one or two sentences. Preserve any qualifying language the opinion uses — don't flatten a qualifier like "materially different" into "different," or otherwise simplify away a distinction the court drew deliberately.
 - <b>Legal Question</b>: What legal question does the rule answer?
 - <b>Requirements</b>: If the rule has a single requirement, state it directly after the colon. If it has multiple requirements, list them as a numbered list indented beneath this header:
@@ -5542,7 +5871,7 @@ Create a complete case brief using exactly this format:
 
 <b>Case Name: [full case name, court, date, and authoring judge if stated]</b>
 
-- <b>Document</b>: Name the exact file this case comes from, using its full file name and extension exactly as it appears in the SOURCE: label of the attached material (e.g., CB pp 87-93.txt, Lucy v Zehmer.pdf) — not a paraphrase and not the generic "assigned reading." If multiple documents are attached, identify which one this case is drawn from.
+- <b>Document</b>: Copy the file name character-for-character from the SOURCE: label of the attached material, including its extension (e.g., CB pp 87-93.txt, Lucy v Zehmer.pdf) — the literal on-disk file name, with no quotation marks around it, no paraphrase, no abbreviation, and not the generic "assigned reading." If multiple documents are attached, identify which one this case is drawn from.
 - <b>Course</b>: Name the course this reading belongs to, if that's apparent from context.
 - <b>Facts</b>
     - [legally significant fact — what happened, what the plaintiff did, what the defendant did, relevant dates]
@@ -5941,9 +6270,84 @@ If part of the assignment can't be completed because the relevant context docume
 
 Do not open the response with introductory filler ("Sure!", "Here's the completed assignment", etc.) — start directly with the work product. Do not refer to yourself as an AI, a language model, or an assistant.`;
 
+// Sent by the "Complete" button on a quiz card (see appendQuizCompleteButton/
+// completeQuiz below). Canvas quizzes aren't downloadable documents, so
+// there's usually no attached source text — unlike NOTES_PROMPT_ASSIGNMENT,
+// this prompt is told explicitly not to refuse in that case, and instead to
+// generate its own best-effort practice version from the covered-material
+// summary completeQuiz builds. This never fills out or submits anything in
+// Canvas — the output only ever lands in the Notes tab.
+const NOTES_PROMPT_QUIZ = `You are my law school quiz-prep assistant.
+
+This is a Canvas quiz. I am NOT asking you to fill it out or submit it in Canvas — this output stays here, in my notes, for me to study from and self-check against.
+
+If the actual quiz questions are attached above, answer each one directly: state the question, give the best answer, and briefly explain why it's correct (and why the likely wrong options are wrong, if it's multiple choice).
+
+If the actual quiz questions are NOT attached, don't refuse — instead write a practice quiz of your own covering the material listed as "covered in class" above (matching the stated number of questions if you reasonably can), with an answer key and a brief explanation for each answer. Say clearly, up front, that this is a practice quiz you generated to help me self-test, not the real quiz's actual questions or answers.
+
+Do not open the response with introductory filler ("Sure!", "Here are your answers", etc.) — start directly with the content. Do not refer to yourself as an AI, a language model, or an assistant.`;
+
 const CIVPRO_SCHEDULE = [{"classLabel": "Class 1", "date": "8/25", "extra": "", "topic": "What Is Civil Procedure?", "readings": [{"text": "Anonymous Physician v. Wininger (please read carefully, take notes, and come to class prepared to discuss the case)", "pages": "Canvas (3 pages)"}, {"text": "Hubbard casebook introduction to the courts and civil procedure (there is no need to memorize this material, the goal of these pages is simply to begin introducing the issues we will cover this semester)", "pages": "3–6; 45–54"}]}, {"classLabel": "Class 2", "date": "8/26", "extra": "", "topic": "Preliminary Relief; Notice", "readings": [{"text": "Winter v. NRDC", "pages": "29–44"}, {"text": "Rule 65", "pages": "104–05"}, {"text": "U.S. Const., Amend. V; Amend. XIV, § 1", "pages": "79"}, {"text": "Mullane v. Central Hanover Bank", "pages": "119–28"}]}, {"classLabel": "Class 3", "date": "8/27", "extra": "", "topic": "Notice", "readings": [{"text": "Greene v. Lindsey", "pages": "130–35"}, {"text": "Jones v. Flowers", "pages": "136–45"}, {"text": "Rule 4", "pages": "154–55"}]}, {"classLabel": "Class 4", "date": "9/1", "extra": "", "topic": "Opportunity to Be Heard", "readings": [{"text": "Fuentes v. Shevin", "pages": "82–95"}, {"text": "Connecticut v. Doehr", "pages": "96–101"}]}, {"classLabel": "Class 5", "date": "9/2", "extra": "", "topic": "Early Pleading Regimes—i.e., How to Begin a Lawsuit", "readings": [{"text": "Noll, A Reader’s Guide to Pre-Modern Procedure (read Noll for background)", "pages": "162–70"}, {"text": "Note on Code Pleading", "pages": "173–74"}, {"text": "Rules 2, 3, 7, and 8", "pages": "175–77"}, {"text": "Dioguardi v. Durning", "pages": "182–84"}, {"text": "Conley v. Gibson", "pages": "186–90"}]}, {"classLabel": "Class 6", "date": "9/3", "extra": "", "topic": "The Twombly and Iqbal Standard", "readings": [{"text": "Bell Atlantic Corp. v. Twombly", "pages": "192–205"}, {"text": "Ashcroft v. Iqbal", "pages": "207–19"}]}, {"classLabel": "Class 7", "date": "9/8", "extra": "", "topic": "Pleading after Twombly and Iqbal", "readings": [{"text": "Johnson v. City of Shelby", "pages": "221–22"}, {"text": "In re Text Messaging Antitrust Litigation", "pages": "224–27"}, {"text": "Swanson v. Citibank", "pages": "228–38"}]}, {"classLabel": "Class 8", "date": "9/9", "extra": "", "topic": "Pleading in the Alternative; Rule 11 Sanctions", "readings": [{"text": "Beyond Plausibility", "pages": "251"}, {"text": "Rule 8(d)", "pages": "252–53"}, {"text": "McCormick v. Kopmann", "pages": "254–58"}, {"text": "Rule 11", "pages": "259–61"}, {"text": "Brown v. Ameriprise Financial Servs., Inc.", "pages": "262–70"}, {"text": "Introductory Note on Heightened Pleading", "pages": "271–72"}, {"text": "Practice Problem 1 will be distributed", "pages": "Canvas/email"}]}, {"classLabel": "Class 9", "date": "9/10", "extra": "", "topic": "Responding to the Complaint; Amendment", "readings": [{"text": "Answer", "pages": "280–81"}, {"text": "Rule 8", "pages": "281–82"}, {"text": "Rule 12", "pages": "283–86"}, {"text": "Bowers v. Mortgage Elec. Registration Systems", "pages": "288–91"}, {"text": "Perez v. Gordon & Wong Law Group", "pages": "292–95"}, {"text": "Rule 15", "pages": "297–98"}, {"text": "Global Tech. & Trading v. Tech Mahindra", "pages": "299–302"}, {"text": "Beeck v. Aquaslide’N’Dive Corp.", "pages": "302–06"}]}, {"classLabel": "Class 10", "date": "9/15", "extra": "", "topic": "The Rules Framework for Discovery", "readings": [{"text": "Rules 26, 30, and 33–37 (read only the Rules)", "pages": "319–46"}, {"text": "Mancia v. Mayflower Textile Servs. Co.", "pages": "348–60"}]}, {"classLabel": "Class 11", "date": "9/16", "extra": "", "topic": "Privilege & Work Product", "readings": [{"text": "SodexoMagic, LLC v. Drexel University", "pages": "385–89"}, {"text": "Uphjohn Co. v. United States", "pages": "390–96"}, {"text": "Hickman v. Taylor", "pages": "398–409"}]}, {"classLabel": "", "date": "9/17", "extra": "", "topic": "No class, but Practice Problem 1 due", "readings": [{"text": "No class on 9/17", "pages": "Submit on Canvas"}, {"text": "Practice Problem 1 is due on Canvas by 9:00pm on 9/17", "pages": ""}]}, {"classLabel": "Class 12", "date": "9/22", "extra": "", "topic": "Privilege & Work Product", "readings": [{"text": "Rule 26(b)", "pages": "411–12"}, {"text": "Rule of Evidence 502", "pages": "431–32"}, {"text": "In re Abilify Products Liability Litig.", "pages": "419–29"}, {"text": "Note on Privilege Logs, Redaction, and the Crime-Fraud Exception", "pages": "433–36"}]}, {"classLabel": "Class 13", "date": "9/23", "extra": "", "topic": "Summary Judgment", "readings": [{"text": "Summary Judgement note and Rule 56", "pages": "563–64"}, {"text": "Introductory Note on the Celotex Trilogy", "pages": "578–81"}, {"text": "Introductory Note to Celotex v. Catrett", "pages": "582–83"}, {"text": "Celotex Corp. v. Catrett", "pages": "584–90"}]}, {"classLabel": "Class 14", "date": "9/24", "extra": "", "topic": "Summary Judgment; Other Pre-Trial Dispositions", "readings": [{"text": "Scott v. Harris", "pages": "613–21"}, {"text": "Tolan v. Cotton", "pages": "Canvas"}, {"text": "Introductory Note on Default Judgment; Rules 41, 54(c), 55, and 60", "pages": "309–13"}, {"text": "Practice Problem 2 will be distributed", "pages": "Canvas/email"}]}, {"classLabel": "Class 15", "date": "9/29", "extra": "", "topic": "Trial by Jury", "readings": [{"text": "U.S. Constitution Amend. VII; Rules 38 and 39", "pages": "474–77"}, {"text": "Curtis v. Loether", "pages": "480–84"}, {"text": "Chauffeurs, Teamsters, and Helpers v. Terry", "pages": "484–91"}, {"text": "Colgrove v. Battin", "pages": "511–18"}, {"text": "Rule 48", "pages": "521–22"}, {"text": "Rule 47 and 28 U.S.C. § 1870", "pages": "536–37"}]}, {"classLabel": "Class 16", "date": "9/30", "extra": "Part 1", "topic": "Taking the Case from the Jury", "readings": [{"text": "Rule 50", "pages": "627–28"}, {"text": "Rule 59", "pages": "630"}, {"text": "Rule 61", "pages": "634"}, {"text": "Neely v. Martin K. Eby Constr. Co.", "pages": "637–42"}]}, {"classLabel": "Class 16", "date": "9/30", "extra": "Part 2", "topic": "Finality", "readings": [{"text": "28 U.S.C. § 1291", "pages": "669"}, {"text": "Rule 54(b)", "pages": "676"}, {"text": "28 U.S.C. § 1292(a)–(b)", "pages": "677"}, {"text": "Liberty Mut. Ins. Co. v. Wetzel", "pages": "678–82"}]}, {"classLabel": "Class 17", "date": "10/1", "extra": "", "topic": "Collateral Order Doctrine", "readings": [{"text": "Cohen v. Beneficial Indus. Loan Corp.", "pages": "685–87"}, {"text": "Mohawk Industries v. Carpenter", "pages": "688–98"}, {"text": "Microsoft I and Microsoft II", "pages": "701–04"}]}, {"classLabel": "", "date": "10/2", "extra": "", "topic": "7:00pm", "readings": [{"text": "Practice Problem 2 due", "pages": "Canvas"}]}, {"classLabel": "Class 18", "date": "10/6", "extra": "", "topic": "Preclusion", "readings": [{"text": "Res Judicata", "pages": "735–38"}, {"text": "Rose v. Board of Election Commissioners", "pages": "738–42"}, {"text": "Rush v. City of Maple Heights", "pages": "744–51"}, {"text": "Cromwell v. County of Sac", "pages": "754–57"}]}, {"classLabel": "Class 19", "date": "10/7", "extra": "", "topic": "Preclusion; Joinder", "readings": [{"text": "Bernhard v. Bank of America", "pages": "759–63"}, {"text": "Parklane Hosiery Co. v. Shore", "pages": "768–73"}, {"text": "introductory notes on Joinder, Rules 13, 14, 18, 19, 20, 21, and 24", "pages": "712–21"}, {"text": "Breaking Glass Pictures v. Does 1–188", "pages": "729–32"}]}, {"classLabel": "Class 20", "date": "10/8", "extra": "", "topic": "Preclusion & Representation", "readings": [{"text": "Preclusion and Representation", "pages": "775"}, {"text": "Taylor v. Sturgell", "pages": "776–87"}, {"text": "Hansberry v. Lee", "pages": "789–94"}]}, {"classLabel": "Class 21", "date": "10/13", "extra": "", "topic": "Midterm Exam", "readings": [{"text": "The Midterm Exam will cover all material through 10/8. It will contain a mix of multiple choice and essay questions.", "pages": "1:00–2:00pm, in-class"}]}, {"classLabel": "Class 22", "date": "10/14", "extra": "", "topic": "Settlement & ADR", "readings": [{"text": "Settlement and ADR (this is lighter reading, but please do read)", "pages": "1307–20"}, {"text": "Rule 23 (we will begin going over Rule 23 in this class, and continue in the following class)", "pages": "802–10"}]}, {"classLabel": "Class 23", "date": "10/15", "extra": "", "topic": "Class Actions", "readings": [{"text": "In re Whirlpool Corp.", "pages": "812–24"}, {"text": "Wal-Mart Stores v. Dukes", "pages": "830–50"}]}, {"classLabel": "Class 24", "date": "10/20", "extra": "", "topic": "Introduction to Subject Matter Jurisdiction; Diversity Jurisdiction", "readings": [{"text": "U.S. Constitution Article III", "pages": "860–63"}, {"text": "28 U.S.C. §§ 1331, 1332", "pages": "863–64"}, {"text": "Strawbridge v. Curtiss", "pages": "872"}, {"text": "ConnectU LLC v. Zuckerberg", "pages": "877–83"}, {"text": "Ceglia v. Zuckerberg", "pages": "885–89"}]}, {"classLabel": "Class 25", "date": "10/21", "extra": "", "topic": "Diversity Jurisdiction", "readings": [{"text": "Hertz Corp. v. Friend", "pages": "892–900"}, {"text": "Lincoln Benefit Life Co. v. AEI Life, LLC", "pages": "902–10"}, {"text": "A.F.A. Tours v. Whitchurch", "pages": "912–18"}, {"text": "Freeland v. Liberty Mutual Fire Ins. Co.", "pages": "919–22"}]}, {"classLabel": "Class 26", "date": "10/22", "extra": "", "topic": "Federal Question Jurisdiction", "readings": [{"text": "Introductory Note to Osborn, plus all of Osborn v. Bank of the United States", "pages": "925–32"}, {"text": "Lousville & Nashville Railroad Co. v. Mottley", "pages": "934–36"}, {"text": "Gunn v. Minton", "pages": "947–55"}]}, {"classLabel": "Class 27", "date": "10/27", "extra": "", "topic": "Supplemental Jurisdiction", "readings": [{"text": "28 U.S.C. § 1367", "pages": "956–57"}, {"text": "Exxon Mobil v. Allapattah Services", "pages": "962–80"}]}, {"classLabel": "Class 28", "date": "10/28", "extra": "", "topic": "Removal", "readings": [{"text": "28 U.S.C. §§ 1441, 1446, 1447", "pages": "984–90"}, {"text": "St. Paul Mercury Indemnity v. Red Cab Co.", "pages": "992–97"}]}, {"classLabel": "Class 29", "date": "10/29", "extra": "", "topic": "Removal", "readings": [{"text": "Caterpillar Inc. v. Lewis", "pages": "998–1004"}, {"text": "Grupo Dataflux v. Atlas Global Group", "pages": "1005–13"}]}, {"classLabel": "Class 30", "date": "11/3", "extra": "", "topic": "Historical Development of the Doctrine", "readings": [{"text": "Introduction to Personal Jurisdiction", "pages": "1017–19"}, {"text": "Pennoyer v. Neff", "pages": "1019–26"}, {"text": "Hess v. Pawloski", "pages": "1029–31"}, {"text": "International Shoe Co. v. Washington", "pages": "1034–39"}]}, {"classLabel": "Class 31", "date": "11/4", "extra": "", "topic": "Specific Jurisdiction", "readings": [{"text": "Note on Long-Arm Statutes", "pages": "1041–42"}, {"text": "World-Wide Volkswagen Corp. v. Woodson", "pages": "1043–54"}, {"text": "J. McIntyre Machinery, Ltd. V. Nicastro", "pages": "1059–73"}]}, {"classLabel": "Class 32", "date": "11/5", "extra": "", "topic": "Specific & General Jurisdiction", "readings": [{"text": "Walden v. Fiore", "pages": "1082–89"}, {"text": "General Jurisdiction", "pages": "1091–92"}, {"text": "Burnham v. Superior Court of California", "pages": "1092–1104"}, {"text": "Goodyear Dunlop Tires Operations v. Brown", "pages": "1107–12"}]}, {"classLabel": "Class 33", "date": "11/10", "extra": "", "topic": "Specific & General Jurisdiction", "readings": [{"text": "Daimler AG v. Bauman", "pages": "1114–22"}, {"text": "be2 LLC v. Ivanov", "pages": "1123–27"}, {"text": "Mallory v. Norfolk Southern", "pages": "Canvas"}, {"text": "Practice Problem 3 will be distributed", "pages": "Canvas/email"}]}, {"classLabel": "Class 34", "date": "11/11", "extra": "", "topic": "Venue; Transfer", "readings": [{"text": "Venue and Transfer; 28 U.S.C. §§ 1390, 1391", "pages": "1167–69"}, {"text": "Gulf Oil Corp. v. Gilbert", "pages": "1171–77"}, {"text": "28 U.S.C. §§ 1404, 1406", "pages": "1177–78"}, {"text": "Piper Aircraft Co. v. Reyno", "pages": "1180–90"}]}, {"classLabel": "", "date": "", "extra": "", "topic": "", "readings": [{"text": "No class on 11/12", "pages": ""}]}, {"classLabel": "", "date": "11/16", "extra": "", "topic": "7:00pm", "readings": [{"text": "Practice Problem 3 due", "pages": "Canvas"}]}, {"classLabel": "Class 35", "date": "11/17", "extra": "", "topic": "The Erie Problem", "readings": [{"text": "Introductory notes on The Erie Problem; A Brooding Omnipresence", "pages": "1205–09"}, {"text": "Swift v. Tyson", "pages": "1209–13"}, {"text": "Erie Railroad Co. v. Tompkins", "pages": "1214–24"}]}, {"classLabel": "Class 36", "date": "11/18", "extra": "", "topic": "Erie’s Progeny", "readings": [{"text": "An Irrepressible Myth", "pages": "1232–34"}, {"text": "Ruhlin v. New York Life Insurance", "pages": "1235–36"}, {"text": "Sibbach v. Wilson & Co.", "pages": "1248–53"}, {"text": "Rules Enabling Act (28 U.S.C. 2072)", "pages": "1253–54"}, {"text": "Cohen v. Beneficial Indus. Loan Corp.", "pages": "1256–63"}]}, {"classLabel": "Class 37", "date": "11/19", "extra": "", "topic": "Erie’s Progeny", "readings": [{"text": "Hanna v. Plumer", "pages": "1264–73"}, {"text": "Berk v. Choy", "pages": "Canvas"}, {"text": "Postscript on Erie and Horizontal Choice of Law", "pages": "1301–03"}]}, {"classLabel": "Class 38", "date": "11/23", "extra": "", "topic": "Review Session", "readings": [{"text": "Format to be announced in advance", "pages": "No reading for review session"}]}, {"classLabel": "", "date": "11/24", "extra": "", "topic": "", "readings": []}]
 ;
-const LSS_SCHEDULE = [{"week": "WEEK 1", "classes": [{"date": "August 25", "classLabel": "Class 1A", "topic": "Introduction to LSS", "banner": false, "assignments": ["Becoming a Legal Writer (BLW)Introduction §§ I-II (pp. xix-xx), Ch. 3 intro. page 35, Ch. 3.2 and 3.3, and Ch. 4 intro. page 85", "Complete BLW Exercises 3.2.1, 3.2.2 and 3.3.1 (You may do them in handwriting or in a word doc. You will not be turning these in, but be prepared to discuss.)", "Read article by Brent J Hoeft, AI Hallucinations: What Lawyers Need to Understand, available on Canvas Week 1 module", "First Day Questionnaire in Canvas Week 1 Module"]}, {"date": "August 27", "classLabel": "Class 1B", "topic": "Intro to Legal Analysis and to your Client", "banner": false, "assignments": ["Read BLW Ch. 1, intro. and §§ I-II (pp. 3-6)", "Complete Exercise 1.1 (questions 1-3)", "Read and brief Mustafa and Sobin cases and client email (available on Canvas)", "Complete Legal Research Modules 0.1-0.4 by 5:00 p.m. Tuesday, 9/1"]}]}, {"week": "WEEK 2", "classes": [{"date": "September 1", "classLabel": "Class 2A", "topic": "Legal Analysis Continued & an Introduction to Bluebook Citation", "banner": false, "assignments": ["Read BLW Ch. 5", "In lieu of Ch. 5 exercises, complete chart for Mustafa and Sobin", "Complete selected problems from ICWs 1 and 2 by 5:00 p.m. Sunday, 9/6 (see Canvas module for selections)", "Bring Bluebook to class, and make sure you have registered for LEXIS, so you can access the ICW platform.", "Mandatory Legal Research Fellows’ Research Lab – 12:00 p.m.-12:50 p.m. Rm 102A-There is free food!"]}, {"date": "September 3", "classLabel": "Class 2B", "topic": "Communicating Legal Analysis in Writing (IRAC and CReAC)", "banner": false, "assignments": ["Read Closed Memo Discussion Assignment (on Canvas) and Ch. 6, intro. and §§ I-II (pp. 113-115)", "Complete BLW Exercise 1.1 (questions 4-8) including reading sample email and memo, and complete exercises 6.1, 6.2, and 6.3", "Complete Legal Research Modules 1.1-1.3 by 5:00 p.m. Tuesday, 9/8"]}]}, {"week": "WEEK 3", "classes": [{"date": "September 8", "classLabel": "Class 3A", "topic": "Synthesizing and Drafting Rules", "banner": false, "assignments": ["Read BLW Ch. 4, §§ I-IV (pp. 85-88).", "Complete Exercises 4.1, 4.4", "Read, brief, and chart your cases for the Closed Memo discussion before class and be prepared to discuss (See BLW Ch. 5 for Case Charting info)", "Complete selected exercises from ICWs 3 and 5 by 5:00 p.m. Sunday, 9/13"]}, {"date": "September 10", "classLabel": "Class 3B", "topic": "Rule Synthesis cont.; Identifying Legally Significant Facts and Drafting Case Explications", "banner": false, "assignments": ["Read BLW Ch. 7 intro., page 125, Ch, 7.1, intro. and §§ I-II (pp. 127-130), Ch. 7.2, §§ I-III (pp. 147-149)", "Complete Exercises 7.1.5, 7.2.1, and 7.2.2", "Complete Legal Research Modules 2.1-2.3 by 5:00 p.m. Tuesday, 9/15"]}]}, {"week": "WEEK 4", "classes": [{"date": "September 15", "classLabel": "Class 4A", "topic": "Applying the Law to the Facts + Editing", "banner": false, "assignments": ["Bring PRINTED Draft of Closed Memo Discussion Rules to Class", "Read BLW Ch. 8 intro., page 169, Ch, 8.1, § I (pp. 171-172), Ch. 8.2, §§ I-II (pp. 179-181)", "Complete Exercises 8.1.1, and 8.2.1"]}, {"date": "September 17", "classLabel": "Class 4B", "topic": "More on Application + Editing", "banner": false, "assignments": ["Read BLW Ch. 8.3 intro. and §§ I-III (pp. 197-205)–focus on the counterapplication format;", "Complete Exercise 8.3.1", "Bring your completed draft discussion to class", "Complete Legal Research Modules 2.4 -2.7 by 5:00 p.m. Tuesday, 9/22"]}, {"date": "", "classLabel": "", "topic": "Issue 1 (Closed) Discussion due by 5:00 pm on Sunday, September 20 in Canvas", "banner": true, "assignments": []}]}, {"week": "WEEK 5", "classes": [{"date": "September 22", "classLabel": "Class 5A", "topic": "Hierarchy of Authority and an Introduction to the Legal Research Process", "banner": false, "assignments": ["Read BLW Ch. 2 intro. and §§ I-IV (pp. 21-27); we will do some of the exercises in class.", "Sign up for and attend mandatory Closed Memo Discussion Conference (5% of course grade)", "*Bring a laptop computer to class during weeks 5, 6, 7, and 8 to practice researching."]}, {"date": "September 24", "classLabel": "Class 5B", "topic": "Legal Research – Secondary Sources", "banner": false, "assignments": ["Complete Selected ICW questions from ICW 6 and 7 by 5:00 p.m. Sunday, 9/27", "Complete Legal Research Modules 3.1-3.3 by class time Thursday, 9/24"]}]}, {"week": "WEEK 6", "classes": [{"date": "September 29", "classLabel": "Class 6A", "topic": "Legal Research – Statutes", "banner": false, "assignments": ["Read BLW Ch. 3.1 intro. and § I (pp. 37-42) (exercises not req’d)", "Complete Legal Research Modules 3.4-3.7 by class time Tuesday, 9/29"]}, {"date": "October 1", "classLabel": "Class 6B", "topic": "Legal Research: Cases & Citators", "banner": false, "assignments": ["Complete Legal Research Modules 4.1-4.4 by class time Thursday, 10/1"]}]}, {"week": "WEEK 7", "classes": [{"date": "October 6", "classLabel": "Class 7A", "topic": "Legal Research: Boolean Searching, Wrap-Up, and In-Class Practice", "banner": false, "assignments": ["Complete Legal Research Modules 4.5-4.9 by class time Tuesday, 10/6"]}, {"date": "October 8", "classLabel": "Class 7B", "topic": "Graded Research Assessment (15% of course grade)", "banner": false, "assignments": []}]}, {"week": "WEEK 8", "classes": [{"date": "October 13", "classLabel": "Class 8A", "topic": "GenAI Legal Research Validation and in-class exercise", "banner": false, "assignments": ["Complete GenAI legal readings and pre-class preparation work for the validation exercise (to be available on Canvas)"]}, {"date": "October 15", "classLabel": "Class 8B", "topic": "Introduction to Predictive Memoranda", "banner": false, "assignments": ["Read Open Memo Packet (on Canvas) and begin researching"]}]}, {"week": "WEEK 9", "classes": [{"date": "October 20", "classLabel": "Class 9A", "topic": "The Open Memo - Locating and choosing authority", "banner": false, "assignments": ["Spend some time analyzing the issue and researching before class", "Sign up and attend your Open Memo Research Conference (10% of your course grade)"]}, {"date": "October 22", "classLabel": "Class 9B", "topic": "Discussion Section: Drafting rules & case illustrations/parentheticals deep dive", "banner": false, "assignments": ["Complete selected exercises from ICWs 12, 13, and 15 by Sunday at 5:00 p.m., 10/25"]}]}, {"week": "WEEK 10", "classes": [{"date": "October 27", "classLabel": "Class 10A", "topic": "Question Presented and Brief Answers", "banner": false, "assignments": ["Read BLW Ch. 9 intro. and §§ I-IV (pp. 215-222) and Ch. 10 intro. and §§ I-III (pp. 237-242)", "Complete exercises 9.2, 9.3, 10.3 and 10.5 (refer to facts in Exercise 5.3 to assist in completing the issue)"]}, {"date": "October 29", "classLabel": "Class 10B", "topic": "Statement of Facts", "banner": false, "assignments": ["Read BLW Ch. 11 (pp. 253-255)", "Complete exercises 11.2"]}]}, {"week": "WEEK 11", "classes": [{"date": "November 3", "classLabel": "Class 11A", "topic": "Putting it All Together and Polishing the Open Memo", "banner": false, "assignments": ["Read BLW Ch. 13 pp. 285-289)", "Complete Ch. 13 exercises 13.1, 13.2, 13.4 and 13.5"]}, {"date": "November 5", "classLabel": "Class 11B", "topic": "Practitioners’ Panel Discussion", "banner": false, "assignments": []}, {"date": "", "classLabel": "", "topic": "Final memo due (30% of course grade) by 5:00 pm on Sunday, November 8 in Canvas", "banner": true, "assignments": []}]}, {"week": "WEEK 12", "classes": [{"date": "November 10", "classLabel": "Class 12A", "topic": "Professional Communications, including Professional Emails", "banner": false, "assignments": ["Quickly review BLW Ch. 1 and complete exercise 1.2"]}, {"date": "November 12", "classLabel": "Class 12B", "topic": "More on Professional Communications, in-class exercise using AI to create an e-mail from your Final Memo", "banner": false, "assignments": ["Bring to class a draft of an email analysis boiling down your open memo"]}]}, {"week": "WEEK 13", "classes": [{"date": "November 17", "classLabel": "Class 13A", "topic": "Exam Review: Writing Under Timed Conditions", "banner": false, "assignments": ["Review past assignment and sample answer posted on Canvas"]}, {"date": "November 19", "classLabel": "Class 13B", "topic": "In-Class E-mail Timed Writing Assignment; Using Lockdown Browser, Closed Library (30% of course grade)", "banner": false, "assignments": []}, {"date": "", "classLabel": "", "topic": "In lieu of Class in Week 14, you must go to (1) the introductory Legal Research Fellows’ weekly research lab (Sept. 1 from 12:00 p.m. – 12:50 p.m. in Rm 102A-free food!) and (2) one of the Legal Writing Fellows’ Workshops held this semester (details will be announced in class).", "banner": true, "assignments": []}]}]
+
+// Practice quizzes on Canvas -- separate from CIVPRO_SCHEDULE because they
+// aren't tied to a single class session (each covers a week's worth of
+// material) and get their own card in the schedule view rather than being
+// folded into a class card. "dueDate"/"dueTime" are the actionable deadline
+// (matches the convention already used for standalone "Practice Problem
+// due" rows in CIVPRO_SCHEDULE); "availabilityText" is shown as secondary
+// info. See buildCivProTimeline() for how these get slotted in among the
+// classes by date, and completeQuiz() for what the "Complete" button does.
+const CIVPRO_QUIZZES = [
+  { title: "Week 1 Practice Quiz", availabilityText: "Available until Dec 20 at 11:59pm", dueDate: "Aug 30", dueTime: "9:00pm", points: 6, questions: 6 },
+  { title: "Week 2 Practice Quiz", availabilityText: "Not available until Sep 3 at 2:30pm", dueDate: "Sep 6", dueTime: "9:00pm", points: 10, questions: 10 },
+  { title: "Week 3 Practice Quiz", availabilityText: "Not available until Sep 10 at 2:30pm", dueDate: "Sep 13", dueTime: "9:00pm", points: 7, questions: 7 },
+  { title: "Week 4 Practice Quiz", availabilityText: "Not available until Sep 16 at 2:30pm", dueDate: "Sep 20", dueTime: "9:00pm", points: 5, questions: 5 },
+  { title: "Week 5 Practice Quiz", availabilityText: "Not available until Sep 24 at 2:30pm", dueDate: "Sep 27", dueTime: "9:00pm", points: 6, questions: 6 }
+];
+
+// Parses either date format used in these schedules -- "8/25" (CIVPRO_SCHEDULE)
+// or "Sep 6" / "September 6" (CIVPRO_QUIZZES.dueDate) -- into a month*100+day
+// sort key, so the two can be compared. Returns null for anything blank or
+// unparseable (spacer rows, etc.) rather than guessing.
+const SCHEDULE_MONTH_NAMES = { jan: 1, feb: 2, mar: 3, apr: 4, may: 5, jun: 6, jul: 7, aug: 8, sep: 9, oct: 10, nov: 11, dec: 12 };
+function parseScheduleDate(str){
+  const s = (str || "").trim();
+  if (!s) return null;
+  const slash = s.match(/^(\d{1,2})\/(\d{1,2})$/);
+  if (slash) return parseInt(slash[1], 10) * 100 + parseInt(slash[2], 10);
+  const word = s.match(/^([A-Za-z]+)\s+(\d{1,2})/);
+  if (word){
+    const month = SCHEDULE_MONTH_NAMES[word[1].slice(0, 3).toLowerCase()];
+    if (month) return month * 100 + parseInt(word[2], 10);
+  }
+  return null;
+}
+
+// Merges CIVPRO_QUIZZES into CIVPRO_SCHEDULE by due date, without disturbing
+// the class array's existing order -- each quiz is inserted just before the
+// first class entry whose date sorts later than the quiz's due date (entries
+// with an unparseable/blank date, e.g. spacer rows, are skipped over during
+// that comparison and keep their original position). Called fresh on every
+// render rather than cached, since it's cheap and this keeps it from ever
+// going stale if either source array changes.
+function buildCivProTimeline(){
+  const items = CIVPRO_SCHEDULE.map(cls => ({ type: "class", date: parseScheduleDate(cls.date), cls }));
+  CIVPRO_QUIZZES.forEach(quiz => {
+    const key = parseScheduleDate(quiz.dueDate);
+    let insertAt = items.length;
+    for (let i = 0; i < items.length; i++){
+      if (key !== null && items[i].date !== null && items[i].date > key){
+        insertAt = i;
+        break;
+      }
+    }
+    items.splice(insertAt, 0, { type: "quiz", date: key, quiz });
+  });
+  return items;
+}
+
+const LSS_SCHEDULE = [{"week": "WEEK 1", "classes": [{"date": "August 25", "classLabel": "Class 1A", "topic": "Introduction to LSS", "banner": false, "assignments": ["Becoming a Legal Writer (BLW)Introduction §§ I-II (pp. xix-xx), Ch. 3 intro. page 35, Ch. 3.2 and 3.3, and Ch. 4 intro. page 85", "Complete BLW Exercises 3.2.1, 3.2.2 and 3.3.1 (You may do them in handwriting or in a word doc. You will not be turning these in, but be prepared to discuss.)", "Read article by Brent J Hoeft, AI Hallucinations: What Lawyers Need to Understand, available on Canvas Week 1 module", "First Day Questionnaire in Canvas Week 1 Module"]}, {"date": "August 27", "classLabel": "Class 1B", "topic": "Intro to Legal Analysis and to your Client", "banner": false, "assignments": ["Read BLW Ch. 1, intro. and §§ I-II (pp. 3-6)", "Complete Exercise 1.1 (questions 1-3)", "Read and brief Mustafa and Sobin cases and client email (available on Canvas)", "Complete Legal Research Modules 0.1-0.4 by 5:00 p.m. Tuesday, 9/1"]}]}, {"week": "WEEK 2", "classes": [{"date": "September 1", "classLabel": "Class 2A", "topic": "Legal Analysis Continued & an Introduction to Bluebook Citation", "banner": false, "assignments": ["Read BLW Ch. 5", "In lieu of Ch. 5 exercises, complete chart for Mustafa and Sobin", "Complete selected problems from ICWs 1 and 2 by 5:00 p.m. Sunday, 9/6 (see Canvas module for selections)", "Bring Bluebook to class, and make sure you have registered for LEXIS, so you can access the ICW platform.", "Mandatory Legal Research Fellows’ Research Lab – 12:00 p.m.-12:50 p.m. Rm 102A-There is free food!"]}, {"date": "September 3", "classLabel": "Class 2B", "topic": "Communicating Legal Analysis in Writing (IRAC and CReAC)", "banner": false, "assignments": ["Read Closed Memo Discussion Assignment (on Canvas)", "Read BLW Ch. 6, intro. and §§ I-II (pp. 113-115)", "Complete BLW Exercise 1.1 (questions 4-8) including reading sample email and memo, and complete exercises 6.1, 6.2, and 6.3", "Complete Legal Research Modules 1.1-1.3 by 5:00 p.m. Tuesday, 9/8"]}]}, {"week": "WEEK 3", "classes": [{"date": "September 8", "classLabel": "Class 3A", "topic": "Synthesizing and Drafting Rules", "banner": false, "assignments": ["Read BLW Ch. 4, §§ I-IV (pp. 85-88).", "Complete Exercises 4.1, 4.4", "Read, brief, and chart your cases for the Closed Memo discussion before class and be prepared to discuss (See BLW Ch. 5 for Case Charting info)", "Complete selected exercises from ICWs 3 and 5 by 5:00 p.m. Sunday, 9/13"]}, {"date": "September 10", "classLabel": "Class 3B", "topic": "Rule Synthesis cont.; Identifying Legally Significant Facts and Drafting Case Explications", "banner": false, "assignments": ["Read BLW Ch. 7 intro., page 125, Ch, 7.1, intro. and §§ I-II (pp. 127-130), Ch. 7.2, §§ I-III (pp. 147-149)", "Complete Exercises 7.1.5, 7.2.1, and 7.2.2", "Complete Legal Research Modules 2.1-2.3 by 5:00 p.m. Tuesday, 9/15"]}]}, {"week": "WEEK 4", "classes": [{"date": "September 15", "classLabel": "Class 4A", "topic": "Applying the Law to the Facts + Editing", "banner": false, "assignments": ["Bring PRINTED Draft of Closed Memo Discussion Rules to Class", "Read BLW Ch. 8 intro., page 169, Ch, 8.1, § I (pp. 171-172), Ch. 8.2, §§ I-II (pp. 179-181)", "Complete Exercises 8.1.1, and 8.2.1"]}, {"date": "September 17", "classLabel": "Class 4B", "topic": "More on Application + Editing", "banner": false, "assignments": ["Read BLW Ch. 8.3 intro. and §§ I-III (pp. 197-205)–focus on the counterapplication format;", "Complete Exercise 8.3.1", "Bring your completed draft discussion to class", "Complete Legal Research Modules 2.4 -2.7 by 5:00 p.m. Tuesday, 9/22"]}, {"date": "", "classLabel": "", "topic": "Issue 1 (Closed) Discussion due by 5:00 pm on Sunday, September 20 in Canvas", "banner": true, "assignments": []}]}, {"week": "WEEK 5", "classes": [{"date": "September 22", "classLabel": "Class 5A", "topic": "Hierarchy of Authority and an Introduction to the Legal Research Process", "banner": false, "assignments": ["Read BLW Ch. 2 intro. and §§ I-IV (pp. 21-27); we will do some of the exercises in class.", "Sign up for and attend mandatory Closed Memo Discussion Conference (5% of course grade)", "*Bring a laptop computer to class during weeks 5, 6, 7, and 8 to practice researching."]}, {"date": "September 24", "classLabel": "Class 5B", "topic": "Legal Research – Secondary Sources", "banner": false, "assignments": ["Complete Selected ICW questions from ICW 6 and 7 by 5:00 p.m. Sunday, 9/27", "Complete Legal Research Modules 3.1-3.3 by class time Thursday, 9/24"]}]}, {"week": "WEEK 6", "classes": [{"date": "September 29", "classLabel": "Class 6A", "topic": "Legal Research – Statutes", "banner": false, "assignments": ["Read BLW Ch. 3.1 intro. and § I (pp. 37-42) (exercises not req’d)", "Complete Legal Research Modules 3.4-3.7 by class time Tuesday, 9/29"]}, {"date": "October 1", "classLabel": "Class 6B", "topic": "Legal Research: Cases & Citators", "banner": false, "assignments": ["Complete Legal Research Modules 4.1-4.4 by class time Thursday, 10/1"]}]}, {"week": "WEEK 7", "classes": [{"date": "October 6", "classLabel": "Class 7A", "topic": "Legal Research: Boolean Searching, Wrap-Up, and In-Class Practice", "banner": false, "assignments": ["Complete Legal Research Modules 4.5-4.9 by class time Tuesday, 10/6"]}, {"date": "October 8", "classLabel": "Class 7B", "topic": "Graded Research Assessment (15% of course grade)", "banner": false, "assignments": []}]}, {"week": "WEEK 8", "classes": [{"date": "October 13", "classLabel": "Class 8A", "topic": "GenAI Legal Research Validation and in-class exercise", "banner": false, "assignments": ["Complete GenAI legal readings and pre-class preparation work for the validation exercise (to be available on Canvas)"]}, {"date": "October 15", "classLabel": "Class 8B", "topic": "Introduction to Predictive Memoranda", "banner": false, "assignments": ["Read Open Memo Packet (on Canvas) and begin researching"]}]}, {"week": "WEEK 9", "classes": [{"date": "October 20", "classLabel": "Class 9A", "topic": "The Open Memo - Locating and choosing authority", "banner": false, "assignments": ["Spend some time analyzing the issue and researching before class", "Sign up and attend your Open Memo Research Conference (10% of your course grade)"]}, {"date": "October 22", "classLabel": "Class 9B", "topic": "Discussion Section: Drafting rules & case illustrations/parentheticals deep dive", "banner": false, "assignments": ["Complete selected exercises from ICWs 12, 13, and 15 by Sunday at 5:00 p.m., 10/25"]}]}, {"week": "WEEK 10", "classes": [{"date": "October 27", "classLabel": "Class 10A", "topic": "Question Presented and Brief Answers", "banner": false, "assignments": ["Read BLW Ch. 9 intro. and §§ I-IV (pp. 215-222) and Ch. 10 intro. and §§ I-III (pp. 237-242)", "Complete exercises 9.2, 9.3, 10.3 and 10.5 (refer to facts in Exercise 5.3 to assist in completing the issue)"]}, {"date": "October 29", "classLabel": "Class 10B", "topic": "Statement of Facts", "banner": false, "assignments": ["Read BLW Ch. 11 (pp. 253-255)", "Complete exercises 11.2"]}]}, {"week": "WEEK 11", "classes": [{"date": "November 3", "classLabel": "Class 11A", "topic": "Putting it All Together and Polishing the Open Memo", "banner": false, "assignments": ["Read BLW Ch. 13 pp. 285-289)", "Complete Ch. 13 exercises 13.1, 13.2, 13.4 and 13.5"]}, {"date": "November 5", "classLabel": "Class 11B", "topic": "Practitioners’ Panel Discussion", "banner": false, "assignments": []}, {"date": "", "classLabel": "", "topic": "Final memo due (30% of course grade) by 5:00 pm on Sunday, November 8 in Canvas", "banner": true, "assignments": []}]}, {"week": "WEEK 12", "classes": [{"date": "November 10", "classLabel": "Class 12A", "topic": "Professional Communications, including Professional Emails", "banner": false, "assignments": ["Quickly review BLW Ch. 1 and complete exercise 1.2"]}, {"date": "November 12", "classLabel": "Class 12B", "topic": "More on Professional Communications, in-class exercise using AI to create an e-mail from your Final Memo", "banner": false, "assignments": ["Bring to class a draft of an email analysis boiling down your open memo"]}]}, {"week": "WEEK 13", "classes": [{"date": "November 17", "classLabel": "Class 13A", "topic": "Exam Review: Writing Under Timed Conditions", "banner": false, "assignments": ["Review past assignment and sample answer posted on Canvas"]}, {"date": "November 19", "classLabel": "Class 13B", "topic": "In-Class E-mail Timed Writing Assignment; Using Lockdown Browser, Closed Library (30% of course grade)", "banner": false, "assignments": []}, {"date": "", "classLabel": "", "topic": "In lieu of Class in Week 14, you must go to (1) the introductory Legal Research Fellows’ weekly research lab (Sept. 1 from 12:00 p.m. – 12:50 p.m. in Rm 102A-free food!) and (2) one of the Legal Writing Fellows’ Workshops held this semester (details will be announced in class).", "banner": true, "assignments": []}]}]
 ;
 
 const CONTRACTS_SCHEDULE = [{"classLabel": "Class 1", "topic": "Introduction to Contracts", "readings": [{"text": "Read the Syllabus.", "pages": ""}, {"text": "Read CB pp. 1-34.", "pages": "CB pp 1-34"}, {"text": "R2 §§1, 2, 4, 17(1), 20, 153. Compare § 20 with § 153.", "pages": "R2 §§1, 2, 4, 17(1), 20, 153"}]}, {"classLabel": "Class 2", "topic": "Mutual Assent: Lucy v. Zehmer", "readings": [{"text": "Lucy v. Zehmer, 84 S.E.2d 516 (Va. 1954). The case will be e-mailed to you.", "pages": "Emailed"}]}, {"classLabel": "Class 3", "topic": "Timing Issues: Offer & Acceptance", "readings": [{"text": "Timing Issues: Offer & Acceptance, CB pp. 35-51 (class discussion will focus on Lonegran and the notes).", "pages": "CB pp 35-51"}, {"text": "R2 §§ 24, 26, and 36.", "pages": "R2 §§ 24, 26, and 36"}]}, {"classLabel": "Class 4", "topic": "Offer & Acceptance (continued)", "readings": [{"text": "O&A continued: CB pp. 52-66 (Cook, Sateriale).", "pages": "CB pp 52-66"}, {"text": "R2 §§ 45, 25.", "pages": "R2 §§ 45, 25"}, {"text": "Also read Izadi v. Machado Gus Ford, 550 So. 2d 1135 (1989) (case will be e-mailed).", "pages": "Emailed"}]}, {"classLabel": "Class 5", "topic": "Other Mutual Assent Issues", "readings": [{"text": "Other Mutual Assent issues: Harlow & Jones, 424 F. Supp. 770 (will be emailed to you).", "pages": "Emailed"}, {"text": "UCC §§ 2-204(1), 2-207(3).", "pages": "UCC §§ 2-204(1), 2-207(3)"}, {"text": "CB pp. 68-85 (Walker).", "pages": "CB pp 68-85"}]}, {"classLabel": "Class 6", "topic": "Consideration", "readings": [{"text": "Consideration: CB pp. 87-93; 102-106; 215-217 (Hamer, Kirksey, Dougherty).", "pages": "CB pp 87-93; CB pp 102-106; CB pp 215-217"}]}, {"classLabel": "Class 7", "topic": "Consideration (continued): Plowman & Dohrmann", "readings": [{"text": "CB pp. 108-115 (Plowman and Dohrmann) (skip note 2 on p. 113).", "pages": "CB pp 108-115"}, {"text": "Dohrmann will be e-mailed to you.", "pages": "Emailed"}]}, {"classLabel": "Class 8", "topic": "Consideration (continued): Batsakis v. Demotsis", "readings": [{"text": "Batsakis v. Demotsis, 226 S.W.2d 673 (1949) (case will be e-mailed).", "pages": "Emailed"}]}, {"classLabel": "Class 9", "topic": "Promissory Estoppel", "readings": [{"text": "Promissory Estoppel: Read Wright v. Newman, 467 S.E.2d 533 (case will be e-mailed).", "pages": "Emailed"}, {"text": "Read Greiner v. Greiner, 293 P. 759 (case will be e-mailed).", "pages": "Emailed"}, {"text": "CB pp. 217-225 (Harvey).", "pages": "CB pp 217-225"}]}, {"classLabel": "Class 10", "topic": "Promissory Estoppel (continued): King & Katz", "readings": [{"text": "Read CB pp. 224-243.", "pages": "CB pp 224-243"}, {"text": "Class will focus on King and Katz.", "pages": ""}]}, {"classLabel": "Class 11", "topic": "Promissory Estoppel (continued): Aceves", "readings": [{"text": "CB pp. 243-253.", "pages": "CB pp 243-253"}, {"text": "Class will focus on Aceves.", "pages": ""}]}, {"classLabel": "Class 12", "topic": "Firm Offers: Baird & Drennan", "readings": [{"text": "CB pp. 263-273.", "pages": "CB pp 263-273"}, {"text": "R2 §§ 45, 87(2), and 90.", "pages": "R2 §§ 45, 87(2), and 90"}, {"text": "Class will focus on Baird and Drennan.", "pages": ""}]}, {"classLabel": "Class 13", "topic": "Berryman & Pop's", "readings": [{"text": "CB pp. 255-263 and 273-282.", "pages": "CB pp 255-263; CB pp 273-282"}, {"text": "Class will focus on Berryman and Pop's.", "pages": ""}]}, {"classLabel": "Class 14", "topic": "Electronic Contracting", "readings": [{"text": "Electronic Contracting, CB pp. 181-208.", "pages": "CB pp 181-208"}]}, {"classLabel": "Class 15", "topic": "Restitution in the Absence of Agreement", "readings": [{"text": "Restitution in the absence of agreement. CB pp. 286-317 (Commerce, Pelo).", "pages": "CB pp 286-317"}]}, {"classLabel": "Class 16", "topic": "Promissory Restitution", "readings": [{"text": "Promissory Restitution, CB pp. 317-330 (Mills, Webb).", "pages": "CB pp 317-330"}]}, {"classLabel": "Class 17", "topic": "Statute of Frauds", "readings": [{"text": "Statute of Frauds. CB pp. 335-370 (Crabtree, Beaver, Rice. Skip Problem 4-1).", "pages": "CB pp 335-370"}]}, {"classLabel": "Class 18", "topic": "Statute of Frauds (continued): Hart", "readings": [{"text": "Statute of Frauds: CB pp. 373-382 (Hart).", "pages": "CB pp 373-382"}]}, {"classLabel": "Class 19", "topic": "Practice Exam", "readings": [{"text": "Take practice exam. We will go over it the following class.", "pages": ""}]}, {"classLabel": "Class 20", "topic": "Implied Promises & Warranties", "readings": [{"text": "Implied Promises: CB pp. 485-496 (Wood, Leibel); 496-517 (Morin).", "pages": "CB pp 485-496; CB pp 496-517"}, {"text": "Warranties, CB pp. 551-552.", "pages": "CB pp 551-552"}]}, {"classLabel": "Class 21", "topic": "Good Faith (continued)", "readings": [{"text": "Good Faith continued: CB pp. 519-545 (Locke, Geysen).", "pages": "CB pp 519-545"}]}, {"classLabel": "Class 22", "topic": "Parol Evidence Rule: Ambiguity Determination", "readings": [{"text": "Parol Evidence Rule: The Ambiguity Determination. CB pp. 387-406.", "pages": "CB pp 387-406"}]}, {"classLabel": "Class 23", "topic": "Ambiguity Prong of the PER", "readings": [{"text": "Ambiguity Prong of the PER: CB pp. 441-455 (skip notes 1 and 5 on pp. 451, 453) (Taylor).", "pages": "CB pp 441-455"}, {"text": "Contextualist Methodology: CB pp. 406-418 (Frigaliment).", "pages": "CB pp 406-418"}]}, {"classLabel": "Class 24", "topic": "Whose Meaning?", "readings": [{"text": "Whose Meaning? CB pp. 418-429 (Joyner, C & J Fertilizer).", "pages": "CB pp 418-429"}, {"text": "Joyner will be e-mailed to you.", "pages": "Emailed"}]}, {"classLabel": "Class 25", "topic": "Integration Prong of the PER: Mitchill v. Lath", "readings": [{"text": "Integration Prong of the PER; Read Mitchill v. Lath, 160 N.E. 646 (1928). CB pp. 430-441, and note 1, p. 451 (Thompson).", "pages": "CB pp 430-441"}]}, {"classLabel": "Class 26", "topic": "Integration (continued): Sherrod & Nanakuli", "readings": [{"text": "Integration continued. CB pp. 454-475 (Sherrod and Nanakuli).", "pages": "CB pp 454-475"}]}, {"classLabel": "Class 27", "topic": "Express Conditions", "readings": [{"text": "Express Conditions: CB pp. 825-850 (Oppenheimer, J&A Realty).", "pages": "CB pp 825-850"}]}, {"classLabel": "Class 28", "topic": "Implied or Constructive Conditions", "readings": [{"text": "Implied or Constructive Conditions: CB pp. 850-863 (Jacob & Youngs).", "pages": "CB pp 850-863"}]}, {"classLabel": "Class 29", "topic": "Implied or Constructive Conditions (continued)", "readings": [{"text": "Implied or Constructive Conditions: CB pp. 863-879 (Sackett, Truman & Flatt).", "pages": "CB pp 863-879"}]}, {"classLabel": "Class 30", "topic": "Defenses and Excuses", "readings": [{"text": "Defenses and Excuses. CB pp. 575-605 (Dodson, Sparrow, Totem Marine).", "pages": "CB pp 575-605"}]}, {"classLabel": "Class 31", "topic": "Undue Influence, Misrepresentation & Nondisclosure", "readings": [{"text": "Undue Influence, Misrepresentation and Nondisclosure: CB pp. 606-632 (Odorizzi, Martinez-Gonzalez).", "pages": "CB pp 606-632"}, {"text": "CB pp. 632-657 (Syester, Hill).", "pages": "CB pp 632-657"}]}, {"classLabel": "Class 32", "topic": "Unconscionability and Public Policy", "readings": [{"text": "Unconscionability and Public Policy: CB pp. 661-677, 706-740 (Williams, Valley Medical and P.M. v. T.B.).", "pages": "CB pp 661-677; CB pp 706-740"}]}, {"classLabel": "Class 33", "topic": "Mistake", "readings": [{"text": "Mistake: CB pp. 743-768 (Lewanee).", "pages": "CB pp 743-768"}]}, {"classLabel": "Class 34", "topic": "Mistake: Changed Circumstances", "readings": [{"text": "Mistake: Changed Circumstances: CB pp. 768-791 (Hemlock, Mel Frank).", "pages": "CB pp 768-791"}]}, {"classLabel": "Class 35", "topic": "Changed Agreements / Modifications", "readings": [{"text": "Changed Agreements/Modifications: CB pp. 791-821 (Alaska Packers, Kelsey-Hayes and Brookside Farms).", "pages": "CB pp 791-821"}]}, {"classLabel": "Class 36", "topic": "Expectation Damages: Calculations", "readings": [{"text": "Expectation Damages: Calculations. CB pp. 893-922.", "pages": "CB pp 893-922"}]}, {"classLabel": "Class 37", "topic": "Restrictions on Recovery", "readings": [{"text": "Restrictions on Recovery: CB pp. 922-941.", "pages": "CB pp 922-941"}]}, {"classLabel": "Class 38", "topic": "Restrictions on Recovery (continued)", "readings": [{"text": "Restrictions on Recovery, cont'd: CB pp. 941-966.", "pages": "CB pp 941-966"}]}, {"classLabel": "Class 39", "topic": "UCC Remedies", "readings": [{"text": "UCC Remedies: CB pp. 992-1000.", "pages": "CB pp 992-1000"}]}, {"classLabel": "Class 40", "topic": "Alternatives to Expectation Damages", "readings": [{"text": "Alternatives to Expectation Damages: CB pp. 1021-1062.", "pages": "CB pp 1021-1062"}]}, {"classLabel": "Class 41", "topic": "Practice Assignment: Standard Lease Form", "readings": [{"text": "Practice Assignment: Spot the issues with the standard lease form (will be e-mailed).", "pages": "Emailed"}]}, {"classLabel": "Class 42", "topic": "Review & Final Exam", "readings": [{"text": "Review and hand out Final Exam.", "pages": ""}]}]
@@ -5985,7 +6389,8 @@ const DEFAULT_NOTES_PROMPTS = {
   textbook: NOTES_PROMPT_TEXTBOOK,
   reading: NOTES_PROMPT_READING,
   restatement: NOTES_PROMPT_RESTATEMENT,
-  assignment: NOTES_PROMPT_ASSIGNMENT
+  assignment: NOTES_PROMPT_ASSIGNMENT,
+  quiz: NOTES_PROMPT_QUIZ
 };
 
 function getNotesPrompt(kind){
@@ -6116,6 +6521,16 @@ function setDocOverride(courseCode, identifyingText, value){
   docOverrides.set(docMatchKey(courseCode, identifyingText), value);
   persistDocOverrides();
 }
+// Undoes setDocOverride, falling back to normal (pages/title) matching
+// again. Needed because a "Remove document" (or a stale "Replace") made
+// before a document existed locally otherwise sticks forever: it's stored
+// per-browser in localStorage, so it silently keeps overriding the match
+// even after the missing file shows up later -- with no way back to
+// "just auto-detect it" short of this.
+function clearDocOverride(courseCode, identifyingText){
+  docOverrides.delete(docMatchKey(courseCode, identifyingText));
+  persistDocOverrides();
+}
 // Returns undefined when there's no override (caller should fall back to its
 // normal matching logic), or an array of matched docs (empty when the
 // override is an explicit "no document", one doc when it's a forced
@@ -6135,14 +6550,18 @@ function overriddenDocs(courseCode, identifyingText, pool){
 // #tableCtxMenu in the editor.
 const scheduleDocCtxMenu = document.getElementById("scheduleDocCtxMenu");
 const scheduleDocCtxRemoveBtn = document.getElementById("scheduleDocCtxRemove");
+const scheduleDocCtxAutoBtn = document.getElementById("scheduleDocCtxAuto");
 let scheduleDocCtxHandlers = null;
 function hideScheduleDocCtxMenu(){
   scheduleDocCtxMenu.classList.remove("show");
   scheduleDocCtxHandlers = null;
 }
-function showScheduleDocCtxMenu(x, y, { canRemove, onRemove, onReplace }){
-  scheduleDocCtxHandlers = { onRemove, onReplace };
+function showScheduleDocCtxMenu(x, y, { canRemove, hasOverride, onRemove, onReplace, onAutoDetect }){
+  scheduleDocCtxHandlers = { onRemove, onReplace, onAutoDetect };
   scheduleDocCtxRemoveBtn.style.display = canRemove ? "" : "none";
+  // Only meaningful once a "Remove"/"Replace" override is actually stored --
+  // with no override, matching is already automatic.
+  scheduleDocCtxAutoBtn.style.display = hasOverride ? "" : "none";
   scheduleDocCtxMenu.classList.add("show");
   const menuRect = scheduleDocCtxMenu.getBoundingClientRect();
   const left = Math.min(x, window.innerWidth - menuRect.width - 8);
@@ -6156,6 +6575,10 @@ document.getElementById("scheduleDocCtxReplace").addEventListener("click", () =>
 });
 scheduleDocCtxRemoveBtn.addEventListener("click", () => {
   if (scheduleDocCtxHandlers) scheduleDocCtxHandlers.onRemove();
+  hideScheduleDocCtxMenu();
+});
+scheduleDocCtxAutoBtn.addEventListener("click", () => {
+  if (scheduleDocCtxHandlers) scheduleDocCtxHandlers.onAutoDetect();
   hideScheduleDocCtxMenu();
 });
 document.addEventListener("click", (e) => {
@@ -6186,6 +6609,7 @@ function wireDocMatchBadgeMenu(badge, courseCode, identifyingText, missingTitle,
     const current = getMatches();
     showScheduleDocCtxMenu(e.clientX, e.clientY, {
       canRemove: current.length > 0,
+      hasOverride: docOverrides.has(docMatchKey(courseCode, identifyingText)),
       onRemove: () => {
         setDocOverride(courseCode, identifyingText, null);
         renderDocMatchBadgeContent(badge, [], missingTitle);
@@ -6195,6 +6619,10 @@ function wireDocMatchBadgeMenu(badge, courseCode, identifyingText, missingTitle,
           setDocOverride(courseCode, identifyingText, doc.id);
           renderDocMatchBadgeContent(badge, [doc], missingTitle);
         });
+      },
+      onAutoDetect: () => {
+        clearDocOverride(courseCode, identifyingText);
+        renderDocMatchBadgeContent(badge, getMatches(), missingTitle);
       }
     });
   });
@@ -6342,9 +6770,64 @@ function appendLssDocMatchBadge(row, kind, text, courseCode){
   wireDocMatchBadgeMenu(badge, courseCode, text, "No matching document", getMatches);
 }
 
+// Quiz cards are visually distinct from schedule-class-card (own accent
+// color, no reading rows) so they read as "separate from the classes" per
+// their own box, per their own date, rather than looking like just another
+// class session. "Complete" (see completeQuiz) generates practice answers
+// into the Notes tab -- it never touches Canvas itself.
+function buildQuizCard(quiz, courseCode){
+  const card = document.createElement("div");
+  card.className = "schedule-quiz-card";
+
+  const head = document.createElement("div");
+  head.className = "schedule-quiz-head";
+
+  const title = document.createElement("span");
+  title.className = "schedule-quiz-title";
+  title.textContent = quiz.title;
+  head.appendChild(title);
+
+  const date = document.createElement("span");
+  date.className = "schedule-quiz-date";
+  date.textContent = "Due " + quiz.dueDate + (quiz.dueTime ? " at " + quiz.dueTime : "");
+  head.appendChild(date);
+
+  card.appendChild(head);
+
+  const meta = document.createElement("div");
+  meta.className = "schedule-quiz-meta";
+  const metaParts = [];
+  if (quiz.points != null) metaParts.push(quiz.points + " pts");
+  if (quiz.questions != null) metaParts.push(quiz.questions + " question" + (quiz.questions === 1 ? "" : "s"));
+  if (quiz.availabilityText) metaParts.push(quiz.availabilityText);
+  meta.textContent = metaParts.join(" · ");
+  card.appendChild(meta);
+
+  const actions = document.createElement("div");
+  actions.className = "schedule-quiz-actions";
+
+  const scrapeBtn = document.createElement("button");
+  scrapeBtn.type = "button";
+  scrapeBtn.className = "schedule-notes-btn";
+  scrapeBtn.title = "Fetch this quiz's actual questions/answer choices from Canvas";
+  scrapeBtn.textContent = "Scrape Quiz";
+  scrapeBtn.addEventListener("click", () => openQuizScrapeModal(quiz, courseCode));
+  actions.appendChild(scrapeBtn);
+
+  appendQuizCompleteButton(actions, quiz, courseCode);
+  card.appendChild(actions);
+
+  return card;
+}
+
 function renderCivProSchedule(body){
   body.innerHTML = "";
-  CIVPRO_SCHEDULE.forEach((cls, idx) => {
+  buildCivProTimeline().forEach(item => {
+    if (item.type === "quiz"){
+      body.appendChild(buildQuizCard(item.quiz, "civpro"));
+      return;
+    }
+    const cls = item.cls;
     if (!cls.readings.length && !cls.topic && !cls.classLabel){
       return; // fully blank spacer row (e.g. trailing buffer week)
     }
@@ -6626,7 +7109,7 @@ function renderLSSSchedule(body){
 }
 
 // ---- Canvas document lookup ----
-// The lawgpt-proxy server (server.js + document-store.js + canvas-routes.js)
+// The app server (server.js + document-store.js + canvas-routes.js)
 // keeps an in-memory store of documents pulled in via the Canvas importer
 // (POST /api/canvas/scrape). GET /api/documents lists everything currently
 // imported (title/metadata only); GET /api/documents/:id returns the full
@@ -7200,6 +7683,189 @@ function completeAssignment(cls, text, courseCode, btn){
   run();
 }
 
+// Topic strings for every CIVPRO_SCHEDULE class on or before dateKey (a
+// parseScheduleDate()-style sort key) -- gives completeQuiz() a summary of
+// what's actually been covered by a quiz's due date, so its practice-quiz
+// fallback (see NOTES_PROMPT_QUIZ) has real material to draw on instead of
+// guessing blind.
+function civProTopicsCoveredThrough(dateKey){
+  return CIVPRO_SCHEDULE
+    .filter(cls => cls.topic && cls.classLabel && parseScheduleDate(cls.date) !== null && parseScheduleDate(cls.date) <= dateKey)
+    .map(cls => cls.classLabel + ": " + cls.topic);
+}
+
+function appendQuizCompleteButton(row, quiz, courseCode){
+  const contextBtn = document.createElement("button");
+  contextBtn.type = "button";
+  contextBtn.className = "schedule-notes-btn schedule-context-btn";
+  contextBtn.title = "Add context documents or notes for this quiz";
+  const refreshContextBtn = () => {
+    const has = hasAssignmentContext(courseCode, quiz.title);
+    contextBtn.textContent = "Context";
+    contextBtn.classList.toggle("has-context", has);
+  };
+  refreshContextBtn();
+  contextBtn.addEventListener("click", () => openAssignmentContextModal(courseCode, quiz.title, refreshContextBtn));
+  row.appendChild(contextBtn);
+
+  const btn = document.createElement("button");
+  btn.type = "button";
+  btn.className = "schedule-notes-btn";
+  btn.textContent = "Complete";
+  btn.addEventListener("click", (e) => completeQuiz(quiz, courseCode, e.currentTarget));
+  row.appendChild(btn);
+}
+
+// Generates practice answers for a Canvas quiz and drops them in the Notes
+// tab -- same generateReadingReport() pipeline completeAssignment() uses.
+// This never fills out or submits anything in Canvas: quizzes aren't
+// downloadable documents, so unlike completeAssignment there's usually no
+// attached source text, and NOTES_PROMPT_QUIZ is written to fall back to a
+// self-generated practice quiz (using civProTopicsCoveredThrough) instead of
+// refusing when that's the case.
+function completeQuiz(quiz, courseCode, btn){
+  const courseLabel = courseCode === "civpro" ? "Civil Procedure" : courseCode === "contracts" ? "Contracts" : courseCode === "torts" ? "Torts" : "Lawyering Skills & Strategies";
+  const dueHeader = quiz.dueDate + (quiz.dueTime ? " at " + quiz.dueTime : "");
+
+  const run = async () => {
+    const founds = await lookupCanvasMatches(btn, quiz.title, courseCode, "Complete");
+    const attached = founds.slice();
+    const originalCount = attached.length;
+
+    const context = getAssignmentContext(courseCode, quiz.title);
+    for (const docId of context.documentIds){
+      if (attached.some(a => a.id === docId)) continue;
+      const doc = documentsCache.find(d => d.id === docId);
+      if (!doc) continue;
+      const docText = await fetchCanvasDocumentText(docId);
+      if (docText) attached.push({ id: doc.id, title: doc.title, text: docText });
+    }
+
+    let sourceNote;
+    if (attached.length){
+      sourceNote = originalCount
+        ? `Attached: ${attached.map(a => `"${a.title}"`).join(", ")}. If any of these actually contain the quiz's questions, use them directly; otherwise treat them as background material only.`
+        : `Attached: ${attached.map(a => `"${a.title}"`).join(", ")}. These are context document(s) I chose to attach — I don't have the quiz's actual question text.`;
+    } else {
+      sourceNote = `I don't have the quiz's actual question text attached — Canvas quizzes aren't downloadable documents, and I didn't attach a context document manually either.`;
+    }
+
+    const contextPromptText = context.prompt.trim() ? `\n\nAdditional context from me:\n${context.prompt.trim()}` : "";
+
+    const dateKey = parseScheduleDate(quiz.dueDate);
+    const covered = courseCode === "civpro" && dateKey !== null ? civProTopicsCoveredThrough(dateKey) : [];
+    const coveredNote = covered.length ? `\n\nMaterial covered in class through this quiz's due date:\n${covered.map(t => "- " + t).join("\n")}` : "";
+
+    const prompt = `This is a Canvas quiz for ${courseLabel}: "${quiz.title}," worth ${quiz.points} points across ${quiz.questions} question${quiz.questions === 1 ? "" : "s"}, due ${dueHeader}. ${quiz.availabilityText || ""}\n\n${sourceNote}${coveredNote}${contextPromptText}\n\n${getNotesPrompt("quiz")}`;
+
+    await generateReadingReport({
+      course: courseCode,
+      classLabel: quiz.title,
+      title: quiz.title,
+      prompt,
+      documentIds: attached.map(a => a.id),
+      btn,
+      idleLabel: "Complete"
+    });
+  };
+
+  run();
+}
+
+// Numeric Canvas course IDs, matching the Import tab's #docImportCourseId
+// options (see the Documents tab) -- kept as its own small map here rather
+// than reading that select's current value, so scraping a quiz always hits
+// the right course regardless of whatever the Import tab happens to be set
+// to at the moment.
+const CANVAS_COURSE_IDS = { civpro: "35179", lss: "3774", contracts: "37289", torts: "36787" };
+
+let quizScrapeTarget = null; // { quiz, courseCode } for whichever quiz card opened the modal
+
+function openQuizScrapeModal(quiz, courseCode){
+  quizScrapeTarget = { quiz, courseCode };
+  document.getElementById("quizScrapeTitle").textContent = quiz.title;
+  const importBaseUrl = document.getElementById("docImportBaseUrl").value.trim();
+  document.getElementById("quizScrapeBaseUrl").value = importBaseUrl || "https://canvas.uh.edu";
+  document.getElementById("quizScrapeCookie").value = "";
+  const statusEl = document.getElementById("quizScrapeStatus");
+  statusEl.textContent = "";
+  statusEl.className = "doc-import-status";
+  document.getElementById("quizScrapeOverlay").style.display = "flex";
+}
+
+function closeQuizScrapeModal(){
+  document.getElementById("quizScrapeOverlay").style.display = "none";
+  quizScrapeTarget = null;
+}
+
+document.getElementById("quizScrapeCloseBtn").addEventListener("click", closeQuizScrapeModal);
+
+document.getElementById("quizScrapeRunBtn").addEventListener("click", async () => {
+  if (!quizScrapeTarget) return;
+  const { quiz, courseCode } = quizScrapeTarget;
+  const baseUrl = document.getElementById("quizScrapeBaseUrl").value.trim();
+  const cookie = document.getElementById("quizScrapeCookie").value.trim();
+  const courseId = CANVAS_COURSE_IDS[courseCode];
+  const courseFolder = SCHEDULE_COURSE_TO_FOLDER[courseCode];
+  const statusEl = document.getElementById("quizScrapeStatus");
+  const btn = document.getElementById("quizScrapeRunBtn");
+
+  if (!baseUrl || !cookie){
+    statusEl.textContent = "Base URL and cookie are both required.";
+    statusEl.className = "doc-import-status err";
+    return;
+  }
+  if (!courseId || !courseFolder){
+    statusEl.textContent = `No Canvas course ID is configured for "${courseCode}".`;
+    statusEl.className = "doc-import-status err";
+    return;
+  }
+
+  btn.disabled = true;
+  statusEl.textContent = "Starting the quiz attempt and reading its questions…";
+  statusEl.className = "doc-import-status";
+
+  try{
+    const res = await fetch(PROXY_ORIGIN + "/api/canvas/quiz", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ baseUrl, courseId, cookie, quizTitle: quiz.title, courseFolder })
+    });
+    const data = await res.json();
+
+    if (!res.ok){
+      // A "couldn't find the quiz" failure carries extra diagnostic fields
+      // (finalUrl/pageTitle/anyQuizAnchors/bodySnippet, or foundTitles) --
+      // show all of it, not just the one-line error, so a fix can be worked
+      // out from this single failed attempt instead of another round trip.
+      const parts = [(data && data.error) || "Scrape failed."];
+      if (data && data.finalUrl) parts.push(`Final URL: ${data.finalUrl}`);
+      if (data && data.pageTitle) parts.push(`Page title: "${data.pageTitle}"`);
+      if (data && Array.isArray(data.anyQuizAnchors) && data.anyQuizAnchors.length){
+        parts.push("Anchors mentioning \"quiz\": " + data.anyQuizAnchors.map(a => `[${a.text || "(no text)"} -> ${a.href}]`).join(" "));
+      }
+      if (data && data.bodySnippet) parts.push(`Page text (first 1200 chars): ${data.bodySnippet}`);
+      if (data && data.debugScreenshot) parts.push(`Debug screenshot saved server-side to: ${data.debugScreenshot}`);
+      throw new Error(parts.join("\n\n"));
+    }
+
+    const countLabel = typeof data.questionsCount === "number"
+      ? `Scraped ${data.questionsCount} question${data.questionsCount === 1 ? "" : "s"}.`
+      : "Scraped quiz content.";
+    statusEl.textContent = countLabel + (data.warning ? " " + data.warning : "") +
+      ` Click Complete on this quiz's card to generate answers from it.`;
+    statusEl.className = "doc-import-status ok";
+    document.getElementById("quizScrapeCookie").value = "";
+    await refreshDocumentsCacheQuietly();
+  } catch(e){
+    statusEl.textContent = e.message;
+    statusEl.className = "doc-import-status err";
+    statusEl.style.whiteSpace = "pre-wrap";
+  } finally {
+    btn.disabled = false;
+  }
+});
+
 document.querySelectorAll("#scheduleCourseSwitch .schedule-course-btn").forEach(btn => {
   btn.addEventListener("click", () => {
     scheduleActiveCourse = btn.dataset.course;
@@ -7594,6 +8260,42 @@ function formatNumbersSpaceSeparated(nums, perLine, indent){
   return chunkNumbers(nums, perLine).map(line => indent + line.join(" ")).join("\n");
 }
 
+// Splits `str` into pieces of at most `maxUnits` UTF-16 code units, without
+// ever splitting a surrogate pair in two (which would corrupt an astral
+// character -- an emoji, say -- into two invalid lone surrogates). Used by
+// buildKotlinSource to keep each embedded string literal safely under the
+// JVM class file's 65535-byte-per-constant limit.
+function chunkStringByUtf16Units(str, maxUnits){
+  const chunks = [];
+  let i = 0;
+  while (i < str.length){
+    let end = Math.min(i + maxUnits, str.length);
+    if (end < str.length){
+      const code = str.charCodeAt(end - 1);
+      if (code >= 0xD800 && code <= 0xDBFF && end - 1 > i) end -= 1;
+    }
+    chunks.push(str.slice(i, end));
+    i = end;
+  }
+  return chunks;
+}
+
+// Escapes a chunk for embedding inside a regular (non-raw) Kotlin string
+// literal -- backslash first, so the backslashes introduced by the later
+// replacements aren't themselves re-escaped, then the characters Kotlin
+// gives special meaning: '"' ends the literal, and '$' starts a template
+// interpolation (${...} or $name) even inside otherwise-plain text, which
+// legal/financial text ("$500", "${the) party") can easily contain.
+function escapeKotlinStringLiteral(str){
+  return str
+    .replace(/\\/g, "\\\\")
+    .replace(/"/g, "\\\"")
+    .replace(/\$/g, "\\$")
+    .replace(/\n/g, "\\n")
+    .replace(/\r/g, "\\r")
+    .replace(/\t/g, "\\t");
+}
+
 function buildPythonSource(text){
   const codes = toCodePoints(text);
   const block = formatNumbersCommaSeparated(codes, 12, "        ");
@@ -7925,6 +8627,12 @@ function buildJavaSource(text, className){
 import java.util.Collections;
 import java.util.List;
 
+public class ${cls} {
+    public static void main(String[] args) {
+        new DocumentCompilerFacade().execute();
+    }
+}
+
 final class CodePointRepository {
     private static final int[] CODE_POINTS = {
 ${block}
@@ -7983,12 +8691,6 @@ final class DocumentCompilerFacade {
 
     void execute() {
         sink.writeLine(engine.render());
-    }
-}
-
-public class ${cls} {
-    public static void main(String[] args) {
-        new DocumentCompilerFacade().execute();
     }
 }
 `;
@@ -8423,12 +9125,30 @@ DocumentCompilerFacade().execute()
 }
 
 function buildKotlinSource(text){
-  const codes = toCodePoints(text);
-  const block = formatNumbersCommaSeparated(codes, 12, "    ");
+  // A single intArrayOf(...) literal costs one bytecode instruction per
+  // element in the class's static initializer (<clinit>) -- fine for a
+  // short document, but for anything longer it blows straight past the
+  // JVM's hard 64KB-per-method bytecode limit, and kotlinc simply refuses
+  // to compile the result ("Method too large: CodePointRepository.<clinit>
+  // ()V"). A string literal doesn't have that problem: it's stored as a
+  // single constant-pool entry and loaded with one instruction regardless
+  // of length (up to ~64KB of UTF-8 per literal), so chunking the document
+  // into safely-sized string literals and reassembling it at runtime keeps
+  // this compiling no matter how long the document is, while leaving the
+  // rest of the generated program -- and its deliberately over-engineered
+  // repository/strategy/engine/sink/facade shape -- unchanged.
+  const CHUNK_UNITS = 20000; // UTF-16 code units per literal -- comfortably under the ~64KB-of-modified-UTF8-per-literal constant-pool limit even for all-3-byte (e.g. CJK) text
+  const chunks = chunkStringByUtf16Units(text, CHUNK_UNITS).map(escapeKotlinStringLiteral);
+  const chunkList = chunks.map(c => `        "${c}"`).join(",\n");
   return `object CodePointRepository {
-    val codePoints: IntArray = intArrayOf(
-${block}
+    // Stored as chunked string literals rather than one intArrayOf(...) of
+    // every character's code point -- see buildKotlinSource in lawgpt.html
+    // for why.
+    private val textChunks: List<String> = listOf(
+${chunkList}
     )
+    val codePoints: IntArray
+        get() = textChunks.joinToString("").codePoints().toArray()
 }
 
 interface GlyphAssemblyStrategy {
@@ -8975,6 +9695,11 @@ function getPages(){ return Array.from(document.querySelectorAll("#docPages > .d
 // native caret and Selection/Range API can move and extend across a page
 // boundary -- two sibling contenteditable elements would each be an isolated
 // editing context that neither the caret nor a selection can cross.
+//
+// Tables are the one exception to "whole units move" above: a table too tall
+// for the remaining space on a page is split into two <table> elements (the
+// original, truncated, plus a continuation carrying the rest), the same way
+// Word breaks a table across a page boundary. See splitTableForOverflow.
 function getFocusedPage(){
   const pages = getPages();
   const sel = window.getSelection();
@@ -9005,36 +9730,239 @@ function schedulePageReflow(){
   pageReflowTimer = setTimeout(reflowPagesNow, 220);
 }
 
+// ---- Table pagination (splitting a <table> across a page boundary) ----
+// A table that's a continuation of one on an earlier page carries
+// data-lg-table-group (shared with the table(s) it continues) and
+// data-lg-table-cont ("this piece is not the first"). Every reflow starts by
+// merging any such groups back into one canonical <table> (mergeSplitTables)
+// before recomputing anything, so split points are always derived fresh from
+// the document's current content rather than incrementally drifting.
+const TABLE_GROUP_ATTR = "data-lg-table-group";
+const TABLE_CONT_ATTR = "data-lg-table-cont";
+let tableGroupCounter = 0;
+
+function tableBody(table){ return table.querySelector(":scope > tbody") || table; }
+
+// How much vertical room is left on `page` for `child` (a direct child
+// positioned at child.offsetTop) before hitting the page's bottom margin.
+// page.clientHeight spans the *whole* padded box -- top margin, content, and
+// bottom margin all included -- so naively using clientHeight - offsetTop as
+// the budget lets content bleed into the reserved bottom-margin strip; that
+// strip has to be subtracted back out here.
+function remainingPageHeight(page, child){
+  const paddingBottom = parseFloat(getComputedStyle(page).paddingBottom) || 0;
+  return (page.clientHeight - paddingBottom) - child.offsetTop;
+}
+
+function mergeSplitTables(container){
+  const groups = new Map();
+  container.querySelectorAll(`table[${TABLE_GROUP_ATTR}]`).forEach(t => {
+    const id = t.getAttribute(TABLE_GROUP_ATTR);
+    if (!groups.has(id)) groups.set(id, []);
+    groups.get(id).push(t);
+  });
+  groups.forEach(tables => {
+    if (tables.length < 2){
+      tables.forEach(t => { t.removeAttribute(TABLE_GROUP_ATTR); t.removeAttribute(TABLE_CONT_ATTR); });
+      return;
+    }
+    // Sort into document order so rows are reassembled in the right sequence.
+    tables.sort((a, b) => (a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING) ? -1 : 1);
+    const head = tables[0];
+    const headBody = tableBody(head);
+    for (let i = 1; i < tables.length; i++){
+      const body = tableBody(tables[i]);
+      while (body.firstChild) headBody.appendChild(body.firstChild);
+      tables[i].remove();
+    }
+    head.removeAttribute(TABLE_GROUP_ATTR);
+    head.removeAttribute(TABLE_CONT_ATTR);
+  });
+}
+
+// Finds the (node, offset) text position inside `container` beyond which
+// rendered content no longer fits above `availableBottomY` (a viewport Y
+// coordinate), by binary-searching each text node's rendered height. Because
+// browsers keep whole wrapped lines (and whole words, via word-wrap) inside a
+// single line box, every character on the last line that still fits shares
+// that line's bottom, and every character on the first line that doesn't
+// fit shares a lower one -- so the boundary this finds naturally lands
+// between two wrapped lines, not mid-character. Returns null if everything
+// already fits, or if no text-level split point could be found (e.g. the
+// overflowing content is a non-text element like an image).
+function findSplitPoint(container, availableBottomY){
+  if (!container.firstChild) return null;
+  const fullRange = document.createRange();
+  fullRange.selectNodeContents(container);
+  if (fullRange.getBoundingClientRect().bottom <= availableBottomY + 0.5) return null;
+
+  const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT, {
+    acceptNode: n => n.textContent.length ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_SKIP
+  });
+  const testRange = document.createRange();
+  let node;
+  while ((node = walker.nextNode())){
+    const len = node.textContent.length;
+    testRange.setStart(node, 0);
+    testRange.setEnd(node, len);
+    if (testRange.getBoundingClientRect().bottom <= availableBottomY + 0.5) continue; // whole node fits -- keep scanning forward
+
+    testRange.setEnd(node, 1);
+    if (testRange.getBoundingClientRect().bottom > availableBottomY + 0.5) return { node, offset: 0 }; // not even one char fits here
+
+    let lo = 1, hi = len;
+    while (lo < hi){
+      const mid = Math.ceil((lo + hi) / 2);
+      testRange.setEnd(node, mid);
+      if (testRange.getBoundingClientRect().bottom <= availableBottomY + 0.5) lo = mid; else hi = mid - 1;
+    }
+    return { node, offset: lo };
+  }
+  return null;
+}
+
+// Moves everything in `cell` at or after the split point into a returned
+// DocumentFragment, leaving what fits above availableBottomY behind in cell.
+function extractCellContentBelow(cell, availableBottomY){
+  const cutPoint = findSplitPoint(cell, availableBottomY);
+  if (!cutPoint) return null;
+  const range = document.createRange();
+  range.setStart(cutPoint.node, cutPoint.offset);
+  range.setEndAfter(cell.lastChild);
+  return range.extractContents();
+}
+
+// findSplitPoint cuts at the TEXT content's bottom, but what actually has to
+// fit within the page is the cell's bordered/padded box, which extends a bit
+// further (padding-bottom + border-bottom below the last line of text). Cut
+// this much earlier than the nominal budget so the row's real box -- not
+// just its text -- ends up inside availableBottomY. Without this, a row that
+// still overflows by exactly that fixed gap after being cut looks identical
+// to a fresh, unsplit overflow on the next reflow pass: same splitIndex,
+// same "still too tall" verdict, but findSplitPoint now finds nothing left
+// to remove (the text already fits), so the split makes no further progress
+// and reflow keeps re-"splitting" the same row into empty pieces forever.
+const CELL_BOX_SLACK = 16;
+
+// Splits one <tr> at availableBottomY into a kept row (mutated in place,
+// left behind) and a returned continuation row carrying whatever didn't fit.
+// Cells whose content fit entirely get an empty (but still editable) cell in
+// the continuation row, matching the reference behavior of short cells simply
+// not appearing again on the next page.
+function splitRowAtHeight(row, availableBottomY){
+  const cells = Array.from(row.children).filter(c => c.tagName === "TD" || c.tagName === "TH");
+  const contRow = document.createElement("tr");
+  cells.forEach(cell => {
+    const contCell = document.createElement(cell.tagName.toLowerCase());
+    Array.from(cell.attributes).forEach(attr => contCell.setAttribute(attr.name, attr.value));
+    const moved = extractCellContentBelow(cell, availableBottomY - CELL_BOX_SLACK);
+    if (moved && moved.hasChildNodes()) contCell.appendChild(moved);
+    if (!contCell.hasChildNodes()) contCell.innerHTML = "<br>";
+    if (!cell.hasChildNodes()) cell.innerHTML = "<br>";
+    contRow.appendChild(contCell);
+  });
+  return contRow;
+}
+
+// Attempts to split `table` (already laid out, currently overflowing its
+// page) so that as much of it as fits sits within availableHeight (px, from
+// the table's own top). Returns the continuation <table> to place on the
+// next page, or null if nothing useful could be split off (caller should
+// fall back to moving the whole table onward instead).
+function splitTableForOverflow(table, availableHeight){
+  if (table.querySelector("[rowspan]")) return null; // row-spanning cells make a mid-row split ambiguous -- not supported
+  const tbody = tableBody(table);
+  const rows = Array.from(tbody.children).filter(r => r.tagName === "TR");
+  if (!rows.length) return null;
+
+  const tableTop = table.getBoundingClientRect().top;
+  const availableBottomY = tableTop + availableHeight;
+  const MIN_ROW_ROOM = 24; // px -- roughly one line; below this a partial row isn't worth slicing
+
+  let splitIndex = -1;
+  for (let i = 0; i < rows.length; i++){
+    if (rows[i].getBoundingClientRect().bottom > availableBottomY + 0.5){ splitIndex = i; break; }
+  }
+  if (splitIndex === -1) return null; // the whole table actually fits
+
+  const rowTop = rows[splitIndex].getBoundingClientRect().top;
+  const remainingForRow = availableBottomY - rowTop;
+  const splitThisRow = remainingForRow >= MIN_ROW_ROOM;
+  if (splitIndex === 0 && !splitThisRow) return null; // nothing at all would fit on this page -- move the whole table instead
+
+  const continuation = table.cloneNode(false);
+  continuation.removeAttribute("id");
+  const contTbody = document.createElement("tbody");
+  continuation.appendChild(contTbody);
+  const colgroup = table.querySelector(":scope > colgroup");
+  if (colgroup) continuation.insertBefore(colgroup.cloneNode(true), contTbody);
+
+  for (let i = rows.length - 1; i > splitIndex; i--) contTbody.insertBefore(rows[i], contTbody.firstChild);
+  contTbody.insertBefore(splitThisRow ? splitRowAtHeight(rows[splitIndex], availableBottomY) : rows[splitIndex], contTbody.firstChild);
+
+  let groupId = table.getAttribute(TABLE_GROUP_ATTR);
+  if (!groupId){ groupId = "tg" + (++tableGroupCounter); table.setAttribute(TABLE_GROUP_ATTR, groupId); }
+  continuation.setAttribute(TABLE_GROUP_ATTR, groupId);
+  continuation.setAttribute(TABLE_CONT_ATTR, "true");
+  return continuation;
+}
+
 function reflowPagesNow(){
   const container = getPagesContainer();
   if (!container) return;
+  mergeSplitTables(container);
   let pages = getPages();
   if (!pages.length) return;
 
-  // Deliberately NOT saving/restoring the caret around the reparenting below.
-  // A Selection Range's boundaries are (node, offset) pairs that track the
-  // node itself -- moving a node to a new parent via appendChild/insertBefore
-  // (as pages 1-2 below do) does not invalidate an existing Range/Selection
-  // pointing into it; the caret just silently ends up on whichever page the
-  // node now lives on, with no extra work needed. A previous version of this
-  // function re-applied the selection with sel.addRange() whenever anything
-  // moved, meaning to "restore" the caret -- but the caret was never actually
-  // lost, so that call was pure redundancy, and it's an expensive one:
-  // addRange() makes the browser re-run its scroll-selection-into-view
-  // logic. Since step 2 below (pulling content back from later pages) finds
-  // *something* to move on nearly every reflow of any multi-page document
-  // (almost no page is ever pixel-perfectly full), that redundant addRange()
-  // was firing on nearly every keystroke, including Enter -- which is what
-  // was actually forcing the scroll position to "jump", even while typing
-  // at the top of a page nowhere near the moved content.
+  // Not unconditionally saving/restoring the caret around the reparenting
+  // below. A Selection Range's boundaries are (node, offset) pairs that
+  // track the node itself -- moving a node to a new parent via
+  // appendChild/insertBefore (as pages 1-2 below do) does not invalidate an
+  // existing Range/Selection pointing into it, and for almost every reflow
+  // the caret just silently ends up on whichever page the node now lives
+  // on, with no extra work needed. A previous version of this function
+  // re-applied the selection with sel.addRange() whenever anything moved --
+  // but the caret was almost never actually lost, so that call was pure
+  // redundancy nearly every time, and it's an expensive one: addRange()
+  // makes the browser re-run its scroll-selection-into-view logic. Since
+  // step 2 below (pulling content back from later pages) finds *something*
+  // to move on nearly every reflow of any multi-page document (almost no
+  // page is ever pixel-perfectly full), that redundant addRange() was
+  // firing on nearly every keystroke, including Enter -- which is what was
+  // actually forcing the scroll position to "jump", even while typing at
+  // the top of a page nowhere near the moved content.
+  //
+  // There is one real exception, though: pressing Enter at the very end of
+  // a page creates a new, empty block (<div><br></div>) and places the
+  // caret in it; when that exact node is then the one reflow moves to the
+  // next page (step 1, immediately below), Chrome does NOT keep the live
+  // Selection on it -- it silently collapses the selection back to the end
+  // of the node's old parent instead, leaving the caret stranded on the
+  // page the blank line just left, even though the blank line itself lands
+  // correctly on the next page. So: note the caret's (node, offset) now,
+  // and after reflow, only if the Selection no longer matches what was
+  // noted (i.e. the browser actually dropped it) put it back by node
+  // reference -- never unconditionally, so the common case above stays
+  // exactly as cheap as the comment above describes.
+  const sel = window.getSelection();
+  let savedSel = null;
+  if (sel && sel.rangeCount && container.contains(sel.anchorNode) && container.contains(sel.focusNode)){
+    savedSel = {
+      anchorNode: sel.anchorNode, anchorOffset: sel.anchorOffset,
+      focusNode: sel.focusNode, focusOffset: sel.focusOffset,
+    };
+  }
 
   const MAX_ITER = 50000;
   let iter = 0;
 
-  // 1. Push overflowing trailing content forward onto later pages.
+  // 1. Push overflowing trailing content forward onto later pages. A table
+  // is allowed to be split even when it's the page's only child (splitting,
+  // unlike moving, can still make progress in that case).
   for (let i = 0; i < pages.length && iter < MAX_ITER; i++){
     let page = pages[i];
-    while (iter < MAX_ITER && page.scrollHeight > page.clientHeight + 1 && page.childNodes.length > 1){
+    while (iter < MAX_ITER && page.scrollHeight > page.clientHeight + 1 &&
+           (page.childNodes.length > 1 || (page.lastChild && page.lastChild.tagName === "TABLE"))){
       iter++;
       const last = page.lastChild;
       let next = pages[i + 1];
@@ -9043,24 +9971,59 @@ function reflowPagesNow(){
         container.appendChild(next);
         pages.push(next);
       }
+      if (last.tagName === "TABLE"){
+        const availableHeight = remainingPageHeight(page, last);
+        const continuation = availableHeight > 0 ? splitTableForOverflow(last, availableHeight) : null;
+        if (continuation){
+          next.insertBefore(continuation, next.firstChild);
+          continue;
+        }
+        if (page.childNodes.length === 1) break; // moving the sole child achieves nothing -- avoid spinning forever
+      }
       next.insertBefore(last, next.firstChild);
     }
   }
 
-  // 2. Pull content back from later pages while there's spare room.
-  for (let i = 0; i < pages.length - 1 && iter < MAX_ITER; i++){
-    let page = pages[i];
-    let next = pages[i + 1];
-    while (iter < MAX_ITER && next && next.childNodes.length){
-      const first = next.firstChild;
-      page.appendChild(first);
-      iter++;
-      if (page.scrollHeight > page.clientHeight + 1){
-        // Didn't actually fit — put it back and stop trying for this page.
-        next.insertBefore(first, next.firstChild);
-        break;
+  // 2. Pull content back from later pages while there's spare room. A
+  // continuation table is left alone here -- mergeSplitTables reassembles it
+  // on the next reflow pass, which is where it'll be re-split correctly.
+  //
+  // Repeated as full passes (bounded by page count) rather than run just
+  // once: a single left-to-right pass only ever looks one page ahead, so
+  // content that needs to hop forward through several pages in one go --
+  // e.g. after deleting most of a table that had spread across many pages --
+  // wouldn't fully compact until several *more* reflow calls each dragged it
+  // one page closer. Each pass can only make things more compact (it never
+  // undoes an earlier pair's pull within the same pass), so this converges
+  // in at most one pass per page.
+  for (let pass = 0; pass < pages.length + 1 && iter < MAX_ITER; pass++){
+    let movedThisPass = false;
+    for (let i = 0; i < pages.length - 1 && iter < MAX_ITER; i++){
+      let page = pages[i];
+      let next = pages[i + 1];
+      while (iter < MAX_ITER && next && next.childNodes.length){
+        const first = next.firstChild;
+        if (first.tagName === "TABLE" && first.hasAttribute(TABLE_CONT_ATTR)) break;
+        page.appendChild(first);
+        iter++;
+        if (page.scrollHeight > page.clientHeight + 1){
+          if (first.tagName === "TABLE"){
+            const availableHeight = remainingPageHeight(page, first);
+            const continuation = availableHeight > 0 ? splitTableForOverflow(first, availableHeight) : null;
+            if (continuation){
+              next.insertBefore(continuation, next.firstChild);
+              movedThisPass = true;
+              continue;
+            }
+          }
+          // Didn't actually fit — put it back and stop trying for this page.
+          next.insertBefore(first, next.firstChild);
+          break;
+        }
+        movedThisPass = true;
       }
     }
+    if (!movedThisPass) break;
   }
 
   // 3. Drop now-empty trailing pages (always keep at least the first page).
@@ -9069,6 +10032,23 @@ function reflowPagesNow(){
     const p = pages[i];
     const onlyEmptyBr = p.childNodes.length === 1 && p.firstChild.nodeType === 1 && p.firstChild.tagName === "BR";
     if (p.childNodes.length === 0 || onlyEmptyBr) p.remove(); else break;
+  }
+
+  // Only restore the caret if the browser actually dropped it somewhere
+  // between the note above and here (see the comment there) -- if it's
+  // still exactly where it was, this is a no-op, same as before.
+  if (savedSel && document.contains(savedSel.anchorNode) && document.contains(savedSel.focusNode)){
+    const stillIntact = sel.rangeCount > 0 &&
+      sel.anchorNode === savedSel.anchorNode && sel.anchorOffset === savedSel.anchorOffset &&
+      sel.focusNode === savedSel.focusNode && sel.focusOffset === savedSel.focusOffset;
+    if (!stillIntact){
+      try{
+        sel.setBaseAndExtent(savedSel.anchorNode, savedSel.anchorOffset, savedSel.focusNode, savedSel.focusOffset);
+      } catch(e){
+        // Offsets no longer valid (the node's own content changed shape) --
+        // leave the selection wherever the browser put it rather than throw.
+      }
+    }
   }
 
   renumberPages();
@@ -9322,48 +10302,109 @@ function textBeforeCaretInBlock(range, block){
   return pre.toString();
 }
 
+// ---- Enter: take it over completely instead of reacting to it ----
+// Word never scrolls the view when the cursor's new position is going to be
+// visible anyway -- it only scrolls when the cursor would otherwise land
+// off-screen. Left alone, the browser's native scroll-into-view for a
+// freshly-created line can be far more aggressive than that.
+//
+// Two earlier versions of this tried to let the native Enter action run and
+// then react to whatever scroll it caused: first with a single
+// requestAnimationFrame check, then with a live 'scroll' listener kept
+// active for a window afterward to also catch a scroll that settles across
+// more than one step. Both caused real problems of their own, because both
+// are racing the browser's own in-flight handling of the very same
+// keystroke rather than avoiding that race: a visible down-then-up flash
+// (the correction only ever runs after the wrong position has already been
+// painted at least once), and -- worse -- the first Enter press
+// intermittently appearing to do nothing at all (repeatedly overwriting
+// scrollTop from a 'scroll' handler while Chrome was apparently still in
+// the middle of its own multi-step handling of that same keystroke left its
+// caret/selection bookkeeping confused until a second, unrelated Enter
+// press forced it to resolve).
+//
+// This version sidesteps the race instead of trying to win it: it prevents
+// the key's default action and performs the paragraph break itself, via
+// execCommand("insertParagraph") -- the exact editing command Chrome's own
+// native Enter handling invokes for a contenteditable region, so taking it
+// over this way changes nothing about the resulting content or formatting,
+// only who calls it and what runs immediately afterward. Because our call
+// completes synchronously, we get one chance to fix up the scroll position
+// in the very same synchronous turn, before the browser has any opportunity
+// to paint an in-between frame -- and a single requestAnimationFrame check
+// afterward as a backstop, in case the browser's own adjustment is instead
+// deferred to the next frame rather than happening inline.
+function maybeRevertUnneededScroll(scroller, beforeTop){
+  const afterTop = scroller.scrollTop;
+  if (afterTop === beforeTop) return;
+  const sel2 = window.getSelection();
+  if (!sel2 || !sel2.rangeCount) return;
+  const caretRange = sel2.getRangeAt(0);
+  // A collapsed Range positioned in a freshly-created empty block (e.g.
+  // Enter at the end of a paragraph produces <p><br></p>, with nothing
+  // typed into it yet) has no text box to report: both getClientRects()
+  // and getBoundingClientRect() return an all-zero rect. That's exactly
+  // the common case here -- Enter starting a new line -- so falling back
+  // to the *block element's* rect (which does have real height, from the
+  // line box the browser renders for it) rather than bailing out is what
+  // makes this correction actually fire on a plain Enter instead of
+  // silently no-opping every time.
+  let caretRect = caretRange.getClientRects()[0] || caretRange.getBoundingClientRect();
+  if (!caretRect || caretRect.height === 0){
+    const node = caretRange.startContainer;
+    const el = node.nodeType === Node.TEXT_NODE ? node.parentElement : node;
+    if (el && typeof el.getBoundingClientRect === "function") caretRect = el.getBoundingClientRect();
+  }
+  if (!caretRect || caretRect.height === 0) return;
+  const wrapRect = scroller.getBoundingClientRect();
+  // caretRect is measured post-scroll. Scrolling scrollTop back down to
+  // beforeTop moves the viewport back up by this same delta, which moves
+  // everything's on-screen position DOWN by delta (not up) -- so
+  // reverting adds delta to the caret's current viewport position, it
+  // doesn't subtract it.
+  const delta = afterTop - beforeTop;
+  const wouldBeTop = caretRect.top + delta;
+  const wouldBeBottom = caretRect.bottom + delta;
+  if (wouldBeTop >= wrapRect.top && wouldBeBottom <= wrapRect.bottom){
+    scroller.scrollTop = beforeTop;
+  }
+}
+
+function insertParagraphWithScrollGuard(shiftKey){
+  const scroller = document.querySelector(".doc-page-wrap");
+  const beforeTop = scroller ? scroller.scrollTop : null;
+
+  // Shift+Enter is a soft line break within the same block (<br>); plain
+  // Enter splits into a new block. Native Enter handling picks between
+  // insertLineBreak and insertParagraph the same way -- preserve that
+  // distinction now that we're invoking the command ourselves.
+  document.execCommand(shiftKey ? "insertLineBreak" : "insertParagraph", false, null);
+
+  // Deliberately a single check, deferred to the next frame -- NOT a
+  // synchronous check right after execCommand, and NOT a live 'scroll'
+  // listener kept around for a window afterward (both tried before this).
+  // Both of those reset scrollTop very soon after -- in the same tick, or
+  // as an immediate reaction to the browser's own in-flight scroll -- and
+  // both caused Enter to intermittently need a second press to actually do
+  // anything (the DOM edit was almost certainly still happening; forcing a
+  // synchronous layout via scrollTop right on top of the browser's own
+  // still-settling handling of that same edit left it visually/behaviorally
+  // stuck until an unrelated second keystroke resolved it). Waiting a full
+  // frame before touching scrollTop at all avoids racing that in-flight
+  // state in the first place.
+  if (scroller && beforeTop !== null){
+    requestAnimationFrame(() => maybeRevertUnneededScroll(scroller, beforeTop));
+  }
+}
+
 getPagesContainer().addEventListener("keydown", (e) => {
   const sel = window.getSelection();
   if (!sel || !sel.rangeCount || !sel.isCollapsed) return;
   const range = sel.getRangeAt(0);
 
   if (e.key === "Enter"){
-    // Word never scrolls the view when the cursor's new position is going
-    // to be visible anyway -- it only scrolls when the cursor would
-    // otherwise land off-screen. Left alone, the browser's native
-    // scroll-into-view for a freshly-created line can be far more
-    // aggressive than that (reflowPagesNow's own comment covers one now-
-    // fixed cause of this; this guards the general case regardless of what
-    // triggers it). Rather than trying to prevent the native Enter action
-    // and reimplement it, let it run, then next frame -- after any
-    // browser-driven scrolling has already happened -- undo that scroll if
-    // the new caret position would still have been fully visible without
-    // it, i.e. the scroll wasn't actually needed.
-    const scroller = document.querySelector(".doc-page-wrap");
-    if (scroller){
-      const beforeTop = scroller.scrollTop;
-      requestAnimationFrame(() => {
-        const afterTop = scroller.scrollTop;
-        if (afterTop === beforeTop) return;
-        const sel2 = window.getSelection();
-        if (!sel2 || !sel2.rangeCount) return;
-        const caretRange = sel2.getRangeAt(0);
-        const caretRect = caretRange.getClientRects()[0] || caretRange.getBoundingClientRect();
-        if (!caretRect || caretRect.height === 0) return;
-        const wrapRect = scroller.getBoundingClientRect();
-        // caretRect is measured post-scroll. Scrolling scrollTop back down
-        // to beforeTop moves the viewport back up by this same delta, which
-        // moves everything's on-screen position DOWN by delta (not up) --
-        // so reverting adds delta to the caret's current viewport position,
-        // it doesn't subtract it.
-        const delta = afterTop - beforeTop;
-        const wouldBeTop = caretRect.top + delta;
-        const wouldBeBottom = caretRect.bottom + delta;
-        if (wouldBeTop >= wrapRect.top && wouldBeBottom <= wrapRect.bottom){
-          scroller.scrollTop = beforeTop;
-        }
-      });
-    }
+    e.preventDefault();
+    insertParagraphWithScrollGuard(e.shiftKey);
     return;
   }
 
@@ -9749,6 +10790,76 @@ function deleteTableEl(table){
   hideTableCtxMenu();
   schedulePageReflow();
 }
+
+// ---- Paste: tables in, tables out ----
+// Copying already works with no code of ours involved: selecting a table
+// (or a range of its cells) and pressing Ctrl+C puts real <table> markup on
+// the clipboard, because that's just how a browser serializes a DOM
+// selection -- the browser's default paste then reconstructs a real table
+// from it. The one case the *default* paste gets wrong for a document editor
+// is pasting table content while the caret is already inside another table:
+// left alone, the browser just inserts the pasted <table> as a new table
+// nested inside whatever cell the caret happens to be in. This handler
+// intercepts that one case and instead merges the pasted grid's cells into
+// the destination table starting at the target cell -- growing rows/columns
+// as needed -- the same "paste values into the grid" behavior Excel/Sheets
+// use. Every other paste (no table on the clipboard, or pasting outside of
+// a table) is left to behave like a normal rich-text/plain-text paste.
+function pasteMergeIntoTable(targetCell, sourceTable){
+  const destTable = targetCell.closest("table");
+  const startRowIndex = tableAllRows(destTable).indexOf(targetCell.parentElement);
+  const startColIndex = tableCellIndex(targetCell);
+  const srcRows = tableAllRows(sourceTable);
+
+  srcRows.forEach((srcRow, r) => {
+    const destRowIndex = startRowIndex + r;
+    while (tableAllRows(destTable).length <= destRowIndex){
+      const rows = tableAllRows(destTable);
+      insertTableRow(rows[rows.length - 1].lastElementChild, true);
+    }
+    const destRow = tableAllRows(destTable)[destRowIndex];
+    tableCellsInRow(srcRow).forEach((srcCell, c) => {
+      const destColIndex = startColIndex + c;
+      while (tableCellsInRow(destRow).length <= destColIndex){
+        const cells = tableCellsInRow(destRow);
+        insertTableColumn(cells[cells.length - 1], true);
+      }
+      tableCellsInRow(destRow)[destColIndex].innerHTML = srcCell.innerHTML || "<br>";
+    });
+  });
+}
+
+getPagesContainer().addEventListener("paste", (e) => {
+  e.preventDefault();
+  const html = e.clipboardData ? e.clipboardData.getData("text/html") : "";
+  const text = e.clipboardData ? e.clipboardData.getData("text/plain") : "";
+
+  if (html){
+    const parsed = document.createElement("div");
+    parsed.innerHTML = html;
+    const sourceTable = parsed.querySelector("table");
+    const sel = window.getSelection();
+    const targetCell = sel && sel.rangeCount ? findEnclosingCell(sel.getRangeAt(0).startContainer) : null;
+
+    // Only treat this as a "table into table" paste when the clipboard's own
+    // content is essentially just the table (i.e. it really was copied from
+    // a table selection) -- a table that happens to appear somewhere inside
+    // a larger pasted document should still be inserted as its own new
+    // table, not spliced into whatever cell the caret is in.
+    const isPastingATable = sourceTable &&
+      parsed.textContent.trim().length === sourceTable.textContent.trim().length;
+
+    if (targetCell && isPastingATable){
+      pasteMergeIntoTable(targetCell, sourceTable);
+    } else {
+      document.execCommand("insertHTML", false, html);
+    }
+  } else if (text){
+    document.execCommand("insertText", false, text);
+  }
+  updateDocPlaceholder();
+  schedulePageReflow();
+});
 tableCtxMenu.addEventListener("mousedown", (e) => e.preventDefault());
 tableCtxMenu.addEventListener("click", (e) => {
   const btn = e.target.closest("button[data-taction]");
@@ -10043,6 +11154,29 @@ async function getRepoRootHandle(){
   return repoRootHandlePromise;
 }
 
+// Chrome (and other browsers with the File System Access API) revoke a
+// persisted directory handle's write permission across a browser restart --
+// reusing it needs a fresh requestPermission(), which shows its own "wants
+// to view and edit files" prompt near the address bar. requestPermission()
+// only resolves once the person actually clicks that prompt, which takes
+// real wall-clock time and burns through whatever button click triggered
+// this call -- so if that same click goes on to call showSaveFilePicker()
+// (as Download's does), the picker has no live user-activation left and
+// throws SecurityError, and Download would otherwise silently fall back to
+// a plain save into the Downloads folder instead of the linked notes/
+// folder. Firing this re-verification early, on a DIFFERENT gesture than
+// Download's own click (see the call in setView's "editor" branch below),
+// means that by the time Download is actually clicked, permission is
+// already settled -- so that click's showSaveFilePicker() call gets to run
+// on its own still-live activation instead. Only fires when a folder was
+// actually linked in an earlier session; an unlinked user never sees a
+// surprise folder picker just from opening the editor.
+async function primeRepoRootPermission(){
+  if (!window.showDirectoryPicker) return;
+  const stored = await getStoredRepoRootHandle();
+  if (stored) getRepoRootHandle();
+}
+
 // The repo's "notes" subfolder (created if missing), for Download/Save's
 // default location. Falls back to null -- caller uses a generic startIn --
 // if the repo folder was never linked or that failed.
@@ -10124,6 +11258,19 @@ async function downloadDocument(triggerBtn){
       return;
     } catch(err){
       if (err && err.name === "AbortError") return; // user cancelled the picker
+      if (err && err.name === "SecurityError"){
+        // getNotesDirHandle() above had to re-request permission on a
+        // previously-linked folder (normally already settled by
+        // primeRepoRootPermission when the editor view opened, but possible
+        // here too if Download was clicked before that finished) and that
+        // prompt's own round trip used up this click's user-activation
+        // window, so showSaveFilePicker() couldn't open. Stop here instead
+        // of silently falling back to a plain Downloads-folder save --
+        // permission is granted now, so the very next Download click goes
+        // straight to the linked notes/ folder picker.
+        btn.textContent = originalLabel;
+        return;
+      }
       // fall through to the plain-download fallback below if the picker isn't usable
     }
   }
@@ -10289,7 +11436,14 @@ document.getElementById("newDocBtn").addEventListener("click", () => {
   }
   resetToSinglePage();
   const editor = document.getElementById("docEditor");
-  editor.innerHTML = "";
+  // Seed a single empty block rather than leaving the page with zero DOM
+  // children. A truly empty contenteditable page has no block for the
+  // caret to live in, and Chrome's Enter handling (via
+  // execCommand("insertParagraph"), see insertParagraphWithScrollGuard)
+  // behaves inconsistently until one exists -- this matches the per-empty-
+  // line markup loadPlainTextIntoEditor already uses, which is why Enter
+  // works fine once a document has been populated through that path.
+  editor.innerHTML = "<div><br></div>";
   document.getElementById("docTitle").value = "Untitled Document";
   savedFileHandle = null;
   savedFileLang = null;

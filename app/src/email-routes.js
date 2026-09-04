@@ -1,0 +1,598 @@
+// email-routes.js
+//
+// Syncs the "Forwarded" folder of a personal mailbox that the user has set
+// up to auto-forward their school email into, downloads any course document
+// attachments into documents/<course>/ (reusing the exact same
+// save/extract/index pipeline canvas-routes.js uses for Canvas imports), and
+// flags messages that look like they describe an assignment.
+//
+// Talks to Microsoft Graph's REST API rather than IMAP -- IMAP with a plain
+// app password turned out to be rejected outright by this account
+// ("AUTHENTICATE failed. Provided authentication mechanism is not
+// supported."), because Microsoft now requires OAuth2 for IMAP too, not
+// just basic-auth passwords. Graph sidesteps that: it's plain HTTPS with a
+// bearer token. See email-auth.js for how that token is obtained/cached,
+// and setup-email-auth.js for the one-time interactive sign-in.
+//
+// This route only ever calls email-auth.js's getAccessTokenSilent() --
+// never anything interactive -- so a request here can't hang waiting on a
+// login. If there's no cached, refreshable token yet, it responds with a
+// clear "run the setup script" error instead.
+
+const express = require("express");
+const router = express.Router();
+const path = require("path");
+const os = require("os");
+const fs = require("fs");
+const { spawn, execFileSync } = require("child_process");
+
+const documentStore = require("./document-store");
+const emailStore = require("./email-store");
+const canvasRoutes = require("./canvas-routes");
+const { extractText, saveNativeFile, matchCourseFolder, isDocumentAttachment, extFromContentTypeOrTitle } = canvasRoutes;
+const { getAccessTokenSilent, getEmailConfig } = require("./email-auth");
+
+const GRAPH_ROOT = "https://graph.microsoft.com/v1.0";
+const MAX_STORED_PDF_BYTES = 20 * 1024 * 1024; // same cap canvas-routes.js uses
+const MESSAGE_FIELDS = "subject,from,receivedDateTime,hasAttachments,body";
+
+// The lawgpt project root (two levels up from app/src/) -- the directory
+// the "send to agent" feature below opens a terminal in and runs the Claude
+// Code CLI from, so a plan that says "save this to agent/<course>/..." lands
+// in the same repo the Documents/Notes tabs read from. agent/ is a
+// dedicated folder (created alongside documents/ and notes/) that holds
+// only this feature's output, kept separate from documents/ (source
+// material) and notes/ (the student's own hand-written notes).
+const REPO_ROOT = path.join(__dirname, "..", "..");
+const AGENT_OUTPUT_DIR = "agent";
+
+// Key emailStore's deltaLinks under -- see email-store.js's header comment
+// for why it's an object keyed per source folder rather than one value.
+// Only the "Forwarded" folder is actually synced today (see /sync below).
+const FOLDER_KEY = "forwarded";
+
+// Same OpenAI Responses API that server.js's /api/chat proxies to. That
+// route lives in server.js because it needs the mutable in-memory apiKey
+// (settable from the app's Settings panel without a restart) -- rather than
+// duplicate that state here or introduce a circular require back to
+// server.js, server.js pushes the current key down via setApiKey() below,
+// once at startup and again whenever Settings changes it.
+const OPENAI_URL = "https://api.openai.com/v1/responses";
+const PLAN_MODEL = "gpt-4o-mini";
+let currentApiKey = process.env.OPENAI_API_KEY || "";
+function setApiKey(key){ currentApiKey = key || ""; }
+
+// Mirrors the extractText() helper in lawgpt.html that reads an OpenAI
+// Responses API result -- duplicated rather than shared since one runs in
+// the browser and this runs in Node.
+function extractOpenAIText(data){
+  if (typeof data.output_text === "string" && data.output_text.length) return data.output_text;
+  let text = "";
+  if (Array.isArray(data.output)){
+    for (const item of data.output){
+      if (item.type === "message" && Array.isArray(item.content)){
+        for (const c of item.content){
+          if ((c.type === "output_text" || c.type === "text") && c.text) text += c.text;
+        }
+      }
+    }
+  }
+  return text;
+}
+
+// Attachments downloaded from the email (e.g. the actual practice-problem
+// PDF) usually carry the real assignment instructions, where the email body
+// itself is often just "see attached, due Friday" -- so plan generation
+// leans on them heavily, each capped well below the per-document
+// MAX_TEXT_CHARS cap in canvas-routes.js to keep the prompt small.
+const MAX_ATTACHMENT_CHARS_FOR_PLAN = 8000;
+
+// Stored per message at sync time and sent in full to plan generation --
+// capped generously rather than the old 300-char preview, which could cut
+// off exactly the assignment specifics (due date, what to read) a longer
+// email buries past the first couple sentences.
+const MAX_BODY_CHARS = 8000;
+
+function gatherAttachmentTextForPlan(message){
+  return (message.documentIds || [])
+    .map(id => documentStore.getDocument(id))
+    .filter(doc => doc && doc.text)
+    .map(doc => `ATTACHMENT: ${doc.fileName || doc.title}\n\n${doc.text.slice(0, MAX_ATTACHMENT_CHARS_FOR_PLAN)}`)
+    .join("\n\n---\n\n");
+}
+
+const PLAN_DEVELOPER_TEXT =
+  "You are drafting a short, concrete task plan for an autonomous coding agent (Claude Code) that will be run " +
+  "unattended, with full read/write access to a law student's course-notes repository (organized as " +
+  "documents/<course>/ for source material and notes/<course>/ for the student's own hand-written notes -- " +
+  "neither of which this agent should touch). " +
+  "The user explicitly asked for a plan for the email below, so always produce one -- never refuse or say there's " +
+  "nothing to do. Write a numbered checklist of concrete, actionable steps the agent should take -- naming the " +
+  "specific reading/case/problem, what deliverable to produce (e.g. a case brief, a written answer, an outline), " +
+  "and roughly where to save it: everything this agent produces belongs under agent/<course>/ (e.g. " +
+  "agent/contracts/2-207-practice-problem.md), never under documents/ or notes/. " +
+  "Base every step strictly on what the email and any attachment text below actually say -- never invent a " +
+  "professor's name, case, reading, or deliverable that isn't actually named in them. If the email doesn't " +
+  "describe a concrete assignment or deliverable, the plan should say so as its first step (e.g. \"Re-read the " +
+  "email -- it doesn't appear to require a deliverable\") and, if there's anything else in it worth noting (a " +
+  "date, a link, an event), make a later step out of that instead of inventing coursework that isn't there. " +
+  "Do not include generic advice or disclaimers. Keep it under 10 steps. Output only the numbered list, nothing else.";
+
+function buildPlanContext(message){
+  const attachmentText = gatherAttachmentTextForPlan(message);
+  return [
+    `Subject: ${message.subject}`,
+    `From: ${message.from}`,
+    message.date ? `Received: ${message.date}` : "",
+    message.assignmentSnippet ? `Flagged sentence: "${message.assignmentSnippet}"` : "",
+    `Full email body:\n${message.body || ""}`,
+    attachmentText ? `Downloaded attachment text:\n\n${attachmentText}` : "(No attachments were downloaded from this email.)"
+  ].filter(Boolean).join("\n\n");
+}
+
+async function generatePlanText(message){
+  if (!currentApiKey) {
+    throw new Error("No OpenAI API key configured yet -- open Settings and paste one in.");
+  }
+
+  const openaiRes = await fetch(OPENAI_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: "Bearer " + currentApiKey },
+    body: JSON.stringify({
+      model: PLAN_MODEL,
+      input: [
+        { role: "developer", content: [{ type: "input_text", text: PLAN_DEVELOPER_TEXT }] },
+        { role: "user", content: [{ type: "input_text", text: buildPlanContext(message) }] }
+      ]
+    })
+  });
+  const data = await openaiRes.json().catch(() => null);
+  if (!openaiRes.ok) {
+    throw new Error((data && data.error && data.error.message) || `OpenAI returned ${openaiRes.status}`);
+  }
+  const text = extractOpenAIText(data || {}).trim();
+  if (!text) throw new Error("OpenAI returned an empty plan.");
+  return text;
+}
+
+// Used by the Email tab's "Generate plan" / "Regenerate plan" button --
+// never called automatically at sync time (see /sync below). Never throws --
+// a failure is stored as planError so the UI can show it and offer a retry,
+// instead of the button click erroring out.
+async function generateAndStorePlan(id){
+  const message = emailStore.getMessage(id);
+  if (!message) return null;
+  try {
+    const text = await generatePlanText(message);
+    return emailStore.updateMessage(id, { plan: text, planError: null, planGeneratedAt: new Date().toISOString() });
+  } catch (err) {
+    return emailStore.updateMessage(id, { planError: err.message || "Plan generation failed." });
+  }
+}
+
+// "Send to agent" opens a real, visible terminal running Claude Code rather
+// than piping its output back to the web page -- the user watches/steers it
+// directly (and can Ctrl+C it) instead of reading a log box. That means
+// this server has no handle on the actual work once the terminal is open;
+// all it tracks is which terminal it asked the OS to open and when.
+
+function commandExists(cmd){
+  try {
+    execFileSync(process.platform === "win32" ? "where" : "which", [cmd], { stdio: "ignore" });
+    return true;
+  } catch (err) {
+    return false;
+  }
+}
+
+// Writes the prompt to its own file and has the launcher script read it
+// back with `$(cat ...)` inside double quotes -- that passes the file's
+// exact content through as a single argument (newlines, quotes, and all)
+// without needing to escape an LLM-generated, multi-line plan for embedding
+// directly in a command line.
+function writeAgentPromptFile(agentPrompt){
+  const promptFile = path.join(os.tmpdir(), `lawgpt-agent-prompt-${Date.now()}-${Math.random().toString(36).slice(2)}.txt`);
+  fs.writeFileSync(promptFile, agentPrompt, { mode: 0o600 });
+  return promptFile;
+}
+
+// Builds the little script the terminal actually runs. Shell profile (sh)
+// for macOS/Linux, PowerShell on Windows -- in both cases it's just "cd into
+// the repo, run claude with the prompt, then wait so the window doesn't
+// disappear the instant claude exits."
+function buildAgentLaunchScript(agentPrompt){
+  const promptFile = writeAgentPromptFile(agentPrompt);
+
+  if (process.platform === "win32") {
+    const scriptPath = path.join(os.tmpdir(), `lawgpt-agent-run-${Date.now()}.ps1`);
+    const escapedRepo = REPO_ROOT.replace(/'/g, "''");
+    const escapedPromptFile = promptFile.replace(/'/g, "''");
+    fs.writeFileSync(scriptPath,
+      `Set-Location -LiteralPath '${escapedRepo}'\n` +
+      `$prompt = Get-Content -Raw -LiteralPath '${escapedPromptFile}'\n` +
+      `claude --permission-mode auto $prompt\n`
+    );
+    return { scriptPath, shell: "powershell" };
+  }
+
+  const scriptPath = path.join(os.tmpdir(), `lawgpt-agent-run-${Date.now()}-${Math.random().toString(36).slice(2)}.sh`);
+  fs.writeFileSync(scriptPath,
+    `#!/bin/sh\n` +
+    `cd "${REPO_ROOT}"\n` +
+    `claude --permission-mode auto "$(cat "${promptFile}")"\n` +
+    `echo\n` +
+    `echo "[agent finished -- press Enter to close this window]"\n` +
+    `read _dummy\n`
+  );
+  fs.chmodSync(scriptPath, 0o700);
+  return { scriptPath, shell: "sh" };
+}
+
+// Picks the first available terminal emulator for this OS. Tilix is this
+// machine's terminal and goes first on Linux, with a fallback chain so the
+// same code doesn't hard-fail on a machine that doesn't have it -- the
+// macOS/Windows branches are best-effort (untested here, no such machine to
+// try them on).
+function pickTerminalLauncher(launch){
+  if (process.platform === "darwin") {
+    const appleScript = `tell application "Terminal" to do script "${launch.scriptPath.replace(/"/g, '\\"')}"`;
+    return { cmd: "osascript", args: ["-e", appleScript] };
+  }
+
+  if (process.platform === "win32") {
+    if (commandExists("wt")) {
+      return { cmd: "wt", args: ["powershell.exe", "-NoExit", "-File", launch.scriptPath] };
+    }
+    return { cmd: "powershell.exe", args: ["-NoExit", "-File", launch.scriptPath] };
+  }
+
+  const linuxCandidates = [
+    { cmd: "tilix", args: ["-w", REPO_ROOT, "-e", launch.scriptPath] },
+    { cmd: "gnome-terminal", args: ["--working-directory=" + REPO_ROOT, "--", launch.scriptPath] },
+    { cmd: "konsole", args: ["--workdir", REPO_ROOT, "-e", launch.scriptPath] },
+    { cmd: "xfce4-terminal", args: ["--working-directory=" + REPO_ROOT, "-e", launch.scriptPath] },
+    { cmd: "x-terminal-emulator", args: ["-e", launch.scriptPath] },
+    { cmd: "xterm", args: ["-e", launch.scriptPath] }
+  ];
+  return linuxCandidates.find(candidate => commandExists(candidate.cmd)) || null;
+}
+
+// Keyword heuristics for "this email describes something to do", in the
+// same spirit as the classifyCivProReading/classifyLssAssignment functions
+// in lawgpt.html -- fast, free, no per-email API call. Checked against
+// subject+body together; the snippet returned is the first sentence that
+// actually matched, so the UI can show *why* something was flagged instead
+// of just a bare yes/no.
+const ASSIGNMENT_KEYWORDS = /\b(due|assignment|practice problem|distributed|submit|homework|deadline|exercise)\b/i;
+
+// Outlook's junk-mail filtering runs before inbox rules do, so a message
+// that should have been moved into the Forwarded folder by the user's rule
+// can get diverted into Junk Email first and never reach that rule at all
+// -- Outlook.com's own Safe-senders-list feature is meant to prevent this,
+// but has been unreliable (repeatedly failing to save, even after a full
+// reboot). Rather than depend on that, the Junk Email folder is synced too
+// (see JUNK_FOLDER_KEY below), restricted to this sender-domain check so
+// actual junk mail from everyone else doesn't get imported as if it were
+// course material.
+const UH_SENDER_DOMAIN = /(^|\.)uh\.edu$/i;
+
+function isFromUhDomain(msg){
+  const address = (msg.from && msg.from.emailAddress && msg.from.emailAddress.address) || "";
+  const domain = address.split("@")[1] || "";
+  return UH_SENDER_DOMAIN.test(domain);
+}
+
+function classifyEmailAssignment(subject, text){
+  const combined = `${subject || ""}\n${text || ""}`;
+  if (!ASSIGNMENT_KEYWORDS.test(combined)) {
+    return { isAssignment: false, snippet: null };
+  }
+
+  // Best-effort: split on sentence-ish boundaries and surface the first one
+  // that actually contains a matched keyword, so the card shows relevant
+  // context rather than the whole email body.
+  const sentences = combined.split(/(?<=[.!?])\s+|\n+/).map(s => s.trim()).filter(Boolean);
+  const hit = sentences.find(s => ASSIGNMENT_KEYWORDS.test(s));
+  const snippet = (hit || subject || "").slice(0, 300);
+
+  return { isAssignment: true, snippet };
+}
+
+async function graphGet(accessToken, url, extraHeaders){
+  const res = await fetch(url, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      ...extraHeaders
+    }
+  });
+  const data = await res.json().catch(() => null);
+  if (!res.ok) {
+    const message = (data && data.error && data.error.message) || `Graph returned ${res.status}`;
+    throw new Error(message);
+  }
+  return data;
+}
+
+// Deletes one message from the actual mailbox (Graph's DELETE moves it to
+// Deleted Items, the same as deleting it by hand in Outlook) -- used by the
+// Email tab's Delete button, which removes it from both the mailbox and
+// this app's local store together. A 404 here means it's already gone from
+// Outlook (deleted by hand, or by a previous attempt that succeeded on the
+// Graph side but failed before the local delete ran) -- treated as success
+// rather than blocking the local delete on it.
+async function graphDeleteMessage(accessToken, messageId){
+  const res = await fetch(`${GRAPH_ROOT}/me/messages/${messageId}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${accessToken}` }
+  });
+  if (res.ok || res.status === 404) return;
+  const data = await res.json().catch(() => null);
+  const message = (data && data.error && data.error.message) || `Graph returned ${res.status}`;
+  throw new Error(message);
+}
+
+// Finds the target folder by display name -- checked case-insensitively,
+// first among top-level folders, then (since an Outlook rule can create its
+// "move to" folder nested under Inbox instead of at the top level) among
+// Inbox's child folders. Throws a specific, listable error if neither turns
+// it up, since Outlook's IMAP-visible folder name and its Graph displayName
+// aren't guaranteed to be spelled identically to what the user typed into
+// EMAIL_FOLDER.
+async function findFolder(accessToken, folderName){
+  const topLevel = await graphGet(accessToken, `${GRAPH_ROOT}/me/mailFolders?$top=250`);
+  let match = (topLevel.value || []).find(f => (f.displayName || "").toLowerCase() === folderName.toLowerCase());
+  if (match) return match;
+
+  const children = await graphGet(accessToken, `${GRAPH_ROOT}/me/mailFolders/inbox/childFolders?$top=250`);
+  match = (children.value || []).find(f => (f.displayName || "").toLowerCase() === folderName.toLowerCase());
+  if (match) return match;
+
+  const available = (topLevel.value || []).map(f => f.displayName)
+    .concat((children.value || []).map(f => `Inbox/${f.displayName}`));
+  throw new Error(`No folder named "${folderName}" found in this mailbox. Available folders: ${available.join(", ")}`);
+}
+
+// Follows Graph's delta pagination (@odata.nextLink) until the final page,
+// which carries @odata.deltaLink instead -- that's the watermark to store
+// for next time, since re-requesting it returns only what's changed since
+// this sync. Deleted-item entries (`@removed`) are filtered out; we only
+// care about additions.
+async function fetchDeltaMessages(accessToken, folderId, storedDeltaLink){
+  let url = storedDeltaLink || `${GRAPH_ROOT}/me/mailFolders/${folderId}/messages/delta?$select=${MESSAGE_FIELDS}`;
+  const messages = [];
+  let deltaLink = storedDeltaLink;
+
+  while (url) {
+    const page = await graphGet(accessToken, url, { Prefer: 'outlook.body-content-type="text"' });
+    for (const item of (page.value || [])) {
+      if (!item["@removed"]) messages.push(item);
+    }
+    if (page["@odata.deltaLink"]) deltaLink = page["@odata.deltaLink"];
+    url = page["@odata.nextLink"] || null;
+  }
+
+  return { messages, deltaLink };
+}
+
+router.post("/sync", async (req, res) => {
+  const tokenResult = await getAccessTokenSilent();
+  if (tokenResult.error) {
+    return res.status(401).json({ error: { message: tokenResult.error } });
+  }
+  const accessToken = tokenResult.accessToken;
+  const { folder: folderName } = getEmailConfig();
+  const state = emailStore.load();
+
+  try {
+    const folder = await findFolder(accessToken, folderName);
+    const { messages: rawMessages, deltaLink } = await fetchDeltaMessages(accessToken, folder.id, state.deltaLinks[FOLDER_KEY]);
+
+    const newMessages = [];
+    let assignmentsFound = 0;
+    let documentsDownloaded = 0;
+
+    for (const msg of rawMessages) {
+      const subject = msg.subject || "(no subject)";
+      const bodyText = (msg.body && msg.body.content) || "";
+      const combinedText = `${subject}\n${bodyText}`;
+
+      const courseFolder = matchCourseFolder(combinedText) || "uncategorized";
+      const { isAssignment, snippet: assignmentSnippet } = classifyEmailAssignment(subject, bodyText);
+      if (isAssignment) assignmentsFound++;
+
+      const documentIds = [];
+      if (msg.hasAttachments) {
+        const attachmentsRes = await graphGet(accessToken, `${GRAPH_ROOT}/me/messages/${msg.id}/attachments`);
+        for (const attachment of (attachmentsRes.value || [])) {
+          if (attachment["@odata.type"] !== "#microsoft.graph.fileAttachment") continue;
+          if (!attachment.name || !isDocumentAttachment(attachment.name, attachment.contentType)) continue;
+
+          const buffer = Buffer.from(attachment.contentBytes, "base64");
+          const ext = extFromContentTypeOrTitle(attachment.contentType, attachment.name);
+          const nativeFile = saveNativeFile(courseFolder, attachment.name, ext, buffer);
+          if (!nativeFile) continue;
+
+          const existing = documentStore.getDocumentByFilePath(nativeFile.filePath);
+          if (existing) documentStore.removeDocument(existing.id);
+
+          const extracted = await extractText(buffer, attachment.contentType || "", attachment.name);
+          const extractError = (extracted && typeof extracted === "object" && extracted.__error) ? extracted.__error : null;
+          const isPdf = ext === "pdf";
+          const fileBuffer = isPdf && buffer.length <= MAX_STORED_PDF_BYTES ? buffer : null;
+
+          const document = documentStore.addDocument({
+            title: attachment.name,
+            url: null,
+            contentType: attachment.contentType || "",
+            text: extractError ? null : (extracted || null),
+            courseId: courseFolder,
+            courseName: courseFolder,
+            fileBuffer,
+            fileName: nativeFile.fileName,
+            filePath: nativeFile.filePath
+          });
+
+          documentIds.push(document.id);
+          documentsDownloaded++;
+        }
+      }
+
+      newMessages.push({
+        id: msg.id,
+        subject,
+        from: (msg.from && msg.from.emailAddress &&
+          (msg.from.emailAddress.name ? `${msg.from.emailAddress.name} <${msg.from.emailAddress.address}>` : msg.from.emailAddress.address)
+        ) || "(unknown sender)",
+        date: msg.receivedDateTime || null,
+        body: bodyText.slice(0, MAX_BODY_CHARS),
+        courseFolder,
+        isAssignment,
+        assignmentSnippet,
+        documentIds,
+        done: false,
+        plan: null,
+        planError: null,
+        planGeneratedAt: null,
+        agentStatus: "idle",
+        agentStartedAt: null,
+        agentTerminal: null
+      });
+    }
+
+    emailStore.addMessages(newMessages, FOLDER_KEY, deltaLink);
+
+    // Plans are only drafted when the user actually asks for one -- via the
+    // Email tab's "Generate plan" button (POST /messages/:id/plan below) --
+    // not automatically for every assignment-flagged email a sync turns up.
+    // A keyword match alone (see classifyEmailAssignment) is a loose enough
+    // signal that plenty of flagged emails aren't real assignments at all;
+    // generating a plan for all of them unasked meant OpenAI calls (and a
+    // plausible-looking but sometimes fabricated plan) for emails the user
+    // never intended to act on.
+    res.json({
+      added: newMessages.length,
+      assignmentsFound,
+      documentsDownloaded,
+      messages: emailStore.getAll()
+    });
+  } catch (err) {
+    console.error("Email sync failed:", err);
+    res.status(500).json({ error: { message: err.message || "Email sync failed." } });
+  }
+});
+
+router.get("/messages", async (req, res) => {
+  const tokenResult = await getAccessTokenSilent();
+  res.json({ messages: emailStore.getAll(), configured: !tokenResult.error });
+});
+
+// Deletes an email from both the actual Outlook mailbox and this app's
+// local store -- a destructive, cross-system action, so the frontend
+// confirms with the user before ever calling this.
+router.delete("/messages/:id", async (req, res) => {
+  const message = emailStore.getMessage(req.params.id);
+  if (!message) return res.status(404).json({ error: { message: "No synced email with that id." } });
+
+  const tokenResult = await getAccessTokenSilent();
+  if (tokenResult.error) {
+    return res.status(401).json({ error: { message: tokenResult.error } });
+  }
+
+  try {
+    await graphDeleteMessage(tokenResult.accessToken, message.id);
+  } catch (err) {
+    return res.status(502).json({ error: { message: `Couldn't delete this email from Outlook: ${err.message}` } });
+  }
+
+  emailStore.deleteMessage(message.id);
+  res.json({ ok: true });
+});
+
+router.post("/messages/:id/done", (req, res) => {
+  const { done } = req.body || {};
+  const message = emailStore.markDone(req.params.id, done !== false);
+  if (!message) return res.status(404).json({ error: { message: "No synced email with that id." } });
+  res.json(message);
+});
+
+// (Re)generates the plan for one message via OpenAI -- used for the initial
+// draft's retry button, and for a plan the user wants regenerated from
+// scratch after editing it.
+router.post("/messages/:id/plan", async (req, res) => {
+  const message = emailStore.getMessage(req.params.id);
+  if (!message) return res.status(404).json({ error: { message: "No synced email with that id." } });
+
+  const updated = await generateAndStorePlan(message.id);
+  if (updated.planError && !updated.plan) return res.status(500).json(updated);
+  res.json(updated);
+});
+
+// Saves the user's own edits to a plan (made in the Email tab's textarea)
+// without touching OpenAI.
+router.put("/messages/:id/plan", (req, res) => {
+  const { plan } = req.body || {};
+  if (typeof plan !== "string") {
+    return res.status(400).json({ error: { message: "Missing 'plan' string in request body." } });
+  }
+  const updated = emailStore.updateMessage(req.params.id, { plan, planError: null });
+  if (!updated) return res.status(404).json({ error: { message: "No synced email with that id." } });
+  res.json(updated);
+});
+
+// Opens a real terminal running the Claude Code CLI, in the lawgpt repo, to
+// carry out the (possibly user-edited) plan -- rather than running it
+// headless and piping output back to the web page, so the user can watch it
+// work and step in (or Ctrl+C it) directly. Runs with --permission-mode auto
+// (not --dangerously-skip-permissions) so it still asks before anything
+// destructive or outside its usual bounds, while proceeding through the
+// routine, low-risk tool calls on its own -- opening a terminal doesn't put
+// a human in the approval loop unless they're actually watching it.
+router.post("/messages/:id/agent/run", (req, res) => {
+  const message = emailStore.getMessage(req.params.id);
+  if (!message) return res.status(404).json({ error: { message: "No synced email with that id." } });
+  if (!message.plan || !message.plan.trim()) {
+    return res.status(400).json({ error: { message: "Generate (or write) a plan before sending this to the agent." } });
+  }
+
+  const agentPrompt =
+    "You are carrying out the task plan below, drafted from a law-school course email. " +
+    "Work directly in this repository. It's organized as documents/<course>/ for source material and " +
+    "notes/<course>/ for the student's own hand-written notes -- do not create or edit anything in either of " +
+    `those; everything you produce belongs under ${AGENT_OUTPUT_DIR}/<course>/ instead. ` +
+    "This is running unattended: if a step is ambiguous, use your best judgment and proceed rather than " +
+    "stopping to ask a question nobody will see. Make sure any deliverable the plan calls for actually ends up " +
+    `saved to a file under ${AGENT_OUTPUT_DIR}/, not just printed.\n\n` + message.plan;
+
+  const launch = buildAgentLaunchScript(agentPrompt);
+  const terminal = pickTerminalLauncher(launch);
+  if (!terminal) {
+    return res.status(500).json({
+      error: { message: "No terminal emulator found on this system (tried tilix, gnome-terminal, konsole, xfce4-terminal, x-terminal-emulator, xterm)." }
+    });
+  }
+
+  try {
+    const child = spawn(terminal.cmd, terminal.args, {
+      cwd: REPO_ROOT,
+      env: process.env,
+      detached: true,
+      stdio: "ignore"
+    });
+    child.unref();
+  } catch (err) {
+    return res.status(500).json({ error: { message: `Couldn't open a terminal (${terminal.cmd}): ${err.message}` } });
+  }
+
+  const updated = emailStore.updateMessage(message.id, {
+    agentStatus: "launched",
+    agentStartedAt: new Date().toISOString(),
+    agentTerminal: terminal.cmd
+  });
+  res.json(updated);
+});
+
+module.exports = router;
+// Attached so this can be unit-tested directly without a live Graph
+// connection.
+module.exports.classifyEmailAssignment = classifyEmailAssignment;
+module.exports.setApiKey = setApiKey;

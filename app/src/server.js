@@ -4,7 +4,7 @@
 // which is saved to .env and applied immediately (no restart needed).
 // LawGPT sends POST http://localhost:3000/api/chat
 
-require("dotenv").config({ path: require("path").join(__dirname, ".env") });
+require("dotenv").config({ path: require("path").join(__dirname, "..", ".env") });
 
 const express = require("express");
 const cors = require("cors");
@@ -37,6 +37,15 @@ app.use(cors());
 // base64 adds ~33% overhead on top of the 20MB raw-file cap used elsewhere.
 app.use(express.json({ limit: "30mb" }));
 
+// Serves everything in public/ at its own path, and lawgpt.html specifically
+// at the site root -- it's the app's entry point but isn't named index.html,
+// so express.static's automatic "/" handling won't pick it up on its own.
+const PUBLIC_DIR = path.join(__dirname, "..", "public");
+app.use(express.static(PUBLIC_DIR));
+app.get("/", (req, res) => {
+  res.sendFile(path.join(PUBLIC_DIR, "lawgpt.html"));
+});
+
 // Take all routes defined by canvas-routes.js and attach them underneath /api/canvas
 app.use("/api/canvas", canvasRoutes);
 
@@ -45,7 +54,7 @@ app.use("/api/email", emailRoutes);
 
 const PORT = process.env.PORT || 3000;
 const OPENAI_URL = "https://api.openai.com/v1/responses";
-const ENV_PATH = path.join(__dirname, ".env");
+const ENV_PATH = path.join(__dirname, "..", ".env");
 
 // The Notes tab's row editor and the Database tab both read/write tables in
 // Supabase's public schema. This server holds the Supabase secret key (the
@@ -61,7 +70,7 @@ const SUPABASE_SECRET_KEY = process.env.SUPABASE_SECRET_KEY || "";
 if (!SUPABASE_URL || !SUPABASE_SECRET_KEY) {
   console.warn(
     "SUPABASE_URL / SUPABASE_SECRET_KEY not set — the Notes tab's row editor " +
-    "and the Database tab will return an error until lawgpt-proxy/.env has both."
+    "and the Database tab will return an error until app/.env has both."
   );
 }
 
@@ -110,6 +119,11 @@ if (!apiKey) {
     "  open the app and paste your key into the Settings (gear) panel."
   );
 }
+
+// email-routes.js needs the key too (to draft assignment plans) but can't
+// read this mutable local variable directly -- push the current value down
+// once at startup, and again below whenever Settings changes it.
+emailRoutes.setApiKey(apiKey);
 
 // The Settings panel is meant for local development on your own machine
 // only. Refuse to write files if this server is somehow reachable from
@@ -198,6 +212,7 @@ app.post("/api/key", requireLocalhost, (req, res) => {
   try {
     upsertEnvVar("OPENAI_API_KEY", newKey.trim());
     apiKey = newKey.trim();
+    emailRoutes.setApiKey(apiKey);
 
     res.json({
       ok: true,
@@ -245,6 +260,46 @@ app.post("/api/email-client-id", requireLocalhost, (req, res) => {
     process.env.EMAIL_CLIENT_ID = trimmed;
 
     res.json({ ok: true, clientId: trimmed });
+  } catch (err) {
+    console.error("Failed to write .env:", err);
+
+    res.status(500).json({
+      error: {
+        message: "Saved in memory, but couldn't write .env to disk."
+      }
+    });
+  }
+});
+
+// Lets the Settings panel show the mailbox folder the Email tab currently
+// syncs from (see email-auth.js's getEmailConfig -- ~/.bashrc wins over
+// .env, then falls back to "Forwarded" if neither is set). Not a secret,
+// so the real value is always sent back, same as the client ID above.
+app.get("/api/email-folder-status", (req, res) => {
+  const { folder } = getEmailConfig();
+  res.json({ folder });
+});
+
+app.post("/api/email-folder", requireLocalhost, (req, res) => {
+  const { folder: newFolder } = req.body || {};
+  const trimmed = typeof newFolder === "string" ? newFolder.trim() : "";
+
+  if (!trimmed) {
+    return res.status(400).json({
+      error: {
+        message: "Folder name can't be empty."
+      }
+    });
+  }
+
+  try {
+    upsertEnvVar("EMAIL_FOLDER", trimmed);
+    // getEmailConfig() reads process.env fresh on every call, so updating
+    // it here is enough to take effect immediately -- no restart needed,
+    // same as the client ID above.
+    process.env.EMAIL_FOLDER = trimmed;
+
+    res.json({ ok: true, folder: trimmed });
   } catch (err) {
     console.error("Failed to write .env:", err);
 
@@ -629,7 +684,7 @@ app.post("/api/documents/:id/reveal", requireLocalhost, (req, res) => {
 function requireSupabaseConfigured(req, res, next) {
   if (!SUPABASE_URL || !SUPABASE_SECRET_KEY) {
     return res.status(500).json({
-      error: { message: "Supabase isn't configured. Set SUPABASE_URL and SUPABASE_SECRET_KEY in lawgpt-proxy/.env and restart the proxy." }
+      error: { message: "Supabase isn't configured. Set SUPABASE_URL and SUPABASE_SECRET_KEY in app/.env and restart the proxy." }
     });
   }
   next();

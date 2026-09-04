@@ -3,7 +3,7 @@
 // One-time interactive login for the Email tab's mailbox access, run by
 // hand from a terminal:
 //
-//   node lawgpt-proxy/setup-email-auth.js
+//   node app/src/setup-email-auth.js
 //
 // This is deliberately NOT a web route -- device code flow needs a human
 // watching a terminal (for the code) and a browser (to approve it), which
@@ -15,10 +15,10 @@
 // /api/email/sync starts reporting that silent refresh failed.
 //
 // Requires EMAIL_CLIENT_ID to already be set (in ~/.bashrc or
-// lawgpt-proxy/.env) -- see email-auth.js's header comment for how to get
+// app/.env) -- see email-auth.js's header comment for how to get
 // one (register a free app at https://entra.microsoft.com).
 
-require("dotenv").config({ path: require("path").join(__dirname, ".env") });
+require("dotenv").config({ path: require("path").join(__dirname, "..", ".env") });
 
 const { getPca, getClientConfig, SCOPES } = require("./email-auth");
 
@@ -26,10 +26,10 @@ async function main(){
   const { clientId } = getClientConfig();
   if (!clientId) {
     console.error(
-      "EMAIL_CLIENT_ID isn't set (checked ~/.bashrc and lawgpt-proxy/.env).\n" +
+      "EMAIL_CLIENT_ID isn't set (checked ~/.bashrc and app/.env).\n" +
       "Register a free app at https://entra.microsoft.com (App registrations -> New registration,\n" +
       "'Personal Microsoft accounts only', enable 'Allow public client flows' under Authentication,\n" +
-      "add the Mail.Read delegated permission under API permissions), then set EMAIL_CLIENT_ID to its\n" +
+      "add the Mail.ReadWrite delegated permission under API permissions), then set EMAIL_CLIENT_ID to its\n" +
       "Application (client) ID and re-run this script."
     );
     process.exit(1);

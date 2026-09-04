@@ -74,6 +74,24 @@ function getAll(){
   return load().messages.slice().sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
 }
 
+function getMessage(id){
+  return load().messages.find(m => String(m.id) === String(id)) || null;
+}
+
+// Removes a message from the local store -- called after it's been deleted
+// from the actual mailbox via Graph (see email-routes.js's DELETE route), so
+// the two stay in sync. Not re-added on the next sync since a delta query
+// only returns what's new/changed, and a message we deleted ourselves is
+// neither.
+function deleteMessage(id){
+  const state = load();
+  const index = state.messages.findIndex(m => String(m.id) === String(id));
+  if (index === -1) return false;
+  state.messages.splice(index, 1);
+  save(state);
+  return true;
+}
+
 function markDone(id, done){
   const state = load();
   const message = state.messages.find(m => String(m.id) === String(id));
@@ -83,4 +101,17 @@ function markDone(id, done){
   return message;
 }
 
-module.exports = { load, save, addMessages, getAll, markDone };
+// Generic patch used by the plan-generation and agent-run endpoints in
+// email-routes.js -- merges the given fields onto the stored message rather
+// than needing a bespoke setter for every new field those features track
+// (plan text, plan errors, agent status/log/timestamps).
+function updateMessage(id, patch){
+  const state = load();
+  const message = state.messages.find(m => String(m.id) === String(id));
+  if (!message) return null;
+  Object.assign(message, patch);
+  save(state);
+  return message;
+}
+
+module.exports = { load, save, addMessages, getAll, getMessage, deleteMessage, markDone, updateMessage };

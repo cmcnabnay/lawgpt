@@ -7,17 +7,17 @@
 // enabled on the mailbox, because it now requires OAuth2 ("Modern Auth").
 // Graph's REST API sidesteps IMAP entirely and just needs a bearer token.
 //
-// Requires EMAIL_CLIENT_ID (and optionally EMAIL_TENANT_ID, default
-// "consumers" -- correct for a personal outlook.com/hotmail.com account) in
-// ~/.bashrc, checked first, falling back to .env/process.env (see
-// getEmailConfig below). Also used by email-routes.js for EMAIL_FOLDER, so
-// this lives here rather than in each caller. EMAIL_CLIENT_ID comes from
-// registering a free "public client" app in https://entra.microsoft.com --
-// see setup-email-auth.js.
+// Requires EMAIL_CLIENT_ID in ~/.bashrc, checked first, falling back to
+// .env/process.env (see getEmailConfig below). The tenant is always
+// "consumers" -- correct for a personal outlook.com/hotmail.com account,
+// which is the only kind this app supports. Also used by email-routes.js
+// for EMAIL_FOLDER, so this lives here rather than in each caller.
+// EMAIL_CLIENT_ID comes from registering a free "public client" app in
+// https://entra.microsoft.com -- see setup-email-auth.js.
 //
 // The one-time interactive login (device code flow) happens in
 // setup-email-auth.js, run by hand from a terminal
-// (`node lawgpt-proxy/setup-email-auth.js`) -- not from the web UI, since
+// (`node app/src/setup-email-auth.js`) -- not from the web UI, since
 // device code flow needs a human watching a terminal/browser, not a fetch()
 // call. That script and the running proxy server share the token cache
 // file below: the server's /api/email/sync route only ever calls
@@ -32,7 +32,12 @@ const path = require("path");
 const { PublicClientApplication } = require("@azure/msal-node");
 
 const CACHE_PATH = path.join(__dirname, "msal-token-cache.json");
-const SCOPES = ["Mail.Read"];
+// Mail.ReadWrite (not just Mail.Read) -- the Email tab's Delete button
+// deletes a message from the actual mailbox via Graph, which Mail.Read
+// alone can't authorize (Graph returns "Access is denied" for the DELETE
+// call even though sync/reading works fine). ReadWrite is a superset, so
+// this single scope still covers everything Mail.Read did.
+const SCOPES = ["Mail.ReadWrite"];
 
 // Reads a variable out of ~/.bashrc as plain text -- a regex match on
 // `export NAME=...` lines -- rather than by sourcing it in a shell. A
@@ -64,7 +69,7 @@ function readVarFromBashrc(varName){
 function getEmailConfig(){
   return {
     clientId: readVarFromBashrc("EMAIL_CLIENT_ID") || process.env.EMAIL_CLIENT_ID || "",
-    tenantId: readVarFromBashrc("EMAIL_TENANT_ID") || process.env.EMAIL_TENANT_ID || "consumers",
+    tenantId: "consumers",
     folder: readVarFromBashrc("EMAIL_FOLDER") || process.env.EMAIL_FOLDER || "Forwarded"
   };
 }
@@ -105,19 +110,19 @@ function getPca(){
 // return a clear "run the setup script" error instead of hanging.
 async function getAccessTokenSilent(){
   const pca = getPca();
-  if (!pca) return { error: "EMAIL_CLIENT_ID isn't set -- checked ~/.bashrc and lawgpt-proxy/.env, found neither." };
+  if (!pca) return { error: "EMAIL_CLIENT_ID isn't set -- checked ~/.bashrc and app/.env, found neither." };
 
   const cache = pca.getTokenCache();
   const accounts = await cache.getAllAccounts();
   if (!accounts.length) {
-    return { error: "No signed-in mailbox account found. Run `node lawgpt-proxy/setup-email-auth.js` once from a terminal to sign in." };
+    return { error: "No signed-in mailbox account found. Run `node app/src/setup-email-auth.js` once from a terminal to sign in." };
   }
 
   try {
     const result = await pca.acquireTokenSilent({ account: accounts[0], scopes: SCOPES });
     return { accessToken: result.accessToken, account: accounts[0] };
   } catch (err) {
-    return { error: `Couldn't silently refresh the mailbox login (${err.message}). Run \`node lawgpt-proxy/setup-email-auth.js\` again to sign in.` };
+    return { error: `Couldn't silently refresh the mailbox login (${err.message}). Run \`node app/src/setup-email-auth.js\` again to sign in.` };
   }
 }
 
