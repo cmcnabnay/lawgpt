@@ -2953,8 +2953,13 @@ return ctor.prototype=parent.prototype,child.prototype=new ctor,child.__super__=
 // ====== CONFIGURATION ======
 // The real API key lives only in the proxy server's environment variable
 // (see app/src/server.js) -- never in this file.
-const API_URL = "http://localhost:3000/api/chat";
-const PROXY_ORIGIN = "http://localhost:3000";
+// When this page is served by the proxy itself (http://localhost:3000 in
+// dev, http://<ec2-host>:3000 in prod), API calls should go back to that
+// same origin. Opening the raw HTML file directly (file://) has no usable
+// origin, so fall back to a local proxy on the default port.
+const RUNTIME_ORIGIN = /^https?:$/.test(location.protocol) ? location.origin : "http://localhost:3000";
+const API_URL = RUNTIME_ORIGIN + "/api/chat";
+const PROXY_ORIGIN = RUNTIME_ORIGIN;
 
 // Standard (non-batch) OpenAI API pricing, USD per 1M tokens, from
 // https://developers.openai.com/api/docs/pricing (checked 2026-09-03).

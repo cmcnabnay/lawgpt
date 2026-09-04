@@ -805,7 +805,7 @@ app.post("/api/db/query", (req, res, next) => {
 
     if (!SUPABASE_SECRET_KEY && readonlyPool) {
       const result = await readonlyPool.query(query);
-      return res.json(Array.isArray(result.rows) ? result.rows : []);
+      return res.json({ rows: Array.isArray(result.rows) ? result.rows : [] });
     }
 
     const result = await supabaseRequest("rpc/exec_sql", {
