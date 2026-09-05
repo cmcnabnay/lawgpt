@@ -3063,6 +3063,45 @@ async function refreshKeyStatus(){
   } catch(e){
     setSettingsStatus("Couldn't reach the proxy server — is it running?", "err");
   }
+  refreshChatProvider();
+}
+
+// Which backend /api/chat will actually use -- mirrors the server's own
+// apiKey-then-OPENROUTER_API_KEY precedence (see /api/provider-status).
+// Drives both the #modelSelect options below and the Notes tab's "Attached
+// to ..." source label, so neither one lies about where a request actually
+// goes when no OpenAI key is configured.
+let chatProvider = { provider: "openai", openrouterModel: "" };
+const modelSelect = document.getElementById("modelSelect");
+const DEFAULT_MODEL_SELECT_HTML = modelSelect.innerHTML;
+
+function providerDisplayName(){
+  return chatProvider.provider === "openrouter"
+    ? `${chatProvider.openrouterModel} (via OpenRouter)`
+    : "OpenAI";
+}
+
+function applyChatProviderToModelSelect(){
+  if (chatProvider.provider === "openrouter"){
+    const opt = document.createElement("option");
+    opt.value = chatProvider.openrouterModel;
+    opt.textContent = `${chatProvider.openrouterModel} (via OpenRouter)`;
+    opt.selected = true;
+    modelSelect.innerHTML = "";
+    modelSelect.appendChild(opt);
+  } else {
+    modelSelect.innerHTML = DEFAULT_MODEL_SELECT_HTML;
+  }
+}
+
+async function refreshChatProvider(){
+  try{
+    const res = await fetch(PROXY_ORIGIN + "/api/provider-status");
+    chatProvider = await res.json();
+  } catch(e){
+    chatProvider = { provider: "openai", openrouterModel: "" };
+  }
+  applyChatProviderToModelSelect();
 }
 
 const settingsEmailClientIdInput = document.getElementById("settingsEmailClientIdInput");
@@ -3234,6 +3273,7 @@ document.getElementById("settingsSaveBtn").addEventListener("click", async () =>
     }
     settingsApiKeyInput.value = "";
     setSettingsStatus(`Saved — key ending in ...${data.last4}.`, "ok");
+    refreshChatProvider();
   } catch(e){
     setSettingsStatus("Couldn't reach the proxy server — is it running?", "err");
   }
@@ -3798,6 +3838,7 @@ attachChipListeners();
 loadState();
 renderDocket();
 renderChat();
+refreshChatProvider();
 
 // ====== VIEW TAB SWITCHING ======
 function setView(view){
@@ -4682,7 +4723,7 @@ function describeDocumentSource(documentIds){
     .filter(Boolean)
     .map(d => d.title);
   if (!titles.length) return { matched: false, label: "No matching document found \u2014 answered from general knowledge only." };
-  return { matched: true, label: "Attached to OpenAI: " + titles.join(", ") };
+  return { matched: true, label: `Attached to ${providerDisplayName()}: ` + titles.join(", ") };
 }
 
 async function generateReadingReport({ course, classLabel, title, prompt, documentIds, btn, idleLabel }){

@@ -56,6 +56,34 @@ const PORT = process.env.PORT || 3000;
 const OPENAI_URL = "https://api.openai.com/v1/responses";
 const ENV_PATH = path.join(__dirname, "..", ".env");
 
+// Fallback used by /api/chat when no OpenAI key is configured. OpenRouter
+// also implements OpenAI's Responses API shape at this path (same request
+// and response shape the OpenAI branch below already uses), so the two
+// branches share the same augmentedInput builder and no response
+// translation is needed. GLM 5.2 is text-only though, so this path can't
+// accept native PDF files the way the OpenAI branch can -- attached
+// documents go in as extracted text instead.
+const OPENROUTER_URL = "https://openrouter.ai/api/v1/responses";
+const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY || "";
+const OPENROUTER_MODEL = process.env.OPENROUTER_MODEL || "z-ai/glm-5.2:free";
+
+// A response can fail either via a non-2xx status or via HTTP 200 with
+// status:"failed" in the body (how OpenRouter reports some upstream
+// provider errors), so both need checking to know the attempt failed.
+async function callOpenrouter(model, input) {
+  const res = await fetch(OPENROUTER_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer " + OPENROUTER_API_KEY
+    },
+    body: JSON.stringify({ model, input })
+  });
+  const data = await res.json();
+  const ok = res.ok && !(data && data.status === "failed");
+  return { ok, status: res.status, data };
+}
+
 // The Notes tab's row editor and the Database tab both read/write tables in
 // Supabase's public schema. This server holds the Supabase secret key (the
 // modern equivalent of service_role) and talks to Supabase's PostgREST API
@@ -311,13 +339,22 @@ app.post("/api/email-folder", requireLocalhost, (req, res) => {
   }
 });
 
+// Lets the frontend show the model(s) that will actually be used -- the
+// modelSelect dropdown's options, and the Notes tab's "Attached to ..."
+// source label -- rather than always assuming OpenAI. Mirrors the same
+// apiKey-then-OPENROUTER_API_KEY precedence /api/chat uses below.
+app.get("/api/provider-status", (req, res) => {
+  const provider = apiKey ? "openai" : (OPENROUTER_API_KEY ? "openrouter" : "none");
+  res.json({ provider, openrouterModel: OPENROUTER_MODEL });
+});
+
 app.post("/api/chat", async (req, res) => {
   try {
-    if (!apiKey) {
+    if (!apiKey && !OPENROUTER_API_KEY) {
       return res.status(400).json({
         error: {
           message:
-            "No API key configured yet. Click the settings gear and paste your OpenAI key."
+            "No API key configured yet. Click the settings gear and paste your OpenAI key, or set OPENROUTER_API_KEY (and OPENROUTER_MODEL) in app/.env."
         }
       });
     }
@@ -363,43 +400,6 @@ app.post("/api/chat", async (req, res) => {
       ? []
       : documentStore.searchDocuments(question, 5).filter(doc => !attachedIds.has(doc.id));
 
-    // Attached documents that still have their raw PDF bytes (see
-    // canvas-routes.js) get sent to OpenAI as the actual file, via
-    // input_file/file_data — the model reads it directly (text + page
-    // images), so nothing is lost to the MAX_TEXT_CHARS truncation used
-    // when the document was first imported. Everything else (attached
-    // documents we only have extracted text for, plus anything pulled in
-    // by keyword search) still goes in as plain text context.
-    const attachedFileBlocks = [];
-    const textDocuments = [];
-
-    for (const doc of attachedDocuments) {
-      if (doc.fileBuffer) {
-        const filename = /\.pdf$/i.test(doc.title || "") ? doc.title : `${doc.title || "document"}.pdf`;
-        attachedFileBlocks.push({
-          type: "input_file",
-          filename,
-          file_data: `data:application/pdf;base64,${doc.fileBuffer.toString("base64")}`
-        });
-      } else {
-        textDocuments.push(doc);
-      }
-    }
-    textDocuments.push(...searchedDocuments);
-
-    // Build reference material from the text-only documents. Label each one
-    // with its real on-disk file name (including extension) rather than
-    // doc.title (which is that same name with the extension stripped off) --
-    // the model is asked to cite this exact SOURCE label back in its
-    // "Document" field, and a bare title like "CB pp 87-93" doesn't tell the
-    // user whether to go looking for a .txt, .pdf, or .docx when they want
-    // to reopen the actual file later.
-    const context = textDocuments
-      .map(doc => {
-        return `SOURCE: ${doc.fileName || doc.title}\n\n${doc.text}`;
-      })
-      .join("\n\n---\n\n");
-
     // Give the model the Canvas material as reference context. The
     // instructions differ depending on whether the caller explicitly
     // attached specific document(s) (e.g. a reading-notes request, where
@@ -434,45 +434,117 @@ app.post("/api/chat", async (req, res) => {
         "Do not open your response with introductory filler (\"Sure!\", \"Here are your notes\", \"Certainly!\", etc.) — begin directly with the substantive content. " +
         "Do not refer to yourself as an AI, a language model, or an assistant anywhere in the response.";
 
-    const augmentedInput = [
+    if (apiKey) {
+      // Attached documents that still have their raw PDF bytes (see
+      // canvas-routes.js) get sent to OpenAI as the actual file, via
+      // input_file/file_data — the model reads it directly (text + page
+      // images), so nothing is lost to the MAX_TEXT_CHARS truncation used
+      // when the document was first imported. Everything else (attached
+      // documents we only have extracted text for, plus anything pulled in
+      // by keyword search) still goes in as plain text context.
+      const attachedFileBlocks = [];
+      const textDocuments = [];
+
+      for (const doc of attachedDocuments) {
+        if (doc.fileBuffer) {
+          const filename = /\.pdf$/i.test(doc.title || "") ? doc.title : `${doc.title || "document"}.pdf`;
+          attachedFileBlocks.push({
+            type: "input_file",
+            filename,
+            file_data: `data:application/pdf;base64,${doc.fileBuffer.toString("base64")}`
+          });
+        } else {
+          textDocuments.push(doc);
+        }
+      }
+      textDocuments.push(...searchedDocuments);
+
+      // Build reference material from the text-only documents. Label each
+      // one with its real on-disk file name (including extension) rather
+      // than doc.title (which is that same name with the extension stripped
+      // off) -- the model is asked to cite this exact SOURCE label back in
+      // its "Document" field, and a bare title like "CB pp 87-93" doesn't
+      // tell the user whether to go looking for a .txt, .pdf, or .docx when
+      // they want to reopen the actual file later.
+      const context = textDocuments
+        .map(doc => `SOURCE: ${doc.fileName || doc.title}\n\n${doc.text}`)
+        .join("\n\n---\n\n");
+
+      const augmentedInput = [
+        {
+          role: "developer",
+          content: [
+            {
+              type: "input_text",
+              text: developerText
+            }
+          ]
+        },
+        {
+          role: "user",
+          content: [
+            ...attachedFileBlocks,
+            {
+              type: "input_text",
+              text:
+                `Canvas course materials:\n\n${context || "(No relevant Canvas documents found.)"}\n\n` +
+                `User question:\n${question}`
+            }
+          ]
+        }
+      ];
+
+      const openaiRes = await fetch(OPENAI_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer " + apiKey
+        },
+        body: JSON.stringify({
+          model,
+          input: augmentedInput
+        })
+      });
+
+      const data = await openaiRes.json();
+
+      return res.status(openaiRes.status).json(data);
+    }
+
+    // No OpenAI key configured -- fall back to OpenRouter (see the
+    // OPENROUTER_* constants above). GLM 5.2 is text-only, so every
+    // attached document goes in as its already-extracted text rather than
+    // the native-PDF input_file blocks the OpenAI branch above can send.
+    const openrouterDocuments = [...attachedDocuments, ...searchedDocuments];
+    const openrouterContext = openrouterDocuments
+      .map(doc => `SOURCE: ${doc.fileName || doc.title}\n\n${doc.text || ""}`)
+      .join("\n\n---\n\n");
+
+    const openrouterInput = [
       {
         role: "developer",
-        content: [
-          {
-            type: "input_text",
-            text: developerText
-          }
-        ]
+        content: [{ type: "input_text", text: developerText }]
       },
       {
         role: "user",
         content: [
-          ...attachedFileBlocks,
           {
             type: "input_text",
             text:
-              `Canvas course materials:\n\n${context || "(No relevant Canvas documents found.)"}\n\n` +
+              `Canvas course materials:\n\n${openrouterContext || "(No relevant Canvas documents found.)"}\n\n` +
               `User question:\n${question}`
           }
         ]
       }
     ];
 
-    const openaiRes = await fetch(OPENAI_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer " + apiKey
-      },
-      body: JSON.stringify({
-        model,
-        input: augmentedInput
-      })
-    });
+    const result = await callOpenrouter(OPENROUTER_MODEL, openrouterInput);
 
-    const data = await openaiRes.json();
-
-    res.status(openaiRes.status).json(data);
+    // OpenRouter can return HTTP 200 with status:"failed" in the body
+    // (e.g. an overloaded upstream free model) rather than a non-2xx
+    // status -- surface that as a real error so the frontend's failure
+    // styling triggers instead of quietly displaying it as a normal answer.
+    res.status(result.ok ? result.status : 502).json(result.data);
   } catch (err) {
     console.error("Proxy error:", err);
 
@@ -678,9 +750,72 @@ app.post("/api/documents/:id/reveal", requireLocalhost, (req, res) => {
   });
 });
 
+// ---- Public read-only lookups (cases/rules/definitions over the internet) ----
+// Unlike /api/db/* below, these are meant to be reachable by any user of the
+// deployed app, not just from localhost. Each one runs exactly one fixed,
+// parameterized query shape against the SELECT-only readonlyPool -- never a
+// client-supplied query string -- so there's no SQL injection surface and no
+// way to reach any table but the one that endpoint names.
+const rateLimit = require("express-rate-limit");
+const publicReadLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 30,
+  standardHeaders: true,
+  legacyHeaders: false
+});
+
+const PUBLIC_READ_MAX_LIMIT = 50;
+const PUBLIC_READ_DEFAULT_LIMIT = 20;
+
+async function queryPublicTable(res, table, searchColumn, req) {
+  if (!readonlyPool) {
+    return res.status(500).json({
+      error: { message: "SUPABASE_READONLY_DB_URL isn't configured -- this endpoint has nothing to query." }
+    });
+  }
+
+  const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || PUBLIC_READ_DEFAULT_LIMIT, 1), PUBLIC_READ_MAX_LIMIT);
+  const offset = Math.max(parseInt(req.query.offset, 10) || 0, 0);
+  const q = typeof req.query.q === "string" ? req.query.q.trim() : "";
+  const course = typeof req.query.course === "string" ? req.query.course.trim() : "";
+
+  const conditions = [];
+  const params = [];
+  if (q) {
+    params.push(`%${q}%`);
+    conditions.push(`"${searchColumn}" ILIKE $${params.length}`);
+  }
+  if (course) {
+    params.push(course);
+    conditions.push(`"course" = $${params.length}`);
+  }
+  const where = conditions.length ? `WHERE ${conditions.join(" AND ")}` : "";
+
+  params.push(limit, offset);
+  // Quoted identifiers -- table/searchColumn are always this file's own
+  // hardcoded literals (see the three route registrations below), never
+  // client input, but "case" (the cases table's PK/search column) is a
+  // reserved SQL keyword and breaks unquoted in ORDER BY.
+  const sql = `SELECT * FROM "${table}" ${where} ORDER BY "${searchColumn}" LIMIT $${params.length - 1} OFFSET $${params.length}`;
+
+  try {
+    const result = await readonlyPool.query(sql, params);
+    res.json({ rows: result.rows });
+  } catch (err) {
+    res.status(500).json({ error: { message: err.message } });
+  }
+}
+
+app.get("/api/cases", publicReadLimiter, (req, res) => queryPublicTable(res, "cases", "case", req));
+app.get("/api/rules", publicReadLimiter, (req, res) => queryPublicTable(res, "rules", "rule_name", req));
+app.get("/api/definitions", publicReadLimiter, (req, res) => queryPublicTable(res, "definitions", "term", req));
+
 // ---- Generic table access (Notes tab's row editor + the Database tab) ----
-// Not limited to `cases` -- any table in the public schema, introspected
-// live from Supabase (see fetchSupabaseTables below) rather than hardcoded.
+// Admin tooling only -- gated behind requireLocalhost (see /api/key above)
+// since it can read/write/delete any table in the schema and, via
+// /api/db/query, run arbitrary SQL. Not limited to `cases` -- any table in
+// the public schema, introspected live from Supabase (see
+// fetchSupabaseTables below) rather than hardcoded.
 function requireSupabaseConfigured(req, res, next) {
   if (!SUPABASE_URL || !SUPABASE_SECRET_KEY) {
     return res.status(500).json({
@@ -738,7 +873,7 @@ function pickFieldsForTable(body, table) {
   return out;
 }
 
-app.get("/api/db/tables", requireSupabaseConfigured, async (req, res) => {
+app.get("/api/db/tables", requireLocalhost, requireSupabaseConfigured, async (req, res) => {
   try {
     res.json(await fetchSupabaseTables());
   } catch (err) {
@@ -746,7 +881,7 @@ app.get("/api/db/tables", requireSupabaseConfigured, async (req, res) => {
   }
 });
 
-app.get("/api/db/:table", requireSupabaseConfigured, async (req, res) => {
+app.get("/api/db/:table", requireLocalhost, requireSupabaseConfigured, async (req, res) => {
   try {
     const table = await getTableInfo(req.params.table);
     if (!table) return res.status(404).json({ error: { message: "Unknown table." } });
@@ -758,7 +893,7 @@ app.get("/api/db/:table", requireSupabaseConfigured, async (req, res) => {
   }
 });
 
-app.get("/api/db/:table/:pkValue", requireSupabaseConfigured, async (req, res) => {
+app.get("/api/db/:table/:pkValue", requireLocalhost, requireSupabaseConfigured, async (req, res) => {
   try {
     const table = await getTableInfo(req.params.table);
     if (!table) return res.status(404).json({ error: { message: "Unknown table." } });
@@ -793,7 +928,7 @@ app.get("/api/db/:table/:pkValue", requireSupabaseConfigured, async (req, res) =
 // Registered BEFORE the generic "/api/db/:table" POST route below --
 // Express matches routes in registration order, so "query" would otherwise
 // get swallowed by ":table" and misread as a (nonexistent) table name.
-app.post("/api/db/query", (req, res, next) => {
+app.post("/api/db/query", requireLocalhost, (req, res, next) => {
   if (SUPABASE_SECRET_KEY || readonlyPool) return next();
   requireSupabaseConfigured(req, res, next);
 }, async (req, res) => {
@@ -825,7 +960,7 @@ app.post("/api/db/query", (req, res, next) => {
 // of erroring or creating a duplicate. Tables with no (or a composite)
 // primary key just get a plain insert -- there's nothing reliable to key an
 // update off of.
-app.post("/api/db/:table", requireSupabaseConfigured, async (req, res) => {
+app.post("/api/db/:table", requireLocalhost, requireSupabaseConfigured, async (req, res) => {
   try {
     const table = await getTableInfo(req.params.table);
     if (!table) return res.status(404).json({ error: { message: "Unknown table." } });
@@ -861,7 +996,7 @@ app.post("/api/db/:table", requireSupabaseConfigured, async (req, res) => {
   }
 });
 
-app.patch("/api/db/:table/:pkValue", requireSupabaseConfigured, async (req, res) => {
+app.patch("/api/db/:table/:pkValue", requireLocalhost, requireSupabaseConfigured, async (req, res) => {
   try {
     const table = await getTableInfo(req.params.table);
     if (!table) return res.status(404).json({ error: { message: "Unknown table." } });
@@ -883,7 +1018,7 @@ app.patch("/api/db/:table/:pkValue", requireSupabaseConfigured, async (req, res)
   }
 });
 
-app.delete("/api/db/:table/:pkValue", requireSupabaseConfigured, async (req, res) => {
+app.delete("/api/db/:table/:pkValue", requireLocalhost, requireSupabaseConfigured, async (req, res) => {
   try {
     const table = await getTableInfo(req.params.table);
     if (!table) return res.status(404).json({ error: { message: "Unknown table." } });
