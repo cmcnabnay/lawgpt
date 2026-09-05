@@ -2286,6 +2286,33 @@ pre code {
 
 <div class="app">
 
+<div class="modal-overlay" id="accountOverlay" style="display:none;">
+  <div class="modal">
+    <h2>Account</h2>
+    <div id="accountSignedOut">
+      <p>Sign in to save your notes and chat history to your account, so they follow you across browsers and devices instead of staying stuck in this one browser.</p>
+      <div class="settings-form">
+        <label for="accountEmailInput">Email</label>
+        <input type="email" id="accountEmailInput" autocomplete="username" spellcheck="false">
+        <label for="accountPasswordInput">Password</label>
+        <input type="password" id="accountPasswordInput" autocomplete="current-password">
+        <div class="settings-status" id="accountStatus"></div>
+        <div class="settings-actions">
+          <button id="accountLoginBtn">Sign in</button>
+          <button id="accountSignupBtn" class="btn-secondary">Create account</button>
+        </div>
+      </div>
+    </div>
+    <div id="accountSignedIn" style="display:none;">
+      <p>Signed in as <strong id="accountEmailDisplay"></strong>.</p>
+      <div class="settings-status" id="accountSyncStatus"></div>
+      <div class="settings-actions">
+        <button id="accountLogoutBtn" class="btn-secondary">Sign out</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="settingsOverlay" style="display:none;">
   <div class="modal modal-wide">
     <h2>API key settings</h2>
@@ -2499,6 +2526,12 @@ pre code {
       <button class="view-tab" id="tabNotes" data-view="notes">Notes</button>
       <button class="view-tab" id="tabDatabase" data-view="database">Database</button>
       <button class="view-tab" id="tabEmail" data-view="email">Email</button>
+      <button class="settings-gear-btn" id="accountBtn" aria-label="Account" title="Sign in to save your notes and chat history">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="12" cy="8" r="3.5" stroke="currentColor" stroke-width="1.5"/>
+          <path d="M4.5 20c1.2-3.5 4.2-5.5 7.5-5.5s6.3 2 7.5 5.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </button>
       <button class="settings-gear-btn" id="settingsGearBtn" aria-label="Settings" title="API key settings">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z" stroke="currentColor" stroke-width="1.5"/>
@@ -3177,6 +3210,153 @@ function closeSettings(){
   settingsOverlay.style.display = "none";
 }
 
+// ====== ACCOUNT (sign in to sync notes/chat history server-side) ======
+// currentUser is the signed-in email, or null. When signed in, persistState
+// below also pushes the docket to /api/user/state (debounced) so it
+// survives across browsers/devices instead of staying stuck in this one
+// browser's localStorage.
+let currentUser = null;
+const accountOverlay = document.getElementById("accountOverlay");
+const accountSignedOut = document.getElementById("accountSignedOut");
+const accountSignedIn = document.getElementById("accountSignedIn");
+const accountEmailInput = document.getElementById("accountEmailInput");
+const accountPasswordInput = document.getElementById("accountPasswordInput");
+const accountStatus = document.getElementById("accountStatus");
+const accountSyncStatus = document.getElementById("accountSyncStatus");
+
+function setAccountStatus(msg, kind){
+  accountStatus.textContent = msg;
+  accountStatus.className = "settings-status" + (kind ? " " + kind : "");
+}
+
+function updateAccountUI(){
+  if (currentUser){
+    accountSignedOut.style.display = "none";
+    accountSignedIn.style.display = "block";
+    document.getElementById("accountEmailDisplay").textContent = currentUser;
+  } else {
+    accountSignedOut.style.display = "block";
+    accountSignedIn.style.display = "none";
+    setAccountStatus("", "");
+  }
+}
+
+// Called on page load. If a session cookie from a previous visit is still
+// valid, pulls that account's saved data the same way a fresh sign-in
+// does -- otherwise the point of having an account (following you across
+// browsers/devices) wouldn't actually happen until you manually signed in
+// again on every visit.
+async function refreshAuthStatus(){
+  try{
+    const res = await fetch(PROXY_ORIGIN + "/api/auth/me");
+    const data = await res.json();
+    currentUser = data.signedIn ? data.email : null;
+  } catch(e){
+    currentUser = null;
+  }
+  updateAccountUI();
+  if (currentUser) await syncAfterLogin();
+}
+
+// Called right after a successful sign-in/sign-up. If the account already
+// has saved data (returning on a new browser/device), that replaces
+// whatever's local -- otherwise this is a first login, so the current
+// local docket (if any) is pushed up to become that account's starting data.
+async function syncAfterLogin(){
+  try{
+    const res = await fetch(PROXY_ORIGIN + "/api/user/state");
+    const data = await res.json();
+    if (data && data.data && Array.isArray(data.data.matters) && data.data.matters.length){
+      matters = data.data.matters;
+      matters.forEach(m => {
+        if (typeof m.notes !== "string") m.notes = "";
+        if (!Array.isArray(m.attachedDocumentIds)) m.attachedDocumentIds = [];
+      });
+      matterCounter = typeof data.data.matterCounter === "number" ? data.data.matterCounter : matters.length;
+      activeMatterId = matters.some(m => m.id === data.data.activeMatterId) ? data.data.activeMatterId : matters[0].id;
+      savedReports = Array.isArray(data.data.savedReports) ? data.data.savedReports : [];
+      reportCounter = typeof data.data.reportCounter === "number" ? data.data.reportCounter : savedReports.length;
+      customNotesPrompts = (data.data.customNotesPrompts && typeof data.data.customNotesPrompts === "object") ? data.data.customNotesPrompts : {};
+      persistState();
+      renderDocket();
+      renderChat();
+      renderReportPanel();
+    } else {
+      pushStateToServer();
+    }
+  } catch(e){
+    console.warn("LawGPT: couldn't sync account data.", e);
+  }
+}
+
+let pushStateTimer = null;
+function pushStateToServer(){
+  if (!currentUser) return;
+  clearTimeout(pushStateTimer);
+  pushStateTimer = setTimeout(async () => {
+    try{
+      await fetch(PROXY_ORIGIN + "/api/user/state", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ data: { matters, matterCounter, activeMatterId, savedReports, reportCounter, customNotesPrompts } })
+      });
+      if (accountSyncStatus) accountSyncStatus.textContent = "";
+    } catch(e){
+      if (accountSyncStatus) accountSyncStatus.textContent = "Couldn't sync — check your connection.";
+    }
+  }, 800);
+}
+
+function openAccountModal(){
+  accountOverlay.style.display = "flex";
+  accountPasswordInput.value = "";
+  updateAccountUI();
+}
+function closeAccountModal(){
+  accountOverlay.style.display = "none";
+}
+
+document.getElementById("accountBtn").addEventListener("click", openAccountModal);
+accountOverlay.addEventListener("click", (e) => {
+  if (e.target === accountOverlay) closeAccountModal();
+});
+
+async function submitAccountForm(endpoint){
+  const email = accountEmailInput.value.trim();
+  const password = accountPasswordInput.value;
+  if (!email || !password){
+    setAccountStatus("Email and password are required.", "err");
+    return;
+  }
+  setAccountStatus(endpoint === "signup" ? "Creating account…" : "Signing in…", "");
+  try{
+    const res = await fetch(PROXY_ORIGIN + "/api/auth/" + endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password })
+    });
+    const data = await res.json();
+    if (!res.ok){
+      setAccountStatus((data && data.error && data.error.message) || "Something went wrong.", "err");
+      return;
+    }
+    currentUser = data.email;
+    accountPasswordInput.value = "";
+    updateAccountUI();
+    await syncAfterLogin();
+  } catch(e){
+    setAccountStatus("Couldn't reach the server.", "err");
+  }
+}
+
+document.getElementById("accountLoginBtn").addEventListener("click", () => submitAccountForm("login"));
+document.getElementById("accountSignupBtn").addEventListener("click", () => submitAccountForm("signup"));
+document.getElementById("accountLogoutBtn").addEventListener("click", async () => {
+  try{ await fetch(PROXY_ORIGIN + "/api/auth/logout", { method: "POST" }); } catch(e){}
+  currentUser = null;
+  updateAccountUI();
+});
+
 // Fills the Notes-prompts editor with whatever's currently in effect for
 // the selected reading type — a saved custom override if there is one,
 // otherwise the built-in default (see getNotesPrompt/DEFAULT_NOTES_PROMPTS,
@@ -3420,6 +3600,10 @@ function persistState(){
     console.warn("LawGPT: couldn't save chat history to this browser.", e);
     showStorageWarning();
   }
+  // pushStateToServer no-ops when signed out; debounced internally so a
+  // burst of persistState() calls (e.g. rapid edits) doesn't hammer the
+  // server with one request per keystroke.
+  pushStateToServer();
 }
 
 // Restores the docket saved by a previous session. Returns true if there was
@@ -3847,6 +4031,7 @@ loadState();
 renderDocket();
 renderChat();
 refreshChatProvider();
+refreshAuthStatus();
 
 // ====== VIEW TAB SWITCHING ======
 function setView(view){
