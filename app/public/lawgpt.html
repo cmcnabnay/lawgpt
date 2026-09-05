@@ -3355,6 +3355,23 @@ document.getElementById("accountLogoutBtn").addEventListener("click", async () =
   try{ await fetch(PROXY_ORIGIN + "/api/auth/logout", { method: "POST" }); } catch(e){}
   currentUser = null;
   updateAccountUI();
+
+  // Signing out only destroyed the server session above -- without this,
+  // this browser's localStorage cache and in-memory state would keep
+  // showing the account's data to whoever uses this browser/device next.
+  // Everything here is already saved server-side (that's the whole point
+  // of being signed in), so clearing it locally loses nothing.
+  try{ localStorage.removeItem(STORAGE_KEY); } catch(e){}
+  matters = [];
+  activeMatterId = null;
+  matterCounter = 0;
+  savedReports = [];
+  reportCounter = 0;
+  customNotesPrompts = {};
+  currentReport = null;
+  renderDocket();
+  renderChat();
+  renderReportPanel();
 });
 
 // Fills the Notes-prompts editor with whatever's currently in effect for
