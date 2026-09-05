@@ -7,31 +7,34 @@
 // enabled on the mailbox, because it now requires OAuth2 ("Modern Auth").
 // Graph's REST API sidesteps IMAP entirely and just needs a bearer token.
 //
-// Requires EMAIL_CLIENT_ID in ~/.bashrc, checked first, falling back to
-// .env/process.env (see getEmailConfig below). The tenant is always
-// "consumers" -- correct for a personal outlook.com/hotmail.com account,
-// which is the only kind this app supports. Also used by email-routes.js
-// for EMAIL_FOLDER, so this lives here rather than in each caller.
-// EMAIL_CLIENT_ID comes from registering a free "public client" app in
-// https://entra.microsoft.com -- see setup-email-auth.js.
+// Every function here takes a userId: each account connects its own
+// mailbox with its own client ID, independently -- there is no shared
+// global mailbox anymore. Client ID, folder, and the MSAL token cache are
+// all columns on that account's own row in `users` (see
+// ~/Documents/setup-user-accounts.sql), read/written through the same
+// app_user Postgres role the rest of the app's per-account data uses.
 //
-// The one-time interactive login (device code flow) happens in
-// setup-email-auth.js, run by hand from a terminal
-// (`node app/src/setup-email-auth.js`) -- not from the web UI, since
-// device code flow needs a human watching a terminal/browser, not a fetch()
-// call. That script and the running proxy server share the token cache
-// file below: the server's /api/email/sync route only ever calls
-// acquireTokenSilent(), which transparently uses the cached refresh token
-// (MSAL renews it automatically on each successful use) and never prompts
-// -- if silent acquisition fails, the server tells the caller to re-run the
-// setup script rather than attempting any interactive flow itself.
+// Signing in (device code flow) happens from the browser via
+// /api/email-setup/start + /status in server.js, which call
+// acquireTokenByDeviceCode() here in the background -- see that file for
+// why this can't be a normal single request/response. This module itself
+// never does anything interactive; getAccessTokenSilent() below is the
+// only thing routine requests (e.g. /api/email/sync) call, and it never
+// prompts -- if there's no cached, refreshable token, it returns a clear
+// error telling the caller to (re)connect their mailbox in Settings.
 
-const fs = require("fs");
-const os = require("os");
-const path = require("path");
 const { PublicClientApplication } = require("@azure/msal-node");
 
-const CACHE_PATH = path.join(__dirname, "msal-token-cache.json");
+const SUPABASE_APP_DB_URL = process.env.SUPABASE_APP_DB_URL || "";
+let appPool = null;
+if (SUPABASE_APP_DB_URL) {
+  const { Pool } = require("pg");
+  appPool = new Pool({
+    connectionString: SUPABASE_APP_DB_URL,
+    ssl: { rejectUnauthorized: false }
+  });
+}
+
 // Mail.ReadWrite (not just Mail.Read) -- the Email tab's Delete button
 // deletes a message from the actual mailbox via Graph, which Mail.Read
 // alone can't authorize (Graph returns "Access is denied" for the DELETE
@@ -39,91 +42,75 @@ const CACHE_PATH = path.join(__dirname, "msal-token-cache.json");
 // this single scope still covers everything Mail.Read did.
 const SCOPES = ["Mail.ReadWrite"];
 
-// Reads a variable out of ~/.bashrc as plain text -- a regex match on
-// `export NAME=...` lines -- rather than by sourcing it in a shell. A
-// previous version spawned `bash -i -c "source ~/.bashrc; ..."` to handle
-// anything conditional (nvm/conda init blocks, if-guards); that subprocess
-// inherited the server's controlling terminal, and bash -i's job-control
-// startup could stop the ENTIRE process group -- including the server
-// itself -- with SIGTTOU/SIGTTIN. A plain text scan can't do that. It won't
-// resolve a value that's set conditionally or built from other variables,
-// but for a straight top-level `export NAME=value` line (the normal case)
-// it works, and unlike a subprocess call it's cheap enough to just do on
-// every request -- so edits to ~/.bashrc take effect immediately, no
-// restart needed. Takes the last matching line, in case of duplicates.
-function readVarFromBashrc(varName){
-  let contents;
-  try {
-    contents = fs.readFileSync(path.join(os.homedir(), ".bashrc"), "utf8");
-  } catch {
-    return null;
-  }
-
-  const matches = [...contents.matchAll(new RegExp(`^\\s*export\\s+${varName}=(.*)$`, "gm"))];
-  if (!matches.length) return null;
-
-  const value = matches[matches.length - 1][1].trim().replace(/^["']|["']$/g, "");
-  return value || null;
-}
-
-function getEmailConfig(){
+async function getEmailConfig(userId){
+  if (!appPool || !userId) return { clientId: "", tenantId: "consumers", folder: "" };
+  const result = await appPool.query("SELECT email_client_id, email_folder FROM users WHERE id = $1", [userId]);
+  const row = result.rows[0] || {};
   return {
-    clientId: readVarFromBashrc("EMAIL_CLIENT_ID") || process.env.EMAIL_CLIENT_ID || "",
+    clientId: row.email_client_id || "",
+    // Always "consumers" -- correct for a personal outlook.com/hotmail.com
+    // account, which is the only kind this app supports.
     tenantId: "consumers",
-    folder: readVarFromBashrc("EMAIL_FOLDER") || process.env.EMAIL_FOLDER || "Forwarded"
+    folder: row.email_folder || ""
   };
 }
 
-// MSAL's cache plugin hooks are how you make its in-memory token cache
-// persist across process restarts -- without this, every server restart
-// would need a fresh device-code login.
-const cachePlugin = {
-  beforeCacheAccess: async (cacheContext) => {
-    if (fs.existsSync(CACHE_PATH)) {
-      cacheContext.tokenCache.deserialize(fs.readFileSync(CACHE_PATH, "utf8"));
-    }
-  },
-  afterCacheAccess: async (cacheContext) => {
-    if (cacheContext.cacheHasChanged) {
-      fs.writeFileSync(CACHE_PATH, cacheContext.tokenCache.serialize(), { mode: 0o600 });
-    }
-  }
-};
-
-function getClientConfig(){
-  const { clientId, tenantId } = getEmailConfig();
+async function getClientConfig(userId){
+  const { clientId, tenantId } = await getEmailConfig(userId);
   return { clientId, tenantId, authority: `https://login.microsoftonline.com/${tenantId}` };
 }
 
-function getPca(){
-  const { clientId, authority } = getClientConfig();
+// MSAL's cache plugin hooks are how you make its in-memory token cache
+// persist across process restarts -- built fresh per userId (closing over
+// it) rather than one shared instance, since each account's cache lives in
+// its own row.
+function makeCachePlugin(userId){
+  return {
+    beforeCacheAccess: async (cacheContext) => {
+      if (!appPool) return;
+      const result = await appPool.query("SELECT email_token_cache FROM users WHERE id = $1", [userId]);
+      const cached = result.rows[0] && result.rows[0].email_token_cache;
+      if (cached) cacheContext.tokenCache.deserialize(cached);
+    },
+    afterCacheAccess: async (cacheContext) => {
+      if (!appPool || !cacheContext.cacheHasChanged) return;
+      await appPool.query(
+        "UPDATE users SET email_token_cache = $1 WHERE id = $2",
+        [cacheContext.tokenCache.serialize(), userId]
+      );
+    }
+  };
+}
+
+async function getPca(userId){
+  const { clientId, authority } = await getClientConfig(userId);
   if (!clientId) return null;
   return new PublicClientApplication({
     auth: { clientId, authority },
-    cache: { cachePlugin }
+    cache: { cachePlugin: makeCachePlugin(userId) }
   });
 }
 
 // Used by /api/email/sync -- never prompts. Returns null if there's no
-// cached account to silently refresh a token for (first-time setup hasn't
-// been run, or the refresh token was revoked/expired), so the caller can
-// return a clear "run the setup script" error instead of hanging.
-async function getAccessTokenSilent(){
-  const pca = getPca();
-  if (!pca) return { error: "EMAIL_CLIENT_ID isn't set -- checked ~/.bashrc and app/.env, found neither." };
+// cached account to silently refresh a token for (mailbox hasn't been
+// connected yet, or the refresh token was revoked/expired), so the caller
+// can return a clear "connect your mailbox" error instead of hanging.
+async function getAccessTokenSilent(userId){
+  const pca = await getPca(userId);
+  if (!pca) return { error: "No email client ID saved to your account yet. Set one in Settings first." };
 
   const cache = pca.getTokenCache();
   const accounts = await cache.getAllAccounts();
   if (!accounts.length) {
-    return { error: "No signed-in mailbox account found. Run `node app/src/setup-email-auth.js` once from a terminal to sign in." };
+    return { error: "No signed-in mailbox account found. Connect your mailbox in Settings." };
   }
 
   try {
     const result = await pca.acquireTokenSilent({ account: accounts[0], scopes: SCOPES });
     return { accessToken: result.accessToken, account: accounts[0] };
   } catch (err) {
-    return { error: `Couldn't silently refresh the mailbox login (${err.message}). Run \`node app/src/setup-email-auth.js\` again to sign in.` };
+    return { error: `Couldn't silently refresh the mailbox login (${err.message}). Reconnect your mailbox in Settings.` };
   }
 }
 
-module.exports = { getPca, getClientConfig, getAccessTokenSilent, getEmailConfig, SCOPES, CACHE_PATH };
+module.exports = { getPca, getClientConfig, getEmailConfig, getAccessTokenSilent, SCOPES };

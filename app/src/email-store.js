@@ -1,50 +1,46 @@
 // email-store.js
 //
-// Disk-persisted store for synced email metadata. Unlike document-store.js
-// (an in-memory Map that local-scan.js rebuilds on every startup by
-// rescanning documents/ on disk), there's no folder to rescan here -- the
-// mailbox itself is the source of truth for the messages, but which ones
-// we've already synced (and their assignment/course classification, and
-// whether the user marked them done) has to survive a server restart on
-// its own, so it's written to a JSON file.
+// Per-account store for synced email metadata -- each user's messages,
+// per-folder delta-sync watermarks, done-flags, and generated plans live in
+// their own `email_sync_state` column (see ~/Documents/setup-user-accounts.sql),
+// the same app_user-backed pattern user_state.js-equivalent code in
+// server.js already uses for the notes/chat docket. Unlike document-store.js
+// (an in-memory Map rebuilt by rescanning documents/ on disk), there's no
+// folder to rescan here -- the mailbox itself is the source of truth for the
+// messages, but which ones have already been synced (and their
+// assignment/course classification, and whether the user marked them done)
+// has to survive a server restart on its own.
 //
-// deltaLinks is keyed per source folder (currently "forwarded" and "junk",
-// see email-routes.js) rather than a single watermark -- Outlook's own
+// deltaLinks is keyed per source folder (currently just "forwarded", see
+// email-routes.js) rather than a single watermark -- Outlook's own
 // junk-mail filtering runs before inbox rules, so mail that should have
-// been moved into the "Forwarded" folder can land in Junk instead; syncing
-// both folders (Junk filtered to just uh.edu senders) recovers those
-// without depending on Outlook's Safe-senders list actually working.
+// been moved into a "Forwarded"-style folder can land in Junk instead;
+// syncing multiple folders recovers those without depending on Outlook's
+// Safe-senders list actually working, should that ever be added back.
 
-const fs = require("fs");
-const path = require("path");
-
-const STATE_PATH = path.join(__dirname, "email-state.json");
-
-function load(){
-  if (!fs.existsSync(STATE_PATH)) {
-    return { deltaLinks: {}, messages: [] };
-  }
-  try {
-    const parsed = JSON.parse(fs.readFileSync(STATE_PATH, "utf8"));
-    // Older state files (before per-folder sync) stored a single top-level
-    // deltaLink for what was implicitly the "forwarded" folder -- carry
-    // that forward instead of losing it and re-fetching that folder's
-    // whole history.
-    const deltaLinks = (parsed.deltaLinks && typeof parsed.deltaLinks === "object")
-      ? parsed.deltaLinks
-      : (parsed.deltaLink ? { forwarded: parsed.deltaLink } : {});
-    return {
-      deltaLinks,
-      messages: Array.isArray(parsed.messages) ? parsed.messages : []
-    };
-  } catch (err) {
-    console.warn("email-store: couldn't parse email-state.json, starting fresh:", err.message);
-    return { deltaLinks: {}, messages: [] };
-  }
+const SUPABASE_APP_DB_URL = process.env.SUPABASE_APP_DB_URL || "";
+let appPool = null;
+if (SUPABASE_APP_DB_URL) {
+  const { Pool } = require("pg");
+  appPool = new Pool({
+    connectionString: SUPABASE_APP_DB_URL,
+    ssl: { rejectUnauthorized: false }
+  });
 }
 
-function save(state){
-  fs.writeFileSync(STATE_PATH, JSON.stringify(state, null, 2));
+async function load(userId){
+  if (!appPool || !userId) return { deltaLinks: {}, messages: [] };
+  const result = await appPool.query("SELECT email_sync_state FROM users WHERE id = $1", [userId]);
+  const parsed = (result.rows[0] && result.rows[0].email_sync_state) || {};
+  return {
+    deltaLinks: (parsed.deltaLinks && typeof parsed.deltaLinks === "object") ? parsed.deltaLinks : {},
+    messages: Array.isArray(parsed.messages) ? parsed.messages : []
+  };
+}
+
+async function save(userId, state){
+  if (!appPool || !userId) return;
+  await appPool.query("UPDATE users SET email_sync_state = $1 WHERE id = $2", [JSON.stringify(state), userId]);
 }
 
 // Appends newly-synced messages for one source folder and advances that
@@ -54,8 +50,8 @@ function save(state){
 // a delta response can include an already-seen message again if it merely
 // changed (e.g. read status) -- without this, re-syncing would pile up
 // duplicate rows for the same email instead of just updating nothing.
-function addMessages(newMessages, folderKey, deltaLink){
-  const state = load();
+async function addMessages(userId, newMessages, folderKey, deltaLink){
+  const state = await load(userId);
   state.deltaLinks[folderKey] = deltaLink;
 
   const existingIds = new Set(state.messages.map(m => m.id));
@@ -66,16 +62,18 @@ function addMessages(newMessages, folderKey, deltaLink){
     }
   }
 
-  save(state);
+  await save(userId, state);
   return state;
 }
 
-function getAll(){
-  return load().messages.slice().sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
+async function getAll(userId){
+  const state = await load(userId);
+  return state.messages.slice().sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
 }
 
-function getMessage(id){
-  return load().messages.find(m => String(m.id) === String(id)) || null;
+async function getMessage(userId, id){
+  const state = await load(userId);
+  return state.messages.find(m => String(m.id) === String(id)) || null;
 }
 
 // Removes a message from the local store -- called after it's been deleted
@@ -83,21 +81,21 @@ function getMessage(id){
 // the two stay in sync. Not re-added on the next sync since a delta query
 // only returns what's new/changed, and a message we deleted ourselves is
 // neither.
-function deleteMessage(id){
-  const state = load();
+async function deleteMessage(userId, id){
+  const state = await load(userId);
   const index = state.messages.findIndex(m => String(m.id) === String(id));
   if (index === -1) return false;
   state.messages.splice(index, 1);
-  save(state);
+  await save(userId, state);
   return true;
 }
 
-function markDone(id, done){
-  const state = load();
+async function markDone(userId, id, done){
+  const state = await load(userId);
   const message = state.messages.find(m => String(m.id) === String(id));
   if (!message) return null;
   message.done = Boolean(done);
-  save(state);
+  await save(userId, state);
   return message;
 }
 
@@ -105,12 +103,12 @@ function markDone(id, done){
 // email-routes.js -- merges the given fields onto the stored message rather
 // than needing a bespoke setter for every new field those features track
 // (plan text, plan errors, agent status/log/timestamps).
-function updateMessage(id, patch){
-  const state = load();
+async function updateMessage(userId, id, patch){
+  const state = await load(userId);
   const message = state.messages.find(m => String(m.id) === String(id));
   if (!message) return null;
   Object.assign(message, patch);
-  save(state);
+  await save(userId, state);
   return message;
 }
 

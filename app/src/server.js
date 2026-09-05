@@ -21,7 +21,7 @@ const DOCS_ROOT = canvasRoutes.DOCS_ROOT;
 
 // Loads code from email-routes.js
 const emailRoutes = require("./email-routes");
-const { getEmailConfig } = require("./email-auth");
+const { getPca, SCOPES } = require("./email-auth");
 
 // Creates the express application
 const app = express();
@@ -49,8 +49,13 @@ app.get("/", (req, res) => {
 // Take all routes defined by canvas-routes.js and attach them underneath /api/canvas
 app.use("/api/canvas", canvasRoutes);
 
-// Take all routes defined by email-routes.js and attach them underneath /api/email
-app.use("/api/email", emailRoutes);
+// email-routes.js is mounted further down (see "Take all routes defined by
+// email-routes.js" below), AFTER the session middleware is set up -- every
+// route there is per-account now (requireLogin, req.session.userId), which
+// needs req.session to actually exist. Express applies middleware strictly
+// in registration order, so mounting it here (before app.use(session(...)))
+// would have meant req.session was always undefined for every /api/email/*
+// request.
 
 const PORT = process.env.PORT || 3000;
 const OPENAI_URL = "https://api.openai.com/v1/responses";
@@ -207,6 +212,11 @@ if (appPool) {
   );
 }
 
+// Take all routes defined by email-routes.js and attach them underneath
+// /api/email -- mounted here, after session middleware, since every route
+// there requires req.session (see the note where /api/canvas is mounted).
+app.use("/api/email", emailRoutes);
+
 function requireAppDb(req, res, next) {
   if (!appPool) {
     return res.status(500).json({ error: { message: "User accounts aren't configured on this server yet." } });
@@ -336,11 +346,10 @@ function upsertEnvVar(name, value) {
 // another account's settings, and there's no "settings" access at all
 // without being signed in first. The OpenAI key is used directly for that
 // user's /api/chat requests (see useOpenai below). The email client
-// ID/folder are also saved per-account for consistency, but the Email
-// tab's actual mailbox connection remains a single shared OAuth session
-// (one token cache, see email-auth.js) -- saving your own client
-// ID/folder here also updates that shared config so the feature keeps
-// working, it doesn't give each account an independent mailbox connection.
+// ID/folder are genuinely per-account too: each signed-in user connects
+// their own mailbox with their own client ID, independently of every other
+// account (see email-auth.js/email-routes.js) -- there's no shared Email
+// config left to keep in sync.
 
 app.get("/api/key-status", requireAppDb, requireLogin, async (req, res) => {
   try {
@@ -401,11 +410,6 @@ app.post("/api/email-client-id", requireAppDb, requireLogin, async (req, res) =>
 
   try {
     await appPool.query("UPDATE users SET email_client_id = $1 WHERE id = $2", [trimmed, req.session.userId]);
-    // Also keep the shared Email-tab config in sync -- see the note above
-    // this section on why that feature isn't independently multi-tenant.
-    upsertEnvVar("EMAIL_CLIENT_ID", trimmed);
-    process.env.EMAIL_CLIENT_ID = trimmed;
-
     res.json({ ok: true, clientId: trimmed });
   } catch (err) {
     res.status(500).json({ error: { message: err.message } });
@@ -415,7 +419,7 @@ app.post("/api/email-client-id", requireAppDb, requireLogin, async (req, res) =>
 app.get("/api/email-folder-status", requireAppDb, requireLogin, async (req, res) => {
   try {
     const result = await appPool.query("SELECT email_folder FROM users WHERE id = $1", [req.session.userId]);
-    const folder = (result.rows[0] && result.rows[0].email_folder) || "Forwarded";
+    const folder = (result.rows[0] && result.rows[0].email_folder) || "";
     res.json({ folder });
   } catch (err) {
     res.status(500).json({ error: { message: err.message } });
@@ -436,15 +440,60 @@ app.post("/api/email-folder", requireAppDb, requireLogin, async (req, res) => {
 
   try {
     await appPool.query("UPDATE users SET email_folder = $1 WHERE id = $2", [trimmed, req.session.userId]);
-    // Also keep the shared Email-tab config in sync -- see the note above
-    // this section on why that feature isn't independently multi-tenant.
-    upsertEnvVar("EMAIL_FOLDER", trimmed);
-    process.env.EMAIL_FOLDER = trimmed;
-
     res.json({ ok: true, folder: trimmed });
   } catch (err) {
     res.status(500).json({ error: { message: err.message } });
   }
+});
+
+// ---- Email mailbox sign-in (device code flow), from the browser ----
+// This used to require running setup-email-auth.js by hand from a
+// terminal -- device code flow doesn't fit a normal single request/response
+// (acquireTokenByDeviceCode() calls its callback with a code+URL right
+// away, then keeps polling Microsoft for up to several minutes until the
+// user finishes signing in elsewhere). So /start kicks that promise off in
+// the background and returns immediately once the code is ready; the
+// frontend polls /status to watch it progress from there. Each signed-in
+// user connects their own mailbox independently (requireLogin, not
+// requireDbAdmin) -- state is keyed per userId so two accounts connecting
+// at the same time don't clobber each other's in-progress sign-in.
+const emailSetupStateByUser = new Map();
+
+async function runEmailDeviceCodeFlow(userId) {
+  const pca = await getPca(userId);
+  if (!pca) {
+    emailSetupStateByUser.set(userId, { status: "error", message: "No email client ID saved yet -- set one above first." });
+    return;
+  }
+  emailSetupStateByUser.set(userId, { status: "waiting", message: "Starting sign-in…" });
+  try {
+    const result = await pca.acquireTokenByDeviceCode({
+      scopes: SCOPES,
+      deviceCodeCallback: (response) => {
+        emailSetupStateByUser.set(userId, {
+          status: "waiting",
+          message: response.message,
+          userCode: response.userCode,
+          verificationUri: response.verificationUri
+        });
+      }
+    });
+    emailSetupStateByUser.set(userId, { status: "success", message: `Signed in as ${result.account.username}.` });
+  } catch (err) {
+    emailSetupStateByUser.set(userId, { status: "error", message: `Sign-in failed: ${err.message}` });
+  }
+}
+
+app.post("/api/email-setup/start", requireLogin, (req, res) => {
+  const userId = req.session.userId;
+  if (!emailSetupStateByUser.has(userId) || emailSetupStateByUser.get(userId).status !== "waiting") {
+    runEmailDeviceCodeFlow(userId); // not awaited -- polled via /status instead
+  }
+  res.json({ ok: true });
+});
+
+app.get("/api/email-setup/status", requireLogin, (req, res) => {
+  res.json(emailSetupStateByUser.get(req.session.userId) || { status: "idle" });
 });
 
 // Lets the frontend show the model(s) that will actually be used -- the

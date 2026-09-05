@@ -2337,7 +2337,7 @@ pre code {
     <div class="settings-divider"></div>
 
     <h2>Email settings</h2>
-    <p>The application (client) ID of the Azure AD app registration the Email tab signs in with (see <code>app/src/setup-email-auth.js</code>) — not a secret, just an identifier. Saved to your account, and also updates the server's shared Email-tab configuration (that feature connects one mailbox at a time regardless of which account changes this). Changing it doesn't sign you out; run the setup script again afterward if you're pointing at a different app registration.</p>
+    <p>The application (client) ID of the Azure AD app registration the Email tab signs in with — not a secret, just an identifier. Saved to your account only; each user connects their own mailbox independently. Changing it doesn't sign you out of LawGPT, but you'll need to connect the mailbox again below if you're pointing at a different app registration.</p>
     <div class="settings-form">
       <label for="settingsEmailClientIdInput">Email client ID</label>
       <input type="text" id="settingsEmailClientIdInput" placeholder="12345678-1234-1234-1234-123456789abc" autocomplete="off" spellcheck="false">
@@ -2347,13 +2347,21 @@ pre code {
       </div>
     </div>
 
-    <p>The mailbox folder the Email tab syncs from (case-insensitive, checked among top-level folders and Inbox's children). Defaults to "Forwarded" if left blank.</p>
+    <p>The mailbox folder the Email tab syncs from (case-insensitive, checked among top-level folders and Inbox's children). No default — syncing is blocked until you set one.</p>
     <div class="settings-form">
       <label for="settingsEmailFolderInput">Email folder</label>
-      <input type="text" id="settingsEmailFolderInput" placeholder="Forwarded" autocomplete="off" spellcheck="false">
+      <input type="text" id="settingsEmailFolderInput" placeholder="e.g. Forwarded" autocomplete="off" spellcheck="false">
       <div class="settings-status" id="settingsEmailFolderStatus"></div>
       <div class="settings-actions">
         <button id="settingsEmailFolderSaveBtn">Save folder</button>
+      </div>
+    </div>
+
+    <p>Connect your own mailbox (independent of everyone else's — each account signs into its own). Click below, then go to the shown link on any device and enter the code to finish signing in.</p>
+    <div class="settings-form">
+      <div class="settings-status" id="emailConnectStatus"></div>
+      <div class="settings-actions">
+        <button type="button" id="emailConnectBtn">Connect mailbox account</button>
       </div>
     </div>
 
@@ -3199,7 +3207,7 @@ async function refreshEmailFolderStatus(){
     const res = await fetch(PROXY_ORIGIN + "/api/email-folder-status");
     const data = await res.json();
     settingsEmailFolderInput.value = data.folder || "";
-    setSettingsEmailFolderStatus(`Currently syncing "${data.folder}".`, "ok");
+    setSettingsEmailFolderStatus(data.folder ? `Currently syncing "${data.folder}".` : "No folder configured yet.", data.folder ? "ok" : "");
   } catch(e){
     setSettingsEmailFolderStatus("Couldn't reach the proxy server — is it running?", "err");
   }
@@ -3570,6 +3578,71 @@ document.getElementById("settingsEmailFolderSaveBtn").addEventListener("click", 
     setSettingsEmailFolderStatus("Couldn't reach the proxy server — is it running?", "err");
   }
 });
+
+// ---- Connect mailbox account (device code flow, from the browser) ----
+// /api/email-setup/start kicks off the sign-in in the background and
+// returns immediately; this polls /status every couple seconds to render
+// the code+link once ready, then the final result. Stops polling once a
+// terminal state (success/error) is reached, or if the modal is closed.
+let emailConnectPollTimer = null;
+
+function stopEmailConnectPolling(){
+  clearInterval(emailConnectPollTimer);
+  emailConnectPollTimer = null;
+}
+
+function renderEmailConnectStatus(data){
+  const el = document.getElementById("emailConnectStatus");
+  if (data.status === "waiting" && data.verificationUri && data.userCode){
+    el.innerHTML = `Go to <a href="${data.verificationUri}" target="_blank" rel="noopener">${data.verificationUri}</a> and enter this code: <strong>${data.userCode}</strong>`;
+    el.className = "settings-status";
+  } else if (data.status === "success"){
+    el.textContent = data.message || "Signed in.";
+    el.className = "settings-status ok";
+    stopEmailConnectPolling();
+  } else if (data.status === "error"){
+    el.textContent = data.message || "Sign-in failed.";
+    el.className = "settings-status err";
+    stopEmailConnectPolling();
+  } else {
+    el.textContent = data.message || "Starting…";
+    el.className = "settings-status";
+  }
+}
+
+document.getElementById("emailConnectBtn").addEventListener("click", async () => {
+  stopEmailConnectPolling();
+  renderEmailConnectStatus({ status: "waiting", message: "Starting sign-in…" });
+  try{
+    const res = await fetch(PROXY_ORIGIN + "/api/email-setup/start", { method: "POST" });
+    const data = await res.json();
+    if (!res.ok){
+      renderEmailConnectStatus({ status: "error", message: (data.error && data.error.message) || "Couldn't start sign-in." });
+      return;
+    }
+  } catch(e){
+    renderEmailConnectStatus({ status: "error", message: "Couldn't reach the proxy server — is it running?" });
+    return;
+  }
+  emailConnectPollTimer = setInterval(async () => {
+    try{
+      const res = await fetch(PROXY_ORIGIN + "/api/email-setup/status");
+      const data = await res.json();
+      if (!res.ok){
+        renderEmailConnectStatus({ status: "error", message: (data.error && data.error.message) || "Admin access required." });
+        return;
+      }
+      renderEmailConnectStatus(data);
+    } catch(e){
+      // Transient network hiccup -- keep polling rather than giving up.
+    }
+  }, 2000);
+});
+
+settingsOverlay.addEventListener("click", (e) => {
+  if (e.target === settingsOverlay) stopEmailConnectPolling();
+});
+document.getElementById("settingsCloseBtn").addEventListener("click", stopEmailConnectPolling);
 
 document.getElementById("settingsPromptKindSelect").addEventListener("change", populateSettingsPromptEditor);
 
@@ -4275,14 +4348,30 @@ const CASE_COURSE_LABELS = { civpro: "Civil Procedure", contracts: "Contracts", 
 // Refreshes the table dropdown from Supabase. Called whenever the Notes or
 // Database tab is opened (both share this same cache/dropdown), not on
 // every render.
+let dbTablesLoadError = "";
+
 async function loadDbTables(){
+  let loadError = "";
   try{
     const res = await fetch(PROXY_ORIGIN + "/api/db/tables");
     const data = await res.json();
-    dbTables = res.ok && Array.isArray(data) ? data : [];
+    if (res.ok && Array.isArray(data)){
+      dbTables = data;
+    } else {
+      dbTables = [];
+      // Surface *why* it's empty -- this used to fail silently, which
+      // looked identical to "you're an admin but something's misconfigured"
+      // and "there just aren't any tables."
+      loadError = (data && data.error && data.error.message) || `Couldn't load tables (HTTP ${res.status}).`;
+    }
   } catch(e){
     dbTables = [];
+    loadError = "Couldn't reach the proxy server — is it running?";
   }
+
+  dbTablesLoadError = loadError;
+  const caseBriefStatus = document.getElementById("caseBriefStatus");
+  if (caseBriefStatus) caseBriefStatus.textContent = loadError;
 
   const select = document.getElementById("dbTableSelect");
   if (select){
@@ -4841,6 +4930,7 @@ function populateDatabaseTableList(){
   const empty = document.getElementById("databaseTableListEmpty");
   if (!list) return;
   list.innerHTML = "";
+  empty.textContent = dbTablesLoadError || "No tables found.";
   empty.style.display = dbTables.length ? "none" : "block";
   dbTables.forEach(t => {
     const btn = document.createElement("button");
@@ -5638,12 +5728,16 @@ async function refreshEmailMessages(){
       fetch(PROXY_ORIGIN + "/api/email/messages"),
       refreshDocumentsCacheQuietly() // keeps documentsCache warm so downloaded-attachment buttons resolve without needing a Documents-tab visit first
     ]);
+    if (messagesRes.status === 401){
+      document.getElementById("emailList").innerHTML = `<div class="doc-empty">Sign in to use the Email tab — each account connects its own mailbox.</div>`;
+      return;
+    }
     if (!messagesRes.ok) throw new Error("Server returned " + messagesRes.status);
     const data = await messagesRes.json();
     emailMessagesCache = data.messages || [];
 
     if (!data.configured){
-      statusEl.textContent = "Mailbox isn't signed in yet — run `node app/src/setup-email-auth.js` from a terminal once to connect it.";
+      statusEl.textContent = "Mailbox isn't connected yet — open Settings → Email settings and click \"Connect mailbox account\".";
       statusEl.className = "email-status err";
     }
 

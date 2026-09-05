@@ -1,7 +1,8 @@
 // email-routes.js
 //
-// Syncs the "Forwarded" folder of a personal mailbox that the user has set
-// up to auto-forward their school email into, downloads any course document
+// Syncs a configurable folder (see EMAIL_FOLDER / Settings) of a personal
+// mailbox that the user has set up to auto-forward their school email into,
+// downloads any course document
 // attachments into documents/<course>/ (reusing the exact same
 // save/extract/index pipeline canvas-routes.js uses for Canvas imports), and
 // flags messages that look like they describe an assignment.
@@ -11,13 +12,23 @@
 // ("AUTHENTICATE failed. Provided authentication mechanism is not
 // supported."), because Microsoft now requires OAuth2 for IMAP too, not
 // just basic-auth passwords. Graph sidesteps that: it's plain HTTPS with a
-// bearer token. See email-auth.js for how that token is obtained/cached,
-// and setup-email-auth.js for the one-time interactive sign-in.
+// bearer token. See email-auth.js for how that token is obtained/cached
+// (per signed-in account -- each user connects their own mailbox), and
+// server.js's /api/email-setup/start for the one-time interactive sign-in.
 //
-// This route only ever calls email-auth.js's getAccessTokenSilent() --
-// never anything interactive -- so a request here can't hang waiting on a
-// login. If there's no cached, refreshable token yet, it responds with a
-// clear "run the setup script" error instead.
+// Every route below requires a signed-in session (requireLogin) and scopes
+// everything -- token, synced messages, delta watermarks, plans -- to
+// req.session.userId. This route only ever calls email-auth.js's
+// getAccessTokenSilent() -- never anything interactive -- so a request here
+// can't hang waiting on a login. If there's no cached, refreshable token
+// yet, it responds with a clear "connect your mailbox in Settings" error
+// instead.
+//
+// Downloaded attachment files themselves are the one part of this that's
+// NOT per-user: they're saved into the same shared documents/<course>/
+// corpus and documentStore that Canvas imports already use, since that
+// store has no per-user concept anywhere else in the app and partitioning
+// it would be a much larger, separate change.
 
 const express = require("express");
 const router = express.Router();
@@ -31,6 +42,16 @@ const emailStore = require("./email-store");
 const canvasRoutes = require("./canvas-routes");
 const { extractText, saveNativeFile, matchCourseFolder, isDocumentAttachment, extFromContentTypeOrTitle } = canvasRoutes;
 const { getAccessTokenSilent, getEmailConfig } = require("./email-auth");
+
+// Mailbox connections and synced messages are per-account now -- there's no
+// meaningful "email" anything for a request with no signed-in user.
+function requireLogin(req, res, next) {
+  if (!req.session || !req.session.userId) {
+    return res.status(401).json({ error: { message: "Not signed in." } });
+  }
+  next();
+}
+router.use(requireLogin);
 
 const GRAPH_ROOT = "https://graph.microsoft.com/v1.0";
 const MAX_STORED_PDF_BYTES = 20 * 1024 * 1024; // same cap canvas-routes.js uses
@@ -159,14 +180,14 @@ async function generatePlanText(message){
 // never called automatically at sync time (see /sync below). Never throws --
 // a failure is stored as planError so the UI can show it and offer a retry,
 // instead of the button click erroring out.
-async function generateAndStorePlan(id){
-  const message = emailStore.getMessage(id);
+async function generateAndStorePlan(userId, id){
+  const message = await emailStore.getMessage(userId, id);
   if (!message) return null;
   try {
     const text = await generatePlanText(message);
-    return emailStore.updateMessage(id, { plan: text, planError: null, planGeneratedAt: new Date().toISOString() });
+    return await emailStore.updateMessage(userId, id, { plan: text, planError: null, planGeneratedAt: new Date().toISOString() });
   } catch (err) {
-    return emailStore.updateMessage(id, { planError: err.message || "Plan generation failed." });
+    return await emailStore.updateMessage(userId, id, { planError: err.message || "Plan generation failed." });
   }
 }
 
@@ -375,13 +396,17 @@ async function fetchDeltaMessages(accessToken, folderId, storedDeltaLink){
 }
 
 router.post("/sync", async (req, res) => {
-  const tokenResult = await getAccessTokenSilent();
+  const userId = req.session.userId;
+  const tokenResult = await getAccessTokenSilent(userId);
   if (tokenResult.error) {
     return res.status(401).json({ error: { message: tokenResult.error } });
   }
   const accessToken = tokenResult.accessToken;
-  const { folder: folderName } = getEmailConfig();
-  const state = emailStore.load();
+  const { folder: folderName } = await getEmailConfig(userId);
+  if (!folderName) {
+    return res.status(400).json({ error: { message: "No email folder configured yet. Set one in Settings before syncing." } });
+  }
+  const state = await emailStore.load(userId);
 
   try {
     const folder = await findFolder(accessToken, folderName);
@@ -459,7 +484,7 @@ router.post("/sync", async (req, res) => {
       });
     }
 
-    emailStore.addMessages(newMessages, FOLDER_KEY, deltaLink);
+    await emailStore.addMessages(userId, newMessages, FOLDER_KEY, deltaLink);
 
     // Plans are only drafted when the user actually asks for one -- via the
     // Email tab's "Generate plan" button (POST /messages/:id/plan below) --
@@ -473,7 +498,7 @@ router.post("/sync", async (req, res) => {
       added: newMessages.length,
       assignmentsFound,
       documentsDownloaded,
-      messages: emailStore.getAll()
+      messages: await emailStore.getAll(userId)
     });
   } catch (err) {
     console.error("Email sync failed:", err);
@@ -482,18 +507,20 @@ router.post("/sync", async (req, res) => {
 });
 
 router.get("/messages", async (req, res) => {
-  const tokenResult = await getAccessTokenSilent();
-  res.json({ messages: emailStore.getAll(), configured: !tokenResult.error });
+  const userId = req.session.userId;
+  const tokenResult = await getAccessTokenSilent(userId);
+  res.json({ messages: await emailStore.getAll(userId), configured: !tokenResult.error });
 });
 
 // Deletes an email from both the actual Outlook mailbox and this app's
 // local store -- a destructive, cross-system action, so the frontend
 // confirms with the user before ever calling this.
 router.delete("/messages/:id", async (req, res) => {
-  const message = emailStore.getMessage(req.params.id);
+  const userId = req.session.userId;
+  const message = await emailStore.getMessage(userId, req.params.id);
   if (!message) return res.status(404).json({ error: { message: "No synced email with that id." } });
 
-  const tokenResult = await getAccessTokenSilent();
+  const tokenResult = await getAccessTokenSilent(userId);
   if (tokenResult.error) {
     return res.status(401).json({ error: { message: tokenResult.error } });
   }
@@ -504,13 +531,13 @@ router.delete("/messages/:id", async (req, res) => {
     return res.status(502).json({ error: { message: `Couldn't delete this email from Outlook: ${err.message}` } });
   }
 
-  emailStore.deleteMessage(message.id);
+  await emailStore.deleteMessage(userId, message.id);
   res.json({ ok: true });
 });
 
-router.post("/messages/:id/done", (req, res) => {
+router.post("/messages/:id/done", async (req, res) => {
   const { done } = req.body || {};
-  const message = emailStore.markDone(req.params.id, done !== false);
+  const message = await emailStore.markDone(req.session.userId, req.params.id, done !== false);
   if (!message) return res.status(404).json({ error: { message: "No synced email with that id." } });
   res.json(message);
 });
@@ -519,22 +546,23 @@ router.post("/messages/:id/done", (req, res) => {
 // draft's retry button, and for a plan the user wants regenerated from
 // scratch after editing it.
 router.post("/messages/:id/plan", async (req, res) => {
-  const message = emailStore.getMessage(req.params.id);
+  const userId = req.session.userId;
+  const message = await emailStore.getMessage(userId, req.params.id);
   if (!message) return res.status(404).json({ error: { message: "No synced email with that id." } });
 
-  const updated = await generateAndStorePlan(message.id);
+  const updated = await generateAndStorePlan(userId, message.id);
   if (updated.planError && !updated.plan) return res.status(500).json(updated);
   res.json(updated);
 });
 
 // Saves the user's own edits to a plan (made in the Email tab's textarea)
 // without touching OpenAI.
-router.put("/messages/:id/plan", (req, res) => {
+router.put("/messages/:id/plan", async (req, res) => {
   const { plan } = req.body || {};
   if (typeof plan !== "string") {
     return res.status(400).json({ error: { message: "Missing 'plan' string in request body." } });
   }
-  const updated = emailStore.updateMessage(req.params.id, { plan, planError: null });
+  const updated = await emailStore.updateMessage(req.session.userId, req.params.id, { plan, planError: null });
   if (!updated) return res.status(404).json({ error: { message: "No synced email with that id." } });
   res.json(updated);
 });
@@ -547,8 +575,9 @@ router.put("/messages/:id/plan", (req, res) => {
 // destructive or outside its usual bounds, while proceeding through the
 // routine, low-risk tool calls on its own -- opening a terminal doesn't put
 // a human in the approval loop unless they're actually watching it.
-router.post("/messages/:id/agent/run", (req, res) => {
-  const message = emailStore.getMessage(req.params.id);
+router.post("/messages/:id/agent/run", async (req, res) => {
+  const userId = req.session.userId;
+  const message = await emailStore.getMessage(userId, req.params.id);
   if (!message) return res.status(404).json({ error: { message: "No synced email with that id." } });
   if (!message.plan || !message.plan.trim()) {
     return res.status(400).json({ error: { message: "Generate (or write) a plan before sending this to the agent." } });
@@ -583,7 +612,7 @@ router.post("/messages/:id/agent/run", (req, res) => {
     return res.status(500).json({ error: { message: `Couldn't open a terminal (${terminal.cmd}): ${err.message}` } });
   }
 
-  const updated = emailStore.updateMessage(message.id, {
+  const updated = await emailStore.updateMessage(userId, message.id, {
     agentStatus: "launched",
     agentStartedAt: new Date().toISOString(),
     agentTerminal: terminal.cmd
