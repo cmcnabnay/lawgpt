@@ -116,7 +116,12 @@ if (SUPABASE_READONLY_DB_URL) {
   const { Pool } = require("pg");
   readonlyPool = new Pool({
     connectionString: SUPABASE_READONLY_DB_URL,
-    ssl: { rejectUnauthorized: false }
+    ssl: { rejectUnauthorized: false },
+    // Applies to every query run through this pool, including the public
+    // SQL editor below -- caps how long any single query (e.g. pg_sleep(),
+    // a runaway cross join) can hold a connection, since the read-only role
+    // itself only guarantees "no writes," not "cheap to run."
+    statement_timeout: 5000
   });
 }
 
@@ -818,6 +823,76 @@ async function queryPublicTable(res, table, searchColumn, req) {
 app.get("/api/cases", publicReadLimiter, (req, res) => queryPublicTable(res, "cases", "case", req));
 app.get("/api/rules", publicReadLimiter, (req, res) => queryPublicTable(res, "rules", "rule_name", req));
 app.get("/api/definitions", publicReadLimiter, (req, res) => queryPublicTable(res, "definitions", "term", req));
+
+// Public SQL editor (the Database tab's "Run Query" box, for non-localhost
+// visitors -- see runDbQuery()'s fallback in lawgpt.html). Unlike
+// /api/db/query below, this always uses readonlyPool (never the
+// SUPABASE_SECRET_KEY admin path, regardless of what's configured) and
+// isn't scoped to any particular table -- whatever readonly_user can
+// SELECT, this can query. Two things stand between that and abuse:
+// SELECT-only is enforced below as defense in depth on top of the DB
+// role's own write restriction, and readonlyPool's statement_timeout above
+// caps how long any one query can run. A tighter rate limit than the
+// narrow /api/cases-style endpoints reflects that this is more powerful.
+const publicQueryLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false
+});
+
+const PUBLIC_QUERY_MAX_ROWS = 500;
+
+// Rejects anything but a single SELECT (a leading WITH ... SELECT CTE is
+// fine too). This is a simple textual heuristic, not a SQL parser -- it
+// exists as a second layer alongside the read-only DB role, not as the
+// only thing preventing writes.
+function isSelectOnlyQuery(query) {
+  const trimmed = query.trim().replace(/;+\s*$/, "");
+  if (!/^(select|with)\b/i.test(trimmed)) return false;
+  if (trimmed.includes(";")) return false;
+  return true;
+}
+
+app.post("/api/public-query", publicQueryLimiter, async (req, res) => {
+  if (!readonlyPool) {
+    return res.status(500).json({
+      error: { message: "SUPABASE_READONLY_DB_URL isn't configured -- there's no read-only connection for this endpoint to use." }
+    });
+  }
+
+  const query = req.body && req.body.query;
+  if (!query || !String(query).trim()) {
+    return res.status(400).json({ error: { message: "No SQL query provided." } });
+  }
+  if (!isSelectOnlyQuery(String(query))) {
+    return res.status(400).json({ error: { message: "Only a single SELECT (or WITH ... SELECT) statement is allowed here." } });
+  }
+
+  // Pool's constructor-level statement_timeout isn't reliably honored
+  // through Supabase's connection pooler -- a 10s pg_sleep() ran to
+  // completion in testing despite that setting. Grabbing a dedicated
+  // client and issuing SET statement_timeout immediately before the query,
+  // on that exact connection, actually enforces it.
+  let client;
+  let queryError = null;
+  try {
+    client = await readonlyPool.connect();
+    await client.query("SET statement_timeout = 5000");
+    const result = await client.query(query);
+    const rows = Array.isArray(result.rows) ? result.rows : [];
+    const truncated = rows.length > PUBLIC_QUERY_MAX_ROWS;
+    res.json({ rows: truncated ? rows.slice(0, PUBLIC_QUERY_MAX_ROWS) : rows, truncated });
+  } catch (err) {
+    queryError = err;
+    res.status(400).json({ error: { message: err.message } });
+  } finally {
+    // Pass the error through so the pool discards this connection instead
+    // of recycling one that may be left in a bad state (e.g. after a
+    // statement-timeout cancellation) for the next request.
+    if (client) client.release(queryError);
+  }
+});
 
 // ---- Generic table access (Notes tab's row editor + the Database tab) ----
 // Admin tooling only -- gated behind requireLocalhost (see /api/key above)

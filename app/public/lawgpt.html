@@ -4663,11 +4663,22 @@ async function runDbQuery(){
   statusEl.textContent = "Running…";
   resultsEl.innerHTML = "";
   try{
-    const res = await fetch(PROXY_ORIGIN + "/api/db/query", {
+    let res = await fetch(PROXY_ORIGIN + "/api/db/query", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ query })
     });
+    // /api/db/query is admin-only (localhost/SSH-tunnel access) -- anyone
+    // else falls back to the public, SELECT-only /api/public-query, which
+    // has the same request/response shape so the rest of this function
+    // doesn't need to know which one actually ran.
+    if (res.status === 403){
+      res = await fetch(PROXY_ORIGIN + "/api/public-query", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query })
+      });
+    }
     const data = await res.json();
     if (!res.ok){
       const msg = (data && data.error && (data.error.message || JSON.stringify(data.error))) || "Query failed.";
@@ -4676,7 +4687,7 @@ async function runDbQuery(){
       return;
     }
     renderDbResults(data);
-    statusEl.textContent = "";
+    statusEl.textContent = data && data.truncated ? `Showing first ${data.rows.length} rows.` : "";
   } catch(err){
     resultsEl.innerHTML = `<div class="db-results-error">${err.message}</div>`;
     statusEl.textContent = "";
