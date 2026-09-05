@@ -153,17 +153,21 @@ if (!apiKey) {
 // once at startup, and again below whenever Settings changes it.
 emailRoutes.setApiKey(apiKey);
 
+// Shared by requireLocalhost below and /api/chat's provider choice -- the
+// OpenAI key is only ever used for requests originating on this machine
+// (you, via localhost or an SSH tunnel); every other requester -- i.e.
+// anyone reaching the deployed app over the internet -- uses OpenRouter
+// instead, regardless of whether an OpenAI key happens to be configured.
+function isLocalhostRequest(req) {
+  const ip = req.ip || req.connection.remoteAddress || "";
+  return ip === "127.0.0.1" || ip === "::1" || ip === "::ffff:127.0.0.1";
+}
+
 // The Settings panel is meant for local development on your own machine
 // only. Refuse to write files if this server is somehow reachable from
 // anywhere other than localhost.
 function requireLocalhost(req, res, next) {
-  const ip = req.ip || req.connection.remoteAddress || "";
-  const isLocal =
-    ip === "127.0.0.1" ||
-    ip === "::1" ||
-    ip === "::ffff:127.0.0.1";
-
-  if (!isLocal) {
+  if (!isLocalhostRequest(req)) {
     return res.status(403).json({
       error: {
         message: "Settings changes are only allowed from localhost."
@@ -342,21 +346,25 @@ app.post("/api/email-folder", requireLocalhost, (req, res) => {
 // Lets the frontend show the model(s) that will actually be used -- the
 // modelSelect dropdown's options, and the Notes tab's "Attached to ..."
 // source label -- rather than always assuming OpenAI. Mirrors the same
-// apiKey-then-OPENROUTER_API_KEY precedence /api/chat uses below.
+// localhost-then-OPENROUTER_API_KEY precedence /api/chat uses below.
 app.get("/api/provider-status", (req, res) => {
-  const provider = apiKey ? "openai" : (OPENROUTER_API_KEY ? "openrouter" : "none");
+  const provider = (apiKey && isLocalhostRequest(req)) ? "openai" : (OPENROUTER_API_KEY ? "openrouter" : "none");
   res.json({ provider, openrouterModel: OPENROUTER_MODEL });
 });
 
 app.post("/api/chat", async (req, res) => {
   try {
-    if (!apiKey && !OPENROUTER_API_KEY) {
-      return res.status(400).json({
-        error: {
-          message:
-            "No API key configured yet. Click the settings gear and paste your OpenAI key, or set OPENROUTER_API_KEY (and OPENROUTER_MODEL) in app/.env."
-        }
-      });
+    // The OpenAI key is reserved for requests from this machine only (you,
+    // via localhost or an SSH tunnel) -- anyone reaching the deployed app
+    // over the internet always uses OpenRouter instead, even if an OpenAI
+    // key happens to be configured on this server.
+    const useOpenai = Boolean(apiKey) && isLocalhostRequest(req);
+
+    if (!useOpenai && !OPENROUTER_API_KEY) {
+      const message = isLocalhostRequest(req)
+        ? "No API key configured yet. Click the settings gear and paste your OpenAI key, or set OPENROUTER_API_KEY (and OPENROUTER_MODEL) in app/.env."
+        : "This server hasn't been set up with an OpenRouter key yet, so remote requests have no model to use. Set OPENROUTER_API_KEY (and OPENROUTER_MODEL) on the server.";
+      return res.status(400).json({ error: { message } });
     }
 
     const { model, input, documentIds, allowGeneralKnowledge } = req.body || {};
@@ -434,7 +442,7 @@ app.post("/api/chat", async (req, res) => {
         "Do not open your response with introductory filler (\"Sure!\", \"Here are your notes\", \"Certainly!\", etc.) — begin directly with the substantive content. " +
         "Do not refer to yourself as an AI, a language model, or an assistant anywhere in the response.";
 
-    if (apiKey) {
+    if (useOpenai) {
       // Attached documents that still have their raw PDF bytes (see
       // canvas-routes.js) get sent to OpenAI as the actual file, via
       // input_file/file_data — the model reads it directly (text + page
@@ -511,10 +519,11 @@ app.post("/api/chat", async (req, res) => {
       return res.status(openaiRes.status).json(data);
     }
 
-    // No OpenAI key configured -- fall back to OpenRouter (see the
-    // OPENROUTER_* constants above). GLM 5.2 is text-only, so every
-    // attached document goes in as its already-extracted text rather than
-    // the native-PDF input_file blocks the OpenAI branch above can send.
+    // Either this is a remote (non-localhost) request -- which always uses
+    // OpenRouter regardless of the OpenAI key -- or no OpenAI key is
+    // configured at all. GLM 5.2 is text-only, so every attached document
+    // goes in as its already-extracted text rather than the native-PDF
+    // input_file blocks the OpenAI branch above can send.
     const openrouterDocuments = [...attachedDocuments, ...searchedDocuments];
     const openrouterContext = openrouterDocuments
       .map(doc => `SOURCE: ${doc.fileName || doc.title}\n\n${doc.text || ""}`)
