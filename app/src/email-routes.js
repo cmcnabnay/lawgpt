@@ -41,7 +41,7 @@ const documentStore = require("./document-store");
 const emailStore = require("./email-store");
 const canvasRoutes = require("./canvas-routes");
 const { extractText, saveNativeFile, matchCourseFolder, isDocumentAttachment, extFromContentTypeOrTitle } = canvasRoutes;
-const { getAccessTokenSilent, getEmailConfig } = require("./email-auth");
+const { getAccessTokenSilent, getEmailConfig, getPersonalApiKey } = require("./email-auth");
 
 // Mailbox connections and synced messages are per-account now -- there's no
 // meaningful "email" anything for a request with no signed-in user.
@@ -72,16 +72,12 @@ const AGENT_OUTPUT_DIR = "agent";
 // Only the "Forwarded" folder is actually synced today (see /sync below).
 const FOLDER_KEY = "forwarded";
 
-// Same OpenAI Responses API that server.js's /api/chat proxies to. That
-// route lives in server.js because it needs the mutable in-memory apiKey
-// (settable from the app's Settings panel without a restart) -- rather than
-// duplicate that state here or introduce a circular require back to
-// server.js, server.js pushes the current key down via setApiKey() below,
-// once at startup and again whenever Settings changes it.
+// Same OpenAI Responses API that server.js's /api/chat proxies to, using
+// the signed-in user's own saved key (getPersonalApiKey) -- same per-account
+// lookup /api/chat uses, so Generate Plan works with whatever key that user
+// has saved in Settings, not some separate/global key.
 const OPENAI_URL = "https://api.openai.com/v1/responses";
 const PLAN_MODEL = "gpt-4o-mini";
-let currentApiKey = process.env.OPENAI_API_KEY || "";
-function setApiKey(key){ currentApiKey = key || ""; }
 
 // Mirrors the extractText() helper in lawgpt.html that reads an OpenAI
 // Responses API result -- duplicated rather than shared since one runs in
@@ -151,14 +147,15 @@ function buildPlanContext(message){
   ].filter(Boolean).join("\n\n");
 }
 
-async function generatePlanText(message){
-  if (!currentApiKey) {
-    throw new Error("No OpenAI API key configured yet -- open Settings and paste one in.");
+async function generatePlanText(message, userId){
+  const personalApiKey = await getPersonalApiKey(userId);
+  if (!personalApiKey) {
+    throw new Error("No OpenAI API key saved to your account yet -- open Settings and paste one in.");
   }
 
   const openaiRes = await fetch(OPENAI_URL, {
     method: "POST",
-    headers: { "Content-Type": "application/json", Authorization: "Bearer " + currentApiKey },
+    headers: { "Content-Type": "application/json", Authorization: "Bearer " + personalApiKey },
     body: JSON.stringify({
       model: PLAN_MODEL,
       input: [
@@ -184,7 +181,7 @@ async function generateAndStorePlan(userId, id){
   const message = await emailStore.getMessage(userId, id);
   if (!message) return null;
   try {
-    const text = await generatePlanText(message);
+    const text = await generatePlanText(message, userId);
     return await emailStore.updateMessage(userId, id, { plan: text, planError: null, planGeneratedAt: new Date().toISOString() });
   } catch (err) {
     return await emailStore.updateMessage(userId, id, { planError: err.message || "Plan generation failed." });
@@ -624,4 +621,3 @@ module.exports = router;
 // Attached so this can be unit-tested directly without a live Graph
 // connection.
 module.exports.classifyEmailAssignment = classifyEmailAssignment;
-module.exports.setApiKey = setApiKey;

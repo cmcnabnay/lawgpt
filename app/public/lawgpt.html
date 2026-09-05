@@ -2231,6 +2231,14 @@ pre code {
 }
 .database-table-item:hover{ background:var(--ink-3); }
 .database-table-item.active{ background:var(--ink-3); border-left-color:var(--brass); color:var(--brass); }
+.database-table-columns{ padding:2px 16px 8px 28px; }
+.database-table-column{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:11.5px;
+  color:var(--text-muted);
+  padding:2px 0;
+}
+.database-table-column.pk{ color:var(--brass); }
 .db-sql-textarea{
   width:100%;
   min-height:110px;
@@ -4925,6 +4933,11 @@ function syncCaseForm(){
 // editor. Queries run through the proxy's /api/db/query route, which calls
 // a Postgres function (exec_sql) the user creates once via the Supabase SQL
 // editor -- see the setup instructions given alongside this feature.
+// Which tables are currently expanded in the sidebar, showing their column
+// list -- kept outside populateDatabaseTableList() so it survives the list
+// being rebuilt (e.g. on every loadDbTables() refresh).
+const expandedDbTables = new Set();
+
 function populateDatabaseTableList(){
   const list = document.getElementById("databaseTableList");
   const empty = document.getElementById("databaseTableListEmpty");
@@ -4938,10 +4951,23 @@ function populateDatabaseTableList(){
     btn.className = "database-table-item";
     btn.textContent = t.name;
     btn.addEventListener("click", () => {
-      document.getElementById("dbSqlInput").value = `select * from "${t.name}" limit 50;`;
-      runDbQuery();
+      if (expandedDbTables.has(t.name)) expandedDbTables.delete(t.name);
+      else expandedDbTables.add(t.name);
+      populateDatabaseTableList();
     });
     list.appendChild(btn);
+
+    if (expandedDbTables.has(t.name)){
+      const cols = document.createElement("div");
+      cols.className = "database-table-columns";
+      (t.columns || []).forEach(c => {
+        const colEl = document.createElement("div");
+        colEl.className = "database-table-column" + (c.isPrimaryKey ? " pk" : "");
+        colEl.textContent = c.name + (c.isPrimaryKey ? " (primary key)" : "") + " — " + c.type;
+        cols.appendChild(colEl);
+      });
+      list.appendChild(cols);
+    }
   });
 }
 
@@ -5108,9 +5134,12 @@ async function generateReadingReport({ course, classLabel, title, prompt, docume
 const COURSE_LABELS = { lss: "LSS", civpro: "CivPro", contracts: "Contracts", torts: "Torts" };
 const COURSE_FOLDER_ORDER = ["civpro", "contracts", "torts", "lss"];
 
-// Which course folders are collapsed, keyed by course code (or "" for the
-// no-course catch-all) -- session-only, not persisted; folders start open.
-const collapsedNotesFolders = new Set();
+// Which course folders are expanded, keyed by course code (or "" for the
+// no-course catch-all) -- session-only, not persisted. Tracked as
+// "expanded" rather than "collapsed" so a folder starts collapsed by
+// default the first time it's ever rendered (nothing in the set yet),
+// rather than needing every course key enumerated up front.
+const expandedNotesFolders = new Set();
 
 function renderReportPanel(){
   renderReportSidebar();
@@ -5182,7 +5211,7 @@ function renderReportSidebar(){
   orderedKeys.forEach(courseKey => {
     const reports = groups.get(courseKey);
     const label = COURSE_LABELS[courseKey] || "Other";
-    const collapsed = collapsedNotesFolders.has(courseKey);
+    const collapsed = !expandedNotesFolders.has(courseKey);
 
     const folderBtn = document.createElement("button");
     folderBtn.type = "button";
@@ -5192,8 +5221,8 @@ function renderReportSidebar(){
       `<span>${escapeHtml(label)}</span>` +
       `<span class="notes-sidebar-folder-count">${reports.length}</span>`;
     folderBtn.addEventListener("click", () => {
-      if (collapsedNotesFolders.has(courseKey)) collapsedNotesFolders.delete(courseKey);
-      else collapsedNotesFolders.add(courseKey);
+      if (expandedNotesFolders.has(courseKey)) expandedNotesFolders.delete(courseKey);
+      else expandedNotesFolders.add(courseKey);
       renderReportSidebar();
     });
     list.appendChild(folderBtn);

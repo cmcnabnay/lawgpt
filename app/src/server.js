@@ -261,23 +261,6 @@ async function supabaseRequest(pathAndQuery, options) {
   return { ok: res.ok, status: res.status, data };
 }
 
-// Mutable in-memory copy so a key pasted into Settings takes effect
-// immediately, without needing to restart the server.
-let apiKey = process.env.OPENAI_API_KEY || "";
-
-if (!apiKey) {
-  console.warn(
-    "No OPENAI_API_KEY set yet. Either:\n" +
-    "  export OPENAI_API_KEY=sk-proj-...   (then restart), or\n" +
-    "  open the app and paste your key into the Settings (gear) panel."
-  );
-}
-
-// email-routes.js needs the key too (to draft assignment plans) but can't
-// read this mutable local variable directly -- push the current value down
-// once at startup, and again below whenever Settings changes it.
-emailRoutes.setApiKey(apiKey);
-
 // Shared by requireLocalhost/requireDbAdmin below -- used for admin-only
 // and machine-only routes (the Database tab, revealing a file on disk),
 // not for OpenAI provider choice anymore -- that's a per-account setting
@@ -1182,6 +1165,16 @@ function requireSupabaseConfigured(req, res, next) {
   next();
 }
 
+// The only tables this generic row editor (Notes tab + Database tab) will
+// ever show or touch, for anyone -- admin included. `users`/`user_state`/
+// `session` live in the same Supabase project now (see
+// ~/Documents/setup-user-accounts.sql) and would otherwise show up here
+// too via PostgREST's introspection below, which is exactly the kind of
+// thing (raw password hashes, session tokens) this editor has no business
+// exposing. Direct SQL via /api/db/query (still admin/localhost-only,
+// unrestricted) is the escape hatch for genuinely needing those.
+const BROWSABLE_TABLES = new Set(["cases", "rules", "definitions"]);
+
 // PostgREST self-describes every table/view it exposes via an OpenAPI
 // document at the API root -- this is how the proxy learns what tables
 // exist and their columns without needing raw SQL access to
@@ -1202,16 +1195,18 @@ async function fetchSupabaseTables() {
   if (!res.ok) throw new Error((spec && spec.message) || `Supabase schema request failed (${res.status}).`);
 
   const defs = (spec && spec.definitions) || {};
-  return Object.entries(defs).map(([name, def]) => {
-    const properties = (def && def.properties) || {};
-    const columns = Object.entries(properties).map(([colName, col]) => ({
-      name: colName,
-      type: (col && col.type) || "string",
-      format: (col && col.format) || "",
-      isPrimaryKey: Boolean(col && typeof col.description === "string" && col.description.includes("<pk/>"))
-    }));
-    return { name, columns, primaryKey: columns.filter(c => c.isPrimaryKey).map(c => c.name) };
-  });
+  return Object.entries(defs)
+    .filter(([name]) => BROWSABLE_TABLES.has(name))
+    .map(([name, def]) => {
+      const properties = (def && def.properties) || {};
+      const columns = Object.entries(properties).map(([colName, col]) => ({
+        name: colName,
+        type: (col && col.type) || "string",
+        format: (col && col.format) || "",
+        isPrimaryKey: Boolean(col && typeof col.description === "string" && col.description.includes("<pk/>"))
+      }));
+      return { name, columns, primaryKey: columns.filter(c => c.isPrimaryKey).map(c => c.name) };
+    });
 }
 
 async function getTableInfo(tableName) {
@@ -1230,7 +1225,10 @@ function pickFieldsForTable(body, table) {
   return out;
 }
 
-app.get("/api/db/tables", requireDbAdmin, requireSupabaseConfigured, async (req, res) => {
+// Read-only, and only ever for BROWSABLE_TABLES (enforced inside
+// fetchSupabaseTables/getTableInfo above) -- open to anyone, not just
+// admins, same as /api/cases etc. Rate limited since it's now public.
+app.get("/api/db/tables", publicReadLimiter, requireSupabaseConfigured, async (req, res) => {
   try {
     res.json(await fetchSupabaseTables());
   } catch (err) {
@@ -1238,7 +1236,7 @@ app.get("/api/db/tables", requireDbAdmin, requireSupabaseConfigured, async (req,
   }
 });
 
-app.get("/api/db/:table", requireDbAdmin, requireSupabaseConfigured, async (req, res) => {
+app.get("/api/db/:table", publicReadLimiter, requireSupabaseConfigured, async (req, res) => {
   try {
     const table = await getTableInfo(req.params.table);
     if (!table) return res.status(404).json({ error: { message: "Unknown table." } });
@@ -1250,7 +1248,7 @@ app.get("/api/db/:table", requireDbAdmin, requireSupabaseConfigured, async (req,
   }
 });
 
-app.get("/api/db/:table/:pkValue", requireDbAdmin, requireSupabaseConfigured, async (req, res) => {
+app.get("/api/db/:table/:pkValue", publicReadLimiter, requireSupabaseConfigured, async (req, res) => {
   try {
     const table = await getTableInfo(req.params.table);
     if (!table) return res.status(404).json({ error: { message: "Unknown table." } });

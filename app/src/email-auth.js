@@ -113,4 +113,14 @@ async function getAccessTokenSilent(userId){
   }
 }
 
-module.exports = { getPca, getClientConfig, getEmailConfig, getAccessTokenSilent, SCOPES };
+// Shared with server.js's own copy of this same lookup (used by /api/chat)
+// -- email-routes.js's plan-generation feature needs the signed-in user's
+// own OpenAI key too, and already has no DB pool of its own, so it reuses
+// this module's appPool rather than duplicating the connection.
+async function getPersonalApiKey(userId){
+  if (!appPool || !userId) return null;
+  const result = await appPool.query("SELECT openai_api_key FROM users WHERE id = $1", [userId]);
+  return (result.rows[0] && result.rows[0].openai_api_key) || null;
+}
+
+module.exports = { getPca, getClientConfig, getEmailConfig, getAccessTokenSilent, getPersonalApiKey, SCOPES };
