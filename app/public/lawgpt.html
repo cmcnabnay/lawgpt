@@ -3071,24 +3071,32 @@ async function refreshKeyStatus(){
 // Drives both the #modelSelect options below and the Notes tab's "Attached
 // to ..." source label, so neither one lies about where a request actually
 // goes when no OpenAI key is configured.
-let chatProvider = { provider: "openai", openrouterModel: "" };
+let chatProvider = { provider: "openai", openrouterModel: "", openrouterModels: [] };
 const modelSelect = document.getElementById("modelSelect");
 const DEFAULT_MODEL_SELECT_HTML = modelSelect.innerHTML;
 
 function providerDisplayName(){
+  // Reflects whichever model is actually selected right now, not just the
+  // server's default -- once OpenRouter users can pick among several
+  // models, the default alone would misdescribe what's about to be sent.
   return chatProvider.provider === "openrouter"
-    ? `${chatProvider.openrouterModel} (via OpenRouter)`
+    ? `${modelSelect.value || chatProvider.openrouterModel} (via OpenRouter)`
     : "OpenAI";
 }
 
 function applyChatProviderToModelSelect(){
   if (chatProvider.provider === "openrouter"){
-    const opt = document.createElement("option");
-    opt.value = chatProvider.openrouterModel;
-    opt.textContent = `${chatProvider.openrouterModel} (via OpenRouter)`;
-    opt.selected = true;
     modelSelect.innerHTML = "";
-    modelSelect.appendChild(opt);
+    const models = chatProvider.openrouterModels && chatProvider.openrouterModels.length
+      ? chatProvider.openrouterModels
+      : [{ id: chatProvider.openrouterModel, note: "" }];
+    models.forEach(m => {
+      const opt = document.createElement("option");
+      opt.value = m.id;
+      opt.textContent = m.note ? `${m.id} (${m.note})` : m.id;
+      if (m.id === chatProvider.openrouterModel) opt.selected = true;
+      modelSelect.appendChild(opt);
+    });
   } else {
     modelSelect.innerHTML = DEFAULT_MODEL_SELECT_HTML;
   }
@@ -3099,7 +3107,7 @@ async function refreshChatProvider(){
     const res = await fetch(PROXY_ORIGIN + "/api/provider-status");
     chatProvider = await res.json();
   } catch(e){
-    chatProvider = { provider: "openai", openrouterModel: "" };
+    chatProvider = { provider: "openai", openrouterModel: "", openrouterModels: [] };
   }
   applyChatProviderToModelSelect();
 }

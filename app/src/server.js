@@ -67,6 +67,35 @@ const OPENROUTER_URL = "https://openrouter.ai/api/v1/responses";
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY || "";
 const OPENROUTER_MODEL = process.env.OPENROUTER_MODEL || "z-ai/glm-5.2:free";
 
+// Every free, text-only OpenRouter model tested against this same endpoint
+// (see the test scripts in ~/Documents) -- shown in the frontend's model
+// dropdown for OpenRouter users, and the ONLY models /api/chat will ever
+// forward to OpenRouter for a remote request. This allow-list matters: if a
+// client-supplied model string were forwarded unchecked, any visitor could
+// make this server call (and pay for, on the configured OpenRouter key) an
+// arbitrary paid model instead of a free one.
+const OPENROUTER_MODELS = [
+  { id: "inclusionai/ling-3.0-flash-sante:free", note: "reliable" },
+  { id: "inclusionai/ling-3.0-flash-fin:free", note: "reliable" },
+  { id: "liquid/lfm-2.5-2.6b:free", note: "reliable" },
+  { id: "minimax/minimax-m3:free", note: "reliable" },
+  { id: "cohere/north-mini-code:free", note: "reliable" },
+  { id: "dots-studio/dots-3-note-preview:free", note: "reliable" },
+  { id: "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free", note: "reliable" },
+  { id: "nvidia/nemotron-3.5-lightning:free", note: "reliable" },
+  { id: "minimax/minimax-m2.7:free", note: "reliable" },
+  { id: "openrouter/free", note: "reliable, slow (~12s)" },
+  { id: "z-ai/glm-5.2:free", note: "often rate-limited" },
+  { id: "google/gemma-4-26b-a4b-it:free", note: "often rate-limited" },
+  { id: "google/gemma-4-31b-it:free", note: "often rate-limited" },
+  { id: "poolside/laguna-s-2.1:free", note: "often rate-limited" },
+  { id: "poolside/laguna-xs-2.1:free", note: "often rate-limited" },
+  { id: "nvidia/nemotron-3-ultra-550b-a55b:free", note: "often overloaded/times out" },
+  { id: "thinkingmachines/inkling:free", note: "agentic-harness only, fails via plain chat" },
+  { id: "thinkingmachines/inkling-small:free", note: "agentic-harness only, fails via plain chat" }
+];
+const OPENROUTER_MODEL_IDS = new Set(OPENROUTER_MODELS.map(m => m.id));
+
 // A response can fail either via a non-2xx status or via HTTP 200 with
 // status:"failed" in the body (how OpenRouter reports some upstream
 // provider errors), so both need checking to know the attempt failed.
@@ -354,7 +383,7 @@ app.post("/api/email-folder", requireLocalhost, (req, res) => {
 // localhost-then-OPENROUTER_API_KEY precedence /api/chat uses below.
 app.get("/api/provider-status", (req, res) => {
   const provider = (apiKey && isLocalhostRequest(req)) ? "openai" : (OPENROUTER_API_KEY ? "openrouter" : "none");
-  res.json({ provider, openrouterModel: OPENROUTER_MODEL });
+  res.json({ provider, openrouterModel: OPENROUTER_MODEL, openrouterModels: OPENROUTER_MODELS });
 });
 
 app.post("/api/chat", async (req, res) => {
@@ -552,7 +581,10 @@ app.post("/api/chat", async (req, res) => {
       }
     ];
 
-    const result = await callOpenrouter(OPENROUTER_MODEL, openrouterInput);
+    // Use the client's chosen model only if it's in the allow-list above --
+    // never forward an arbitrary client-supplied string to OpenRouter.
+    const selectedOpenrouterModel = OPENROUTER_MODEL_IDS.has(model) ? model : OPENROUTER_MODEL;
+    const result = await callOpenrouter(selectedOpenrouterModel, openrouterInput);
 
     // OpenRouter can return HTTP 200 with status:"failed" in the body
     // (e.g. an overloaded upstream free model) rather than a non-2xx
