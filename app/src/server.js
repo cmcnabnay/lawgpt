@@ -268,19 +268,17 @@ if (!apiKey) {
 // once at startup, and again below whenever Settings changes it.
 emailRoutes.setApiKey(apiKey);
 
-// Shared by requireLocalhost below and /api/chat's provider choice -- the
-// OpenAI key is only ever used for requests originating on this machine
-// (you, via localhost or an SSH tunnel); every other requester -- i.e.
-// anyone reaching the deployed app over the internet -- uses OpenRouter
-// instead, regardless of whether an OpenAI key happens to be configured.
+// Shared by requireLocalhost/requireDbAdmin below -- used for admin-only
+// and machine-only routes (the Database tab, revealing a file on disk),
+// not for OpenAI provider choice anymore -- that's a per-account setting
+// now (see getPersonalApiKey).
 function isLocalhostRequest(req) {
   const ip = req.ip || req.connection.remoteAddress || "";
   return ip === "127.0.0.1" || ip === "::1" || ip === "::ffff:127.0.0.1";
 }
 
-// The Settings panel is meant for local development on your own machine
-// only. Refuse to write files if this server is somehow reachable from
-// anywhere other than localhost.
+// For routes that only make sense run on this machine itself (e.g.
+// revealing a file in the local filesystem's file manager).
 function requireLocalhost(req, res, next) {
   if (!isLocalhostRequest(req)) {
     return res.status(403).json({
@@ -331,16 +329,30 @@ function upsertEnvVar(name, value) {
   );
 }
 
-// Lets the Settings panel show "key configured" without ever exposing the
-// real value back to the browser.
-app.get("/api/key-status", (req, res) => {
-  res.json({
-    configured: Boolean(apiKey),
-    last4: apiKey ? apiKey.slice(-4) : null
-  });
+// ---- Settings: personal, per-account, requires sign-in ----
+// Settings used to be a single shared admin config (requireLocalhost,
+// written to app/.env). They're now each signed-in user's own saved
+// values, stored on their row in `users` -- nobody can read or write
+// another account's settings, and there's no "settings" access at all
+// without being signed in first. The OpenAI key is used directly for that
+// user's /api/chat requests (see useOpenai below). The email client
+// ID/folder are also saved per-account for consistency, but the Email
+// tab's actual mailbox connection remains a single shared OAuth session
+// (one token cache, see email-auth.js) -- saving your own client
+// ID/folder here also updates that shared config so the feature keeps
+// working, it doesn't give each account an independent mailbox connection.
+
+app.get("/api/key-status", requireAppDb, requireLogin, async (req, res) => {
+  try {
+    const result = await appPool.query("SELECT openai_api_key FROM users WHERE id = $1", [req.session.userId]);
+    const key = result.rows[0] && result.rows[0].openai_api_key;
+    res.json({ configured: Boolean(key), last4: key ? key.slice(-4) : null });
+  } catch (err) {
+    res.status(500).json({ error: { message: err.message } });
+  }
 });
 
-app.post("/api/key", requireLocalhost, (req, res) => {
+app.post("/api/key", requireAppDb, requireLogin, async (req, res) => {
   const { apiKey: newKey } = req.body || {};
 
   if (
@@ -357,37 +369,25 @@ app.post("/api/key", requireLocalhost, (req, res) => {
   }
 
   try {
-    upsertEnvVar("OPENAI_API_KEY", newKey.trim());
-    apiKey = newKey.trim();
-    emailRoutes.setApiKey(apiKey);
-
-    res.json({
-      ok: true,
-      last4: apiKey.slice(-4)
-    });
+    const trimmed = newKey.trim();
+    await appPool.query("UPDATE users SET openai_api_key = $1 WHERE id = $2", [trimmed, req.session.userId]);
+    res.json({ ok: true, last4: trimmed.slice(-4) });
   } catch (err) {
-    console.error("Failed to write .env:", err);
-
-    res.status(500).json({
-      error: {
-        message: "Saved in memory, but couldn't write .env to disk."
-      }
-    });
+    res.status(500).json({ error: { message: err.message } });
   }
 });
 
-// Lets the Settings panel show whatever EMAIL_CLIENT_ID is currently in
-// effect (see email-auth.js's getEmailConfig -- ~/.bashrc wins over .env, so
-// this reports whichever of the two is actually being used). Unlike the
-// OpenAI key, a client ID isn't a secret -- it's the public identifier of
-// the Azure AD app registration (see setup-email-auth.js) -- so it's fine to
-// send the real value back, not just a masked tail.
-app.get("/api/email-client-id-status", (req, res) => {
-  const { clientId } = getEmailConfig();
-  res.json({ configured: Boolean(clientId), clientId: clientId || null });
+app.get("/api/email-client-id-status", requireAppDb, requireLogin, async (req, res) => {
+  try {
+    const result = await appPool.query("SELECT email_client_id FROM users WHERE id = $1", [req.session.userId]);
+    const clientId = result.rows[0] && result.rows[0].email_client_id;
+    res.json({ configured: Boolean(clientId), clientId: clientId || null });
+  } catch (err) {
+    res.status(500).json({ error: { message: err.message } });
+  }
 });
 
-app.post("/api/email-client-id", requireLocalhost, (req, res) => {
+app.post("/api/email-client-id", requireAppDb, requireLogin, async (req, res) => {
   const { clientId: newClientId } = req.body || {};
   const trimmed = typeof newClientId === "string" ? newClientId.trim() : "";
 
@@ -400,34 +400,29 @@ app.post("/api/email-client-id", requireLocalhost, (req, res) => {
   }
 
   try {
+    await appPool.query("UPDATE users SET email_client_id = $1 WHERE id = $2", [trimmed, req.session.userId]);
+    // Also keep the shared Email-tab config in sync -- see the note above
+    // this section on why that feature isn't independently multi-tenant.
     upsertEnvVar("EMAIL_CLIENT_ID", trimmed);
-    // getEmailConfig() reads process.env fresh on every call (see
-    // email-auth.js), so updating it here is enough to take effect
-    // immediately -- no restart needed, same as the OpenAI key above.
     process.env.EMAIL_CLIENT_ID = trimmed;
 
     res.json({ ok: true, clientId: trimmed });
   } catch (err) {
-    console.error("Failed to write .env:", err);
-
-    res.status(500).json({
-      error: {
-        message: "Saved in memory, but couldn't write .env to disk."
-      }
-    });
+    res.status(500).json({ error: { message: err.message } });
   }
 });
 
-// Lets the Settings panel show the mailbox folder the Email tab currently
-// syncs from (see email-auth.js's getEmailConfig -- ~/.bashrc wins over
-// .env, then falls back to "Forwarded" if neither is set). Not a secret,
-// so the real value is always sent back, same as the client ID above.
-app.get("/api/email-folder-status", (req, res) => {
-  const { folder } = getEmailConfig();
-  res.json({ folder });
+app.get("/api/email-folder-status", requireAppDb, requireLogin, async (req, res) => {
+  try {
+    const result = await appPool.query("SELECT email_folder FROM users WHERE id = $1", [req.session.userId]);
+    const folder = (result.rows[0] && result.rows[0].email_folder) || "Forwarded";
+    res.json({ folder });
+  } catch (err) {
+    res.status(500).json({ error: { message: err.message } });
+  }
 });
 
-app.post("/api/email-folder", requireLocalhost, (req, res) => {
+app.post("/api/email-folder", requireAppDb, requireLogin, async (req, res) => {
   const { folder: newFolder } = req.body || {};
   const trimmed = typeof newFolder === "string" ? newFolder.trim() : "";
 
@@ -440,21 +435,15 @@ app.post("/api/email-folder", requireLocalhost, (req, res) => {
   }
 
   try {
+    await appPool.query("UPDATE users SET email_folder = $1 WHERE id = $2", [trimmed, req.session.userId]);
+    // Also keep the shared Email-tab config in sync -- see the note above
+    // this section on why that feature isn't independently multi-tenant.
     upsertEnvVar("EMAIL_FOLDER", trimmed);
-    // getEmailConfig() reads process.env fresh on every call, so updating
-    // it here is enough to take effect immediately -- no restart needed,
-    // same as the client ID above.
     process.env.EMAIL_FOLDER = trimmed;
 
     res.json({ ok: true, folder: trimmed });
   } catch (err) {
-    console.error("Failed to write .env:", err);
-
-    res.status(500).json({
-      error: {
-        message: "Saved in memory, but couldn't write .env to disk."
-      }
-    });
+    res.status(500).json({ error: { message: err.message } });
   }
 });
 
@@ -462,8 +451,20 @@ app.post("/api/email-folder", requireLocalhost, (req, res) => {
 // modelSelect dropdown's options, and the Notes tab's "Attached to ..."
 // source label -- rather than always assuming OpenAI. Mirrors the same
 // localhost-then-OPENROUTER_API_KEY precedence /api/chat uses below.
-app.get("/api/provider-status", (req, res) => {
-  const provider = (apiKey && isLocalhostRequest(req)) ? "openai" : (OPENROUTER_API_KEY ? "openrouter" : "none");
+// OpenAI is now a per-account setting (see the Settings section below) --
+// signed in, from any device, with a key saved to your account, your
+// requests use it; otherwise (including localhost with no account) it's
+// OpenRouter. Shared by /api/provider-status and /api/chat so both agree
+// on exactly the same thing.
+async function getPersonalApiKey(req) {
+  if (!appPool || !req.session || !req.session.userId) return null;
+  const result = await appPool.query("SELECT openai_api_key FROM users WHERE id = $1", [req.session.userId]);
+  return (result.rows[0] && result.rows[0].openai_api_key) || null;
+}
+
+app.get("/api/provider-status", async (req, res) => {
+  const personalKey = await getPersonalApiKey(req);
+  const provider = personalKey ? "openai" : (OPENROUTER_API_KEY ? "openrouter" : "none");
   res.json({ provider, openrouterModel: OPENROUTER_MODEL, openrouterModels: OPENROUTER_MODELS });
 });
 
@@ -579,16 +580,17 @@ app.post("/api/user/state", requireAppDb, requireLogin, async (req, res) => {
 
 app.post("/api/chat", async (req, res) => {
   try {
-    // The OpenAI key is reserved for requests from this machine only (you,
-    // via localhost or an SSH tunnel) -- anyone reaching the deployed app
-    // over the internet always uses OpenRouter instead, even if an OpenAI
-    // key happens to be configured on this server.
-    const useOpenai = Boolean(apiKey) && isLocalhostRequest(req);
+    // OpenAI is used only if the signed-in account has saved its own key
+    // (see requireLogin-gated /api/key above) -- not signed in, or signed
+    // in with no key saved, always falls back to OpenRouter, regardless of
+    // where the request is coming from.
+    const personalApiKey = await getPersonalApiKey(req);
+    const useOpenai = Boolean(personalApiKey);
 
     if (!useOpenai && !OPENROUTER_API_KEY) {
-      const message = isLocalhostRequest(req)
-        ? "No API key configured yet. Click the settings gear and paste your OpenAI key, or set OPENROUTER_API_KEY (and OPENROUTER_MODEL) in app/.env."
-        : "This server hasn't been set up with an OpenRouter key yet, so remote requests have no model to use. Set OPENROUTER_API_KEY (and OPENROUTER_MODEL) on the server.";
+      const message = req.session && req.session.userId
+        ? "No OpenAI key saved to your account yet. Open Settings and add one, or set OPENROUTER_API_KEY (and OPENROUTER_MODEL) on the server."
+        : "Sign in to use your own OpenAI key, or set OPENROUTER_API_KEY (and OPENROUTER_MODEL) on the server so signed-out visitors have a model to use.";
       return res.status(400).json({ error: { message } });
     }
 
@@ -731,7 +733,7 @@ app.post("/api/chat", async (req, res) => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": "Bearer " + apiKey
+          "Authorization": "Bearer " + personalApiKey
         },
         body: JSON.stringify({
           model,
@@ -744,11 +746,10 @@ app.post("/api/chat", async (req, res) => {
       return res.status(openaiRes.status).json(data);
     }
 
-    // Either this is a remote (non-localhost) request -- which always uses
-    // OpenRouter regardless of the OpenAI key -- or no OpenAI key is
-    // configured at all. GLM 5.2 is text-only, so every attached document
-    // goes in as its already-extracted text rather than the native-PDF
-    // input_file blocks the OpenAI branch above can send.
+    // No personal OpenAI key on this account (or not signed in at all) --
+    // fall back to OpenRouter. GLM 5.2 is text-only, so every attached
+    // document goes in as its already-extracted text rather than the
+    // native-PDF input_file blocks the OpenAI branch above can send.
     const openrouterDocuments = [...attachedDocuments, ...searchedDocuments];
     const openrouterContext = openrouterDocuments
       .map(doc => `SOURCE: ${doc.fileName || doc.title}\n\n${doc.text || ""}`)
@@ -1118,11 +1119,11 @@ app.post("/api/public-query", publicQueryLimiter, async (req, res) => {
 });
 
 // ---- Generic table access (Notes tab's row editor + the Database tab) ----
-// Admin tooling only -- gated behind requireLocalhost (see /api/key above)
-// since it can read/write/delete any table in the schema and, via
-// /api/db/query, run arbitrary SQL. Not limited to `cases` -- any table in
-// the public schema, introspected live from Supabase (see
-// fetchSupabaseTables below) rather than hardcoded.
+// Admin tooling only -- gated behind requireDbAdmin (localhost, or a
+// signed-in account with role='admin') since it can read/write/delete any
+// table in the schema and, via /api/db/query, run arbitrary SQL. Not
+// limited to `cases` -- any table in the public schema, introspected live
+// from Supabase (see fetchSupabaseTables below) rather than hardcoded.
 function requireSupabaseConfigured(req, res, next) {
   if (!SUPABASE_URL || !SUPABASE_SECRET_KEY) {
     return res.status(500).json({

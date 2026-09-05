@@ -2315,8 +2315,16 @@ pre code {
 
 <div class="modal-overlay" id="settingsOverlay" style="display:none;">
   <div class="modal modal-wide">
+    <div id="settingsSignedOut" style="display:none;">
+      <h2>Settings</h2>
+      <p>Settings are personal to your account, so you'll need to sign in first before you can view or change any of them.</p>
+      <div class="settings-actions">
+        <button type="button" id="settingsGoToAccountBtn">Sign in</button>
+      </div>
+    </div>
+    <div id="settingsSignedInContent">
     <h2>API key settings</h2>
-    <p>Your key is sent to your local proxy server and saved to its <code>.env</code> file. It never touches this browser page after saving, and the server refuses to accept changes from anywhere but localhost.</p>
+    <p>Your OpenAI key is saved to your account and used only for your own chat requests, from any device you're signed in on — it's never shown back to any browser after saving.</p>
     <div class="settings-form">
       <label for="settingsApiKeyInput">OpenAI API key</label>
       <input type="password" id="settingsApiKeyInput" placeholder="sk-proj-..." autocomplete="off" spellcheck="false">
@@ -2329,7 +2337,7 @@ pre code {
     <div class="settings-divider"></div>
 
     <h2>Email settings</h2>
-    <p>The application (client) ID of the Azure AD app registration the Email tab signs in with (see <code>app/src/setup-email-auth.js</code>) — not a secret, just an identifier, saved to the same <code>.env</code> file as the OpenAI key above. Changing it doesn't sign you out; run the setup script again afterward if you're pointing at a different app registration.</p>
+    <p>The application (client) ID of the Azure AD app registration the Email tab signs in with (see <code>app/src/setup-email-auth.js</code>) — not a secret, just an identifier. Saved to your account, and also updates the server's shared Email-tab configuration (that feature connects one mailbox at a time regardless of which account changes this). Changing it doesn't sign you out; run the setup script again afterward if you're pointing at a different app registration.</p>
     <div class="settings-form">
       <label for="settingsEmailClientIdInput">Email client ID</label>
       <input type="text" id="settingsEmailClientIdInput" placeholder="12345678-1234-1234-1234-123456789abc" autocomplete="off" spellcheck="false">
@@ -2378,6 +2386,7 @@ pre code {
     <div class="settings-actions">
       <button type="button" id="settingsLinkFolderBtn">Link folder now</button>
       <button type="button" class="btn-secondary" id="settingsForgetFolderBtn">Forget linked folder</button>
+    </div>
     </div>
 
     <div class="settings-actions" style="margin-top:18px;">
@@ -3197,8 +3206,17 @@ async function refreshEmailFolderStatus(){
 }
 
 function openSettings(){
-  settingsApiKeyInput.value = "";
   settingsOverlay.style.display = "flex";
+
+  // Settings are personal to a signed-in account -- there's nothing to
+  // show (or fetch, since the status endpoints themselves require login
+  // now) if nobody's signed in.
+  const signedIn = Boolean(currentUser);
+  document.getElementById("settingsSignedOut").style.display = signedIn ? "none" : "block";
+  document.getElementById("settingsSignedInContent").style.display = signedIn ? "block" : "none";
+  if (!signedIn) return;
+
+  settingsApiKeyInput.value = "";
   refreshKeyStatus();
   refreshEmailClientIdStatus();
   refreshEmailFolderStatus();
@@ -3255,7 +3273,24 @@ async function refreshAuthStatus(){
     currentUser = null;
   }
   updateAccountUI();
-  if (currentUser) await syncAfterLogin();
+  if (currentUser){
+    await syncAfterLogin();
+  } else {
+    // Not signed in -- chat history/notes aren't saved without an account
+    // (see persistState), so don't carry over any local cache left behind
+    // by a previous account or an earlier version of this app; start clean.
+    try{ localStorage.removeItem(STORAGE_KEY); } catch(e){}
+    matters = [];
+    activeMatterId = null;
+    matterCounter = 0;
+    savedReports = [];
+    reportCounter = 0;
+    customNotesPrompts = {};
+    currentReport = null;
+    renderDocket();
+    renderChat();
+    renderReportPanel();
+  }
 }
 
 // Called right after a successful sign-in/sign-up. If the account already
@@ -3393,6 +3428,10 @@ function populateSettingsPromptEditor(){
 
 document.getElementById("settingsGearBtn").addEventListener("click", openSettings);
 document.getElementById("settingsCloseBtn").addEventListener("click", closeSettings);
+document.getElementById("settingsGoToAccountBtn").addEventListener("click", () => {
+  closeSettings();
+  openAccountModal();
+});
 document.getElementById("settingsForgetFolderBtn").addEventListener("click", async () => {
   const btn = document.getElementById("settingsForgetFolderBtn");
   const original = btn.textContent;
@@ -3573,12 +3612,12 @@ let savedReports = [];
 let reportCounter = 0;
 
 // Declared here (rather than next to DEFAULT_NOTES_PROMPTS, much further
-// down) because loadState() below assigns to it directly, and loadState()
-// is called at top level before the script reaches that point -- a `let`
-// declared later is in its temporal dead zone until execution actually
-// reaches it, so referencing it from loadState() before then throws
-// "Cannot access 'customNotesPrompts' before initialization" the first
-// time a real saved docket (one that actually reaches this line) loads.
+// down) because syncAfterLogin() assigns to it directly, and that runs at
+// bootstrap (via refreshAuthStatus()) before the script reaches that point
+// -- a `let` declared later is in its temporal dead zone until execution
+// actually reaches it, so referencing it before then throws "Cannot access
+// 'customNotesPrompts' before initialization" the first time an account
+// with saved data signs in.
 let customNotesPrompts = {};
 
 const STORAGE_KEY = "lawgpt.docket.v1";
@@ -3606,9 +3645,15 @@ function showStorageWarning(){
   if (el) el.classList.add("visible");
 }
 
-// Saves the full docket (every matter and its messages) to localStorage.
-// Called after anything that changes matters/messages/active selection.
+// Saves the full docket (every matter and its messages) to localStorage,
+// and syncs it to the signed-in account server-side. Called after anything
+// that changes matters/messages/active selection. Signed-out visitors get
+// no persistence at all -- chat/notes still work for the current tab, but
+// nothing survives a reload without an account, both to avoid one
+// browser's anonymous use leaking into whoever uses it next, and to make
+// creating an account the actual way to keep anything.
 function persistState(){
+  if (!currentUser) return;
   try{
     localStorage.setItem(STORAGE_KEY, JSON.stringify({ matters, matterCounter, activeMatterId, savedReports, reportCounter, customNotesPrompts, savedAt: Date.now() }));
   } catch(e){
@@ -3617,37 +3662,9 @@ function persistState(){
     console.warn("LawGPT: couldn't save chat history to this browser.", e);
     showStorageWarning();
   }
-  // pushStateToServer no-ops when signed out; debounced internally so a
-  // burst of persistState() calls (e.g. rapid edits) doesn't hammer the
-  // server with one request per keystroke.
+  // Debounced internally so a burst of persistState() calls (e.g. rapid
+  // edits) doesn't hammer the server with one request per keystroke.
   pushStateToServer();
-}
-
-// Restores the docket saved by a previous session. Returns true if there was
-// anything to restore.
-function loadState(){
-  try{
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return false;
-    const saved = JSON.parse(raw);
-    if (!saved || !Array.isArray(saved.matters) || saved.matters.length === 0) return false;
-    matters = saved.matters;
-    // Backfill fields that may not exist on a docket saved before the
-    // Notes/Documents tabs were added.
-    matters.forEach(m => {
-      if (typeof m.notes !== "string") m.notes = "";
-      if (!Array.isArray(m.attachedDocumentIds)) m.attachedDocumentIds = [];
-    });
-    matterCounter = typeof saved.matterCounter === "number" ? saved.matterCounter : matters.length;
-    activeMatterId = matters.some(m => m.id === saved.activeMatterId) ? saved.activeMatterId : matters[0].id;
-    savedReports = Array.isArray(saved.savedReports) ? saved.savedReports : [];
-    reportCounter = typeof saved.reportCounter === "number" ? saved.reportCounter : savedReports.length;
-    customNotesPrompts = (saved.customNotesPrompts && typeof saved.customNotesPrompts === "object") ? saved.customNotesPrompts : {};
-    return true;
-  } catch(e){
-    console.warn("LawGPT: couldn't load saved chat history.", e);
-    return false;
-  }
 }
 
 // Belt-and-suspenders: flush to storage whenever the tab/app is about to go
@@ -4044,7 +4061,11 @@ attachChipListeners();
 // like it had "saved" a blank chat. A matter is only created lazily, the
 // moment the user actually sends a first message (see sendMessage()) or
 // clicks "New Matter" explicitly.
-loadState();
+//
+// No loadState() call here -- localStorage is only ever trustworthy for a
+// signed-in account (see persistState), and refreshAuthStatus() below owns
+// populating state once it knows whether one's signed in: pulls the
+// account's saved data if so, or clears any stale local cache if not.
 renderDocket();
 renderChat();
 refreshChatProvider();
