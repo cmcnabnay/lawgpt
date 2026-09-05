@@ -154,6 +154,87 @@ if (SUPABASE_READONLY_DB_URL) {
   });
 }
 
+// User accounts + saved notes/chat history. A third, narrowly-scoped
+// Postgres role (see ~/Documents/setup-user-accounts.sql) that can only
+// touch users/user_state/session -- kept separate from readonly_user (no
+// write access at all) and from SUPABASE_SECRET_KEY (full admin, kept
+// local-only) so this public-facing feature can't be leveraged into
+// broader database access.
+const SUPABASE_APP_DB_URL = process.env.SUPABASE_APP_DB_URL || "";
+let appPool = null;
+if (SUPABASE_APP_DB_URL) {
+  const { Pool } = require("pg");
+  appPool = new Pool({
+    connectionString: SUPABASE_APP_DB_URL,
+    ssl: { rejectUnauthorized: false }
+  });
+}
+
+const session = require("express-session");
+const pgSession = require("connect-pg-simple")(session);
+const bcrypt = require("bcryptjs");
+
+// A persistent SESSION_SECRET matters here more than in most apps -- this
+// server gets restarted often during normal iteration, and every restart
+// with a *different* secret invalidates every existing session (everyone
+// gets logged out). Falls back to a random one so sessions still work
+// within a single run, but warns since that fallback won't survive a
+// restart.
+const SESSION_SECRET = process.env.SESSION_SECRET || crypto.randomBytes(32).toString("hex");
+if (!process.env.SESSION_SECRET) {
+  console.warn(
+    "No SESSION_SECRET set -- using a random one generated at startup, so everyone gets " +
+    "signed out whenever this server restarts. Set SESSION_SECRET in app/.env (or the " +
+    "shell environment) to a long random string to keep sessions across restarts."
+  );
+}
+
+if (appPool) {
+  app.use(session({
+    store: new pgSession({ pool: appPool, tableName: "session" }),
+    secret: SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      httpOnly: true,
+      maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
+    }
+  }));
+} else {
+  console.warn(
+    "SUPABASE_APP_DB_URL not set -- user accounts (sign up/sign in, saved notes) are " +
+    "disabled until it's configured. See ../setup-user-accounts.sql for the one-time DB setup."
+  );
+}
+
+function requireAppDb(req, res, next) {
+  if (!appPool) {
+    return res.status(500).json({ error: { message: "User accounts aren't configured on this server yet." } });
+  }
+  next();
+}
+
+function requireLogin(req, res, next) {
+  if (!req.session || !req.session.userId) {
+    return res.status(401).json({ error: { message: "Not signed in." } });
+  }
+  next();
+}
+
+// Gates the /api/db/* admin routes (full read/write, raw SQL). Localhost
+// keeps working the same as before (you, on the EC2 box or an SSH tunnel);
+// signing in with an 'admin'-role account now also works, from anywhere,
+// so this doesn't depend on where you're physically connecting from.
+// Everyone else -- signed in as a plain 'user' account or not signed in at
+// all -- stays on the read-only public endpoints (/api/cases etc.,
+// /api/public-query), same as before this existed.
+function requireDbAdmin(req, res, next) {
+  if (isLocalhostRequest(req) || (req.session && req.session.role === "admin")) {
+    return next();
+  }
+  return res.status(403).json({ error: { message: "Admin access required." } });
+}
+
 async function supabaseRequest(pathAndQuery, options) {
   const res = await fetch(`${SUPABASE_URL}/rest/v1/${pathAndQuery}`, {
     ...options,
@@ -384,6 +465,116 @@ app.post("/api/email-folder", requireLocalhost, (req, res) => {
 app.get("/api/provider-status", (req, res) => {
   const provider = (apiKey && isLocalhostRequest(req)) ? "openai" : (OPENROUTER_API_KEY ? "openrouter" : "none");
   res.json({ provider, openrouterModel: OPENROUTER_MODEL, openrouterModels: OPENROUTER_MODELS });
+});
+
+// ---- User accounts + saved notes/chat history ----
+// Email/password auth, backed by the dedicated app_user Postgres role (see
+// requireAppDb above and ~/Documents/setup-user-accounts.sql). Rate limited
+// since these are public, unauthenticated-by-design endpoints that would
+// otherwise be an easy brute-force/spam-signup target.
+const authLimiter = require("express-rate-limit")({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false
+});
+
+app.post("/api/auth/signup", requireAppDb, authLimiter, async (req, res) => {
+  try {
+    const { email, password } = req.body || {};
+    const normalizedEmail = typeof email === "string" ? email.trim().toLowerCase() : "";
+    if (!normalizedEmail || !normalizedEmail.includes("@")) {
+      return res.status(400).json({ error: { message: "A valid email is required." } });
+    }
+    if (typeof password !== "string" || password.length < 8) {
+      return res.status(400).json({ error: { message: "Password must be at least 8 characters." } });
+    }
+
+    const existing = await appPool.query("SELECT id FROM users WHERE email = $1", [normalizedEmail]);
+    if (existing.rows.length) {
+      return res.status(409).json({ error: { message: "An account with that email already exists." } });
+    }
+
+    const passwordHash = await bcrypt.hash(password, 12);
+    const result = await appPool.query(
+      "INSERT INTO users (email, password_hash) VALUES ($1, $2) RETURNING id, email, role",
+      [normalizedEmail, passwordHash]
+    );
+    const user = result.rows[0];
+    req.session.userId = user.id;
+    req.session.email = user.email;
+    req.session.role = user.role;
+    res.json({ ok: true, email: user.email });
+  } catch (err) {
+    res.status(500).json({ error: { message: err.message } });
+  }
+});
+
+app.post("/api/auth/login", requireAppDb, authLimiter, async (req, res) => {
+  try {
+    const { email, password } = req.body || {};
+    const normalizedEmail = typeof email === "string" ? email.trim().toLowerCase() : "";
+    if (!normalizedEmail || typeof password !== "string") {
+      return res.status(400).json({ error: { message: "Email and password are required." } });
+    }
+
+    const result = await appPool.query("SELECT id, email, password_hash, role FROM users WHERE email = $1", [normalizedEmail]);
+    const user = result.rows[0];
+    // Same generic error whether the email doesn't exist or the password is
+    // wrong, so this endpoint never confirms which emails have accounts.
+    if (!user || !(await bcrypt.compare(password, user.password_hash))) {
+      return res.status(401).json({ error: { message: "Incorrect email or password." } });
+    }
+
+    req.session.userId = user.id;
+    req.session.email = user.email;
+    req.session.role = user.role;
+    res.json({ ok: true, email: user.email });
+  } catch (err) {
+    res.status(500).json({ error: { message: err.message } });
+  }
+});
+
+app.post("/api/auth/logout", (req, res) => {
+  if (!req.session) return res.json({ ok: true });
+  req.session.destroy(() => res.json({ ok: true }));
+});
+
+app.get("/api/auth/me", (req, res) => {
+  res.json({
+    signedIn: Boolean(req.session && req.session.userId),
+    email: (req.session && req.session.email) || null,
+    isAdmin: Boolean(req.session && req.session.role === "admin")
+  });
+});
+
+// The entire client-side "docket" blob (matters, savedReports, etc. -- see
+// STORAGE_KEY in lawgpt.html) round-trips through here unexamined. This
+// server doesn't need to understand its shape, just persist it per user.
+app.get("/api/user/state", requireAppDb, requireLogin, async (req, res) => {
+  try {
+    const result = await appPool.query("SELECT data FROM user_state WHERE user_id = $1", [req.session.userId]);
+    res.json({ data: result.rows[0] ? result.rows[0].data : null });
+  } catch (err) {
+    res.status(500).json({ error: { message: err.message } });
+  }
+});
+
+app.post("/api/user/state", requireAppDb, requireLogin, async (req, res) => {
+  try {
+    const data = req.body && req.body.data;
+    if (data === undefined) {
+      return res.status(400).json({ error: { message: "No 'data' provided." } });
+    }
+    await appPool.query(
+      `INSERT INTO user_state (user_id, data, updated_at) VALUES ($1, $2, now())
+       ON CONFLICT (user_id) DO UPDATE SET data = EXCLUDED.data, updated_at = now()`,
+      [req.session.userId, JSON.stringify(data)]
+    );
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: { message: err.message } });
+  }
 });
 
 app.post("/api/chat", async (req, res) => {
@@ -989,7 +1180,7 @@ function pickFieldsForTable(body, table) {
   return out;
 }
 
-app.get("/api/db/tables", requireLocalhost, requireSupabaseConfigured, async (req, res) => {
+app.get("/api/db/tables", requireDbAdmin, requireSupabaseConfigured, async (req, res) => {
   try {
     res.json(await fetchSupabaseTables());
   } catch (err) {
@@ -997,7 +1188,7 @@ app.get("/api/db/tables", requireLocalhost, requireSupabaseConfigured, async (re
   }
 });
 
-app.get("/api/db/:table", requireLocalhost, requireSupabaseConfigured, async (req, res) => {
+app.get("/api/db/:table", requireDbAdmin, requireSupabaseConfigured, async (req, res) => {
   try {
     const table = await getTableInfo(req.params.table);
     if (!table) return res.status(404).json({ error: { message: "Unknown table." } });
@@ -1009,7 +1200,7 @@ app.get("/api/db/:table", requireLocalhost, requireSupabaseConfigured, async (re
   }
 });
 
-app.get("/api/db/:table/:pkValue", requireLocalhost, requireSupabaseConfigured, async (req, res) => {
+app.get("/api/db/:table/:pkValue", requireDbAdmin, requireSupabaseConfigured, async (req, res) => {
   try {
     const table = await getTableInfo(req.params.table);
     if (!table) return res.status(404).json({ error: { message: "Unknown table." } });
@@ -1044,7 +1235,7 @@ app.get("/api/db/:table/:pkValue", requireLocalhost, requireSupabaseConfigured, 
 // Registered BEFORE the generic "/api/db/:table" POST route below --
 // Express matches routes in registration order, so "query" would otherwise
 // get swallowed by ":table" and misread as a (nonexistent) table name.
-app.post("/api/db/query", requireLocalhost, (req, res, next) => {
+app.post("/api/db/query", requireDbAdmin, (req, res, next) => {
   if (SUPABASE_SECRET_KEY || readonlyPool) return next();
   requireSupabaseConfigured(req, res, next);
 }, async (req, res) => {
@@ -1076,7 +1267,7 @@ app.post("/api/db/query", requireLocalhost, (req, res, next) => {
 // of erroring or creating a duplicate. Tables with no (or a composite)
 // primary key just get a plain insert -- there's nothing reliable to key an
 // update off of.
-app.post("/api/db/:table", requireLocalhost, requireSupabaseConfigured, async (req, res) => {
+app.post("/api/db/:table", requireDbAdmin, requireSupabaseConfigured, async (req, res) => {
   try {
     const table = await getTableInfo(req.params.table);
     if (!table) return res.status(404).json({ error: { message: "Unknown table." } });
@@ -1112,7 +1303,7 @@ app.post("/api/db/:table", requireLocalhost, requireSupabaseConfigured, async (r
   }
 });
 
-app.patch("/api/db/:table/:pkValue", requireLocalhost, requireSupabaseConfigured, async (req, res) => {
+app.patch("/api/db/:table/:pkValue", requireDbAdmin, requireSupabaseConfigured, async (req, res) => {
   try {
     const table = await getTableInfo(req.params.table);
     if (!table) return res.status(404).json({ error: { message: "Unknown table." } });
@@ -1134,7 +1325,7 @@ app.patch("/api/db/:table/:pkValue", requireLocalhost, requireSupabaseConfigured
   }
 });
 
-app.delete("/api/db/:table/:pkValue", requireLocalhost, requireSupabaseConfigured, async (req, res) => {
+app.delete("/api/db/:table/:pkValue", requireDbAdmin, requireSupabaseConfigured, async (req, res) => {
   try {
     const table = await getTableInfo(req.params.table);
     if (!table) return res.status(404).json({ error: { message: "Unknown table." } });
