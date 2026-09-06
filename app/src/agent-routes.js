@@ -50,7 +50,8 @@ router.get("/runs/:id", async (req, res) => {
       id: req.params.id,
       title: (stored && stored.title) || "Agent run",
       status: live.status,
-      output: live.output
+      output: live.output,
+      result: live.result
     });
   }
   const run = await agentStore.getRun(userId, req.params.id);
@@ -67,6 +68,16 @@ router.post("/run", async (req, res) => {
   const run = await agentStore.createRun(req.session.userId, { id, title, prompt, source });
   agentRuntime.startRun(req.session.userId, id, prompt, REPO_ROOT);
   res.json(run);
+});
+
+router.delete("/runs/:id", async (req, res) => {
+  // No-op if this run already finished (killRun just clears the in-memory
+  // entry if present) -- stops the underlying process rather than leaving
+  // it running with nowhere for its output to go once the record is gone.
+  agentRuntime.killRun(req.params.id);
+  const deleted = await agentStore.deleteRun(req.session.userId, req.params.id);
+  if (!deleted) return res.status(404).json({ error: { message: "Run not found." } });
+  res.json({ ok: true });
 });
 
 module.exports = router;

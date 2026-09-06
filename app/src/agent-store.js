@@ -48,7 +48,12 @@ async function createRun(userId, { id, title, prompt, source }){
     prompt,
     source: source || null,
     status: "running",
+    // output: the terminal-style transcript (commentary, tool calls, tool
+    // results). result: just the final deliverable text, rendered as
+    // compiled markdown in the Agent tab's Output panel -- see
+    // agent-runtime.js's handleStreamEvent for how these two diverge.
     output: "",
+    result: "",
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
   };
@@ -68,4 +73,12 @@ async function updateRun(userId, id, patch){
   return run;
 }
 
-module.exports = { getAll, getRun, createRun, updateRun };
+async function deleteRun(userId, id){
+  const runs = await load(userId);
+  const filtered = runs.filter(r => String(r.id) !== String(id));
+  if (filtered.length === runs.length) return false;
+  await save(userId, filtered);
+  return true;
+}
+
+module.exports = { getAll, getRun, createRun, updateRun, deleteRun };
