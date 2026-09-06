@@ -1665,15 +1665,6 @@ pre code {
   font:inherit; color:var(--brass); text-decoration:underline; cursor:pointer;
 }
 .agent-view{ flex:1; min-height:0; display:flex; }
-.agent-sidebar{
-  width:230px;
-  flex:0 0 auto;
-  background:var(--ink-2);
-  border-right:1px solid var(--hairline);
-  display:flex;
-  flex-direction:column;
-  overflow-y:auto;
-}
 .agent-main{
   flex:1;
   min-width:0;
@@ -1693,6 +1684,34 @@ pre code {
 .agent-run-status.running{ color:#d8b96a; }
 .agent-run-status.done{ color:#8fbf8f; }
 .agent-run-status.error{ color:var(--oxblood); }
+.agent-resume-hint{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:11px;
+  color:var(--text-muted);
+  margin:-6px 0 12px;
+  user-select:all;
+}
+.agent-panels{
+  flex:1;
+  min-height:0;
+  display:flex;
+  gap:16px;
+}
+.agent-panel{
+  flex:1;
+  min-width:0;
+  min-height:0;
+  display:flex;
+  flex-direction:column;
+}
+.agent-panel-label{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:10px;
+  letter-spacing:0.14em;
+  text-transform:uppercase;
+  color:var(--text-muted);
+  margin-bottom:6px;
+}
 .agent-terminal{
   flex:1;
   min-height:0;
@@ -1708,6 +1727,21 @@ pre code {
   white-space:pre-wrap;
   word-break:break-word;
   overflow-y:auto;
+}
+.agent-output-body{
+  flex:1;
+  min-height:0;
+  margin:0;
+  background:var(--ink-2);
+  border:1px solid var(--hairline);
+  border-radius:var(--radius);
+  padding:14px 16px;
+  overflow-y:auto;
+}
+.agent-output-body:empty::before{
+  content:"(no output yet)";
+  color:var(--text-muted);
+  font-size:12.5px;
 }
 .email-snippet{
   font-size:12.5px;
@@ -2918,15 +2952,25 @@ pre code {
     </div>
 
     <div class="agent-view" id="agentView" style="display:none;">
-      <aside class="agent-sidebar" id="agentSidebar">
+      <aside class="notes-sidebar" id="agentSidebar">
         <div class="notes-sidebar-label">Agent runs</div>
         <div class="notes-sidebar-empty" id="agentSidebarEmpty">No runs yet. Use "Send to agent" on an email plan in the Email tab.</div>
-        <div id="agentSidebarList"></div>
+        <div class="notes-sidebar-list" id="agentSidebarList"></div>
       </aside>
       <div class="agent-main">
         <div class="documents-title" id="agentRunTitle">Select a run</div>
         <div class="agent-run-status" id="agentRunStatus"></div>
-        <pre class="agent-terminal" id="agentTerminalOutput"></pre>
+        <div class="agent-resume-hint" id="agentResumeHint" style="display:none;"></div>
+        <div class="agent-panels">
+          <div class="agent-panel">
+            <div class="agent-panel-label">Terminal</div>
+            <pre class="agent-terminal" id="agentTerminalOutput"></pre>
+          </div>
+          <div class="agent-panel">
+            <div class="agent-panel-label">Output</div>
+            <div class="notes-report-body agent-output-body" id="agentOutputBody"></div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -6019,7 +6063,7 @@ function attachEmailPlanListeners(card, msg){
 
   textarea.addEventListener("blur", () => saveEmailPlan(msg.id, textarea.value));
   generateBtn.addEventListener("click", () => generateEmailPlan(msg.id, generateBtn));
-  runBtn.addEventListener("click", () => runEmailAgent(msg.id, textarea.value));
+  runBtn.addEventListener("click", () => runEmailAgent(msg.id, textarea.value, runBtn));
   if (viewLink) viewLink.addEventListener("click", () => { setView("agent"); openAgentRun(viewLink.dataset.runId); });
 }
 
@@ -6060,7 +6104,12 @@ async function generateEmailPlan(id, btn){
   }
 }
 
-async function runEmailAgent(id, planText){
+async function runEmailAgent(id, planText, btn){
+  // Without this, a second click before the first request comes back (easy
+  // to do -- there's a save-plan round-trip plus the agent/run POST before
+  // anything visible happens) fires a second POST and starts a second real
+  // run for the same email instead of just being a no-op.
+  if (btn){ if (btn.disabled) return; btn.disabled = true; btn.textContent = "Sending…"; }
   // The plan the user is currently looking at may not be saved yet (e.g.
   // they edited it and immediately hit "Send to agent" without tabbing
   // away first) -- save it before running so the agent gets what's on
@@ -6076,6 +6125,7 @@ async function runEmailAgent(id, planText){
     if (data.agentRunId) openAgentRun(data.agentRunId);
   } catch(e){
     alert("Couldn't send this to the agent: " + e.message);
+    if (btn){ btn.disabled = false; btn.textContent = "Send to agent"; }
   }
 }
 
@@ -6109,27 +6159,70 @@ async function refreshAgentRuns(){
   }
 }
 
+// Built the same way renderReportSidebar builds the Notes tab's list (plain
+// DOM nodes, not innerHTML) so each item can carry its own delete button
+// with a real click listener -- mirrors that tab's "click X to delete"
+// behavior exactly, just against agent-store.js instead of savedReports.
 function renderAgentSidebar(){
   const list = document.getElementById("agentSidebarList");
   const empty = document.getElementById("agentSidebarEmpty");
-  if (!agentRunsCache.length){
-    list.innerHTML = "";
-    empty.style.display = "block";
-    return;
-  }
-  empty.style.display = "none";
-  list.innerHTML = agentRunsCache.map(r => {
-    const active = String(r.id) === String(activeAgentRunId) ? " active" : "";
+  if (!list || !empty) return;
+
+  empty.style.display = agentRunsCache.length ? "none" : "block";
+  list.innerHTML = "";
+
+  agentRunsCache.forEach(r => {
+    const item = document.createElement("button");
+    item.type = "button";
+    item.className = "notes-sidebar-item" + (String(r.id) === String(activeAgentRunId) ? " active" : "");
+
+    const titleSpan = document.createElement("span");
+    titleSpan.className = "notes-sidebar-item-title";
+    titleSpan.textContent = r.title || "Agent run";
+    item.appendChild(titleSpan);
+
+    const metaSpan = document.createElement("span");
+    metaSpan.className = "notes-sidebar-item-meta";
     const time = r.updatedAt ? new Date(r.updatedAt).toLocaleString() : "";
-    return `
-      <button type="button" class="notes-sidebar-item${active}" data-run-id="${escapeHtml(r.id)}">
-        <span class="notes-sidebar-item-title">${escapeHtml(r.title || "Agent run")}</span>
-        <span class="notes-sidebar-item-meta">${escapeHtml(agentStatusLabel(r.status))} · ${escapeHtml(time)}</span>
-      </button>`;
-  }).join("");
-  list.querySelectorAll(".notes-sidebar-item").forEach(btn => {
-    btn.addEventListener("click", () => openAgentRun(btn.dataset.runId));
+    metaSpan.textContent = [agentStatusLabel(r.status), time].filter(Boolean).join(" · ");
+    item.appendChild(metaSpan);
+
+    const del = document.createElement("span");
+    del.className = "notes-sidebar-item-delete";
+    del.innerHTML = "&#10005;";
+    del.title = "Delete this agent run";
+    del.addEventListener("click", (e) => {
+      e.stopPropagation();
+      if (!confirm(`Delete agent run "${r.title || "Agent run"}"?`)) return;
+      deleteAgentRun(r.id);
+    });
+    item.appendChild(del);
+
+    item.addEventListener("click", () => openAgentRun(r.id));
+    list.appendChild(item);
   });
+}
+
+async function deleteAgentRun(id){
+  try{
+    const res = await fetch(PROXY_ORIGIN + "/api/agent/runs/" + encodeURIComponent(id), { method: "DELETE" });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error((data && data.error && data.error.message) || "Delete failed.");
+    agentRunsCache = agentRunsCache.filter(r => String(r.id) !== String(id));
+    if (String(activeAgentRunId) === String(id)) {
+      activeAgentRunId = null;
+      if (agentPollTimer) { clearTimeout(agentPollTimer); agentPollTimer = null; }
+      document.getElementById("agentRunTitle").textContent = "Select a run";
+      document.getElementById("agentRunStatus").textContent = "";
+      document.getElementById("agentRunStatus").className = "agent-run-status";
+      document.getElementById("agentResumeHint").style.display = "none";
+      document.getElementById("agentTerminalOutput").textContent = "";
+      document.getElementById("agentOutputBody").innerHTML = "";
+    }
+    renderAgentSidebar();
+  } catch(e){
+    alert("Couldn't delete this agent run: " + e.message);
+  }
 }
 
 function agentStatusLabel(status){
@@ -6146,11 +6239,15 @@ async function openAgentRun(id){
 
   const titleEl = document.getElementById("agentRunTitle");
   const statusEl = document.getElementById("agentRunStatus");
+  const resumeEl = document.getElementById("agentResumeHint");
   const outputEl = document.getElementById("agentTerminalOutput");
+  const bodyEl = document.getElementById("agentOutputBody");
   titleEl.textContent = "Loading…";
   statusEl.textContent = "";
   statusEl.className = "agent-run-status";
+  resumeEl.style.display = "none";
   outputEl.textContent = "";
+  bodyEl.innerHTML = "";
 
   try{
     const res = await fetch(PROXY_ORIGIN + "/api/agent/runs/" + encodeURIComponent(id));
@@ -6164,17 +6261,39 @@ async function openAgentRun(id){
   }
 }
 
+// Terminal panel: the raw transcript (assistant commentary, tool calls,
+// tool results) -- what you'd see watching an interactive session. Output
+// panel: just the run's final deliverable (run.result), rendered through
+// the same formatContent() the Notes tab uses for its reading reports, so
+// headings/bold/lists/code blocks show compiled instead of as raw markdown
+// characters.
 function renderAgentRun(run){
   if (String(run.id) !== String(activeAgentRunId)) return; // user switched runs mid-poll
   const titleEl = document.getElementById("agentRunTitle");
   const statusEl = document.getElementById("agentRunStatus");
+  const resumeEl = document.getElementById("agentResumeHint");
   const outputEl = document.getElementById("agentTerminalOutput");
+  const bodyEl = document.getElementById("agentOutputBody");
   titleEl.textContent = run.title || "Agent run";
   statusEl.textContent = agentStatusLabel(run.status);
   statusEl.className = "agent-run-status " + (run.status || "");
+  // The run's own id doubles as its Claude Code session id (see
+  // agent-runtime.js's --session-id) -- from an SSH session on the server,
+  // cd into the repo and run this to open/continue that exact conversation.
+  resumeEl.textContent = `SSH: claude --resume ${run.id}`;
+  resumeEl.style.display = "block";
+
   const wasScrolledToBottom = outputEl.scrollTop + outputEl.clientHeight >= outputEl.scrollHeight - 4;
   outputEl.textContent = run.output || "(no output yet)";
   if (wasScrolledToBottom) outputEl.scrollTop = outputEl.scrollHeight;
+
+  if (run.result && run.result.trim()) {
+    bodyEl.innerHTML = formatContent(run.result);
+  } else if (run.status === "running") {
+    bodyEl.innerHTML = `<p style="color:var(--text-muted);">Still running -- the deliverable will appear here once the run finishes.</p>`;
+  } else {
+    bodyEl.innerHTML = "";
+  }
 }
 
 function pollAgentRun(id){
