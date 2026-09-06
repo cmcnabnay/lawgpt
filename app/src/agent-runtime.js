@@ -42,7 +42,12 @@ function startRun(userId, runId, prompt, cwd){
   try {
     child = spawn("claude", ["-p", prompt, "--permission-mode", "auto"], {
       cwd,
-      env: process.env
+      env: process.env,
+      // Nothing ever writes to this process's stdin -- left open (the
+      // default), the CLI waits briefly to see if piped input is coming
+      // ("no stdin data received in 3s...") before proceeding. Closing it
+      // immediately tells it up front there's none, skipping that wait.
+      stdio: ["ignore", "pipe", "pipe"]
     });
   } catch (err) {
     entry.status = "error";

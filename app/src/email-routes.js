@@ -57,15 +57,15 @@ const GRAPH_ROOT = "https://graph.microsoft.com/v1.0";
 const MAX_STORED_PDF_BYTES = 20 * 1024 * 1024; // same cap canvas-routes.js uses
 const MESSAGE_FIELDS = "subject,from,receivedDateTime,hasAttachments,body";
 
-// The lawgpt project root (two levels up from app/src/) -- the directory
-// the "send to agent" feature below opens a terminal in and runs the Claude
-// Code CLI from, so a plan that says "save this to agent/<course>/..." lands
-// in the same repo the Documents/Notes tabs read from. agent/ is a
-// dedicated folder (created alongside documents/ and notes/) that holds
-// only this feature's output, kept separate from documents/ (source
-// material) and notes/ (the student's own hand-written notes).
+// The lawgpt project root (two levels up from app/src/) -- the directory the
+// "send to agent" feature below runs the Claude Code CLI from, so it can
+// read documents/<course>/ and notes/<course>/ as context. It's told not to
+// write deliverable files anywhere in this repo (see agentPrompt below) --
+// the whole point of running headless is that its printed response is what
+// gets captured into the run's stored output (see agent-runtime.js) and
+// shown/saved in the Agent tab, so that's where a deliverable belongs
+// instead of a loose file under version control.
 const REPO_ROOT = path.join(__dirname, "..", "..");
-const AGENT_OUTPUT_DIR = "agent";
 
 // Key emailStore's deltaLinks under -- see email-store.js's header comment
 // for why it's an object keyed per source folder rather than one value.
@@ -506,12 +506,14 @@ router.post("/messages/:id/agent/run", async (req, res) => {
 
   const agentPrompt =
     "You are carrying out the task plan below, drafted from a law-school course email. " +
-    "Work directly in this repository. It's organized as documents/<course>/ for source material and " +
-    "notes/<course>/ for the student's own hand-written notes -- do not create or edit anything in either of " +
-    `those; everything you produce belongs under ${AGENT_OUTPUT_DIR}/<course>/ instead. ` +
-    "This is running unattended: if a step is ambiguous, use your best judgment and proceed rather than " +
-    "stopping to ask a question nobody will see. Make sure any deliverable the plan calls for actually ends up " +
-    `saved to a file under ${AGENT_OUTPUT_DIR}/, not just printed.\n\n` + message.plan;
+    "You may read this repository for context -- it's organized as documents/<course>/ for source material and " +
+    "notes/<course>/ for the student's own hand-written notes -- but do not create, edit, or save any files " +
+    "anywhere in it for your deliverable. This is running headless with no one watching a terminal: your complete " +
+    "final response (not any file you write) is what gets saved and shown to the user, so the whole deliverable " +
+    "the plan calls for must be written out directly in your response text, in full -- not summarized, not left " +
+    "in a file, and not just a description of what you would have produced. " +
+    "This is also running unattended: if a step is ambiguous, use your best judgment and proceed rather than " +
+    "stopping to ask a question nobody will see.\n\n" + message.plan;
 
   const runId = crypto.randomUUID();
   await agentStore.createRun(userId, {
