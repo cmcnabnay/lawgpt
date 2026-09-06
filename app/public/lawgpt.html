@@ -1659,6 +1659,56 @@ pre code {
   color:var(--text-muted);
 }
 .email-agent-status.launched{ color:#8fbf8f; }
+.email-agent-status.error{ color:var(--oxblood); }
+.email-agent-status-link{
+  background:none; border:none; padding:0; margin-left:6px;
+  font:inherit; color:var(--brass); text-decoration:underline; cursor:pointer;
+}
+.agent-view{ flex:1; min-height:0; display:flex; }
+.agent-sidebar{
+  width:230px;
+  flex:0 0 auto;
+  background:var(--ink-2);
+  border-right:1px solid var(--hairline);
+  display:flex;
+  flex-direction:column;
+  overflow-y:auto;
+}
+.agent-main{
+  flex:1;
+  min-width:0;
+  display:flex;
+  flex-direction:column;
+  padding:18px 22px;
+  min-height:0;
+}
+.agent-run-status{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:11px;
+  text-transform:uppercase;
+  letter-spacing:0.04em;
+  color:var(--text-muted);
+  margin:2px 0 12px;
+}
+.agent-run-status.running{ color:#d8b96a; }
+.agent-run-status.done{ color:#8fbf8f; }
+.agent-run-status.error{ color:var(--oxblood); }
+.agent-terminal{
+  flex:1;
+  min-height:0;
+  margin:0;
+  background:#0c0f0c;
+  color:#c9f0c9;
+  border:1px solid var(--hairline);
+  border-radius:var(--radius);
+  padding:14px 16px;
+  font-family:'IBM Plex Mono',monospace;
+  font-size:12px;
+  line-height:1.55;
+  white-space:pre-wrap;
+  word-break:break-word;
+  overflow-y:auto;
+}
 .email-snippet{
   font-size:12.5px;
   line-height:1.6;
@@ -2003,7 +2053,21 @@ pre code {
   flex:0 0 auto;
   padding:10px 16px;
   border-bottom:1px solid var(--hairline);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
 }
+.notes-chat-toggle{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  font-size:11.5px;
+  color:var(--text-muted);
+  cursor:pointer;
+  white-space:nowrap;
+}
+.notes-chat-toggle input{ cursor:pointer; }
 .notes-chat-messages{
   flex:1;
   min-height:0;
@@ -2551,6 +2615,7 @@ pre code {
       <button class="view-tab" id="tabNotes" data-view="notes">Notes</button>
       <button class="view-tab" id="tabDatabase" data-view="database">Database</button>
       <button class="view-tab" id="tabEmail" data-view="email">Email</button>
+      <button class="view-tab" id="tabAgent" data-view="agent">Agent</button>
       <button class="settings-gear-btn" id="accountBtn" aria-label="Account" title="Sign in to save your notes and chat history">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
           <circle cx="12" cy="8" r="3.5" stroke="currentColor" stroke-width="1.5"/>
@@ -2852,6 +2917,19 @@ pre code {
       </div>
     </div>
 
+    <div class="agent-view" id="agentView" style="display:none;">
+      <aside class="agent-sidebar" id="agentSidebar">
+        <div class="notes-sidebar-label">Agent runs</div>
+        <div class="notes-sidebar-empty" id="agentSidebarEmpty">No runs yet. Use "Send to agent" on an email plan in the Email tab.</div>
+        <div id="agentSidebarList"></div>
+      </aside>
+      <div class="agent-main">
+        <div class="documents-title" id="agentRunTitle">Select a run</div>
+        <div class="agent-run-status" id="agentRunStatus"></div>
+        <pre class="agent-terminal" id="agentTerminalOutput"></pre>
+      </div>
+    </div>
+
     <div class="notes-view" id="notesView" style="display:none;">
       <aside class="notes-sidebar" id="notesSidebar">
         <div class="notes-sidebar-label">Reading Reports</div>
@@ -2910,6 +2988,10 @@ pre code {
             <div class="notes-chat-panel" id="notesChatPanel" style="display:none;">
               <div class="notes-chat-head">
                 <div class="notes-title" style="font-size:14px;">Ask about these notes</div>
+                <label class="notes-chat-toggle" title="When off, answers are limited strictly to the attached document(s), same as generating the notes.">
+                  <input type="checkbox" id="notesChatGeneralKnowledge">
+                  Allow general knowledge
+                </label>
               </div>
               <div class="notes-chat-messages" id="notesChatMessages"></div>
               <div class="notes-chat-input-row">
@@ -3420,6 +3502,9 @@ document.getElementById("accountLogoutBtn").addEventListener("click", async () =
   reportCounter = 0;
   customNotesPrompts = {};
   currentReport = null;
+  agentRunsCache = [];
+  activeAgentRunId = null;
+  if (agentPollTimer) { clearTimeout(agentPollTimer); agentPollTimer = null; }
   renderDocket();
   renderChat();
   renderReportPanel();
@@ -4071,7 +4156,11 @@ async function sendMessage(){
       body: JSON.stringify({
         model: model,
         input: inputPayload,
-        documentIds: matter.attachedDocumentIds || []
+        // The Chat tab is a plain, unmodified conversation with the model
+        // -- no document search, no "You are LawGPT" instructions. That's
+        // the Notes tab's job (reading-report generation and its own
+        // follow-up chat), which never sets this.
+        passthrough: true
       })
     });
 
@@ -4159,6 +4248,7 @@ function setView(view){
   const scheduleView = document.getElementById("scheduleView");
   const documentsView = document.getElementById("documentsView");
   const emailView = document.getElementById("emailView");
+  const agentView = document.getElementById("agentView");
   const notesView = document.getElementById("notesView");
   const databaseView = document.getElementById("databaseView");
   const tabChat = document.getElementById("tabChat");
@@ -4166,6 +4256,7 @@ function setView(view){
   const tabSchedule = document.getElementById("tabSchedule");
   const tabDocuments = document.getElementById("tabDocuments");
   const tabEmail = document.getElementById("tabEmail");
+  const tabAgent = document.getElementById("tabAgent");
   const tabNotes = document.getElementById("tabNotes");
   const tabDatabase = document.getElementById("tabDatabase");
 
@@ -4174,6 +4265,7 @@ function setView(view){
   scheduleView.style.display = "none";
   documentsView.style.display = "none";
   emailView.style.display = "none";
+  agentView.style.display = "none";
   notesView.style.display = "none";
   databaseView.style.display = "none";
   tabChat.classList.remove("active");
@@ -4181,6 +4273,7 @@ function setView(view){
   tabSchedule.classList.remove("active");
   tabDocuments.classList.remove("active");
   tabEmail.classList.remove("active");
+  tabAgent.classList.remove("active");
   tabNotes.classList.remove("active");
   tabDatabase.classList.remove("active");
 
@@ -4208,6 +4301,10 @@ function setView(view){
     emailView.style.display = "block";
     tabEmail.classList.add("active");
     refreshEmailMessages();
+  } else if (view === "agent"){
+    agentView.style.display = "flex";
+    tabAgent.classList.add("active");
+    refreshAgentRuns();
   } else if (view === "notes"){
     notesView.style.display = "flex";
     tabNotes.classList.add("active");
@@ -4227,6 +4324,7 @@ document.getElementById("tabEditor").addEventListener("click", () => setView("ed
 document.getElementById("tabSchedule").addEventListener("click", () => setView("schedule"));
 document.getElementById("tabDocuments").addEventListener("click", () => setView("documents"));
 document.getElementById("tabEmail").addEventListener("click", () => setView("email"));
+document.getElementById("tabAgent").addEventListener("click", () => setView("agent"));
 document.getElementById("tabNotes").addEventListener("click", () => setView("notes"));
 document.getElementById("tabDatabase").addEventListener("click", () => setView("database"));
 
@@ -5320,7 +5418,7 @@ document.getElementById("notesReportCloseBtn").addEventListener("click", () => {
 // it round-trips through Save/persistState like the rest of the report, and
 // resets automatically whenever currentReport is swapped for a different
 // (or no) report.
-function buildNotesChatInput(report, question, historyLimit){
+function buildNotesChatInput(report, question, historyLimit, allowGeneralKnowledge){
   let chatHistory = (report.chat || []).filter(m => !m.failed);
   // historyLimit caps how many past turns are included, keeping the most
   // recent ones -- used to retry with less context when the full history
@@ -5329,11 +5427,18 @@ function buildNotesChatInput(report, question, historyLimit){
   const history = chatHistory
     .map(m => (m.role === "user" ? "Q: " : "A: ") + m.content)
     .join("\n\n");
-  return [
-    "You are answering a follow-up question about a set of law-school reading notes generated earlier from the attached document(s). " +
+  // Mirrors the allowGeneralKnowledge flag sent alongside this (see
+  // sendNotesChatMessage) -- both need to agree, or the instruction here
+  // would fight the server's own developerText for the same request.
+  const instruction = allowGeneralKnowledge
+    ? "You are answering a follow-up question about a set of law-school reading notes generated earlier from the attached document(s). " +
       "Treat the attached document(s) as your source of truth for anything they cover, and the notes below as context on what's already been covered. " +
-      "If the question goes beyond what's in the attached material, answer it anyway using your own general legal knowledge rather than refusing or saying it isn't addressed -- just make clear when you're drawing on outside knowledge rather than the attached material, so the two don't get confused. " +
-      "Only stick strictly to the attached material if I explicitly ask you to.",
+      "If the question goes beyond what's in the attached material, answer it anyway using your own general legal knowledge rather than refusing or saying it isn't addressed -- just make clear when you're drawing on outside knowledge rather than the attached material, so the two don't get confused."
+    : "You are answering a follow-up question about a set of law-school reading notes generated earlier from the attached document(s). " +
+      "Base your answer strictly and only on the attached document(s) and the notes below -- do not introduce outside knowledge. " +
+      "If the attached material doesn't cover what's being asked, say plainly that it doesn't cover it rather than filling the gap yourself.";
+  return [
+    instruction,
     "",
     "## Reading Notes",
     report.content || "(no notes content)",
@@ -5351,6 +5456,9 @@ function renderNotesChat(){
     return;
   }
   panel.style.display = "flex";
+
+  const generalKnowledgeToggle = document.getElementById("notesChatGeneralKnowledge");
+  if (generalKnowledgeToggle) generalKnowledgeToggle.checked = Boolean(currentReport.allowGeneralKnowledge);
 
   const list = document.getElementById("notesChatMessages");
   const chat = currentReport.chat || [];
@@ -5405,20 +5513,20 @@ async function sendNotesChatMessage(){
   // attached notes/documents and the current question, which are never
   // trimmed) so the question still gets answered.
   async function attemptSend(historyLimit){
+    // Per-report, user-controlled (see the "Allow general knowledge"
+    // toggle in the chat panel head) -- off by default, same strict
+    // document-only behavior as generating the notes themselves. Overrides
+    // the proxy's default attached-document instruction for this one
+    // request only when turned on; see allowGeneralKnowledge in server.js.
+    const allowGeneralKnowledge = Boolean(currentReport.allowGeneralKnowledge);
     const res = await fetch(PROXY_ORIGIN + "/api/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         model,
-        input: buildNotesChatInput(currentReport, question, historyLimit),
+        input: buildNotesChatInput(currentReport, question, historyLimit, allowGeneralKnowledge),
         documentIds: currentReport.documentIds || [],
-        // Overrides the proxy's default "attached documents = strict,
-        // document-only answers" instruction for this one request -- see
-        // allowGeneralKnowledge in server.js. Notes generation itself stays
-        // strict (that flag is left false everywhere else), but a follow-up
-        // question in this chat should be answered even when it goes beyond
-        // what the attached reading covers, not met with "not in the case."
-        allowGeneralKnowledge: true
+        allowGeneralKnowledge
       })
     });
     const data = await res.json();
@@ -5460,6 +5568,13 @@ document.getElementById("notesChatInput").addEventListener("keydown", (e) => {
   }
 });
 document.getElementById("notesChatInput").addEventListener("input", (e) => autoGrow(e.target));
+document.getElementById("notesChatGeneralKnowledge").addEventListener("change", (e) => {
+  if (!currentReport) return;
+  // Scoped to this one report's chat -- flipping it here only affects the
+  // next message sent in this thread, not any other saved report.
+  currentReport.allowGeneralKnowledge = e.target.checked;
+  persistState();
+});
 
 // Switches the Notes tab's right column between the Table (row-editor) and
 // Chat panels -- only one (or neither, at first) is ever visible. Table
@@ -5864,9 +5979,10 @@ async function deleteEmailMessage(id, subject){
 
 // The plan block rendered inside each assignment card: an editable textarea
 // holding the (LLM-drafted or hand-edited) plan, a "Regenerate" button, and
-// a "Send to agent" button that opens a real terminal running Claude Code
-// server-side -- there's no log to show here since the terminal is where
-// that output actually goes; this just remembers that it was launched.
+// a "Send to agent" button that runs Claude Code headlessly server-side and
+// redirects to the Agent tab, where its live/saved output actually lives
+// (see runEmailAgent/openAgentRun) -- this card only shows a status pill
+// plus a link back into that tab.
 function emailPlanBlockHtml(msg){
   const status = msg.agentStatus || "idle";
   const hasPlan = Boolean((msg.plan || "").trim());
@@ -5875,7 +5991,8 @@ function emailPlanBlockHtml(msg){
     <div class="email-plan-block">
       <div class="email-plan-label">
         <span>Plan</span>
-        ${status === "launched" ? `<span class="email-agent-status launched">${escapeHtml(emailAgentStatusLabel(msg))}</span>` : ""}
+        ${status !== "idle" ? `<span class="email-agent-status ${escapeHtml(status)}">${escapeHtml(emailAgentStatusLabel(msg))}</span>` : ""}
+        ${msg.agentRunId ? `<button type="button" class="email-agent-status-link" data-run-id="${escapeHtml(msg.agentRunId)}">View in Agent tab</button>` : ""}
       </div>
       <textarea class="email-plan-textarea" placeholder="No plan yet -- click Generate plan.">${escapeHtml(msg.plan || "")}</textarea>
       ${msg.planError ? `<div class="email-plan-error">${escapeHtml(msg.planError)}</div>` : ""}
@@ -5887,20 +6004,23 @@ function emailPlanBlockHtml(msg){
 }
 
 function emailAgentStatusLabel(msg){
-  if (msg.agentStatus !== "launched") return "";
   const time = msg.agentStartedAt ? new Date(msg.agentStartedAt).toLocaleTimeString() : "";
-  const terminal = msg.agentTerminal ? ` (${msg.agentTerminal})` : "";
-  return `Sent to agent${terminal}${time ? " at " + time : ""}`;
+  if (msg.agentStatus === "running") return `Agent running${time ? " (started " + time + ")" : ""}`;
+  if (msg.agentStatus === "done") return `Agent finished${time ? " at " + time : ""}`;
+  if (msg.agentStatus === "error") return "Agent run failed";
+  return "";
 }
 
 function attachEmailPlanListeners(card, msg){
   const textarea = card.querySelector(".email-plan-textarea");
   const generateBtn = card.querySelector(".email-plan-generate-btn");
   const runBtn = card.querySelector(".email-agent-run-btn");
+  const viewLink = card.querySelector(".email-agent-status-link");
 
   textarea.addEventListener("blur", () => saveEmailPlan(msg.id, textarea.value));
   generateBtn.addEventListener("click", () => generateEmailPlan(msg.id, generateBtn));
   runBtn.addEventListener("click", () => runEmailAgent(msg.id, textarea.value));
+  if (viewLink) viewLink.addEventListener("click", () => { setView("agent"); openAgentRun(viewLink.dataset.runId); });
 }
 
 function updateCachedMessage(updated){
@@ -5949,12 +6069,135 @@ async function runEmailAgent(id, planText){
   try{
     const res = await fetch(PROXY_ORIGIN + "/api/email/messages/" + encodeURIComponent(id) + "/agent/run", { method: "POST" });
     const data = await res.json();
-    if (!res.ok) throw new Error((data && data.error && data.error.message) || "Couldn't open a terminal for the agent.");
+    if (!res.ok) throw new Error((data && data.error && data.error.message) || "Couldn't start the agent.");
     updateCachedMessage(data);
     renderEmailList();
+    setView("agent");
+    if (data.agentRunId) openAgentRun(data.agentRunId);
   } catch(e){
     alert("Couldn't send this to the agent: " + e.message);
   }
+}
+
+// ====== AGENT TAB ======
+// Shows "Send to agent" runs (see agent-store.js/agent-runtime.js) -- a
+// sidebar list of past/active runs per account, and a terminal-styled panel
+// on the right showing the selected run's full streamed output. There's no
+// websocket/SSE here: while a run is "running" this just polls
+// GET /api/agent/runs/:id every 1.5s and replaces the output, matching the
+// polling pattern already used for the email-setup device-code flow.
+let agentRunsCache = [];
+let activeAgentRunId = null;
+let agentPollTimer = null;
+
+async function refreshAgentRuns(){
+  try{
+    const res = await fetch(PROXY_ORIGIN + "/api/agent/runs");
+    const data = await res.json();
+    if (!res.ok) throw new Error((data && data.error && data.error.message) || "Couldn't load agent runs.");
+    agentRunsCache = data.runs || [];
+    renderAgentSidebar();
+    // Keep watching whichever run is open if it's still going, even across
+    // a full sidebar refresh (e.g. triggered by a different run finishing).
+    if (activeAgentRunId && !agentPollTimer) {
+      const active = agentRunsCache.find(r => String(r.id) === String(activeAgentRunId));
+      if (active && active.status === "running") pollAgentRun(activeAgentRunId);
+    }
+  } catch(e){
+    document.getElementById("agentSidebarEmpty").textContent = "Couldn't load agent runs: " + e.message;
+    document.getElementById("agentSidebarEmpty").style.display = "block";
+  }
+}
+
+function renderAgentSidebar(){
+  const list = document.getElementById("agentSidebarList");
+  const empty = document.getElementById("agentSidebarEmpty");
+  if (!agentRunsCache.length){
+    list.innerHTML = "";
+    empty.style.display = "block";
+    return;
+  }
+  empty.style.display = "none";
+  list.innerHTML = agentRunsCache.map(r => {
+    const active = String(r.id) === String(activeAgentRunId) ? " active" : "";
+    const time = r.updatedAt ? new Date(r.updatedAt).toLocaleString() : "";
+    return `
+      <button type="button" class="notes-sidebar-item${active}" data-run-id="${escapeHtml(r.id)}">
+        <span class="notes-sidebar-item-title">${escapeHtml(r.title || "Agent run")}</span>
+        <span class="notes-sidebar-item-meta">${escapeHtml(agentStatusLabel(r.status))} · ${escapeHtml(time)}</span>
+      </button>`;
+  }).join("");
+  list.querySelectorAll(".notes-sidebar-item").forEach(btn => {
+    btn.addEventListener("click", () => openAgentRun(btn.dataset.runId));
+  });
+}
+
+function agentStatusLabel(status){
+  if (status === "running") return "Running";
+  if (status === "error") return "Error";
+  if (status === "done") return "Done";
+  return status || "";
+}
+
+async function openAgentRun(id){
+  activeAgentRunId = id;
+  renderAgentSidebar();
+  if (agentPollTimer) { clearTimeout(agentPollTimer); agentPollTimer = null; }
+
+  const titleEl = document.getElementById("agentRunTitle");
+  const statusEl = document.getElementById("agentRunStatus");
+  const outputEl = document.getElementById("agentTerminalOutput");
+  titleEl.textContent = "Loading…";
+  statusEl.textContent = "";
+  statusEl.className = "agent-run-status";
+  outputEl.textContent = "";
+
+  try{
+    const res = await fetch(PROXY_ORIGIN + "/api/agent/runs/" + encodeURIComponent(id));
+    const data = await res.json();
+    if (!res.ok) throw new Error((data && data.error && data.error.message) || "Couldn't load this run.");
+    renderAgentRun(data);
+    if (data.status === "running") pollAgentRun(id);
+  } catch(e){
+    titleEl.textContent = "Error";
+    outputEl.textContent = e.message;
+  }
+}
+
+function renderAgentRun(run){
+  if (String(run.id) !== String(activeAgentRunId)) return; // user switched runs mid-poll
+  const titleEl = document.getElementById("agentRunTitle");
+  const statusEl = document.getElementById("agentRunStatus");
+  const outputEl = document.getElementById("agentTerminalOutput");
+  titleEl.textContent = run.title || "Agent run";
+  statusEl.textContent = agentStatusLabel(run.status);
+  statusEl.className = "agent-run-status " + (run.status || "");
+  const wasScrolledToBottom = outputEl.scrollTop + outputEl.clientHeight >= outputEl.scrollHeight - 4;
+  outputEl.textContent = run.output || "(no output yet)";
+  if (wasScrolledToBottom) outputEl.scrollTop = outputEl.scrollHeight;
+}
+
+function pollAgentRun(id){
+  if (agentPollTimer) clearTimeout(agentPollTimer);
+  agentPollTimer = setTimeout(async () => {
+    agentPollTimer = null;
+    if (String(id) !== String(activeAgentRunId)) return; // stopped watching this one
+    try{
+      const res = await fetch(PROXY_ORIGIN + "/api/agent/runs/" + encodeURIComponent(id));
+      const data = await res.json();
+      if (!res.ok) throw new Error((data && data.error && data.error.message) || "Poll failed.");
+      renderAgentRun(data);
+      if (data.status === "running") {
+        pollAgentRun(id);
+      } else {
+        refreshAgentRuns(); // pick up the final status/timestamp in the sidebar
+      }
+    } catch(e){
+      // Transient network hiccup -- keep polling rather than freezing the
+      // view on one failed request.
+      pollAgentRun(id);
+    }
+  }, 1500);
 }
 
 async function markEmailDone(id, done){

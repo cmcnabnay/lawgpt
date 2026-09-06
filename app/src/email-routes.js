@@ -33,15 +33,15 @@
 const express = require("express");
 const router = express.Router();
 const path = require("path");
-const os = require("os");
-const fs = require("fs");
-const { spawn, execFileSync } = require("child_process");
+const crypto = require("crypto");
 
 const documentStore = require("./document-store");
 const emailStore = require("./email-store");
 const canvasRoutes = require("./canvas-routes");
 const { extractText, saveNativeFile, matchCourseFolder, isDocumentAttachment, extFromContentTypeOrTitle } = canvasRoutes;
 const { getAccessTokenSilent, getEmailConfig, getPersonalApiKey } = require("./email-auth");
+const agentStore = require("./agent-store");
+const agentRuntime = require("./agent-runtime");
 
 // Mailbox connections and synced messages are per-account now -- there's no
 // meaningful "email" anything for a request with no signed-in user.
@@ -188,92 +188,15 @@ async function generateAndStorePlan(userId, id){
   }
 }
 
-// "Send to agent" opens a real, visible terminal running Claude Code rather
-// than piping its output back to the web page -- the user watches/steers it
-// directly (and can Ctrl+C it) instead of reading a log box. That means
-// this server has no handle on the actual work once the terminal is open;
-// all it tracks is which terminal it asked the OS to open and when.
-
-function commandExists(cmd){
-  try {
-    execFileSync(process.platform === "win32" ? "where" : "which", [cmd], { stdio: "ignore" });
-    return true;
-  } catch (err) {
-    return false;
-  }
-}
-
-// Writes the prompt to its own file and has the launcher script read it
-// back with `$(cat ...)` inside double quotes -- that passes the file's
-// exact content through as a single argument (newlines, quotes, and all)
-// without needing to escape an LLM-generated, multi-line plan for embedding
-// directly in a command line.
-function writeAgentPromptFile(agentPrompt){
-  const promptFile = path.join(os.tmpdir(), `lawgpt-agent-prompt-${Date.now()}-${Math.random().toString(36).slice(2)}.txt`);
-  fs.writeFileSync(promptFile, agentPrompt, { mode: 0o600 });
-  return promptFile;
-}
-
-// Builds the little script the terminal actually runs. Shell profile (sh)
-// for macOS/Linux, PowerShell on Windows -- in both cases it's just "cd into
-// the repo, run claude with the prompt, then wait so the window doesn't
-// disappear the instant claude exits."
-function buildAgentLaunchScript(agentPrompt){
-  const promptFile = writeAgentPromptFile(agentPrompt);
-
-  if (process.platform === "win32") {
-    const scriptPath = path.join(os.tmpdir(), `lawgpt-agent-run-${Date.now()}.ps1`);
-    const escapedRepo = REPO_ROOT.replace(/'/g, "''");
-    const escapedPromptFile = promptFile.replace(/'/g, "''");
-    fs.writeFileSync(scriptPath,
-      `Set-Location -LiteralPath '${escapedRepo}'\n` +
-      `$prompt = Get-Content -Raw -LiteralPath '${escapedPromptFile}'\n` +
-      `claude --permission-mode auto $prompt\n`
-    );
-    return { scriptPath, shell: "powershell" };
-  }
-
-  const scriptPath = path.join(os.tmpdir(), `lawgpt-agent-run-${Date.now()}-${Math.random().toString(36).slice(2)}.sh`);
-  fs.writeFileSync(scriptPath,
-    `#!/bin/sh\n` +
-    `cd "${REPO_ROOT}"\n` +
-    `claude --permission-mode auto "$(cat "${promptFile}")"\n` +
-    `echo\n` +
-    `echo "[agent finished -- press Enter to close this window]"\n` +
-    `read _dummy\n`
-  );
-  fs.chmodSync(scriptPath, 0o700);
-  return { scriptPath, shell: "sh" };
-}
-
-// Picks the first available terminal emulator for this OS. Tilix is this
-// machine's terminal and goes first on Linux, with a fallback chain so the
-// same code doesn't hard-fail on a machine that doesn't have it -- the
-// macOS/Windows branches are best-effort (untested here, no such machine to
-// try them on).
-function pickTerminalLauncher(launch){
-  if (process.platform === "darwin") {
-    const appleScript = `tell application "Terminal" to do script "${launch.scriptPath.replace(/"/g, '\\"')}"`;
-    return { cmd: "osascript", args: ["-e", appleScript] };
-  }
-
-  if (process.platform === "win32") {
-    if (commandExists("wt")) {
-      return { cmd: "wt", args: ["powershell.exe", "-NoExit", "-File", launch.scriptPath] };
-    }
-    return { cmd: "powershell.exe", args: ["-NoExit", "-File", launch.scriptPath] };
-  }
-
-  const linuxCandidates = [
-    { cmd: "tilix", args: ["-w", REPO_ROOT, "-e", launch.scriptPath] },
-    { cmd: "gnome-terminal", args: ["--working-directory=" + REPO_ROOT, "--", launch.scriptPath] },
-    { cmd: "konsole", args: ["--workdir", REPO_ROOT, "-e", launch.scriptPath] },
-    { cmd: "xfce4-terminal", args: ["--working-directory=" + REPO_ROOT, "-e", launch.scriptPath] },
-    { cmd: "x-terminal-emulator", args: ["-e", launch.scriptPath] },
-    { cmd: "xterm", args: ["-e", launch.scriptPath] }
-  ];
-  return linuxCandidates.find(candidate => commandExists(candidate.cmd)) || null;
-}
+// "Send to agent" used to open a real, visible terminal running Claude Code
+// on whatever machine the server process happened to be on -- that only
+// ever worked when the server was running on the same desktop machine as
+// the browser, and fails outright on a headless box like EC2 (nowhere for a
+// terminal to appear). It now runs the Claude Code CLI headlessly instead
+// (agent-runtime.js spawns `claude -p` as a plain background process, no
+// display needed) and streams its output into the Agent tab instead of a
+// terminal window -- see agent-runtime.js/agent-store.js for the run
+// lifecycle and agent-routes.js for how the Agent tab polls it.
 
 // Keyword heuristics for "this email describes something to do", in the
 // same spirit as the classifyCivProReading/classifyLssAssignment functions
@@ -564,14 +487,15 @@ router.put("/messages/:id/plan", async (req, res) => {
   res.json(updated);
 });
 
-// Opens a real terminal running the Claude Code CLI, in the lawgpt repo, to
-// carry out the (possibly user-edited) plan -- rather than running it
-// headless and piping output back to the web page, so the user can watch it
-// work and step in (or Ctrl+C it) directly. Runs with --permission-mode auto
-// (not --dangerously-skip-permissions) so it still asks before anything
-// destructive or outside its usual bounds, while proceeding through the
-// routine, low-risk tool calls on its own -- opening a terminal doesn't put
-// a human in the approval loop unless they're actually watching it.
+// Runs the Claude Code CLI headlessly (see agent-runtime.js) to carry out
+// the (possibly user-edited) plan, in the lawgpt repo. Runs with
+// --permission-mode auto (not --dangerously-skip-permissions) so it still
+// asks before anything destructive or outside its usual bounds, while
+// proceeding through the routine, low-risk tool calls on its own -- nobody's
+// watching a terminal here to approve them one at a time. The run is
+// recorded under agent-store.js (per-account, same as email/notes state) and
+// the response just carries its id; the Agent tab is what actually opens it
+// and streams the live output (see agent-routes.js).
 router.post("/messages/:id/agent/run", async (req, res) => {
   const userId = req.session.userId;
   const message = await emailStore.getMessage(userId, req.params.id);
@@ -589,30 +513,19 @@ router.post("/messages/:id/agent/run", async (req, res) => {
     "stopping to ask a question nobody will see. Make sure any deliverable the plan calls for actually ends up " +
     `saved to a file under ${AGENT_OUTPUT_DIR}/, not just printed.\n\n` + message.plan;
 
-  const launch = buildAgentLaunchScript(agentPrompt);
-  const terminal = pickTerminalLauncher(launch);
-  if (!terminal) {
-    return res.status(500).json({
-      error: { message: "No terminal emulator found on this system (tried tilix, gnome-terminal, konsole, xfce4-terminal, x-terminal-emulator, xterm)." }
-    });
-  }
-
-  try {
-    const child = spawn(terminal.cmd, terminal.args, {
-      cwd: REPO_ROOT,
-      env: process.env,
-      detached: true,
-      stdio: "ignore"
-    });
-    child.unref();
-  } catch (err) {
-    return res.status(500).json({ error: { message: `Couldn't open a terminal (${terminal.cmd}): ${err.message}` } });
-  }
+  const runId = crypto.randomUUID();
+  await agentStore.createRun(userId, {
+    id: runId,
+    title: message.subject || "Agent run",
+    prompt: agentPrompt,
+    source: { type: "email", messageId: message.id }
+  });
+  agentRuntime.startRun(userId, runId, agentPrompt, REPO_ROOT);
 
   const updated = await emailStore.updateMessage(userId, message.id, {
-    agentStatus: "launched",
+    agentStatus: "running",
     agentStartedAt: new Date().toISOString(),
-    agentTerminal: terminal.cmd
+    agentRunId: runId
   });
   res.json(updated);
 });
