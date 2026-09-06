@@ -1691,19 +1691,37 @@ pre code {
   margin:-6px 0 12px;
   user-select:all;
 }
+/* Terminal-over-Output, stacked vertically. Three states, toggled by JS
+   (see applyAgentPanelLayout) via a modifier class on #agentPanels:
+   - state-running: terminal fills the whole area, output hidden entirely
+     (nothing to show there yet, so no blank box).
+   - state-collapsed (the default once a run finishes): terminal shrinks to
+     just its clickable label bar, output takes the full area.
+   - state-expanded (user clicked the collapsed terminal bar): even 50/50
+     split, terminal on top, output on bottom. Clicking the bar again while
+     expanded collapses it back. */
 .agent-panels{
   flex:1;
   min-height:0;
   display:flex;
-  gap:16px;
+  flex-direction:column;
+  gap:12px;
 }
 .agent-panel{
-  flex:1;
   min-width:0;
   min-height:0;
   display:flex;
   flex-direction:column;
 }
+#agentTerminalPanel{ flex:1 1 50%; }
+#agentOutputPanel{ flex:1 1 50%; }
+.agent-panels.state-running #agentTerminalPanel{ flex:1 1 100%; }
+.agent-panels.state-running #agentOutputPanel{ display:none; }
+.agent-panels.state-collapsed #agentTerminalPanel{ flex:0 0 auto; }
+.agent-panels.state-collapsed #agentTerminalOutput{ display:none; }
+.agent-panels.state-collapsed #agentOutputPanel{ flex:1 1 100%; }
+.agent-panels.state-expanded #agentTerminalPanel{ flex:1 1 50%; }
+.agent-panels.state-expanded #agentOutputPanel{ flex:1 1 50%; }
 .agent-panel-label{
   font-family:'IBM Plex Mono',monospace;
   font-size:10px;
@@ -1712,6 +1730,21 @@ pre code {
   color:var(--text-muted);
   margin-bottom:6px;
 }
+.agent-panel-label-clickable{
+  cursor:pointer;
+  user-select:none;
+  display:flex;
+  align-items:center;
+  gap:5px;
+}
+.agent-panel-label-clickable:hover{ color:var(--brass); }
+.agent-terminal-toggle-arrow{
+  display:inline-block;
+  font-size:8px;
+  transition:transform .15s ease;
+}
+.agent-panels.state-collapsed .agent-terminal-toggle-arrow{ transform:rotate(-90deg); }
+.agent-panels.state-running .agent-panel-label-clickable{ cursor:default; }
 .agent-terminal{
   flex:1;
   min-height:0;
@@ -2961,12 +2994,14 @@ pre code {
         <div class="documents-title" id="agentRunTitle">Select a run</div>
         <div class="agent-run-status" id="agentRunStatus"></div>
         <div class="agent-resume-hint" id="agentResumeHint" style="display:none;"></div>
-        <div class="agent-panels">
-          <div class="agent-panel">
-            <div class="agent-panel-label">Terminal</div>
+        <div class="agent-panels" id="agentPanels">
+          <div class="agent-panel" id="agentTerminalPanel">
+            <div class="agent-panel-label agent-panel-label-clickable" id="agentTerminalLabel">
+              <span class="agent-terminal-toggle-arrow" id="agentTerminalToggleArrow">&#9660;</span> Terminal
+            </div>
             <pre class="agent-terminal" id="agentTerminalOutput"></pre>
           </div>
-          <div class="agent-panel">
+          <div class="agent-panel" id="agentOutputPanel">
             <div class="agent-panel-label">Output</div>
             <div class="notes-report-body agent-output-body" id="agentOutputBody"></div>
           </div>
@@ -4323,7 +4358,7 @@ function setView(view){
 
   // The Notes and Database tabs show their own left banner (Reading Reports
   // / Tables) in place of the standard docket sidebar.
-  document.querySelector(".app").classList.toggle("hide-app-sidebar", view === "notes" || view === "database");
+  document.querySelector(".app").classList.toggle("hide-app-sidebar", view === "notes" || view === "database" || view === "agent");
 
   if (view === "editor"){
     editorView.style.display = "flex";
@@ -6139,6 +6174,31 @@ async function runEmailAgent(id, planText, btn){
 let agentRunsCache = [];
 let activeAgentRunId = null;
 let agentPollTimer = null;
+// Drives the Terminal/Output panel split (see the state-running/collapsed/
+// expanded CSS on #agentPanels) -- reset per run open, and forced back to
+// collapsed the moment a run's status leaves "running", so the Output panel
+// takes over full-size as soon as there's a finished deliverable to show.
+let agentTerminalExpanded = false;
+let activeAgentRunStatus = null;
+
+function applyAgentPanelLayout(status){
+  const panelsEl = document.getElementById("agentPanels");
+  if (!panelsEl) return;
+  panelsEl.classList.remove("state-running", "state-collapsed", "state-expanded");
+  if (status === "running") {
+    panelsEl.classList.add("state-running");
+  } else if (agentTerminalExpanded) {
+    panelsEl.classList.add("state-expanded");
+  } else {
+    panelsEl.classList.add("state-collapsed");
+  }
+}
+
+document.getElementById("agentTerminalLabel").addEventListener("click", () => {
+  if (activeAgentRunStatus === "running") return; // already full-size, nothing to toggle
+  agentTerminalExpanded = !agentTerminalExpanded;
+  applyAgentPanelLayout(activeAgentRunStatus);
+});
 
 async function refreshAgentRuns(){
   try{
@@ -6218,6 +6278,9 @@ async function deleteAgentRun(id){
       document.getElementById("agentResumeHint").style.display = "none";
       document.getElementById("agentTerminalOutput").textContent = "";
       document.getElementById("agentOutputBody").innerHTML = "";
+      activeAgentRunStatus = null;
+      agentTerminalExpanded = false;
+      applyAgentPanelLayout(null);
     }
     renderAgentSidebar();
   } catch(e){
@@ -6234,6 +6297,11 @@ function agentStatusLabel(status){
 
 async function openAgentRun(id){
   activeAgentRunId = id;
+  // Every fresh open starts collapsed -- a run you're opening for the first
+  // time either just finished (nothing to gain from seeing the transcript
+  // by default) or is still running (state-running ignores this anyway).
+  agentTerminalExpanded = false;
+  activeAgentRunStatus = null;
   renderAgentSidebar();
   if (agentPollTimer) { clearTimeout(agentPollTimer); agentPollTimer = null; }
 
@@ -6282,6 +6350,15 @@ function renderAgentRun(run){
   // cd into the repo and run this to open/continue that exact conversation.
   resumeEl.textContent = `SSH: claude --resume ${run.id}`;
   resumeEl.style.display = "block";
+
+  // The moment a run leaves "running" (finishes or errors), force the
+  // terminal back to collapsed so the Output panel takes over full-size --
+  // even if the user had it expanded while it was still going.
+  if (activeAgentRunStatus === "running" && run.status !== "running") {
+    agentTerminalExpanded = false;
+  }
+  activeAgentRunStatus = run.status;
+  applyAgentPanelLayout(run.status);
 
   const wasScrolledToBottom = outputEl.scrollTop + outputEl.clientHeight >= outputEl.scrollHeight - 4;
   outputEl.textContent = run.output || "(no output yet)";
