@@ -4930,18 +4930,34 @@ function extractReportSection(text, titleMatchers){
   lines.forEach((line, i) => {
     const trimmed = line.trim();
     // The model doesn't always keep the template's literal "#"/"##"/"###"
-    // prefix on a top-level heading -- it often just writes "4. Cases" as
-    // plain text. Without this fallback, that silently fails the whole
-    // section match (see the whole-report fallback below), and every
-    // "---"-only splitter downstream (splitReportBlocks) then splits the
-    // ENTIRE report instead of just this section, mixing unrelated content
-    // from every other section into the results.
+    // prefix on a top-level heading -- it often bold-wraps the whole
+    // numbered heading instead ("**4. Cases**"/"<b>4. Cases</b>"), or drops
+    // all decoration and just writes "4. Cases" as plain text. Without this
+    // fallback chain, that silently fails the whole section match (see the
+    // whole-report fallback below), and every "---"-only splitter downstream
+    // (splitReportBlocks) then splits the ENTIRE report instead of just this
+    // section, mixing unrelated content from every other section in.
+    let title = null;
     let m = /^#{1,4}\s*\d+\.\s*(.+?)\s*$/.exec(trimmed);
-    if (!m) {
-      const plain = /^\d+\.\s*(.+?)\s*$/.exec(trimmed);
-      if (plain && KNOWN_TOP_SECTION_TITLES.has(plain[1].trim().toLowerCase())) m = plain;
+    if (m) title = m[1];
+    if (title == null) {
+      const wrapped = /^\*\*(.+?)\*\*:?\s*$/.exec(trimmed) || /^<b>(.+?)<\/b>:?\s*$/i.exec(trimmed);
+      if (wrapped) {
+        const num = /^\d+\.\s*(.+?)\s*$/.exec(wrapped[1].trim());
+        if (num) title = num[1];
+      }
     }
-    if (m) tops.push({ norm: m[1].toLowerCase(), line: i });
+    if (title == null) {
+      // A bare "4. Cases" with no markdown decoration at all is only
+      // trusted when its title exactly matches one of the templates' known
+      // top-level section names -- unlike the "#" and bold-wrapped cases
+      // above, an undecorated line has no other signal distinguishing a
+      // real section heading from an ordinary numbered sub-list item (e.g.
+      // "1. Enough factual allegations..." under a Requirements field).
+      const plain = /^\d+\.\s*(.+?)\s*$/.exec(trimmed);
+      if (plain && KNOWN_TOP_SECTION_TITLES.has(plain[1].trim().toLowerCase())) title = plain[1];
+    }
+    if (title != null) tops.push({ norm: title.toLowerCase(), line: i });
   });
   const start = tops.find(t => titleMatchers.some(re => re.test(t.norm)));
   if (!start) return text;
@@ -6817,8 +6833,8 @@ Identify important legal terms used in the opinion. State each term using exactl
 <b>[Term]</b>
 
 - <b>Definition</b>: Give a clear definition.
-- <b>Meaning in this case</b>: Explain what the term means in the context of this opinion.
-- <b>Why it matters</b>: Explain why I should know it.
+- <b>Significance</b>: Explain its significance in this reading.
+- <b>Distinction</b>: Distinguish it from similar concepts when necessary.
 
 Include procedural terms, doctrinal terms, and specialized legal terminology. Separate each term from the next with a line containing only three hyphens (---), so each term is a distinct, clearly-bounded block.
 
