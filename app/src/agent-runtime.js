@@ -34,13 +34,21 @@ function scheduleFlush(userId, runId){
 // stdout as it's generated, then exit -- no TTY or approval prompts to hang
 // on. --permission-mode auto lets it proceed through routine tool calls on
 // its own since nobody's watching a terminal to approve them here.
+//
+// --session-id runId reuses the Agent tab's own run id (already a UUID) as
+// the Claude Code session id, instead of letting the CLI generate a random
+// one -- that's what makes a run findable afterward from an SSH session:
+// `cd` into the repo (sessions are scoped per project directory) and run
+// `claude --resume <runId>` to open that exact conversation, or just
+// `claude --resume` for the interactive picker, which will list it among
+// recent sessions since it's a real persisted session like any other.
 function startRun(userId, runId, prompt, cwd){
   const entry = { userId, output: "", status: "running" };
   liveRuns.set(runId, entry);
 
   let child;
   try {
-    child = spawn("claude", ["-p", prompt, "--permission-mode", "auto"], {
+    child = spawn("claude", ["-p", prompt, "--permission-mode", "auto", "--session-id", runId], {
       cwd,
       env: process.env,
       // Nothing ever writes to this process's stdin -- left open (the
