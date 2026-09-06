@@ -4869,6 +4869,55 @@ function splitRuleBlocks(sectionText){
     .filter(Boolean);
 }
 
+// Case-specific alternative to splitReportBlocks(), same rationale as
+// splitRuleBlocks() above: a "---" between cases is easy for the model to
+// drop across a multi-case reading, which would otherwise silently collapse
+// every case after the first into one unreachable block. Every case
+// reliably starts with its own "**Case Name: ...**" (or "#### Case Name:
+// ...") heading per the template, so split on that directly, tolerating
+// "---" being present, absent, or only sometimes present.
+function splitCaseBlocks(sectionText){
+  const text = String(sectionText || "");
+  const lines = text.split("\n");
+  const isDecoratedCaseHeading = (trimmed) => {
+    const m = /^#{1,4}\s+(.+?)\s*$/.exec(trimmed) || /^\*\*(.+?)\*\*:?\s*$/.exec(trimmed) || /^<b>(.+?)<\/b>:?\s*$/i.exec(trimmed);
+    return m && /^case name\b/i.test(m[1].trim());
+  };
+  const isPlainCaseHeading = (trimmed) => /^case name\b/i.test(trimmed);
+
+  const headingLines = lines.reduce((acc, line, i) => {
+    if (isDecoratedCaseHeading(line.trim())) acc.push(i);
+    return acc;
+  }, []);
+  const usePlain = !headingLines.length;
+  const finalHeadingLines = usePlain
+    ? lines.reduce((acc, line, i) => { if (isPlainCaseHeading(line.trim())) acc.push(i); return acc; }, [])
+    : headingLines;
+
+  if (!finalHeadingLines.length) return splitReportBlocks(sectionText);
+
+  return finalHeadingLines
+    .map((lineIdx, i) => {
+      const end = i + 1 < finalHeadingLines.length ? finalHeadingLines[i + 1] : lines.length;
+      return lines.slice(lineIdx, end).join("\n").trim();
+    })
+    .filter(Boolean);
+}
+
+// Every top-level section name used by any Notes prompt template (see the
+// NOTES_PROMPT_* constants below) -- kept here so a bare "4. Cases" line
+// (no "#") can still be trusted as a real section heading, without also
+// mistaking an ordinary numbered sub-list item (e.g. "1. Enough factual
+// allegations..." under a Requirements field) for one. Falls out of sync if
+// a template's section names change -- add the new name here too.
+const KNOWN_TOP_SECTION_TITLES = new Set([
+  "overview", "rules", "case narrative", "case brief", "cases", "definitions",
+  "precedent", "case comparisons", "examples", "examples and hypotheticals",
+  "arguments / policy", "big picture", "how the rules fit together",
+  "important authorities", "important distinctions", "important legal concepts",
+  "important terms", "key points", "what i need to know", "exam analysis"
+]);
+
 // Locates a top-level numbered section ("### 4. CASES", "# 3. CASE BRIEF",
 // "## 3. IMPORTANT LEGAL CONCEPTS", etc.) by title match and returns just
 // its own text, up to the next top-level numbered heading. Falls back to
@@ -4879,7 +4928,19 @@ function extractReportSection(text, titleMatchers){
   const lines = String(text || "").split("\n");
   const tops = [];
   lines.forEach((line, i) => {
-    const m = /^#{1,4}\s*\d+\.\s*(.+?)\s*$/.exec(line.trim());
+    const trimmed = line.trim();
+    // The model doesn't always keep the template's literal "#"/"##"/"###"
+    // prefix on a top-level heading -- it often just writes "4. Cases" as
+    // plain text. Without this fallback, that silently fails the whole
+    // section match (see the whole-report fallback below), and every
+    // "---"-only splitter downstream (splitReportBlocks) then splits the
+    // ENTIRE report instead of just this section, mixing unrelated content
+    // from every other section into the results.
+    let m = /^#{1,4}\s*\d+\.\s*(.+?)\s*$/.exec(trimmed);
+    if (!m) {
+      const plain = /^\d+\.\s*(.+?)\s*$/.exec(trimmed);
+      if (plain && KNOWN_TOP_SECTION_TITLES.has(plain[1].trim().toLowerCase())) m = plain;
+    }
     if (m) tops.push({ norm: m[1].toLowerCase(), line: i });
   });
   const start = tops.find(t => titleMatchers.some(re => re.test(t.norm)));
@@ -4904,7 +4965,7 @@ function firstNonBlankLine(block){
 function parseCasesFromReport(reportText, report){
   const section = extractReportSection(reportText, [/^cases?$/i, /case brief/i]);
   const courseLabel = CASE_COURSE_LABELS[report.course] || report.course || "";
-  return splitReportBlocks(section).map((block, idx) => {
+  return splitCaseBlocks(section).map((block, idx) => {
     const fieldMap = {
       __name: ["case name"],
       __course: ["course"],
@@ -6526,14 +6587,14 @@ For every case, create a separate case brief containing exactly these fields, in
     - [legally significant fact — what happened, what the plaintiff did, what the defendant did, relevant dates]
     - [fact that became important to the court's reasoning]
     - ...
-- <b>Procedural Posture</b>
-    - [what happened in the lower court]
-    - [what the current court is reviewing or deciding]
-    - ...
+- <b>Procedural Posture</b>: Show only the status in the current court and the rulings of any earlier courts — never the current court's own decision (that belongs in Holding/Disposition below). Use whichever of these applies to the case:
+    - If the case is still in the trial court and has not been appealed: state the trial court status, e.g. "[Plaintiff] is suing [Defendant] in the [name of trial court]."
+    - If the case was appealed once (trial court → appeals court): state, in order, (1) the trial court's ruling and (2) the appeals court status, e.g. "The [trial court] ruled [ruling]." then "[Appellant — the plaintiff or defendant who lost below] is appealing the [trial court]'s ruling in the [appeals court]; [the other party] is the appellee."
+    - If the case went beyond the first appeal (e.g. to a state supreme court or the U.S. Supreme Court): state, in order, (1) the trial court's ruling, (2) the appeals court's ruling, and (3) the higher court status, e.g. "The [trial court] ruled [ruling]." then "The [appeals court] ruled [ruling]." then "[Appellant] is appealing the [lower court]'s ruling in the [higher court]; [the other party] is the appellee."
 - <b>Issue</b>: State the legal question the court had to answer, as a precise question (prefer "Whether ___").
-- <b>Holding</b>: Give the court's answer to the legal issue.
+- <b>Holding</b>: Give the current court's answer to the legal issue, and name that court (trial court, appeals court, state supreme court, etc.) rather than referring to it generically as "the court" — Procedural Posture may reference a different, earlier court's ruling, so the court doing the holding must be clear.
 - <b>Rule</b>: State the rule's name/citation followed by its one-sentence statement — e.g., "Restatement (Second) § 39: A counteroffer constitutes a rejection of the original offer and creates a new offer for the original offeror to accept." Do NOT repeat the full Document/Legal Question/Requirements/Application/Exceptions breakdown here — that belongs in the Rules section above, and this rule must appear there in full under this same name/citation (add it there if it isn't already listed).
-- <b>Reasoning</b>: If the court's reasoning is one point, state it directly after the colon. If it proceeds in multiple steps, list them indented beneath this header:
+- <b>Reasoning</b>: Name the current court doing the reasoning (e.g. "The appeals court reasoned...") rather than referring to it generically as "the court." If the court's reasoning is one point, state it directly after the colon. If it proceeds in multiple steps, list them indented beneath this header:
     - [reasoning step]
     - ...
 - <b>Plaintiff's/Appellee's Arguments</b>: What did this party argue, and what facts or rule did they rely on? If there's a single argument, state it after the colon; if there are several, list them indented beneath this header:
@@ -6542,7 +6603,7 @@ For every case, create a separate case brief containing exactly these fields, in
 - <b>Defendant/Appellant's Arguments</b>: Same as above.
     - [argument]
     - ...
-- <b>Disposition</b>: What did the court ultimately do?
+- <b>Disposition</b>: State what the current court ultimately did, naming that court (trial court, appeals court, state supreme court, etc.).
 - <b>Importance</b>: Explain why this case appears in the assigned reading and what I should learn from it.
 
 Separate each case brief from the next with a line containing only three hyphens (---), so each case is a distinct, clearly-bounded block.
@@ -6728,23 +6789,23 @@ Create a complete case brief using exactly this format:
     - [fact that became important to the court's legal analysis]
     - [fact that distinguishes this case from the precedent discussed by the court]
     - ...
-- <b>Procedural Posture</b>
-    - [what happened in the trial court, what motion or ruling was involved, which party won or lost]
-    - [what happened at each subsequent court the case was appealed to, in order]
-    - [what the current court is reviewing]
+- <b>Procedural Posture</b>: Show only the status in the current court and the rulings of any earlier courts — never the current court's own decision (that belongs in Holding/Disposition below). Use whichever of these applies to the case:
+    - If the case is still in the trial court and has not been appealed: state the trial court status, e.g. "[Plaintiff] is suing [Defendant] in the [name of trial court]."
+    - If the case was appealed once (trial court → appeals court): state, in order, (1) the trial court's ruling and (2) the appeals court status, e.g. "The [trial court] ruled [ruling]." then "[Appellant — the plaintiff or defendant who lost below] is appealing the [trial court]'s ruling in the [appeals court]; [the other party] is the appellee."
+    - If the case went beyond the first appeal (e.g. to a state supreme court or the U.S. Supreme Court): state, in order, (1) the trial court's ruling, (2) the appeals court's ruling, and (3) the higher court status, e.g. "The [trial court] ruled [ruling]." then "The [appeals court] ruled [ruling]." then "[Appellant] is appealing the [lower court]'s ruling in the [higher court]; [the other party] is the appellee."
 - <b>Issue</b>: State the legal issue as a precise question (prefer "Whether ___"). If there are multiple issues, identify the primary issue and any secondary issues.
-- <b>Holding</b>: State exactly what the court held, in one or two clear sentences.
+- <b>Holding</b>: State exactly what the current court held, in one or two clear sentences, and name that court (trial court, appeals court, state supreme court, etc.) rather than referring to it generically as "the court" — Procedural Posture may reference a different, earlier court's ruling, so the court doing the holding must be clear.
 - <b>Rule</b>: State the rule's name/citation followed by its one-sentence statement — e.g., "Restatement (Second) § 39: A counteroffer constitutes a rejection of the original offer and creates a new offer for the original offeror to accept." Do NOT repeat the full Document/Legal Question/Requirements/Application/Exceptions breakdown here — that belongs in the Rules section above, and this rule must appear there in full under this same name/citation (add it there if it isn't already listed).
-- <b>Reasoning</b>: If the court's reasoning is one point, state it directly after the colon. If it proceeds in multiple steps, list them indented beneath this header, explaining for each step what legal rule the court identified, what facts it considered, how it connected the facts to the rule, and what conclusion it drew:
+- <b>Reasoning</b>: Name the current court doing the reasoning (e.g. "The appeals court reasoned...") rather than referring to it generically as "the court." If the court's reasoning is one point, state it directly after the colon. If it proceeds in multiple steps, list them indented beneath this header, explaining for each step what legal rule the court identified, what facts it considered, how it connected the facts to the rule, and what conclusion it drew:
     - [reasoning step]
     - ...
 - <b>Plaintiff's/Appellee's Arguments</b>: What did this party argue, and what facts or rule did they rely on? If there's a single argument, state it after the colon; if there are several, list them indented beneath this header:
     - [argument]
     - ...
-- <b>Defendant/Appellant's Arguments</b>: Same as above, then explain which argument the court accepted and why.
+- <b>Defendant/Appellant's Arguments</b>: Same as above, then explain which argument the current court accepted and why.
     - [argument]
     - ...
-- <b>Disposition</b>: State exactly what the court did (e.g. affirmed, reversed, vacated, remanded, granted/denied summary judgment) and what it means for the parties.
+- <b>Disposition</b>: State exactly what the current court did (e.g. affirmed, reversed, vacated, remanded, granted/denied summary judgment) and what it means for the parties, naming that court (trial court, appeals court, state supreme court, etc.).
 - <b>Importance</b>: Explain why this case appears in the assigned reading and what I should learn from it.
 
 Do not end any sentence in this section with a period — the only exception is the Issue, which may end with "?" if phrased as a question.
