@@ -860,6 +860,35 @@
   }
   .table-ctx-menu button:hover{ background:var(--ink); color:var(--brass); }
   .table-ctx-menu-sep{ height:1px; background:var(--hairline); margin:4px 2px; }
+  .custom-select-menu{
+    position:fixed;
+    display:none;
+    flex-direction:column;
+    background:var(--ink-2);
+    border:1px solid var(--hairline);
+    border-radius:var(--radius);
+    padding:4px;
+    box-shadow:0 10px 30px rgba(0,0,0,0.45);
+    z-index:60;
+    max-height:320px;
+    max-width:min(480px, 90vw);
+    overflow-y:auto;
+  }
+  .custom-select-menu.show{ display:flex; }
+  .custom-select-menu .custom-select-item{
+    background:none;
+    border:none;
+    color:var(--text-light);
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    padding:7px 10px;
+    border-radius:2px;
+    cursor:pointer;
+    text-align:left;
+    overflow-wrap:break-word;
+  }
+  .custom-select-menu .custom-select-item:hover,
+  .custom-select-menu .custom-select-item.selected{ background:var(--ink); color:var(--brass); }
   .download-btn, .save-btn{
     background:none;
     color:var(--brass);
@@ -3231,6 +3260,72 @@ const MODEL_PRICING = {
   "gpt-4":                { input: 30.00, cachedInput: 30.00, output: 60.00 }
 };
 
+// ====== CUSTOM SELECT DROPDOWNS ======
+// On Linux/GTK builds of Chromium, a native <select> popup opens anchored
+// so the currently-selected option sits right under the mouse, and treats
+// a plain click (mousedown+mouseup with no drag) as "point and pick": it
+// immediately selects whatever option ends up under the cursor and closes,
+// which looks like the dropdown "not staying open" and choosing whatever
+// you happened to be hovering. Replacing the native popup with our own
+// click-to-open/click-to-choose menu -- built fresh from the select's own
+// <option> list each time it opens, so dynamically repopulated selects
+// (e.g. the table/row pickers in the case editor) stay in sync for free --
+// sidesteps that platform behavior entirely.
+function enhanceSelectDropdown(select){
+  if (!select || select.dataset.customDropdown) return;
+  select.dataset.customDropdown = "1";
+
+  const menu = document.createElement("div");
+  menu.className = "custom-select-menu";
+  document.body.appendChild(menu);
+
+  function closeMenu(){
+    menu.classList.remove("show");
+    document.removeEventListener("mousedown", onOutsideMouseDown, true);
+  }
+  function onOutsideMouseDown(e){
+    if (e.target !== select && !menu.contains(e.target)) closeMenu();
+  }
+  function openMenu(){
+    if (select.disabled || !select.options.length) return;
+    menu.innerHTML = "";
+    Array.from(select.options).forEach(opt => {
+      const item = document.createElement("div");
+      item.className = "custom-select-item" + (opt.value === select.value ? " selected" : "");
+      item.textContent = opt.textContent;
+      item.title = opt.textContent;
+      item.addEventListener("click", () => {
+        const changed = select.value !== opt.value;
+        select.value = opt.value;
+        if (changed) select.dispatchEvent(new Event("change", { bubbles: true }));
+        closeMenu();
+      });
+      menu.appendChild(item);
+    });
+    const rect = select.getBoundingClientRect();
+    menu.style.minWidth = rect.width + "px";
+    menu.classList.add("show");
+    const menuRect = menu.getBoundingClientRect();
+    let top = rect.bottom + 4;
+    if (top + menuRect.height > window.innerHeight - 8) top = Math.max(8, rect.top - menuRect.height - 4);
+    const left = Math.min(rect.left, window.innerWidth - menuRect.width - 8);
+    menu.style.left = Math.max(8, left) + "px";
+    menu.style.top = top + "px";
+    document.addEventListener("mousedown", onOutsideMouseDown, true);
+  }
+
+  select.addEventListener("mousedown", (e) => {
+    e.preventDefault();
+    select.focus();
+    if (menu.classList.contains("show")) closeMenu(); else openMenu();
+  });
+  select.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closeMenu();
+  });
+}
+
+document.querySelectorAll("select").forEach(enhanceSelectDropdown);
+
 // The Responses API returns token usage on every response (data.usage);
 // this turns that + the model used into a dollar figure. Returns null if
 // pricing for the model isn't known or usage is missing, so callers can
@@ -4495,6 +4590,7 @@ function renderCaseFormFields(tableInfo, excludeColumns){
       field = document.createElement("select");
       field.appendChild(new Option("Select course…", ""));
       Object.values(CASE_COURSE_LABELS).forEach(courseLabel => field.appendChild(new Option(courseLabel, courseLabel)));
+      enhanceSelectDropdown(field);
     } else if (isDocument){
       field = document.createElement("input");
       field.type = "text";
@@ -6543,16 +6639,7 @@ Read the entire assigned reading carefully and create detailed, exam-oriented no
 
 FORMATTING: Use <b> to start bold text and </b> to end it (do not use markdown asterisks for bold). Use "-" for every bullet point. A field's own heading (e.g. <b>Rule: ...</b>, <b>Case Name: ...</b>, <b>[Term]</b>) has no bullet and is not indented. Every subheader beneath it (Source, Document, Statement, Legal Question, Requirements, Application, Exceptions, Facts, Procedural Posture, etc.) is bulleted with "-" but is NOT indented. When a subheader has a single value, put that value on the same line right after its colon (e.g. "- Document: CB pp. 68-85"). When a subheader has multiple values as a bulleted or numbered list, put the list on the following lines, indented beneath the subheader, one item per line.
 
-### 1. Overview
-
-Start with a concise explanation of:
-
-- What legal subject/doctrine this reading addresses
-- What the author/casebook is trying to teach
-- The major questions or problems the reading addresses
-- How the different cases, statutes, rules, or examples fit together
-
-### 2. Rules
+### 1. Rules
 
 Identify every important legal rule or principle in the reading — this section is not limited to rules that come from a case; include rules stated directly by the textbook/casebook narrative, Restatement/UCC provisions, and rules established or applied by any case in the reading. Every rule discussed in a case brief in the Cases section below must also appear here in full, under the same name/number used there (see the Cases section's Rule field). State every rule using exactly this format:
 
@@ -6579,19 +6666,22 @@ Do not omit a rule simply because it appears obvious.
 
 When the reading gives a rule through a case rather than stating it explicitly, identify the rule that can reasonably be inferred from the case.
 
-### 3. Case Narrative
+### 2. Case Narrative
 
-For every case in the reading, before the structured case brief in the next section, give a plain narrative summary — a few paragraphs of prose (not a bulleted list) that tell the story of the case the way you'd explain it out loud. Make sure the narrative explicitly covers:
+For every case in the reading, before the structured case brief in the next section, give a plain narrative summary — a few paragraphs of prose (not a bulleted list) that tell the real-world story behind the case, the way you'd explain it out loud to a friend. This section is about what actually happened between the parties out in the world, before anyone went to court — not about the litigation itself. Make sure the narrative explicitly covers:
 
 - Who each named party in the case caption actually is (e.g. in "Smith v. Jones," who Smith is and who Jones is — plaintiff/defendant, appellant/appellee, individual/company/government entity, etc.).
 - Who the plaintiff(s) were and who the defendant(s) were.
 - When the underlying events happened (specific dates if the opinion gives them, otherwise the general time period).
 - Where the events occurred (the relevant location(s) — city/state, or the setting, as applicable).
-- What happened, how the dispute got to court, and how the court resolved it.
+- The real-world circumstances that led up to the dispute, in the order they happened — what each party was trying to do, what situation or pressure they were under, and what happened between them. Include every fact the reading gives about the parties' circumstances and motivations, even background details that might seem minor (e.g. why a party was somewhere, what condition they were in, anything that could have affected how they understood the deal or encounter) — do not leave these out for the sake of brevity.
+- What ultimately went wrong or fell through between the parties, in plain terms.
+
+After laying out what actually happened, close with a sentence or two on the legal action that this triggered — e.g. that the plaintiff sued the defendant or filed a complaint — and briefly what they were seeking. Do NOT get into the procedural history, appeals, holdings, or rulings here — that belongs in the case brief below. This narrative is for context, so it should read as a complete, ungapped account of the real-world events, not a condensed teaser.
 
 If the opinion doesn't state a date or location, say so rather than guessing. This is the version to read first for a quick, intuitive grasp of the case before working through the structured brief.
 
-### 4. Cases
+### 3. Cases
 
 For every case, create a separate case brief containing exactly these fields, in exactly this order:
 
@@ -6626,7 +6716,7 @@ Separate each case brief from the next with a line containing only three hyphens
 
 Do not end any sentence in this section with a period — the only exception is the Issue, which may end with "?" if phrased as a question.
 
-### 5. Definitions
+### 4. Definitions
 
 Identify important legal terminology. State each term using exactly this format:
 
@@ -6639,73 +6729,6 @@ Identify important legal terminology. State each term using exactly this format:
 Separate each term from the next with a line containing only three hyphens (---), so each term is a distinct, clearly-bounded block.
 
 Do not end any sentence in this section with a period.
-
-### 6. Precedent
-
-For every prior case that a case in this reading relies upon in its reasoning, identify:
-
-<b>[Prior Case Name]</b>
-
-- <b>Rule from prior case</b>: What rule did that case establish?
-- <b>Relevant facts</b>: What facts mattered in that case?
-- <b>How it's used here</b>: Does the citing case follow it, apply it, extend it, limit it, distinguish it, or reject an argument based on it?
-- <b>Why it matters here</b>: Explain why the precedent is important to the citing case's decision.
-
-Do NOT give full case briefs for minor cases that are merely cited in passing. Focus detailed treatment on precedents that actually influence a case's reasoning.
-
-### 7. Case Comparisons
-
-Explain how the cases relate to one another.
-
-Specifically identify:
-
-- Cases that establish similar rules
-- Cases that limit or distinguish another case
-- Cases that appear to conflict
-- How the doctrine develops from one case to the next
-- Important factual distinctions
-- Important distinctions in legal reasoning
-
-Do not simply list the cases independently.
-
-### 8. Examples and Hypotheticals
-
-If the reading contains examples or hypotheticals, explain:
-
-- The facts
-- The legal issue
-- The applicable rule
-- The result
-- Why the example matters
-
-If useful, create a small number of additional hypothetical examples to illustrate difficult rules, but clearly label anything you create yourself with the heading <b>Added Hypothetical (not in the reading)</b>.
-
-### 9. Policy and Competing Arguments
-
-Identify important policy arguments on both sides of disputed issues.
-
-Separate:
-
-- What the court/text actually says
-- What is an argument or interpretation
-- What you are inferring
-
-Do not present an inference as though it were stated by the source.
-
-### 10. Exam Analysis
-
-Explain how the rules and cases in this reading could appear on a law school exam.
-
-- <b>Rule(s) to remember</b>: [the rule(s) most likely to be tested]
-- <b>Facts that should trigger the rule</b>: [what fact pattern signals this rule applies]
-- <b>Analytical steps</b>:
-    1. [step 1]
-    2. [step 2]
-    ...
-- <b>Common mistake</b>: [a mistake students commonly make with this material]
-- <b>Possible exam twist</b>: [a variation that would complicate the analysis]
-
-Do not invent an unrelated hypothetical. Base the exam analysis on the legal reasoning actually used in the reading.
 
 Do not open the response with introductory filler ("Sure!", "Here are your notes", "Certainly!", etc.) — start directly with the notes content. Do not refer to yourself as an AI, a language model, or an assistant anywhere in the notes.
 
@@ -6741,21 +6764,7 @@ Be extremely faithful to the assigned reading. Do not add outside law unless I s
 
 FORMATTING: Use <b> to start bold text and </b> to end it (do not use markdown asterisks for bold). Use "-" for every bullet point. A field's own heading (e.g. <b>Rule: ...</b>, <b>Case Name: ...</b>, <b>[Term]</b>) has no bullet and is not indented. Every subheader beneath it (Source, Document, Statement, Legal Question, Requirements, Application, Exceptions, Facts, Procedural Posture, etc.) is bulleted with "-" but is NOT indented. When a subheader has a single value, put that value on the same line right after its colon (e.g. "- Document: CB pp. 68-85"). When a subheader has multiple values as a bulleted or numbered list, put the list on the following lines, indented beneath the subheader, one item per line.
 
-# 1. Overview
-
-Start with a concise explanation of:
-
-- What area of law the case concerns
-- What legal dispute the case is about
-- What the court ultimately decided
-- The central legal rule or doctrine
-- Why the case matters
-
-Then give me a short "Case in One Sentence" that captures the basic holding.
-
-Do not begin with unnecessary background or a generic explanation of the area of law.
-
-# 2. Rules
+# 1. Rules
 
 Identify every important legal rule the court uses or establishes — this includes the rule(s) the court applies to decide the case, any rule it draws from precedent, and any rule it distinguishes or rejects along the way. Every rule discussed in the case brief below must also appear here in full, under the same name/citation used there (see the Case Brief section's Rule field). State every rule using exactly this format:
 
@@ -6780,19 +6789,22 @@ If the rule comes from precedent, identify the precedent and explain how the cur
 
 If the court distinguishes between two different standards, make that distinction explicit.
 
-# 3. Case Narrative
+# 2. Case Narrative
 
-Before the structured case brief in the next section, give a plain narrative summary — a few paragraphs of prose (not a bulleted list) that tell the story of the case the way you'd explain it out loud. Make sure the narrative explicitly covers:
+Before the structured case brief in the next section, give a plain narrative summary — a few paragraphs of prose (not a bulleted list) that tell the real-world story behind the case, the way you'd explain it out loud to a friend. This section is about what actually happened between the parties out in the world, before anyone went to court — not about the litigation itself. Make sure the narrative explicitly covers:
 
 - Who each named party in the case caption actually is (e.g. in "Smith v. Jones," who Smith is and who Jones is — plaintiff/defendant, appellant/appellee, individual/company/government entity, etc.).
 - Who the plaintiff(s) were and who the defendant(s) were.
 - When the underlying events happened (specific dates if the opinion gives them, otherwise the general time period).
 - Where the events occurred (the relevant location(s) — city/state, or the setting, as applicable).
-- What happened, how the dispute got to court, and how the court resolved it.
+- The real-world circumstances that led up to the dispute, in the order they happened — what each party was trying to do, what situation or pressure they were under, and what happened between them. Include every fact the opinion gives about the parties' circumstances and motivations, even background details that might seem minor (e.g. why a party was somewhere, what condition they were in, anything that could have affected how they understood the deal or encounter) — do not leave these out for the sake of brevity.
+- What ultimately went wrong or fell through between the parties, in plain terms.
+
+After laying out what actually happened, close with a sentence or two on the legal action that this triggered — e.g. that the plaintiff sued the defendant or filed a complaint — and briefly what they were seeking. Do NOT get into the procedural history, appeals, holdings, or rulings here — that belongs in the case brief below. This narrative is for context, so it should read as a complete, ungapped account of the real-world events, not a condensed teaser.
 
 If the opinion doesn't state a date or location, say so rather than guessing. This is the version to read first for a quick, intuitive grasp of the case before working through the structured brief.
 
-# 4. Case Brief
+# 3. Case Brief
 
 Create a complete case brief using exactly this format:
 
@@ -6826,7 +6838,7 @@ Create a complete case brief using exactly this format:
 
 Do not end any sentence in this section with a period — the only exception is the Issue, which may end with "?" if phrased as a question.
 
-# 5. Definitions
+# 4. Definitions
 
 Identify important legal terms used in the opinion. State each term using exactly this format:
 
@@ -6839,77 +6851,6 @@ Identify important legal terms used in the opinion. State each term using exactl
 Include procedural terms, doctrinal terms, and specialized legal terminology. Separate each term from the next with a line containing only three hyphens (---), so each term is a distinct, clearly-bounded block.
 
 Do not end any sentence in this section with a period.
-
-# 6. Precedent
-
-For every prior case that the court relies upon in its reasoning, identify:
-
-<b>[Prior Case Name]</b>
-
-- <b>Rule from prior case</b>: What rule did that case establish?
-- <b>Relevant facts</b>: What facts mattered in that case?
-- <b>How the current court uses it</b>: Does the current court follow it, apply it, extend it, limit it, distinguish it, or reject an argument based on it?
-- <b>Why it matters here</b>: Explain why the precedent is important to the current court's decision.
-
-Do NOT give full case briefs for minor cases that are merely cited in passing. Focus detailed treatment on precedents that actually influence the court's reasoning.
-
-# 7. Case Comparisons
-
-Compare the current case with the important precedent discussed in the opinion.
-
-Create a table when useful:
-
-| | Current Case | Prior Case |
-|---|---|---|
-| Important facts | | |
-| Legal issue | | |
-| Rule | | |
-| Court's reasoning | | |
-| Result | | |
-| Key distinction | | |
-
-Then explain the most important factual and legal distinction in plain English.
-
-Pay particular attention to whether a factual difference changes the legal result.
-
-# 8. Examples and Hypotheticals
-
-If the opinion poses or discusses a hypothetical, explain:
-
-- The facts
-- The legal issue
-- The applicable rule
-- The result
-- Why the example matters
-
-If useful, create a small number of additional hypothetical examples to illustrate a difficult point in the court's reasoning, but clearly label anything you create yourself with the heading <b>Added Hypothetical (not in the reading)</b>.
-
-# 9. Policy and Competing Arguments
-
-Identify policy considerations if the court discusses them or if they are clearly relevant to the court's reasoning.
-
-Separate:
-
-- What the court actually says
-- What is an argument or interpretation
-- What you are inferring
-
-Do not attribute a policy argument to the court unless the opinion actually makes it. For disputed issues, explain the strongest argument on both sides.
-
-# 10. Exam Analysis
-
-Explain how this case could appear on a law school exam.
-
-- <b>Rule to remember</b>: [the rule most likely to be tested]
-- <b>Facts that should trigger the rule</b>: [what fact pattern signals this rule applies]
-- <b>Analytical steps</b>:
-    1. [step 1]
-    2. [step 2]
-    ...
-- <b>Common mistake</b>: [a mistake students commonly make with this material]
-- <b>Possible exam twist</b>: [a variation that would complicate the analysis]
-
-Do not invent an unrelated hypothetical. Base the exam analysis on the legal reasoning actually used by the court.
 
 Do not open the response with introductory filler ("Sure!", "Here are your notes", "Certainly!", etc.) — start directly with the notes content. Do not refer to yourself as an AI, a language model, or an assistant anywhere in the notes.
 
@@ -6934,7 +6875,7 @@ Do not give me a generic summary.
 
 I want a law-school case brief and analytical study guide that preserves:
 
-FACTS → PROCEDURAL POSTURE → ISSUE → RULE → ARGUMENTS → REASONING → APPLICATION → HOLDING → DISPOSITION → PRECEDENT → EXAM APPLICATION.
+FACTS → PROCEDURAL POSTURE → ISSUE → RULE → ARGUMENTS → REASONING → APPLICATION → HOLDING → DISPOSITION.
 
 The final notes should allow me to explain not only WHAT the court decided, but WHY it decided it and HOW the result would change if the legally significant facts changed.`;
 
