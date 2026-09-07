@@ -613,6 +613,69 @@ app.post("/api/user/state", requireAppDb, requireLogin, async (req, res) => {
   }
 });
 
+// The Notes prompts (NOTES_PROMPT_TEXTBOOK/CASE in lawgpt.html) tell the
+// model to copy a document's SOURCE label character-for-character into each
+// Rule/Case/Definition block's "Document" field -- in practice the model
+// often substitutes its own citation-style description instead (e.g. "Hubbard,
+// Civil Procedure ... pp. 259-261" instead of the literal attached file name).
+// Since this server already knows exactly which real file(s) were attached to
+// this exact request, force every "Document" field line in the response text
+// to the real on-disk name of whichever attached document is the closest
+// word-overlap match to whatever the model wrote, rather than trusting the
+// model to have copied it correctly. With only one document attached (the
+// common case) this is unconditionally correct regardless of what the model
+// wrote, since there's only one real name it could possibly be.
+const DOCUMENT_FIELD_RE = /^([ \t]*-\s*(?:<b>\s*Document\s*:?\s*<\/b>|\*\*Document:?\*\*)\s*:?\s*)(.+)$/gim;
+
+function normalizeForDocMatch(str) {
+  return String(str || "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+}
+
+function bestDocumentNameMatch(oldValue, realNames) {
+  if (realNames.length === 1) return realNames[0];
+  const targetWords = new Set(normalizeForDocMatch(oldValue).split(" ").filter(Boolean));
+  let best = realNames[0];
+  let bestScore = -1;
+  for (const name of realNames) {
+    const nameWords = normalizeForDocMatch(name).split(" ").filter(Boolean);
+    let score = 0;
+    nameWords.forEach(w => { if (targetWords.has(w)) score++; });
+    if (score > bestScore) {
+      bestScore = score;
+      best = name;
+    }
+  }
+  return best;
+}
+
+function fixDocumentFieldsInText(text, realNames) {
+  if (!realNames.length || typeof text !== "string") return text;
+  return text.replace(DOCUMENT_FIELD_RE, (full, prefix, oldValue) => prefix + bestDocumentNameMatch(oldValue, realNames));
+}
+
+// Patches every text field a Responses-API-shaped payload might carry the
+// assistant's answer in (data.output_text, or data.output[].content[].text)
+// -- mirrors extractText()'s own dual-path reading of this same shape in
+// lawgpt.html, since the OpenRouter branch below normalizes its response to
+// look the same way.
+function fixDocumentFieldsInResponse(data, realNames) {
+  if (!data || !realNames.length) return;
+  if (typeof data.output_text === "string") {
+    data.output_text = fixDocumentFieldsInText(data.output_text, realNames);
+  }
+  if (Array.isArray(data.output)) {
+    for (const item of data.output) {
+      if (item && item.type === "message" && Array.isArray(item.content)) {
+        for (const c of item.content) {
+          if (c && (c.type === "output_text" || c.type === "text") && typeof c.text === "string") {
+            c.text = fixDocumentFieldsInText(c.text, realNames);
+          }
+        }
+      }
+    }
+  }
+}
+
 app.post("/api/chat", async (req, res) => {
   try {
     // OpenAI is used only if the signed-in account has saved its own key
@@ -785,6 +848,12 @@ app.post("/api/chat", async (req, res) => {
 
       const data = await openaiRes.json();
 
+      const realDocNames = [
+        ...attachedFileBlocks.map(f => f.filename),
+        ...textDocuments.map(doc => doc.fileName || doc.title)
+      ].filter(Boolean);
+      fixDocumentFieldsInResponse(data, realDocNames);
+
       return res.status(openaiRes.status).json(data);
     }
 
@@ -818,6 +887,11 @@ app.post("/api/chat", async (req, res) => {
     // never forward an arbitrary client-supplied string to OpenRouter.
     const selectedOpenrouterModel = OPENROUTER_MODEL_IDS.has(model) ? model : OPENROUTER_MODEL;
     const result = await callOpenrouter(selectedOpenrouterModel, openrouterInput);
+
+    if (result.ok) {
+      const realDocNames = attachedDocuments.map(doc => doc.fileName || doc.title).filter(Boolean);
+      fixDocumentFieldsInResponse(result.data, realDocNames);
+    }
 
     // OpenRouter can return HTTP 200 with status:"failed" in the body
     // (e.g. an overloaded upstream free model) rather than a non-2xx
