@@ -552,6 +552,18 @@
   }
   .context-doc-remove:hover{ color:#d98b8b; }
   .context-doc-empty{ font-size:12.5px; color:var(--text-muted); margin-bottom:10px; }
+  .cookie-field-row{ display:flex; gap:8px; align-items:center; }
+  .cookie-field-row input{ flex:1; min-width:0; }
+  .cookie-field-row .btn-secondary{ flex:0 0 auto; white-space:nowrap; }
+  .context-doc-item-auto{
+    display:flex; align-items:center; gap:8px;
+    background:none; border:1px dashed var(--hairline); border-radius:var(--radius);
+    padding:8px 10px; font-size:12.5px; color:var(--text-muted);
+  }
+  .context-doc-item-auto .context-doc-auto-badge{
+    font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:0.06em; text-transform:uppercase;
+    color:var(--brass); border:1px solid var(--brass-dim); border-radius:3px; padding:1px 5px; flex:0 0 auto;
+  }
   .context-prompt-textarea{ min-height:120px; }
   .doc-picker-list{
     display:flex; flex-direction:column; gap:4px;
@@ -2576,6 +2588,8 @@ pre code {
     <h2>Assignment context</h2>
     <p>Add any documents this assignment needs beyond its own instructions, and write anything else the model should know. Saved context is sent together with the assignment's own matched document (if any) whenever you click Complete.</p>
     <div class="settings-form">
+      <label>Auto-matched by title (sent automatically, no need to add these below)</label>
+      <div class="context-doc-list context-doc-list-auto" id="assignmentContextAutoMatchList"></div>
       <label>Context documents</label>
       <div class="context-doc-list" id="assignmentContextDocList"></div>
       <button type="button" class="btn-secondary" id="assignmentContextAddDocBtn">+ Add document</button>
@@ -2597,7 +2611,10 @@ pre code {
       <label for="quizScrapeBaseUrl">Canvas base URL</label>
       <input type="text" id="quizScrapeBaseUrl" placeholder="https://canvas.yourschool.edu" autocomplete="off" spellcheck="false">
       <label for="quizScrapeCookie">Session cookie value</label>
-      <input type="password" id="quizScrapeCookie" placeholder="_normandy_session value, or the full Cookie header" autocomplete="off" spellcheck="false">
+      <div class="cookie-field-row">
+        <input type="password" id="quizScrapeCookie" placeholder="_normandy_session value, or the full Cookie header" autocomplete="off" spellcheck="false">
+        <button type="button" class="btn-secondary" id="quizScrapeLoginBtn" title="Opens a real browser window so you can log into Canvas yourself (including SSO/2FA) and fills this in automatically -- only works when this app is running locally, not on a headless server">Log in instead</button>
+      </div>
       <div class="settings-actions">
         <button type="button" id="quizScrapeRunBtn">Scrape questions</button>
         <button type="button" class="btn-secondary" id="quizScrapeCloseBtn">Close</button>
@@ -2975,7 +2992,10 @@ pre code {
               <option value="36787">Torts (36787)</option>
             </select>
             <label for="docImportCookie">Session cookie value</label>
-            <input type="password" id="docImportCookie" placeholder="_normandy_session value, or the full Cookie header" autocomplete="off" spellcheck="false">
+            <div class="cookie-field-row">
+              <input type="password" id="docImportCookie" placeholder="_normandy_session value, or the full Cookie header" autocomplete="off" spellcheck="false">
+              <button type="button" class="btn-secondary" id="docImportLoginBtn" title="Opens a real browser window so you can log into Canvas yourself (including SSO/2FA) and fills this in automatically -- only works when this app is running locally, not on a headless server">Log in instead</button>
+            </div>
             <div class="doc-import-actions">
               <button type="button" id="docImportBtn">Import course materials</button>
               <span class="doc-import-status" id="docImportStatus"></span>
@@ -6036,6 +6056,48 @@ function renderDocumentsList(){
 
 document.getElementById("docRefreshBtn").addEventListener("click", refreshDocumentsList);
 
+// Alternative to pasting a session cookie by hand: opens a real, visible
+// browser window (server-side, via /api/canvas/login-session) pointed at
+// Canvas's own login page, and lets the user log in themselves -- whatever
+// that actually takes (direct Canvas login, or a full SSO/2FA round-trip) --
+// without this app ever seeing a password. Once they're logged in there,
+// the resulting session cookie is read off that browser and dropped into
+// the given cookie field automatically. Only works when the proxy server
+// itself has a real display to show that window on (i.e. running locally) --
+// fails clearly, rather than hanging, when it can't (e.g. the EC2 deploy).
+async function loginToCanvasViaBrowser(baseUrlInputId, cookieInputId, statusElId, btn){
+  const baseUrl = document.getElementById(baseUrlInputId).value.trim();
+  const statusEl = statusElId ? document.getElementById(statusElId) : null;
+  if (!baseUrl){
+    if (statusEl) statusEl.textContent = "Enter the Canvas base URL first.";
+    return;
+  }
+  const originalText = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = "Waiting…";
+  if (statusEl) statusEl.textContent = "A browser window just opened -- log into Canvas there (including any 2FA), then come back here.";
+  try{
+    const res = await fetch(PROXY_ORIGIN + "/api/canvas/login-session", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ baseUrl })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "Login failed.");
+    document.getElementById(cookieInputId).value = data.cookie;
+    if (statusEl) statusEl.textContent = "Logged in -- session cookie filled in above.";
+  } catch(e){
+    if (statusEl) statusEl.textContent = "Couldn't log in: " + e.message;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = originalText;
+  }
+}
+document.getElementById("docImportLoginBtn").addEventListener("click", (e) =>
+  loginToCanvasViaBrowser("docImportBaseUrl", "docImportCookie", "docImportStatus", e.currentTarget));
+document.getElementById("quizScrapeLoginBtn").addEventListener("click", (e) =>
+  loginToCanvasViaBrowser("quizScrapeBaseUrl", "quizScrapeCookie", "quizScrapeStatus", e.currentTarget));
+
 document.getElementById("docImportBtn").addEventListener("click", async () => {
   const baseUrl = document.getElementById("docImportBaseUrl").value.trim();
   const courseId = document.getElementById("docImportCourseId").value.trim();
@@ -6521,7 +6583,7 @@ function renderAgentRun(run){
   // The run's own id doubles as its Claude Code session id (see
   // agent-runtime.js's --session-id) -- from an SSH session on the server,
   // cd into the repo and run this to open/continue that exact conversation.
-  resumeEl.textContent = `SSH: claude --resume ${run.id}`;
+  resumeEl.textContent = `claude --resume ${run.id}`;
   resumeEl.style.display = "block";
 
   // The moment a run leaves "running" (finishes or errors), force the
@@ -8014,7 +8076,14 @@ function normalizeForMatch(s){
     .toLowerCase()
     .replace(/[^a-z0-9 ]/g, " ")
     .split(/\s+/)
-    .filter(w => w.length >= 3 && !MATCH_STOPWORDS.has(w));
+    // A short word gets dropped as noise UNLESS it's a bare number -- "Week 1
+    // Practice Quiz" vs "Week 2 Practice Quiz" would otherwise both normalize
+    // to the identical {week, practice, quiz} (their only distinguishing word
+    // is the single-digit week number, filtered out by the length check),
+    // making findDocumentMatches() score both as equally perfect matches for
+    // either quiz. Numbers carry real identifying signal regardless of digit
+    // count (week/chapter/rule/question numbers), unlike short filler words.
+    .filter(w => w && (/^[0-9]+$/.test(w) || (w.length >= 3 && !MATCH_STOPWORDS.has(w))));
   return new Set(words);
 }
 
@@ -8029,6 +8098,11 @@ function normalizeForMatch(s){
 function findDocumentMatches(queryText, docs){
   const queryWords = normalizeForMatch(queryText);
   if (!queryWords.size || !Array.isArray(docs) || !docs.length) return [];
+  // Numbers named in the query text ("Week 2 Practice Quiz" -> {"2"}) -- see
+  // the conflicting-number check below, which is what actually keeps a
+  // same-course near-duplicate title ("Week 1 Practice Quiz") from matching
+  // right alongside the correct one.
+  const queryNumbers = new Set([...queryWords].filter(w => /^[0-9]+$/.test(w)));
 
   const withWords = docs.map(doc => ({ doc, words: normalizeForMatch(doc.title) }));
 
@@ -8046,6 +8120,15 @@ function findDocumentMatches(queryText, docs){
   const scored = [];
   for (const { doc, words: titleWords } of withWords){
     if (!titleWords.size) continue; // e.g. a title that's all citation numbers/symbols
+    // A numbered title (e.g. "Week 1 Practice Quiz") whose number doesn't
+    // match any number named in the query (e.g. "Week 2 Practice Quiz") is a
+    // near-duplicate of the actually-correct title with one digit changed --
+    // word overlap alone can't tell those apart (both reduce to the same
+    // {week, practice, quiz} otherwise), so a query/title that each name a
+    // number, but a different one, is a hard mismatch rather than just a
+    // lower-ranked one.
+    const titleNumbers = [...titleWords].filter(w => /^[0-9]+$/.test(w));
+    if (queryNumbers.size && titleNumbers.length && !titleNumbers.some(n => queryNumbers.has(n))) continue;
     const overlapWords = [...titleWords].filter(w => queryWords.has(w));
     if (!overlapWords.length) continue;
     const ratio = overlapWords.length / titleWords.size;
@@ -8428,7 +8511,40 @@ function openAssignmentContextModal(courseCode, text, onSaved){
   contextModalDraft = { documentIds: saved.documentIds.slice(), prompt: saved.prompt };
   document.getElementById("assignmentContextPromptTextarea").value = contextModalDraft.prompt;
   renderAssignmentContextDocList();
+  renderContextAutoMatchList();
   document.getElementById("assignmentContextOverlay").style.display = "flex";
+}
+
+// Shows whatever completeAssignment()/completeQuiz() would ALSO auto-attach
+// by title-matching the assignment/quiz text (see lookupCanvasMatches) --
+// read-only, no add/remove here, since it's not part of the manually-curated
+// context list. Without this, there was no way to see from the Context modal
+// whether a scraped quiz (or any other Canvas document) was actually going
+// to be sent, short of reading the generated report's own "Attached:" line
+// after the fact.
+function renderContextAutoMatchList(){
+  const wrap = document.getElementById("assignmentContextAutoMatchList");
+  wrap.innerHTML = "";
+  const matches = findLocalCanvasMatches(contextModalText, contextModalCourseCode);
+  if (!matches.length){
+    const empty = document.createElement("div");
+    empty.className = "context-doc-empty";
+    empty.textContent = "No document currently matches this assignment/quiz's title.";
+    wrap.appendChild(empty);
+    return;
+  }
+  matches.forEach(doc => {
+    const row = document.createElement("div");
+    row.className = "context-doc-item-auto";
+    const badge = document.createElement("span");
+    badge.className = "context-doc-auto-badge";
+    badge.textContent = "Auto";
+    row.appendChild(badge);
+    const label = document.createElement("span");
+    label.textContent = doc.title;
+    row.appendChild(label);
+    wrap.appendChild(row);
+  });
 }
 function closeAssignmentContextModal(){
   document.getElementById("assignmentContextOverlay").style.display = "none";
