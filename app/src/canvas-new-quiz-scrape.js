@@ -102,6 +102,47 @@ async function waitForRealContent(page, timeout, minChars = 500) {
   return last;
 }
 
+// waitForRealContent's "stopped growing" heuristic treats a stable page as
+// done loading -- but a New Quizzes screen's "Loading..." skeleton is ALSO
+// stable while it's stuck (nothing on it is changing either), so that
+// heuristic alone returns the skeleton itself as if it were the finished
+// question. This is a stricter, question-specific readiness check for
+// exactly that: every real New Quizzes question screen shows a
+// "Flag question: Question N" line once it's actually rendered, so poll
+// until that shows up rather than trusting mere text-stability. Falls back
+// to whatever's on screen at timeout (rather than hanging indefinitely) for
+// a quiz variant/final screen that never shows that marker at all.
+async function waitForQuestionContent(page, timeout = 15000) {
+  const start = Date.now();
+  let last = "";
+  while (Date.now() - start < timeout) {
+    const { text } = await collectFromAllFrames(page).catch(() => ({ text: "" }));
+    if (/flag question:/i.test(text)) return text;
+    last = text;
+    await new Promise(r => setTimeout(r, 400));
+  }
+  return last;
+}
+
+// Trims a screen's full page text (nav chrome, the question-navigator
+// sidebar, and the countdown timer -- all identical/near-identical across
+// every screen) down to just the one question's own content: from its
+// "Flag question:" marker through its answer choices and Next/Previous
+// controls, dropping everything from "Not saved Submit Quiz" onward (the
+// repeated sidebar + ticking timer, which also broke the "did Next actually
+// do anything" duplicate-screen check below, since two reads of the SAME
+// question a second apart never matched thanks to the timer alone). Falls
+// back to the untrimmed text if the marker isn't found, rather than risking
+// silently losing real content.
+function extractQuestionContent(fullText) {
+  const startMatch = /Flag question:/i.exec(fullText);
+  if (!startMatch) return fullText;
+  let body = fullText.slice(startMatch.index);
+  const endMatch = /\n\s*Not saved Submit Quiz\b/i.exec(body);
+  if (endMatch) body = body.slice(0, endMatch.index);
+  return body.trim();
+}
+
 async function clickFirstMatchAnyFrame(page, pattern) {
   for (const frame of page.frames()) {
     const clicked = await frame.evaluate((patternSrc) => {
@@ -186,7 +227,7 @@ async function scrapeNewQuiz(quizUrl, cookieHeader, baseOrigin) {
     const startClicked = await clickFirstMatchAnyFrame(page, /^(start|begin|resume|take the quiz|start quiz|start attempt|resume quiz|resume attempt)\b/i);
     if (startClicked) {
       await new Promise(r => setTimeout(r, 1000));
-      await waitForRealContent(page, 20000);
+      await waitForQuestionContent(page, 20000);
     }
 
     // One-question-at-a-time quizzes only ever show one question's worth of
@@ -201,14 +242,13 @@ async function scrapeNewQuiz(quizUrl, cookieHeader, baseOrigin) {
     // question count, purely to guarantee this loop can't run forever if a
     // "Next"-shaped button turns out not to actually be one.
     const MAX_SCREENS = 40;
-    const screens = [(await collectFromAllFrames(page)).text];
+    const screens = [extractQuestionContent(await waitForQuestionContent(page, 15000))];
     let previousText = screens[0];
     while (screens.length < MAX_SCREENS && await hasNextButton(page)) {
       const clickedNext = await clickFirstMatchAnyFrame(page, NEXT_BUTTON_PATTERN);
       if (!clickedNext) break;
-      await new Promise(r => setTimeout(r, 800));
-      await waitForRealContent(page, 15000);
-      const { text } = await collectFromAllFrames(page);
+      await new Promise(r => setTimeout(r, 500));
+      const text = extractQuestionContent(await waitForQuestionContent(page, 15000));
       if (text === previousText) break; // Next didn't actually change anything -- stop rather than loop forever
       screens.push(text);
       previousText = text;

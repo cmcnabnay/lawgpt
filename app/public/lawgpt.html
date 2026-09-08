@@ -2613,7 +2613,7 @@ pre code {
       <label for="quizScrapeCookie">Session cookie value</label>
       <div class="cookie-field-row">
         <input type="password" id="quizScrapeCookie" placeholder="_normandy_session value, or the full Cookie header" autocomplete="off" spellcheck="false">
-        <button type="button" class="btn-secondary" id="quizScrapeLoginBtn" title="Opens a real browser window so you can log into Canvas yourself (including SSO/2FA) and fills this in automatically -- only works when this app is running locally, not on a headless server">Log in instead</button>
+        <button type="button" class="btn-secondary" id="quizScrapeLoginBtn" title="Opens a real browser window so you can log into Canvas yourself (including SSO/2FA) and fills this in automatically. If this app is running on a remote server, connect your VNC viewer to it FIRST so you can see the window that opens.">Log in instead</button>
       </div>
       <div class="settings-actions">
         <button type="button" id="quizScrapeRunBtn">Scrape questions</button>
@@ -2994,7 +2994,7 @@ pre code {
             <label for="docImportCookie">Session cookie value</label>
             <div class="cookie-field-row">
               <input type="password" id="docImportCookie" placeholder="_normandy_session value, or the full Cookie header" autocomplete="off" spellcheck="false">
-              <button type="button" class="btn-secondary" id="docImportLoginBtn" title="Opens a real browser window so you can log into Canvas yourself (including SSO/2FA) and fills this in automatically -- only works when this app is running locally, not on a headless server">Log in instead</button>
+              <button type="button" class="btn-secondary" id="docImportLoginBtn" title="Opens a real browser window so you can log into Canvas yourself (including SSO/2FA) and fills this in automatically. If this app is running on a remote server, connect your VNC viewer to it FIRST so you can see the window that opens.">Log in instead</button>
             </div>
             <div class="doc-import-actions">
               <button type="button" id="docImportBtn">Import course materials</button>
@@ -6755,10 +6755,76 @@ For every case, create a separate case brief containing exactly these fields, in
     - [legally significant fact — what happened, what the plaintiff did, what the defendant did, relevant dates]
     - [fact that became important to the court's reasoning]
     - ...
-- <b>Procedural Posture</b>: Show only the status in the current court and the rulings of any earlier courts — never the current court's own decision (that belongs in Holding/Disposition below). Use whichever of these applies to the case:
-    - If the case is still in the trial court and has not been appealed: state the trial court status, e.g. "[Plaintiff] is suing [Defendant] in the [name of trial court]."
-    - If the case was appealed once (trial court → appeals court): state, in order, (1) the trial court's ruling and (2) the appeals court status, e.g. "The [trial court] ruled [ruling]." then "[Appellant — the plaintiff or defendant who lost below] is appealing the [trial court]'s ruling in the [appeals court]; [the other party] is the appellee."
-    - If the case went beyond the first appeal (e.g. to a state supreme court or the U.S. Supreme Court): state, in order, (1) the trial court's ruling, (2) the appeals court's ruling, and (3) the higher court status, e.g. "The [trial court] ruled [ruling]." then "The [appeals court] ruled [ruling]." then "[Appellant] is appealing the [lower court]'s ruling in the [higher court]; [the other party] is the appellee."
+- <b>Procedural Posture</b>: Trace the case's full procedural path in chronological order, ending with the posture in the court that authored the assigned opinion, and NEVER state that court's own ruling, reasoning, or disposition — those belong in Holding and Disposition below. Put the chain on the lines following this header, indented beneath it, one step per line, each beginning with "-" followed immediately by the content of that step. Do not bold anything in these lines, do not label them, and do not add any indented line that is not itself a step in the chain.
+
+    Court steps and movement steps must strictly alternate: every court in the chain other than the current one gets its own court step stating what it ruled, and every transition between two courts gets its own movement step — never move from one court step directly to another, and never place the current court immediately after a movement step that departed from a court two levels below. One court produces one line, two courts produce three lines, three courts produce five, four courts produce seven; count your lines against the number of courts before finishing.
+
+    A court step reads "[Full specific court name]: [what it ruled] on [procedural vehicle]" — name the court specifically and completely, never "the trial court" or "the court below" standing alone, and always identify the vehicle the ruling came on (Rule 12(b)(6) dismissal, summary judgment, jury verdict, directed verdict or JMOL, bench trial findings, JNOV, demurrer, motion to suppress, conviction and sentence, agency final order, habeas denial, preliminary injunction, class certification), since the standard of review depends on it; if the ruling was partial, say which claims went which way.
+
+    A movement step reads "[Movement type]: [party, by composite role] sought review in [destination court] on the grounds that [alleged error]," stating the error as the moving party framed it rather than as the current court later characterized it.
+
+    The final step reads "[Current court]: [party] is the [appellant/petitioner]; [party] is the [appellee/respondent]," adding how the case arrived if review was discretionary.
+
+    Carry party roles forward compositely on every line — "Plaintiff-Appellant," "Defendant-Appellee," "Petitioner (defendant below)," "the State (prosecuting party below, petitioner here)" — because the party who was plaintiff below is often the appellee above and a bare "appellant" is ambiguous two levels up.
+
+    Where a court's name is misleading about its rank, say what it is on that line (for example, New York's trial court of general jurisdiction is styled the Supreme Court of New York).
+
+    Use the movement type that actually applies rather than defaulting to "Appeal": appeal of right, petition for writ of certiorari, petition for discretionary review, direct appeal bypassing the intermediate court, interlocutory appeal, certified question, petition for review of agency action, rehearing en banc, original jurisdiction, removal, transfer, remand, federal habeas, bankruptcy appeal, or Article I court appeal.
+
+    If the current court consolidated multiple cases, give a separate chain for each, identify each by name and originating court, and state why they were consolidated.
+
+    If the opinion does not disclose a step, write "the opinion does not state" rather than inferring it.
+
+    Do not end any line in this field with a period.
+
+    Select the matching pattern from the eight below and follow its shape exactly — these are reference patterns, so never reproduce their scenario headings, never state which pattern you used, and replace every bracketed placeholder with the actual courts, parties, rulings, and grounds from the reading.
+
+    SCENARIO 1 — FEDERAL, TRIAL COURT ONLY (1 line, no ruling stated)
+    - U.S. District Court for the [District]: [Plaintiff] sued [Defendant] for [claim], and the case [was tried to the bench without a jury / is before the court on [Defendant]'s motion for summary judgment / is before the court on [Defendant]'s motion to dismiss under Rule 12(b)(6)]
+
+    SCENARIO 2 — FEDERAL, TRIAL COURT TO COURT OF APPEALS (3 lines)
+    - U.S. District Court for the [District]: [ruling] on [procedural vehicle]
+    - Appeal of right: [Party]-Appellant sought review in the U.S. Court of Appeals for the [Nth] Circuit on the grounds that [alleged error as the appellant framed it]
+    - U.S. Court of Appeals for the [Nth] Circuit: [Party] is the appellant; [Party] is the appellee
+
+    SCENARIO 3 — FEDERAL, TRIAL COURT TO COURT OF APPEALS TO U.S. SUPREME COURT (5 lines)
+    - U.S. District Court for the [District]: [ruling] on [procedural vehicle]
+    - Appeal of right: [Party]-Appellant sought review in the U.S. Court of Appeals for the [Nth] Circuit on the grounds that [alleged error]
+    - U.S. Court of Appeals for the [Nth] Circuit: [affirmed / reversed / vacated and remanded], holding that [holding]
+    - Petition for writ of certiorari: [Party]-Petitioner sought review in the U.S. Supreme Court on the grounds that [alleged error]
+    - U.S. Supreme Court: [Party] is the petitioner; [Party] is the respondent; certiorari granted [to resolve a split among the circuits / to address [question]]
+
+    SCENARIO 4 — STATE, TRIAL COURT ONLY (1 line, no ruling stated)
+    - [Full name of state trial court, with county or district]: [Plaintiff] sued [Defendant] for [claim], and the case [was tried to the bench without a jury / was tried to a jury / is before the court on [motion]]
+
+    SCENARIO 5 — STATE, TRIAL COURT TO INTERMEDIATE APPELLATE COURT (3 lines)
+    - [Full name of state trial court, with county or district]: [ruling] on [procedural vehicle]
+    - Appeal of right: [Party]-Appellant sought review in the [full name of the intermediate appellate court, with district or division] on the grounds that [alleged error]
+    - [Full name of the intermediate appellate court, with district or division]: [Party] is the appellant; [Party] is the appellee
+
+    SCENARIO 6 — STATE, TRIAL COURT TO INTERMEDIATE APPELLATE COURT TO STATE COURT OF LAST RESORT (5 lines)
+    - [Full name of state trial court, with county or district]: [ruling] on [procedural vehicle]
+    - Appeal of right: [Party]-Appellant sought review in the [intermediate appellate court] on the grounds that [alleged error]
+    - [Intermediate appellate court]: [affirmed / reversed / modified], holding that [holding]
+    - [Appeal of right / Petition for discretionary review]: [Party]-Appellant sought review in the [state court of last resort] on the grounds that [alleged error]
+    - [State court of last resort]: [Party] is the appellant; [Party] is the appellee
+
+    SCENARIO 7 — STATE TRIAL COURT TO STATE INTERMEDIATE APPELLATE COURT TO STATE COURT OF LAST RESORT TO U.S. SUPREME COURT (7 lines)
+    - [Full name of state trial court, with county or district]: [ruling] on [procedural vehicle]
+    - Appeal of right: [Party]-Appellant sought review in the [intermediate appellate court] on the grounds that [alleged federal error]
+    - [Intermediate appellate court]: [affirmed / reversed], holding that [holding]
+    - [Appeal of right / Petition for discretionary review]: [Party]-Appellant sought review in the [state court of last resort] on the grounds that [alleged federal error]
+    - [State court of last resort]: [affirmed / reversed], holding that [holding]
+    - Petition for writ of certiorari: [Party, with role below identified]-Petitioner sought review in the U.S. Supreme Court on the grounds that [alleged federal error]
+    - U.S. Supreme Court: [Party] is the petitioner; [Party] is the respondent; certiorari granted, the [state court of last resort] having rested its judgment on [the federal question] rather than on an adequate and independent state ground
+
+    SCENARIO 8 — INTERNATIONAL OR FOREIGN COURT (line count varies; open with the jurisdictional step, then alternate as above)
+    - [Forum system]: jurisdiction rests on [treaty article / compromis / arbitration clause / optional-clause declaration], and [state the stage: contentious proceedings between [Party] and [Party] / advisory proceedings, no contentious parties, requested by [organ] under [provision]]
+    - [Domestic court, where exhaustion of local remedies is required]: [ruling] on [procedural vehicle]
+    - [Movement type]: [Party] sought review in [destination body] on the grounds that [alleged error]
+    - [International body]: [ruling on preliminary objections, jurisdiction, or admissibility, where contested]
+    - [Movement type from the international vocabulary]: [Party] sought [review / annulment / referral] in [destination] on the grounds that [alleged error]
+    - [Current body]: [Party] is the [applicant / petitioner / claimant / appellant]; [Party] is the [respondent], and [note whether the body sits as a single instance with no appellate layer, and whether its remedial power is declaratory or leaves compliance to the states or to a political organ]
 - <b>Issue</b>: State the legal question the court had to answer, as a precise question (prefer "Whether ___").
 - <b>Holding</b>: Give the current court's answer to the legal issue, and name that court (trial court, appeals court, state supreme court, etc.) rather than referring to it generically as "the court" — Procedural Posture may reference a different, earlier court's ruling, so the court doing the holding must be clear.
 - <b>Rule</b>: State the rule's name/citation followed by its one-sentence statement — e.g., "Restatement (Second) § 39: A counteroffer constitutes a rejection of the original offer and creates a new offer for the original offeror to accept." Do NOT repeat the full Document/Legal Question/Requirements/Application/Exceptions breakdown here — that belongs in the Rules section above, and this rule must appear there in full under this same name/citation (add it there if it isn't already listed).
@@ -6879,10 +6945,76 @@ Create a complete case brief using exactly this format:
     - [fact that became important to the court's legal analysis]
     - [fact that distinguishes this case from the precedent discussed by the court]
     - ...
-- <b>Procedural Posture</b>: Show only the status in the current court and the rulings of any earlier courts — never the current court's own decision (that belongs in Holding/Disposition below). Use whichever of these applies to the case:
-    - If the case is still in the trial court and has not been appealed: state the trial court status, e.g. "[Plaintiff] is suing [Defendant] in the [name of trial court]."
-    - If the case was appealed once (trial court → appeals court): state, in order, (1) the trial court's ruling and (2) the appeals court status, e.g. "The [trial court] ruled [ruling]." then "[Appellant — the plaintiff or defendant who lost below] is appealing the [trial court]'s ruling in the [appeals court]; [the other party] is the appellee."
-    - If the case went beyond the first appeal (e.g. to a state supreme court or the U.S. Supreme Court): state, in order, (1) the trial court's ruling, (2) the appeals court's ruling, and (3) the higher court status, e.g. "The [trial court] ruled [ruling]." then "The [appeals court] ruled [ruling]." then "[Appellant] is appealing the [lower court]'s ruling in the [higher court]; [the other party] is the appellee."
+- <b>Procedural Posture</b>: Trace the case's full procedural path in chronological order, ending with the posture in the court that authored the assigned opinion, and NEVER state that court's own ruling, reasoning, or disposition — those belong in Holding and Disposition below. Put the chain on the lines following this header, indented beneath it, one step per line, each beginning with "-" followed immediately by the content of that step. Do not bold anything in these lines, do not label them, and do not add any indented line that is not itself a step in the chain.
+
+    Court steps and movement steps must strictly alternate: every court in the chain other than the current one gets its own court step stating what it ruled, and every transition between two courts gets its own movement step — never move from one court step directly to another, and never place the current court immediately after a movement step that departed from a court two levels below. One court produces one line, two courts produce three lines, three courts produce five, four courts produce seven; count your lines against the number of courts before finishing.
+
+    A court step reads "[Full specific court name]: [what it ruled] on [procedural vehicle]" — name the court specifically and completely, never "the trial court" or "the court below" standing alone, and always identify the vehicle the ruling came on (Rule 12(b)(6) dismissal, summary judgment, jury verdict, directed verdict or JMOL, bench trial findings, JNOV, demurrer, motion to suppress, conviction and sentence, agency final order, habeas denial, preliminary injunction, class certification), since the standard of review depends on it; if the ruling was partial, say which claims went which way.
+
+    A movement step reads "[Movement type]: [party, by composite role] sought review in [destination court] on the grounds that [alleged error]," stating the error as the moving party framed it rather than as the current court later characterized it.
+
+    The final step reads "[Current court]: [party] is the [appellant/petitioner]; [party] is the [appellee/respondent]," adding how the case arrived if review was discretionary.
+
+    Carry party roles forward compositely on every line — "Plaintiff-Appellant," "Defendant-Appellee," "Petitioner (defendant below)," "the State (prosecuting party below, petitioner here)" — because the party who was plaintiff below is often the appellee above and a bare "appellant" is ambiguous two levels up.
+
+    Where a court's name is misleading about its rank, say what it is on that line (for example, New York's trial court of general jurisdiction is styled the Supreme Court of New York).
+
+    Use the movement type that actually applies rather than defaulting to "Appeal": appeal of right, petition for writ of certiorari, petition for discretionary review, direct appeal bypassing the intermediate court, interlocutory appeal, certified question, petition for review of agency action, rehearing en banc, original jurisdiction, removal, transfer, remand, federal habeas, bankruptcy appeal, or Article I court appeal.
+
+    If the current court consolidated multiple cases, give a separate chain for each, identify each by name and originating court, and state why they were consolidated.
+
+    If the opinion does not disclose a step, write "the opinion does not state" rather than inferring it.
+
+    Do not end any line in this field with a period.
+
+    Select the matching pattern from the eight below and follow its shape exactly — these are reference patterns, so never reproduce their scenario headings, never state which pattern you used, and replace every bracketed placeholder with the actual courts, parties, rulings, and grounds from the reading.
+
+    SCENARIO 1 — FEDERAL, TRIAL COURT ONLY (1 line, no ruling stated)
+    - U.S. District Court for the [District]: [Plaintiff] sued [Defendant] for [claim], and the case [was tried to the bench without a jury / is before the court on [Defendant]'s motion for summary judgment / is before the court on [Defendant]'s motion to dismiss under Rule 12(b)(6)]
+
+    SCENARIO 2 — FEDERAL, TRIAL COURT TO COURT OF APPEALS (3 lines)
+    - U.S. District Court for the [District]: [ruling] on [procedural vehicle]
+    - Appeal of right: [Party]-Appellant sought review in the U.S. Court of Appeals for the [Nth] Circuit on the grounds that [alleged error as the appellant framed it]
+    - U.S. Court of Appeals for the [Nth] Circuit: [Party] is the appellant; [Party] is the appellee
+
+    SCENARIO 3 — FEDERAL, TRIAL COURT TO COURT OF APPEALS TO U.S. SUPREME COURT (5 lines)
+    - U.S. District Court for the [District]: [ruling] on [procedural vehicle]
+    - Appeal of right: [Party]-Appellant sought review in the U.S. Court of Appeals for the [Nth] Circuit on the grounds that [alleged error]
+    - U.S. Court of Appeals for the [Nth] Circuit: [affirmed / reversed / vacated and remanded], holding that [holding]
+    - Petition for writ of certiorari: [Party]-Petitioner sought review in the U.S. Supreme Court on the grounds that [alleged error]
+    - U.S. Supreme Court: [Party] is the petitioner; [Party] is the respondent; certiorari granted [to resolve a split among the circuits / to address [question]]
+
+    SCENARIO 4 — STATE, TRIAL COURT ONLY (1 line, no ruling stated)
+    - [Full name of state trial court, with county or district]: [Plaintiff] sued [Defendant] for [claim], and the case [was tried to the bench without a jury / was tried to a jury / is before the court on [motion]]
+
+    SCENARIO 5 — STATE, TRIAL COURT TO INTERMEDIATE APPELLATE COURT (3 lines)
+    - [Full name of state trial court, with county or district]: [ruling] on [procedural vehicle]
+    - Appeal of right: [Party]-Appellant sought review in the [full name of the intermediate appellate court, with district or division] on the grounds that [alleged error]
+    - [Full name of the intermediate appellate court, with district or division]: [Party] is the appellant; [Party] is the appellee
+
+    SCENARIO 6 — STATE, TRIAL COURT TO INTERMEDIATE APPELLATE COURT TO STATE COURT OF LAST RESORT (5 lines)
+    - [Full name of state trial court, with county or district]: [ruling] on [procedural vehicle]
+    - Appeal of right: [Party]-Appellant sought review in the [intermediate appellate court] on the grounds that [alleged error]
+    - [Intermediate appellate court]: [affirmed / reversed / modified], holding that [holding]
+    - [Appeal of right / Petition for discretionary review]: [Party]-Appellant sought review in the [state court of last resort] on the grounds that [alleged error]
+    - [State court of last resort]: [Party] is the appellant; [Party] is the appellee
+
+    SCENARIO 7 — STATE TRIAL COURT TO STATE INTERMEDIATE APPELLATE COURT TO STATE COURT OF LAST RESORT TO U.S. SUPREME COURT (7 lines)
+    - [Full name of state trial court, with county or district]: [ruling] on [procedural vehicle]
+    - Appeal of right: [Party]-Appellant sought review in the [intermediate appellate court] on the grounds that [alleged federal error]
+    - [Intermediate appellate court]: [affirmed / reversed], holding that [holding]
+    - [Appeal of right / Petition for discretionary review]: [Party]-Appellant sought review in the [state court of last resort] on the grounds that [alleged federal error]
+    - [State court of last resort]: [affirmed / reversed], holding that [holding]
+    - Petition for writ of certiorari: [Party, with role below identified]-Petitioner sought review in the U.S. Supreme Court on the grounds that [alleged federal error]
+    - U.S. Supreme Court: [Party] is the petitioner; [Party] is the respondent; certiorari granted, the [state court of last resort] having rested its judgment on [the federal question] rather than on an adequate and independent state ground
+
+    SCENARIO 8 — INTERNATIONAL OR FOREIGN COURT (line count varies; open with the jurisdictional step, then alternate as above)
+    - [Forum system]: jurisdiction rests on [treaty article / compromis / arbitration clause / optional-clause declaration], and [state the stage: contentious proceedings between [Party] and [Party] / advisory proceedings, no contentious parties, requested by [organ] under [provision]]
+    - [Domestic court, where exhaustion of local remedies is required]: [ruling] on [procedural vehicle]
+    - [Movement type]: [Party] sought review in [destination body] on the grounds that [alleged error]
+    - [International body]: [ruling on preliminary objections, jurisdiction, or admissibility, where contested]
+    - [Movement type from the international vocabulary]: [Party] sought [review / annulment / referral] in [destination] on the grounds that [alleged error]
+    - [Current body]: [Party] is the [applicant / petitioner / claimant / appellant]; [Party] is the [respondent], and [note whether the body sits as a single instance with no appellate layer, and whether its remedial power is declaratory or leaves compliance to the states or to a political organ]
 - <b>Issue</b>: State the legal issue as a precise question (prefer "Whether ___"). If there are multiple issues, identify the primary issue and any secondary issues.
 - <b>Holding</b>: State exactly what the current court held, in one or two clear sentences, and name that court (trial court, appeals court, state supreme court, etc.) rather than referring to it generically as "the court" — Procedural Posture may reference a different, earlier court's ruling, so the court doing the holding must be clear.
 - <b>Rule</b>: State the rule's name/citation followed by its one-sentence statement — e.g., "Restatement (Second) § 39: A counteroffer constitutes a rejection of the original offer and creates a new offer for the original offeror to accept." Do NOT repeat the full Document/Legal Question/Requirements/Application/Exceptions breakdown here — that belongs in the Rules section above, and this rule must appear there in full under this same name/citation (add it there if it isn't already listed).

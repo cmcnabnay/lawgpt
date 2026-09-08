@@ -304,6 +304,94 @@ async function extractText(buffer, contentType, filename) {
   return null; // unsupported type — list it, but no text
 }
 
+// POST /api/canvas/login-session -- { baseUrl } -> { cookie }
+//
+// Alternative to pasting a session cookie by hand: opens a REAL, visible
+// browser window pointed at Canvas's own login page and lets the user log
+// in themselves -- including whatever their school actually requires
+// (direct Canvas username/password, or an SSO redirect out to Okta/
+// Shibboleth/Microsoft Entra/etc. with a Duo push or other 2FA step) --
+// without this app ever seeing a password. Once the browser is verified to
+// actually be logged in (see below), the resulting cookies are read straight
+// off that browser session and returned, ready to drop into the existing
+// cookie field.
+//
+// Requires a real display: `puppeteer.launch({ headless: false })` needs
+// somewhere to actually show a window, so this only works when THIS SERVER
+// PROCESS is running on a machine with one (e.g. locally) -- it will fail
+// outright on a headless deployment (the EC2 box), where the manual
+// cookie-paste fields remain the only option.
+router.post("/login-session", async (req, res) => {
+  const { baseUrl } = req.body || {};
+  if (!baseUrl) return res.status(400).json({ error: "baseUrl is required." });
+
+  let baseOrigin;
+  try {
+    baseOrigin = new URL(baseUrl).origin;
+  } catch (err) {
+    return res.status(400).json({ error: "That doesn't look like a valid URL." });
+  }
+
+  let browser;
+  try {
+    const puppeteer = require("puppeteer"); // lazy -- see the module-level comment on scrapeNewQuiz's own require
+    browser = await puppeteer.launch({ headless: false, args: ["--window-size=1200,900"] });
+    const page = await browser.newPage();
+    await page.setDefaultNavigationTimeout(0); // SSO + 2FA takes as long as it takes -- no arbitrary cutoff mid-login
+    await page.goto(baseOrigin + "/login/canvas", { waitUntil: "domcontentloaded" }).catch(() => {});
+
+    // Poll rather than waiting on a single navigation event -- an SSO login
+    // can bounce through any number of redirects (school IdP, Duo, back to
+    // Canvas) before landing anywhere final, and this doesn't need to know
+    // that chain in advance. Landing back on Canvas's own origin with no
+    // password field on screen is a necessary signal, but NOT sufficient on
+    // its own -- verified against a real SAML (Microsoft Entra) login: that
+    // moment can be a beat ahead of Canvas's server-side session actually
+    // being committed, so grabbing cookies right then captured an
+    // incomplete set that got bounced straight into a fresh SAML login on
+    // the very next real request. So once it looks done, this forces one
+    // more navigation to a page that only a fully-authenticated session can
+    // load (/courses) -- if the session genuinely isn't finished yet, Canvas
+    // just redirects back out to login again here, which simply re-enters
+    // the poll loop instead of reporting a false success. Cookies are only
+    // ever captured right after that confirmation page actually loads.
+    const deadline = Date.now() + 10 * 60 * 1000; // 10 minutes is generous slack for a slow 2FA approval
+    let cookieHeader = null;
+    while (Date.now() < deadline) {
+      if (page.isClosed()) break; // user closed the window themselves -- treat as a cancel, not a hang
+      const url = page.url();
+      if (url.startsWith(baseOrigin)) {
+        const hasPasswordField = await page.$('input[type="password"]').then(el => !!el).catch(() => true);
+        if (!hasPasswordField) {
+          await page.goto(baseOrigin + "/courses", { waitUntil: "domcontentloaded" }).catch(() => {});
+          await new Promise(r => setTimeout(r, 500));
+          const confirmedOnCanvas = page.url().startsWith(baseOrigin);
+          const stillHasPasswordField = await page.$('input[type="password"]').then(el => !!el).catch(() => true);
+          if (confirmedOnCanvas && !stillHasPasswordField) {
+            const cookies = await page.cookies(baseOrigin);
+            const header = cookies.map(c => `${c.name}=${c.value}`).join("; ");
+            if (header) { cookieHeader = header; break; }
+          }
+        }
+      }
+      await new Promise(r => setTimeout(r, 1000));
+    }
+
+    if (!cookieHeader) {
+      return res.status(408).json({ error: page.isClosed() ? "Login window was closed before finishing." : "Timed out waiting for login to complete." });
+    }
+
+    res.json({ cookie: cookieHeader });
+  } catch (err) {
+    res.status(500).json({
+      error: `Couldn't open a browser window to log in (${err.message}). This only works when the proxy server itself has a real display -- ` +
+        `e.g. running locally, not on a headless deployment. Paste your session cookie manually instead.`
+    });
+  } finally {
+    if (browser) await browser.close().catch(() => {});
+  }
+});
+
 router.post("/scrape", async (req, res) => {
   const { baseUrl, courseId, cookie } = req.body || {};
 
