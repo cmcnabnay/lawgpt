@@ -22,6 +22,7 @@ const DOCS_ROOT = canvasRoutes.DOCS_ROOT;
 // Loads code from email-routes.js
 const emailRoutes = require("./email-routes");
 const agentRoutes = require("./agent-routes");
+const documentOverrideStore = require("./document-override-store");
 const { getPca, SCOPES } = require("./email-auth");
 
 // Creates the express application
@@ -540,7 +541,7 @@ app.post("/api/auth/signup", requireAppDb, authLimiter, async (req, res) => {
     req.session.userId = user.id;
     req.session.email = user.email;
     req.session.role = user.role;
-    res.json({ ok: true, email: user.email });
+    res.json({ ok: true, email: user.email, role: user.role });
   } catch (err) {
     res.status(500).json({ error: { message: err.message } });
   }
@@ -565,7 +566,7 @@ app.post("/api/auth/login", requireAppDb, authLimiter, async (req, res) => {
     req.session.userId = user.id;
     req.session.email = user.email;
     req.session.role = user.role;
-    res.json({ ok: true, email: user.email });
+    res.json({ ok: true, email: user.email, role: user.role });
   } catch (err) {
     res.status(500).json({ error: { message: err.message } });
   }
@@ -608,6 +609,55 @@ app.post("/api/user/state", requireAppDb, requireLogin, async (req, res) => {
       [req.session.userId, JSON.stringify(data)]
     );
     res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: { message: err.message } });
+  }
+});
+
+// ---- Schedule document-match overrides ----
+// Backs the Schedule tab's "Replace document" / "Remove document" badge menu
+// (see the DOC_OVERRIDES section of lawgpt.html). No login required to READ
+// -- every visitor, signed in or not, gets the admin's global defaults
+// applied. Writing requires an account: an 'admin'-role account's write
+// lands in the shared global layer (so it applies to everyone immediately,
+// no redeploy), anyone else's write lands only in their own account's layer
+// and never touches what other users or anonymous visitors see.
+app.get("/api/document-overrides", requireAppDb, async (req, res) => {
+  try {
+    const userId = req.session && req.session.userId;
+    const { global, mine } = await documentOverrideStore.getAll(userId);
+    res.json({ global, mine });
+  } catch (err) {
+    res.status(500).json({ error: { message: err.message } });
+  }
+});
+
+app.post("/api/document-overrides", requireAppDb, requireLogin, async (req, res) => {
+  try {
+    const { key, value } = req.body || {};
+    if (typeof key !== "string" || !key) {
+      return res.status(400).json({ error: { message: "A 'key' is required." } });
+    }
+    if (value !== null && typeof value !== "string") {
+      return res.status(400).json({ error: { message: "'value' must be a document title string, or null." } });
+    }
+    const isAdmin = req.session.role === "admin";
+    await documentOverrideStore.setOverride({ userId: req.session.userId, isAdmin, key, value });
+    res.json({ ok: true, scope: isAdmin ? "global" : "mine" });
+  } catch (err) {
+    res.status(500).json({ error: { message: err.message } });
+  }
+});
+
+app.delete("/api/document-overrides", requireAppDb, requireLogin, async (req, res) => {
+  try {
+    const { key } = req.body || {};
+    if (typeof key !== "string" || !key) {
+      return res.status(400).json({ error: { message: "A 'key' is required." } });
+    }
+    const isAdmin = req.session.role === "admin";
+    await documentOverrideStore.clearOverride({ userId: req.session.userId, isAdmin, key });
+    res.json({ ok: true, scope: isAdmin ? "global" : "mine" });
   } catch (err) {
     res.status(500).json({ error: { message: err.message } });
   }

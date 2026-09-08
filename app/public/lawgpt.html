@@ -3526,6 +3526,10 @@ function closeSettings(){
 // survives across browsers/devices instead of staying stuck in this one
 // browser's localStorage.
 let currentUser = null;
+// Whether the signed-in account is 'admin' -- gates which layer a schedule
+// document-match override write lands in (see the DOC_OVERRIDES section
+// below). Kept in sync with currentUser everywhere it changes.
+let isAdminUser = false;
 const accountOverlay = document.getElementById("accountOverlay");
 const accountSignedOut = document.getElementById("accountSignedOut");
 const accountSignedIn = document.getElementById("accountSignedIn");
@@ -3561,10 +3565,13 @@ async function refreshAuthStatus(){
     const res = await fetch(PROXY_ORIGIN + "/api/auth/me");
     const data = await res.json();
     currentUser = data.signedIn ? data.email : null;
+    isAdminUser = Boolean(data.isAdmin);
   } catch(e){
     currentUser = null;
+    isAdminUser = false;
   }
   updateAccountUI();
+  loadDocOverrides();
   if (currentUser){
     await syncAfterLogin();
   } else {
@@ -3668,8 +3675,10 @@ async function submitAccountForm(endpoint){
       return;
     }
     currentUser = data.email;
+    isAdminUser = data.role === "admin";
     accountPasswordInput.value = "";
     updateAccountUI();
+    await loadDocOverrides();
     await syncAfterLogin();
   } catch(e){
     setAccountStatus("Couldn't reach the server.", "err");
@@ -3681,7 +3690,9 @@ document.getElementById("accountSignupBtn").addEventListener("click", () => subm
 document.getElementById("accountLogoutBtn").addEventListener("click", async () => {
   try{ await fetch(PROXY_ORIGIN + "/api/auth/logout", { method: "POST" }); } catch(e){}
   currentUser = null;
+  isAdminUser = false;
   updateAccountUI();
+  loadDocOverrides(); // drops this account's personal layer; global defaults still apply
 
   // Signing out only destroyed the server session above -- without this,
   // this browser's localStorage cache and in-memory state would keep
@@ -7557,52 +7568,102 @@ function classifyLssAssignment(text){
 // findLocalTortsPageMatch/findCanvasDocumentMatches below all check it
 // directly, so this isn't just cosmetic on the badge: the same Notes/
 // Complete buttons that attach a document see the override too, since they
-// call those exact same matching functions. A value of `undefined` (key
-// absent) means no override; `null` means explicitly no document; a string
-// is the id of the document forced onto this reading.
-const DOC_OVERRIDES_KEY = "lawgpt.scheduleDocOverrides";
-let docOverrides = new Map();
-try {
-  const savedDocOverrides = JSON.parse(localStorage.getItem(DOC_OVERRIDES_KEY));
-  if (savedDocOverrides && typeof savedDocOverrides === "object"){
-    Object.entries(savedDocOverrides).forEach(([k, v]) => docOverrides.set(k, v));
-  }
-} catch(e){ /* fall back to no overrides */ }
+// call those exact same matching functions.
+//
+// Backed by GET/POST/DELETE /api/document-overrides (document-override-
+// store.js) rather than localStorage, in two layers merged client-side:
+//   - globalDocOverrides: the admin's shared defaults, applied for every
+//     visitor (signed in or not).
+//   - myDocOverrides: the signed-in account's own overrides, checked first
+//     and falling through to the global layer for any key it hasn't touched.
+// An admin's own edits write to the global layer (see isAdminUser), so they
+// apply to everyone immediately -- no separate personal layer for admins.
+// A value of `undefined` (key absent from both layers) means no override
+// (fall back to auto-matching); `null` means explicitly no document; a
+// string is the exact title of the document forced onto this reading
+// (titles, not the in-memory store's `id`, since a Canvas re-scrape or
+// local re-scan reassigns every document a fresh random id -- see
+// document-store.js's addDocument -- so an id-keyed override would silently
+// break on the next scan).
+let globalDocOverrides = new Map();
+let myDocOverrides = new Map();
 
-function persistDocOverrides(){
-  try{
-    const obj = {};
-    docOverrides.forEach((v, k) => { obj[k] = v; });
-    localStorage.setItem(DOC_OVERRIDES_KEY, JSON.stringify(obj));
-  } catch(e){ /* non-critical UI preference */ }
-}
 function docMatchKey(courseCode, identifyingText){
   return courseCode + "␟" + String(identifyingText || "").trim().toLowerCase();
 }
-function setDocOverride(courseCode, identifyingText, value){
-  docOverrides.set(docMatchKey(courseCode, identifyingText), value);
-  persistDocOverrides();
+
+function mapFromOverridesObj(obj){
+  const map = new Map();
+  if (obj && typeof obj === "object"){
+    Object.entries(obj).forEach(([k, v]) => map.set(k, v));
+  }
+  return map;
 }
-// Undoes setDocOverride, falling back to normal (pages/title) matching
-// again. Needed because a "Remove document" (or a stale "Replace") made
-// before a document existed locally otherwise sticks forever: it's stored
-// per-browser in localStorage, so it silently keeps overriding the match
-// even after the missing file shows up later -- with no way back to
-// "just auto-detect it" short of this.
-function clearDocOverride(courseCode, identifyingText){
-  docOverrides.delete(docMatchKey(courseCode, identifyingText));
-  persistDocOverrides();
+
+// Fetches both layers fresh from the server -- called on startup and again
+// whenever currentUser/isAdminUser changes (login, signup, logout), so the
+// right personal layer is always the one in effect. Re-renders the schedule
+// if it's the visible tab, same as refreshDocumentsCacheQuietly, so badges
+// already on screen pick up the account's overrides without a manual
+// refresh.
+async function loadDocOverrides(){
+  try{
+    const res = await fetch(PROXY_ORIGIN + "/api/document-overrides");
+    if (!res.ok) return;
+    const data = await res.json();
+    globalDocOverrides = mapFromOverridesObj(data.global);
+    myDocOverrides = mapFromOverridesObj(data.mine);
+    const scheduleView = document.getElementById("scheduleView");
+    if (scheduleView && scheduleView.style.display !== "none") renderSchedule();
+  } catch(e){
+    // Proxy not reachable -- badges just fall back to plain auto-matching.
+  }
 }
-// Returns undefined when there's no override (caller should fall back to its
-// normal matching logic), or an array of matched docs (empty when the
-// override is an explicit "no document", one doc when it's a forced
-// replacement) resolved against `pool`.
+
+// Which layer the CURRENT account's own edits read from/write to: the
+// shared global default for an admin, this account's personal layer for
+// anyone else (including signed-out visitors, whose edits can't persist
+// anywhere and are rejected server-side by requireLogin).
+function myOverrideLayer(){
+  return isAdminUser ? globalDocOverrides : myDocOverrides;
+}
+
+async function setDocOverride(courseCode, identifyingText, value){
+  const key = docMatchKey(courseCode, identifyingText);
+  myOverrideLayer().set(key, value); // optimistic -- caller re-renders right after calling this
+  try{
+    await fetch(PROXY_ORIGIN + "/api/document-overrides", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ key, value })
+    });
+  } catch(e){ /* best-effort; local state still reflects the change for this session */ }
+}
+// Undoes setDocOverride for the current account's own layer, falling back to
+// the global default (if any) or plain auto-matching otherwise.
+async function clearDocOverride(courseCode, identifyingText){
+  const key = docMatchKey(courseCode, identifyingText);
+  myOverrideLayer().delete(key);
+  try{
+    await fetch(PROXY_ORIGIN + "/api/document-overrides", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ key })
+    });
+  } catch(e){ /* best-effort */ }
+}
+// Returns undefined when there's no override in either layer (caller should
+// fall back to its normal matching logic), or an array of matched docs
+// (empty when the override is an explicit "no document", one doc when it's
+// a forced replacement) resolved against `pool`. myDocOverrides wins over
+// globalDocOverrides for any key both define.
 function overriddenDocs(courseCode, identifyingText, pool){
   const key = docMatchKey(courseCode, identifyingText);
-  if (!docOverrides.has(key)) return undefined;
-  const override = docOverrides.get(key);
-  if (override === null) return [];
-  const doc = (pool || documentsCache).find(d => d.id === override);
+  const hasMine = myDocOverrides.has(key);
+  if (!hasMine && !globalDocOverrides.has(key)) return undefined;
+  const value = hasMine ? myDocOverrides.get(key) : globalDocOverrides.get(key);
+  if (value === null) return [];
+  const doc = (pool || documentsCache).find(d => d.title === value);
   return doc ? [doc] : [];
 }
 
@@ -7671,14 +7732,19 @@ function wireDocMatchBadgeMenu(badge, courseCode, identifyingText, missingTitle,
     const current = getMatches();
     showScheduleDocCtxMenu(e.clientX, e.clientY, {
       canRemove: current.length > 0,
-      hasOverride: docOverrides.has(docMatchKey(courseCode, identifyingText)),
+      // Only reflects THIS account's own layer -- see myOverrideLayer() --
+      // since "Auto-detect" below only ever clears that layer. A plain
+      // user inheriting an admin global default (but with no override of
+      // their own) sees this as false; "Remove document" is how they'd
+      // opt out of that default for themselves specifically.
+      hasOverride: myOverrideLayer().has(docMatchKey(courseCode, identifyingText)),
       onRemove: () => {
         setDocOverride(courseCode, identifyingText, null);
         renderDocMatchBadgeContent(badge, [], missingTitle);
       },
       onReplace: () => {
         openDocumentPicker(courseCode, (doc) => {
-          setDocOverride(courseCode, identifyingText, doc.id);
+          setDocOverride(courseCode, identifyingText, doc.title);
           renderDocMatchBadgeContent(badge, [doc], missingTitle);
         });
       },

@@ -357,13 +357,18 @@ router.post("/sync", async (req, res) => {
           const nativeFile = saveNativeFile(courseFolder, attachment.name, ext, buffer);
           if (!nativeFile) continue;
 
-          const existing = documentStore.getDocumentByFilePath(nativeFile.filePath);
-          if (existing) documentStore.removeDocument(existing.id);
-
           const extracted = await extractText(buffer, attachment.contentType || "", attachment.name);
           const extractError = (extracted && typeof extracted === "object" && extracted.__error) ? extracted.__error : null;
           const isPdf = ext === "pdf";
           const fileBuffer = isPdf && buffer.length <= MAX_STORED_PDF_BYTES ? buffer : null;
+
+          // Re-check for an existing entry here, right before adding, rather
+          // than before the extractText() await above -- a concurrent /sync
+          // call (a second click, a second tab) can run its own check-and-add
+          // during that await, and a check done before it would miss the
+          // duplicate that call just created.
+          const existing = documentStore.getDocumentByFilePath(nativeFile.filePath);
+          if (existing) documentStore.removeDocument(existing.id);
 
           const document = documentStore.addDocument({
             title: attachment.name,

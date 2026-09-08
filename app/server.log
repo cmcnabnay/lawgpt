@@ -1,3 +1,6 @@
-◇ injected env (3) from .env // tip: ⌁ auth for agents [www.vestauth.com]
+
+> start
+> node src/server.js
+
 Proxy listening on http://localhost:3000
-Indexed 101 local document(s) from documents/.
+Indexed 106 local document(s) from documents/.
