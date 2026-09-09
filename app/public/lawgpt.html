@@ -2589,7 +2589,7 @@ pre code {
     <h2>Assignment context</h2>
     <p>Add any documents this assignment needs beyond its own instructions, and write anything else the model should know. Saved context is sent together with the assignment's own matched document (if any) whenever you click Complete.</p>
     <div class="settings-form">
-      <label>Auto-matched by title (sent automatically, no need to add these below)</label>
+      <label id="assignmentContextAutoMatchLabel">Auto-matched by title (sent automatically, no need to add these below)</label>
       <div class="context-doc-list context-doc-list-auto" id="assignmentContextAutoMatchList"></div>
       <label>Context documents</label>
       <div class="context-doc-list" id="assignmentContextDocList"></div>
@@ -8745,30 +8745,35 @@ function persistAssignmentContext(){
 }
 function getAssignmentContext(courseCode, text){
   const saved = assignmentContextStore.get(docMatchKey(courseCode, text));
-  return saved ? { documentIds: saved.documentIds || [], prompt: saved.prompt || "" } : { documentIds: [], prompt: "" };
+  return saved
+    ? { documentIds: saved.documentIds || [], prompt: saved.prompt || "", quizDocumentId: saved.quizDocumentId || null }
+    : { documentIds: [], prompt: "", quizDocumentId: null };
 }
 function hasAssignmentContext(courseCode, text){
   const ctx = getAssignmentContext(courseCode, text);
-  return ctx.documentIds.length > 0 || Boolean(ctx.prompt.trim());
+  return ctx.documentIds.length > 0 || Boolean(ctx.prompt.trim()) || Boolean(ctx.quizDocumentId);
 }
 
-// Directly attaches one document to an assignment/quiz's saved context, by
-// exact id -- same list "+ Add document" writes to (contextModalDraft.
-// documentIds), just written straight to the store instead of via the modal.
-// Used right after a quiz scrape succeeds (see quizScrapeRunBtn below) so
-// the scraped content is unambiguously "the" context for that specific quiz
-// row, rather than relying on findDocumentMatches's fuzzy title search to
-// happen to find it -- which breaks down the moment more than one document
+// Points a quiz's saved context at exactly one document, by id -- a separate
+// field (quizDocumentId) from the manually-curated documentIds list "+ Add
+// document" writes to, and rendered in its own "Quiz" section of the modal
+// (see renderContextAutoMatchList) rather than mixed into "Context
+// documents". Called right after a quiz scrape succeeds (see
+// quizScrapeRunBtn below) so the scraped content is unambiguously "the"
+// quiz for that row, without ever going through findDocumentMatches's fuzzy
+// title search -- which breaks down the moment more than one document
 // shares that exact title (an admin's real import alongside someone else's
 // ephemeral scrape, say), since fuzzy search has no way to prefer one over
-// the other and would surface both as separate "Auto" matches.
-function attachDocumentToAssignmentContext(courseCode, text, documentId){
-  const key = docMatchKey(courseCode, text);
-  const existing = getAssignmentContext(courseCode, text);
-  if (existing.documentIds.includes(documentId)) return;
+// the other and would surface both as separate "Auto" matches. Overwrites
+// any previous value rather than accumulating, since a fresh scrape should
+// replace what this quiz's context points at, not add to it.
+function setQuizContextDocument(courseCode, quizTitle, documentId){
+  const key = docMatchKey(courseCode, quizTitle);
+  const existing = getAssignmentContext(courseCode, quizTitle);
   assignmentContextStore.set(key, {
-    documentIds: [...existing.documentIds, documentId],
-    prompt: existing.prompt
+    documentIds: existing.documentIds,
+    prompt: existing.prompt,
+    quizDocumentId: documentId
   });
   persistAssignmentContext();
 }
@@ -8780,29 +8785,69 @@ let contextModalCourseCode = null;
 let contextModalText = null;
 let contextModalDraft = null;
 let contextModalOnSaved = null;
+// True when this modal was opened from a quiz card (appendQuizCompleteButton)
+// rather than a regular schedule assignment (appendCompleteButton) --
+// switches the top section from fuzzy "Auto-matched by title" to a
+// dedicated, single-document "Quiz" display (see renderContextAutoMatchList).
+let contextModalIsQuiz = false;
 
-function openAssignmentContextModal(courseCode, text, onSaved){
+function openAssignmentContextModal(courseCode, text, onSaved, isQuiz){
   contextModalCourseCode = courseCode;
   contextModalText = text;
   contextModalOnSaved = onSaved;
+  contextModalIsQuiz = Boolean(isQuiz);
   const saved = getAssignmentContext(courseCode, text);
-  contextModalDraft = { documentIds: saved.documentIds.slice(), prompt: saved.prompt };
+  contextModalDraft = { documentIds: saved.documentIds.slice(), prompt: saved.prompt, quizDocumentId: saved.quizDocumentId };
   document.getElementById("assignmentContextPromptTextarea").value = contextModalDraft.prompt;
   renderAssignmentContextDocList();
   renderContextAutoMatchList();
   document.getElementById("assignmentContextOverlay").style.display = "flex";
 }
 
-// Shows whatever completeAssignment()/completeQuiz() would ALSO auto-attach
-// by title-matching the assignment/quiz text (see lookupCanvasMatches) --
-// read-only, no add/remove here, since it's not part of the manually-curated
-// context list. Without this, there was no way to see from the Context modal
-// whether a scraped quiz (or any other Canvas document) was actually going
-// to be sent, short of reading the generated report's own "Attached:" line
-// after the fact.
+// For a regular assignment, shows whatever completeAssignment() would ALSO
+// auto-attach by title-matching the assignment text (see lookupCanvasMatches)
+// -- read-only, no add/remove here, since it's not part of the
+// manually-curated context list. Without this, there was no way to see from
+// the Context modal whether a document was actually going to be sent, short
+// of reading the generated report's own "Attached:" line after the fact.
+//
+// For a quiz (contextModalIsQuiz), there is no fuzzy matching at all --
+// completeQuiz() sends exactly contextModalDraft.quizDocumentId (see
+// setQuizContextDocument) and nothing else, so this instead shows that one
+// document under a "Quiz" label. Two different documents that happen to
+// share a title (an admin's real import alongside someone else's ephemeral
+// scrape) can never both show up here the way fuzzy matching would.
 function renderContextAutoMatchList(){
   const wrap = document.getElementById("assignmentContextAutoMatchList");
+  const labelEl = document.getElementById("assignmentContextAutoMatchLabel");
   wrap.innerHTML = "";
+
+  if (contextModalIsQuiz){
+    labelEl.textContent = "Quiz (sent automatically, no need to add it below)";
+    const doc = contextModalDraft.quizDocumentId
+      ? documentsCache.find(d => d.id === contextModalDraft.quizDocumentId)
+      : null;
+    if (!doc){
+      const empty = document.createElement("div");
+      empty.className = "context-doc-empty";
+      empty.textContent = "No quiz has been scraped for this yet -- use the quiz card's scrape button.";
+      wrap.appendChild(empty);
+      return;
+    }
+    const row = document.createElement("div");
+    row.className = "context-doc-item-auto";
+    const badge = document.createElement("span");
+    badge.className = "context-doc-auto-badge";
+    badge.textContent = "Quiz";
+    row.appendChild(badge);
+    const label = document.createElement("span");
+    label.textContent = doc.title;
+    row.appendChild(label);
+    wrap.appendChild(row);
+    return;
+  }
+
+  labelEl.textContent = "Auto-matched by title (sent automatically, no need to add these below)";
   const matches = findLocalCanvasMatches(contextModalText, contextModalCourseCode);
   if (!matches.length){
     const empty = document.createElement("div");
@@ -8830,6 +8875,7 @@ function closeAssignmentContextModal(){
   contextModalText = null;
   contextModalDraft = null;
   contextModalOnSaved = null;
+  contextModalIsQuiz = false;
 }
 function renderAssignmentContextDocList(){
   const list = document.getElementById("assignmentContextDocList");
@@ -8870,7 +8916,8 @@ document.getElementById("assignmentContextSaveBtn").addEventListener("click", ()
   contextModalDraft.prompt = document.getElementById("assignmentContextPromptTextarea").value;
   assignmentContextStore.set(docMatchKey(contextModalCourseCode, contextModalText), {
     documentIds: contextModalDraft.documentIds.slice(),
-    prompt: contextModalDraft.prompt
+    prompt: contextModalDraft.prompt,
+    quizDocumentId: contextModalDraft.quizDocumentId || null
   });
   persistAssignmentContext();
   if (contextModalOnSaved) contextModalOnSaved();
@@ -8967,7 +9014,7 @@ function appendQuizCompleteButton(row, quiz, courseCode){
     contextBtn.classList.toggle("has-context", has);
   };
   refreshContextBtn();
-  contextBtn.addEventListener("click", () => openAssignmentContextModal(courseCode, quiz.title, refreshContextBtn));
+  contextBtn.addEventListener("click", () => openAssignmentContextModal(courseCode, quiz.title, refreshContextBtn, true));
   row.appendChild(contextBtn);
 
   const btn = document.createElement("button");
@@ -8986,16 +9033,30 @@ function appendQuizCompleteButton(row, quiz, courseCode){
 // explanations -- NOTES_PROMPT_QUIZ does NOT fall back to a self-generated
 // practice quiz when the real questions aren't attached; it says so plainly
 // instead (see that prompt for why).
+//
+// Deliberately does NOT call lookupCanvasMatches/findDocumentMatches -- a
+// quiz's attached source is exactly context.quizDocumentId (set directly by
+// quizScrapeRunBtn right after a scrape succeeds; see setQuizContextDocument
+// and the "Quiz" section of the Context modal), never a fuzzy title search.
+// Two documents that happen to share a title (an admin's real import
+// alongside someone else's ephemeral scrape) would otherwise both come back
+// as "matches" with no way to prefer one, which is exactly what produced
+// duplicate "Attached: X, X" text before this.
 function completeQuiz(quiz, courseCode, btn){
   const courseLabel = courseCode === "civpro" ? "Civil Procedure" : courseCode === "contracts" ? "Contracts" : courseCode === "torts" ? "Torts" : "Lawyering Skills & Strategies";
   const dueHeader = quiz.dueDate + (quiz.dueTime ? " at " + quiz.dueTime : "");
 
   const run = async () => {
-    const founds = await lookupCanvasMatches(btn, quiz.title, courseCode, "Complete");
-    const attached = founds.slice();
-    const originalCount = attached.length;
-
     const context = getAssignmentContext(courseCode, quiz.title);
+    const attached = [];
+    if (context.quizDocumentId){
+      const doc = documentsCache.find(d => d.id === context.quizDocumentId);
+      if (doc){
+        const docText = await fetchCanvasDocumentText(context.quizDocumentId);
+        if (docText) attached.push({ id: doc.id, title: doc.title, text: docText });
+      }
+    }
+    const originalCount = attached.length;
     for (const docId of context.documentIds){
       if (attached.some(a => a.id === docId)) continue;
       const doc = documentsCache.find(d => d.id === docId);
@@ -9119,11 +9180,11 @@ document.getElementById("quizScrapeRunBtn").addEventListener("click", async () =
       ` Click Complete on this quiz's card to generate answers from it.`;
     statusEl.className = "doc-import-status ok";
     document.getElementById("quizScrapeCookie").value = "";
-    // Attach the just-scraped document directly to this quiz's context, by
-    // its exact id -- not via findDocumentMatches's fuzzy title search (see
-    // attachDocumentToAssignmentContext) -- so Complete/Notes/the Context
-    // modal all see precisely the quiz that was just scraped, every time.
-    if (data.documentId) attachDocumentToAssignmentContext(courseCode, quiz.title, data.documentId);
+    // Point this quiz's context at exactly the just-scraped document, by id
+    // -- not via findDocumentMatches's fuzzy title search (see
+    // setQuizContextDocument) -- so Complete and the Context modal's "Quiz"
+    // section both see precisely the quiz that was just scraped, every time.
+    if (data.documentId) setQuizContextDocument(courseCode, quiz.title, data.documentId);
     await refreshDocumentsCacheQuietly();
   } catch(e){
     statusEl.textContent = e.message;
