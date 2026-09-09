@@ -654,19 +654,30 @@ function isAdminRequest(req) {
 // An admin's scrape is saved as a real document -- written to disk under
 // documents/<course>/ and left off the `ephemeral` flag -- same as a normal
 // Canvas import, since an admin scraping a quiz is a deliberate "add this to
-// the course's materials" action. Anyone else's scrape is kept in-memory
-// only (no disk file, `ephemeral: true`), which the Documents tab's own list
-// (renderDocumentsList in lawgpt.html) filters out -- it isn't an imported
-// course document for them -- while it stays fully visible to
-// documentStore's fuzzy-match lookup for everything else (Context modal,
-// Complete, Notes), same as an admin's. Deduped by (course, title) rather
-// than by file path, since a non-admin's version has no file behind it.
+// the course's materials" action, and replaces any prior document of that
+// same title (admin's earlier scrape/import, or someone else's ephemeral
+// one) the same way re-importing a course already treats a repeat as
+// refreshing materials rather than accumulating duplicates.
+//
+// A non-admin's scrape is kept in-memory only (no disk file, `ephemeral:
+// true`) and never removes anything -- documentStore is left exactly as it
+// was, plus this one new entry. It's still excluded from the Documents tab's
+// own list (renderDocumentsList in lawgpt.html), since it isn't an imported
+// course document for them. It's also NOT relied on for attaching to this
+// quiz's Context -- that's done directly, by exact id, right after the
+// scrape succeeds (see the /quiz route below), rather than through
+// findDocumentMatches's fuzzy title search -- so this entry sitting
+// alongside an admin's same-titled real document (or another user's earlier
+// ephemeral scrape) doesn't create the kind of ambiguous double-match that
+// fuzzy search would.
 function saveQuizScrapeDocument(req, courseFolder, quizTitle, quizShowUrl, formatted) {
   const isAdmin = isAdminRequest(req);
 
-  documentStore.getDocumentsByCourse(courseFolder)
-    .filter(d => d.title === quizTitle && (isAdmin || d.ephemeral))
-    .forEach(d => documentStore.removeDocument(d.id));
+  if (isAdmin) {
+    documentStore.getDocumentsByCourse(courseFolder)
+      .filter(d => d.title === quizTitle)
+      .forEach(d => documentStore.removeDocument(d.id));
+  }
 
   const nativeFile = isAdmin
     ? saveNativeFile(courseFolder, quizTitle, "txt", Buffer.from(formatted, "utf-8"))

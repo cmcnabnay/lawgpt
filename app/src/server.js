@@ -999,7 +999,8 @@ app.get("/api/documents", (req, res) => {
       addedAt: doc.addedAt,
       textLength: doc.text ? doc.text.length : 0,
       hasOriginalFile: Boolean(doc.fileBuffer),
-      hasNativeFile: Boolean(doc.filePath)
+      hasNativeFile: Boolean(doc.filePath),
+      ephemeral: Boolean(doc.ephemeral)
     }))
   );
 });
@@ -1099,7 +1100,8 @@ app.post("/api/documents/refresh-local", async (req, res) => {
         addedAt: doc.addedAt,
         textLength: doc.text ? doc.text.length : 0,
         hasOriginalFile: Boolean(doc.fileBuffer),
-        hasNativeFile: Boolean(doc.filePath)
+        hasNativeFile: Boolean(doc.filePath),
+        ephemeral: Boolean(doc.ephemeral)
       }))
     });
   } catch (err) {

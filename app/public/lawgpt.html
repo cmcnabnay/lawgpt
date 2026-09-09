@@ -7360,19 +7360,36 @@ If part of the assignment can't be completed because the relevant context docume
 Do not open the response with introductory filler ("Sure!", "Here's the completed assignment", etc.) — start directly with the work product. Do not refer to yourself as an AI, a language model, or an assistant.`;
 
 // Sent by the "Complete" button on a quiz card (see appendQuizCompleteButton/
-// completeQuiz below). Canvas quizzes aren't downloadable documents, so
-// there's usually no attached source text — unlike NOTES_PROMPT_ASSIGNMENT,
-// this prompt is told explicitly not to refuse in that case, and instead to
-// generate its own best-effort practice version from the covered-material
-// summary completeQuiz builds. This never fills out or submits anything in
-// Canvas — the output only ever lands in the Notes tab.
+// completeQuiz below). The attached source, if any, is the raw scraped text
+// off Canvas's own quiz-player page (see saveQuizScrapeDocument in
+// canvas-routes.js) -- not a clean question bank -- so this prompt spells
+// out exactly how to parse that scrape's markers, and exactly what shape
+// each answer must come back in, rather than leaving either to guesswork.
+// Deliberately does NOT fall back to inventing a practice quiz when the real
+// questions aren't attached or don't parse -- it says so plainly instead,
+// since a fabricated quiz has no way to be distinguished from the real one
+// once it's sitting in the Notes tab. This never fills out or submits
+// anything in Canvas — the output only ever lands in the Notes tab.
 const NOTES_PROMPT_QUIZ = `You are my law school quiz-prep assistant.
 
 This is a Canvas quiz. I am NOT asking you to fill it out or submit it in Canvas — this output stays here, in my notes, for me to study from and self-check against.
 
-If the actual quiz questions are attached above, answer each one directly: state the question, give the best answer, and briefly explain why it's correct (and why the likely wrong options are wrong, if it's multiple choice).
+The attached material (if any) is raw text scraped directly off Canvas's quiz-player page, not a clean question bank. Parse it using these exact rules:
 
-If the actual quiz questions are NOT attached, don't refuse — instead write a practice quiz of your own covering the material listed as "covered in class" above (matching the stated number of questions if you reasonably can), with an answer key and a brief explanation for each answer. Say clearly, up front, that this is a practice quiz you generated to help me self-test, not the real quiz's actual questions or answers.
+- Each question begins at a line reading "Flag question: Question [n]", immediately followed by a repeated "Question [n]" line and a points line (e.g. "1 pts"). These three lines are start markers only, not part of the question text.
+- The question's own full text — including any shared fact pattern printed above it, e.g. "The following facts apply to the first N questions..." — is everything between that points line and the next line reading exactly "Group of answer choices".
+- The answer choices are everything between "Group of answer choices" and whatever navigation control comes next ("Next", "Previous", or "Not saved Submit Quiz") — one choice per line.
+- "----- next question -----" marks a boundary between questions, but the text immediately after it is NOT necessarily the next question. Some scrapes repeat a full block of Canvas page chrome after this marker before the real next question appears — site navigation ("Skip To Content", "Dashboard", "Account", "Courses", "Calendar", "Inbox", etc.), the course/quiz title, "Quiz Instructions", the per-question answered-status sidebar ("Questions" / "Haven't Answered Yet" / ...), "Time Elapsed", "Attempt due: ...". Skip past all of that and resume only once you reach the next actual "Flag question: Question [n]" marker. Other scrapes have no such chrome and go straight from "----- next question -----" into the next "Flag question:" marker — treat both as normal.
+- Ignore all Canvas UI chrome wherever it appears (navigation links, "Not saved Submit Quiz", the answered-status sidebar, timers, etc.) — none of it is ever part of a question or an answer choice.
+
+If the actual quiz questions are attached and parse cleanly under the rules above, answer every one of them. For each question, output exactly this format (including the literal <b> tags), with a blank line between questions and nothing else added:
+
+<b>Question [n]</b>
+[Full question text -- everything between the "Flag question: Question [n]" marker and "Group of answer choices", per the parsing rules above]
+<b>Answer:</b> [the correct answer choice]
+<b>Explanation:</b> [why that answer is correct, and briefly why the other choices are wrong if it's multiple choice]
+
+If the actual quiz questions are NOT attached, or the attached text is too incomplete or garbled to reliably parse into distinct questions under the rules above, do NOT invent or generate a practice quiz of your own. Instead, in place of the format above, say plainly that the quiz questions are missing or incomplete, and if it's a parsing problem rather than nothing being attached at all, say specifically what's missing or unclear about the attached text.
 
 Do not open the response with introductory filler ("Sure!", "Here are your answers", etc.) — start directly with the content. Do not refer to yourself as an AI, a language model, or an assistant.`;
 
@@ -8735,6 +8752,27 @@ function hasAssignmentContext(courseCode, text){
   return ctx.documentIds.length > 0 || Boolean(ctx.prompt.trim());
 }
 
+// Directly attaches one document to an assignment/quiz's saved context, by
+// exact id -- same list "+ Add document" writes to (contextModalDraft.
+// documentIds), just written straight to the store instead of via the modal.
+// Used right after a quiz scrape succeeds (see quizScrapeRunBtn below) so
+// the scraped content is unambiguously "the" context for that specific quiz
+// row, rather than relying on findDocumentMatches's fuzzy title search to
+// happen to find it -- which breaks down the moment more than one document
+// shares that exact title (an admin's real import alongside someone else's
+// ephemeral scrape, say), since fuzzy search has no way to prefer one over
+// the other and would surface both as separate "Auto" matches.
+function attachDocumentToAssignmentContext(courseCode, text, documentId){
+  const key = docMatchKey(courseCode, text);
+  const existing = getAssignmentContext(courseCode, text);
+  if (existing.documentIds.includes(documentId)) return;
+  assignmentContextStore.set(key, {
+    documentIds: [...existing.documentIds, documentId],
+    prompt: existing.prompt
+  });
+  persistAssignmentContext();
+}
+
 // In-memory draft while the Context modal is open -- only written back to
 // assignmentContextStore (and localStorage) on Save, so Close discards
 // unsaved edits.
@@ -8942,11 +8980,12 @@ function appendQuizCompleteButton(row, quiz, courseCode){
 
 // Generates practice answers for a Canvas quiz and drops them in the Notes
 // tab -- same generateReadingReport() pipeline completeAssignment() uses.
-// This never fills out or submits anything in Canvas: quizzes aren't
-// downloadable documents, so unlike completeAssignment there's usually no
-// attached source text, and NOTES_PROMPT_QUIZ is written to fall back to a
-// self-generated practice quiz (using civProTopicsCoveredThrough) instead of
-// refusing when that's the case.
+// This never fills out or submits anything in Canvas. coveredNote below
+// (via civProTopicsCoveredThrough) just gives the model context on what's
+// actually been covered in class by this quiz's due date, to ground its
+// explanations -- NOTES_PROMPT_QUIZ does NOT fall back to a self-generated
+// practice quiz when the real questions aren't attached; it says so plainly
+// instead (see that prompt for why).
 function completeQuiz(quiz, courseCode, btn){
   const courseLabel = courseCode === "civpro" ? "Civil Procedure" : courseCode === "contracts" ? "Contracts" : courseCode === "torts" ? "Torts" : "Lawyering Skills & Strategies";
   const dueHeader = quiz.dueDate + (quiz.dueTime ? " at " + quiz.dueTime : "");
@@ -9080,6 +9119,11 @@ document.getElementById("quizScrapeRunBtn").addEventListener("click", async () =
       ` Click Complete on this quiz's card to generate answers from it.`;
     statusEl.className = "doc-import-status ok";
     document.getElementById("quizScrapeCookie").value = "";
+    // Attach the just-scraped document directly to this quiz's context, by
+    // its exact id -- not via findDocumentMatches's fuzzy title search (see
+    // attachDocumentToAssignmentContext) -- so Complete/Notes/the Context
+    // modal all see precisely the quiz that was just scraped, every time.
+    if (data.documentId) attachDocumentToAssignmentContext(courseCode, quiz.title, data.documentId);
     await refreshDocumentsCacheQuietly();
   } catch(e){
     statusEl.textContent = e.message;
