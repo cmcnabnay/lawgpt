@@ -48,16 +48,15 @@ app.get("/", (req, res) => {
   res.sendFile(path.join(PUBLIC_DIR, "lawgpt.html"));
 });
 
-// Take all routes defined by canvas-routes.js and attach them underneath /api/canvas
-app.use("/api/canvas", canvasRoutes);
-
-// email-routes.js is mounted further down (see "Take all routes defined by
-// email-routes.js" below), AFTER the session middleware is set up -- every
-// route there is per-account now (requireLogin, req.session.userId), which
-// needs req.session to actually exist. Express applies middleware strictly
-// in registration order, so mounting it here (before app.use(session(...)))
-// would have meant req.session was always undefined for every /api/email/*
-// request.
+// canvas-routes.js is mounted further down (see "Take all routes defined by
+// canvas-routes.js" below), AFTER both the session middleware and
+// requireDbAdmin are defined -- Canvas import is admin-only (it runs a real
+// login/session-cookie flow against the school's Canvas instance), gated the
+// same way /api/db/* already is. Express applies middleware strictly in
+// registration order, so mounting it here (before app.use(session(...))) or
+// before requireDbAdmin exists would have meant req.session was undefined,
+// or requireDbAdmin itself wasn't defined yet, for every /api/canvas/*
+// request. Same reasoning as email-routes.js/agent-routes.js below.
 
 const PORT = process.env.PORT || 3000;
 const OPENAI_URL = "https://api.openai.com/v1/responses";
@@ -72,7 +71,11 @@ const ENV_PATH = path.join(__dirname, "..", ".env");
 // documents go in as extracted text instead.
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/responses";
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY || "";
-const OPENROUTER_MODEL = process.env.OPENROUTER_MODEL || "z-ai/glm-5.2:free";
+// z-ai/glm-5.2:free (the previous default) is no longer in the allow-list
+// below -- nvidia/nemotron-3-super-120b-a12b:free is what "openrouter/free"
+// (also removed; see that entry's old spot below) actually resolved to in
+// practice, now listed explicitly instead of behind an auto-router alias.
+const OPENROUTER_MODEL = process.env.OPENROUTER_MODEL || "nvidia/nemotron-3-super-120b-a12b:free";
 
 // Every free, text-only OpenRouter model tested against this same endpoint
 // (see the test scripts in ~/Documents) -- shown in the frontend's model
@@ -81,25 +84,31 @@ const OPENROUTER_MODEL = process.env.OPENROUTER_MODEL || "z-ai/glm-5.2:free";
 // client-supplied model string were forwarded unchecked, any visitor could
 // make this server call (and pay for, on the configured OpenRouter key) an
 // arbitrary paid model instead of a free one.
+//
+// Note: OpenRouter also lists free embedding (liquid/lfm-2.5-embedding-350m,
+// nvidia/nemotron-3-embed-1b, nvidia/llama-nemotron-embed-vl-1b-v2) and
+// rerank (nvidia/llama-nemotron-rerank-vl-1b-v2) models -- deliberately not
+// included here. Those use OpenRouter's separate /embeddings and /rerank
+// endpoints, not /chat/completions or /responses, so they can't answer a
+// chat message at all; adding them to this dropdown would just make picking
+// them silently fail every request.
 const OPENROUTER_MODELS = [
   { id: "inclusionai/ling-3.0-flash-sante:free", note: "reliable" },
   { id: "inclusionai/ling-3.0-flash-fin:free", note: "reliable" },
   { id: "liquid/lfm-2.5-2.6b:free", note: "reliable" },
-  { id: "minimax/minimax-m3:free", note: "reliable" },
   { id: "cohere/north-mini-code:free", note: "reliable" },
   { id: "dots-studio/dots-3-note-preview:free", note: "reliable" },
   { id: "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free", note: "reliable" },
   { id: "nvidia/nemotron-3.5-lightning:free", note: "reliable" },
-  { id: "minimax/minimax-m2.7:free", note: "reliable" },
-  { id: "openrouter/free", note: "reliable, slow (~12s)" },
-  { id: "z-ai/glm-5.2:free", note: "often rate-limited" },
   { id: "google/gemma-4-26b-a4b-it:free", note: "often rate-limited" },
   { id: "google/gemma-4-31b-it:free", note: "often rate-limited" },
   { id: "poolside/laguna-s-2.1:free", note: "often rate-limited" },
   { id: "poolside/laguna-xs-2.1:free", note: "often rate-limited" },
   { id: "nvidia/nemotron-3-ultra-550b-a55b:free", note: "often overloaded/times out" },
-  { id: "thinkingmachines/inkling:free", note: "agentic-harness only, fails via plain chat" },
-  { id: "thinkingmachines/inkling-small:free", note: "agentic-harness only, fails via plain chat" }
+  { id: "nex-agi/nex-n2.5-mini:free", note: "untested" },
+  { id: "nex-agi/nex-n2.5-pro:free", note: "untested" },
+  { id: "nvidia/nemotron-3-super-120b-a12b:free", note: "reliable" }, // this is what "openrouter/free" was actually resolving to
+  { id: "nvidia/nemotron-3.5-content-safety:free", note: "untested -- built as a moderation/safety classifier, may behave oddly as a general chat model" }
 ];
 const OPENROUTER_MODEL_IDS = new Set(OPENROUTER_MODELS.map(m => m.id));
 
@@ -248,6 +257,24 @@ function requireDbAdmin(req, res, next) {
   }
   return res.status(403).json({ error: { message: "Admin access required." } });
 }
+
+// Take all routes defined by canvas-routes.js and attach them underneath
+// /api/canvas. Only the bulk course-materials import (/scrape) is
+// admin-gated (same requireDbAdmin as /api/db/*) -- it pulls in and
+// permanently stores an entire course's Documents tab for everyone, so it's
+// treated the same as any other admin-only bulk data operation. Quiz
+// scraping (/quiz) and the "Login instead" helper (/login-session) stay open
+// to any user: scraping is scoped to one quiz at a time, tied to that
+// user's own Canvas session/attempt, and (per saveQuizScrapeDocument in
+// canvas-routes.js) never written to disk or added to the Documents tab --
+// only surfaced through the same fuzzy title-match lookup everyone already
+// sees via the Context modal's "Auto" list.
+// A path-scoped app.use() runs before the broader one below for any request
+// under /api/canvas/scrape specifically, and calls next() only when allowed
+// -- letting the broader mount pick it up from there. Registration order
+// matters here: this line must come before the /api/canvas one.
+app.use("/api/canvas/scrape", requireDbAdmin);
+app.use("/api/canvas", canvasRoutes);
 
 async function supabaseRequest(pathAndQuery, options) {
   const res = await fetch(`${SUPABASE_URL}/rest/v1/${pathAndQuery}`, {

@@ -2310,7 +2310,8 @@ pre code {
   display:flex;
   align-items:center;
   gap:10px;
-  flex:0 0 auto;
+  flex:1 1 auto;
+  min-width:0;
   flex-wrap:wrap;
 }
 .case-brief-select{
@@ -2612,8 +2613,8 @@ pre code {
       <input type="text" id="quizScrapeBaseUrl" placeholder="https://canvas.yourschool.edu" autocomplete="off" spellcheck="false">
       <label for="quizScrapeCookie">Session cookie value</label>
       <div class="cookie-field-row">
-        <input type="password" id="quizScrapeCookie" placeholder="_normandy_session value, or the full Cookie header" autocomplete="off" spellcheck="false">
-        <button type="button" class="btn-secondary" id="quizScrapeLoginBtn" title="Opens a real browser window so you can log into Canvas yourself (including SSO/2FA) and fills this in automatically. If this app is running on a remote server, connect your VNC viewer to it FIRST so you can see the window that opens.">Log in instead</button>
+        <input type="password" id="quizScrapeCookie" placeholder="Paste your Canvas session cookie" autocomplete="off" spellcheck="false">
+        <button type="button" class="btn-secondary" id="quizScrapeLoginBtn" title="Opens a real browser window so you can log into Canvas yourself (including SSO/2FA) and fills this in automatically. If this app is running on a remote server, connect your VNC viewer to it FIRST so you can see the window that opens.">Login</button>
       </div>
       <div class="settings-actions">
         <button type="button" id="quizScrapeRunBtn">Scrape questions</button>
@@ -2993,8 +2994,8 @@ pre code {
             </select>
             <label for="docImportCookie">Session cookie value</label>
             <div class="cookie-field-row">
-              <input type="password" id="docImportCookie" placeholder="_normandy_session value, or the full Cookie header" autocomplete="off" spellcheck="false">
-              <button type="button" class="btn-secondary" id="docImportLoginBtn" title="Opens a real browser window so you can log into Canvas yourself (including SSO/2FA) and fills this in automatically. If this app is running on a remote server, connect your VNC viewer to it FIRST so you can see the window that opens.">Log in instead</button>
+              <input type="password" id="docImportCookie" placeholder="Paste your Canvas session cookie" autocomplete="off" spellcheck="false">
+              <button type="button" class="btn-secondary" id="docImportLoginBtn" title="Opens a real browser window so you can log into Canvas yourself (including SSO/2FA) and fills this in automatically. If this app is running on a remote server, connect your VNC viewer to it FIRST so you can see the window that opens.">Login</button>
             </div>
             <div class="doc-import-actions">
               <button type="button" id="docImportBtn">Import course materials</button>
@@ -3553,6 +3554,11 @@ function updateAccountUI(){
     accountSignedIn.style.display = "none";
     setAccountStatus("", "");
   }
+  // Canvas import is admin-only server-side (requireDbAdmin on /api/canvas/*
+  // -- see server.js) -- hide the control entirely for anyone else rather
+  // than showing a button that will just 403.
+  const docImportCard = document.getElementById("docImportCard");
+  if (docImportCard) docImportCard.style.display = isAdminUser ? "" : "none";
 }
 
 // Called on page load. If a session cookie from a previous visit is still
@@ -3572,6 +3578,7 @@ async function refreshAuthStatus(){
   }
   updateAccountUI();
   loadDocOverrides();
+  refreshChatProvider(); // /api/provider-status depends on the session too -- keep the model dropdown in sync with whoever's actually signed in
   if (currentUser){
     await syncAfterLogin();
   } else {
@@ -3679,6 +3686,7 @@ async function submitAccountForm(endpoint){
     accountPasswordInput.value = "";
     updateAccountUI();
     await loadDocOverrides();
+    refreshChatProvider(); // otherwise the model dropdown keeps showing whatever the signed-out/previous account saw until a manual page reload
     await syncAfterLogin();
   } catch(e){
     setAccountStatus("Couldn't reach the server.", "err");
@@ -3693,6 +3701,7 @@ document.getElementById("accountLogoutBtn").addEventListener("click", async () =
   isAdminUser = false;
   updateAccountUI();
   loadDocOverrides(); // drops this account's personal layer; global defaults still apply
+  refreshChatProvider(); // otherwise the model dropdown keeps showing the signed-out account's provider/model until a manual page reload
 
   // Signing out only destroyed the server session above -- without this,
   // this browser's localStorage cache and in-memory state would keep
@@ -6002,7 +6011,14 @@ async function refreshDocumentsCacheQuietly(){
 function renderDocumentsList(){
   const list = document.getElementById("docList");
 
-  if (!documentsCache.length){
+  // Scraped quizzes (see canvas-routes.js's /quiz route) are deliberately
+  // flagged `ephemeral` and excluded here -- they're not saved to disk or
+  // meant to read as an imported course document, just made available to
+  // the fuzzy title-match lookup (findDocumentMatches) so the Schedule tab's
+  // Context/Complete/Notes flows can still find them for every user.
+  const visibleDocs = documentsCache.filter(doc => !doc.ephemeral);
+
+  if (!visibleDocs.length){
     list.innerHTML = `<div class="doc-empty">No documents imported yet. Use "Import from Canvas" above to pull in course materials.</div>`;
     return;
   }
@@ -6011,7 +6027,7 @@ function renderDocumentsList(){
   // course rather than one flat pile — same courseId/courseName Canvas
   // import saved the native file under (see canvas-routes.js).
   const groups = new Map();
-  documentsCache.forEach(doc => {
+  visibleDocs.forEach(doc => {
     const key = doc.courseId || " uncategorized";
     if (!groups.has(key)){
       groups.set(key, {
@@ -7628,29 +7644,46 @@ function myOverrideLayer(){
   return isAdminUser ? globalDocOverrides : myDocOverrides;
 }
 
+// Both return true/false so callers (wireDocMatchBadgeMenu below) can revert
+// their optimistic badge update and surface the failure -- a save that
+// silently no-ops (wrong session, RLS/permission error, proxy unreachable)
+// previously looked identical to one that worked, since nothing checked
+// the response.
 async function setDocOverride(courseCode, identifyingText, value){
   const key = docMatchKey(courseCode, identifyingText);
-  myOverrideLayer().set(key, value); // optimistic -- caller re-renders right after calling this
+  const layer = myOverrideLayer();
+  const hadKey = layer.has(key);
+  const previous = layer.get(key);
+  layer.set(key, value); // optimistic -- caller re-renders right after calling this
   try{
-    await fetch(PROXY_ORIGIN + "/api/document-overrides", {
+    const res = await fetch(PROXY_ORIGIN + "/api/document-overrides", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ key, value })
     });
-  } catch(e){ /* best-effort; local state still reflects the change for this session */ }
+    if (res.ok) return true;
+  } catch(e){ /* falls through to the revert below */ }
+  if (hadKey) layer.set(key, previous); else layer.delete(key);
+  return false;
 }
 // Undoes setDocOverride for the current account's own layer, falling back to
 // the global default (if any) or plain auto-matching otherwise.
 async function clearDocOverride(courseCode, identifyingText){
   const key = docMatchKey(courseCode, identifyingText);
-  myOverrideLayer().delete(key);
+  const layer = myOverrideLayer();
+  const hadKey = layer.has(key);
+  const previous = layer.get(key);
+  layer.delete(key); // optimistic -- caller re-renders right after calling this
   try{
-    await fetch(PROXY_ORIGIN + "/api/document-overrides", {
+    const res = await fetch(PROXY_ORIGIN + "/api/document-overrides", {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ key })
     });
-  } catch(e){ /* best-effort */ }
+    if (res.ok) return true;
+  } catch(e){ /* falls through to the revert below */ }
+  if (hadKey) layer.set(key, previous);
+  return false;
 }
 // Returns undefined when there's no override in either layer (caller should
 // fall back to its normal matching logic), or an array of matched docs
@@ -7738,18 +7771,27 @@ function wireDocMatchBadgeMenu(badge, courseCode, identifyingText, missingTitle,
       // their own) sees this as false; "Remove document" is how they'd
       // opt out of that default for themselves specifically.
       hasOverride: myOverrideLayer().has(docMatchKey(courseCode, identifyingText)),
-      onRemove: () => {
-        setDocOverride(courseCode, identifyingText, null);
+      onRemove: async () => {
         renderDocMatchBadgeContent(badge, [], missingTitle);
+        const ok = await setDocOverride(courseCode, identifyingText, null);
+        if (!ok){
+          alert("Couldn't save that change -- it didn't persist. Check that you're signed in and try again.");
+          renderDocMatchBadgeContent(badge, getMatches(), missingTitle);
+        }
       },
       onReplace: () => {
-        openDocumentPicker(courseCode, (doc) => {
-          setDocOverride(courseCode, identifyingText, doc.title);
+        openDocumentPicker(courseCode, async (doc) => {
           renderDocMatchBadgeContent(badge, [doc], missingTitle);
+          const ok = await setDocOverride(courseCode, identifyingText, doc.title);
+          if (!ok){
+            alert("Couldn't save that change -- it didn't persist. Check that you're signed in and try again.");
+            renderDocMatchBadgeContent(badge, getMatches(), missingTitle);
+          }
         });
       },
-      onAutoDetect: () => {
-        clearDocOverride(courseCode, identifyingText);
+      onAutoDetect: async () => {
+        const ok = await clearDocOverride(courseCode, identifyingText);
+        if (!ok) alert("Couldn't save that change -- it didn't persist. Check that you're signed in and try again.");
         renderDocMatchBadgeContent(badge, getMatches(), missingTitle);
       }
     });

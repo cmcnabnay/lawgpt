@@ -620,12 +620,17 @@ router.post("/scrape", async (req, res) => {
 // start real attempts rather than being limited to scraping quizzes only
 // after they'd already been completed.
 //
-// The scraped Q&A is saved as a real document (same store, and same
-// documents/<course>/ location, a normal Canvas import uses), titled to
-// EXACTLY match the quiz's schedule title (quizTitle) -- so the existing
-// fuzzy title-match lookup the "Complete" button already runs on every click
-// (lookupCanvasMatches -> findDocumentMatches, in lawgpt.html) picks it up
-// automatically. No change to that flow was needed.
+// The scraped Q&A is kept in the same in-memory documentStore a normal
+// Canvas import uses (and titled to EXACTLY match the quiz's schedule title,
+// quizTitle) -- so the existing fuzzy title-match lookup the "Complete"
+// button already runs on every click (lookupCanvasMatches ->
+// findDocumentMatches, in lawgpt.html) picks it up automatically, same
+// "Auto" badge in the assignment Context modal, for every user hitting this
+// server. It's deliberately NOT written to disk under documents/<course>/
+// the way a real Canvas import is, though -- see saveQuizScrapeDocument
+// below -- since it's tied to one specific, currently-open (and unsubmitted)
+// attempt rather than a stable course file, and this route (unlike
+// /api/canvas/scrape) isn't admin-only.
 //
 // This can't be tested against a live Canvas instance from here, so the
 // selectors below are deliberately defensive (several fallbacks per element)
@@ -633,6 +638,54 @@ router.post("/scrape", async (req, res) => {
 // instead of a raw stack trace. If Canvas's actual markup doesn't match what
 // this expects, the fix is almost always just adding another selector to
 // try, not a rewrite.
+//
+// Small local copy of server.js's isLocalhostRequest -- canvas-routes.js
+// can't require server.js back (server.js requires this module first, so
+// that would be a circular require resolving to an incomplete export).
+// Treats a scrape as admin-done the same way requireDbAdmin (server.js)
+// treats an admin *write*: a signed-in 'admin' account, or localhost (your
+// own dev/testing use, with no session at all).
+function isAdminRequest(req) {
+  const ip = req.ip || (req.connection && req.connection.remoteAddress) || "";
+  const isLocalhost = ip === "127.0.0.1" || ip === "::1" || ip === "::ffff:127.0.0.1";
+  return isLocalhost || Boolean(req.session && req.session.role === "admin");
+}
+
+// An admin's scrape is saved as a real document -- written to disk under
+// documents/<course>/ and left off the `ephemeral` flag -- same as a normal
+// Canvas import, since an admin scraping a quiz is a deliberate "add this to
+// the course's materials" action. Anyone else's scrape is kept in-memory
+// only (no disk file, `ephemeral: true`), which the Documents tab's own list
+// (renderDocumentsList in lawgpt.html) filters out -- it isn't an imported
+// course document for them -- while it stays fully visible to
+// documentStore's fuzzy-match lookup for everything else (Context modal,
+// Complete, Notes), same as an admin's. Deduped by (course, title) rather
+// than by file path, since a non-admin's version has no file behind it.
+function saveQuizScrapeDocument(req, courseFolder, quizTitle, quizShowUrl, formatted) {
+  const isAdmin = isAdminRequest(req);
+
+  documentStore.getDocumentsByCourse(courseFolder)
+    .filter(d => d.title === quizTitle && (isAdmin || d.ephemeral))
+    .forEach(d => documentStore.removeDocument(d.id));
+
+  const nativeFile = isAdmin
+    ? saveNativeFile(courseFolder, quizTitle, "txt", Buffer.from(formatted, "utf-8"))
+    : null;
+
+  return documentStore.addDocument({
+    title: quizTitle,
+    url: quizShowUrl,
+    contentType: "text/plain",
+    text: formatted,
+    courseId: courseFolder,
+    courseName: null,
+    fileBuffer: null,
+    fileName: nativeFile ? nativeFile.fileName : null,
+    filePath: nativeFile ? nativeFile.filePath : null,
+    ephemeral: !isAdmin
+  });
+}
+
 router.post("/quiz", async (req, res) => {
   const { baseUrl, courseId, cookie, quizTitle, courseFolder } = req.body || {};
 
@@ -826,22 +879,7 @@ router.post("/quiz", async (req, res) => {
       lines.push(result.rawText);
       const formatted = lines.join("\n").trim() + "\n";
 
-      const nativeFile = saveNativeFile(courseFolder, quizTitle, "txt", Buffer.from(formatted, "utf-8"));
-      if (nativeFile) {
-        const existing = documentStore.getDocumentByFilePath(nativeFile.filePath);
-        if (existing) documentStore.removeDocument(existing.id);
-      }
-      const document = documentStore.addDocument({
-        title: quizTitle,
-        url: quizShowUrl,
-        contentType: "text/plain",
-        text: formatted,
-        courseId: courseFolder,
-        courseName: null,
-        fileBuffer: null,
-        fileName: nativeFile ? nativeFile.fileName : null,
-        filePath: nativeFile ? nativeFile.filePath : null
-      });
+      const document = saveQuizScrapeDocument(req, courseFolder, quizTitle, quizShowUrl, formatted);
 
       return res.json({
         documentId: document.id,
@@ -958,22 +996,7 @@ router.post("/quiz", async (req, res) => {
     });
     const formatted = lines.join("\n").trim() + "\n";
 
-    const nativeFile = saveNativeFile(courseFolder, quizTitle, "txt", Buffer.from(formatted, "utf-8"));
-    if (nativeFile) {
-      const existing = documentStore.getDocumentByFilePath(nativeFile.filePath);
-      if (existing) documentStore.removeDocument(existing.id);
-    }
-    const document = documentStore.addDocument({
-      title: quizTitle,
-      url: quizShowUrl,
-      contentType: "text/plain",
-      text: formatted,
-      courseId: courseFolder,
-      courseName: null,
-      fileBuffer: null,
-      fileName: nativeFile ? nativeFile.fileName : null,
-      filePath: nativeFile ? nativeFile.filePath : null
-    });
+    const document = saveQuizScrapeDocument(req, courseFolder, quizTitle, quizShowUrl, formatted);
 
     return res.json({
       documentId: document.id,
