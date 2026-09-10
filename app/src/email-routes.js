@@ -55,7 +55,7 @@ router.use(requireLogin);
 
 const GRAPH_ROOT = "https://graph.microsoft.com/v1.0";
 const MAX_STORED_PDF_BYTES = 20 * 1024 * 1024; // same cap canvas-routes.js uses
-const MESSAGE_FIELDS = "subject,from,receivedDateTime,hasAttachments,body";
+const MESSAGE_FIELDS = "subject,from,toRecipients,receivedDateTime,hasAttachments,body";
 
 // The lawgpt project root (two levels up from app/src/) -- the directory the
 // "send to agent" feature below runs the Claude Code CLI from, so it can
@@ -223,6 +223,34 @@ function isFromUhDomain(msg){
   return UH_SENDER_DOMAIN.test(domain);
 }
 
+// UH's class mailing lists are named like
+// "C_Law_Class_F26-LANHAM-Procedure@Central.UH.EDU" -- the professor's last
+// name plus a short course tag, not the full course title matchCourseFolder's
+// shared COURSE_FOLDER_ALIASES expects ("procedure" alone, not "civil
+// procedure"). Checked only against the recipient address itself, never
+// folded into the subject+body text matchCourseFolder already runs on below
+// -- a bare word like "procedure" turning up incidentally in an email body
+// is much weaker evidence than the email having been sent straight to that
+// course's own list. Takes priority over the subject/body match for exactly
+// that reason (see the /sync loop below).
+const COURSE_LIST_ADDRESS_ALIASES = [
+  { match: /procedure/i, folder: "civil_procedure" },
+  { match: /lawyering|\blss\b/i, folder: "lawyering_skills_and_strategies" },
+  { match: /contracts?/i, folder: "contracts" },
+  { match: /torts?/i, folder: "torts" },
+];
+
+function matchCourseFolderFromRecipients(toRecipients){
+  const addresses = (toRecipients || [])
+    .map(r => (r && r.emailAddress && r.emailAddress.address) || "")
+    .join(" ");
+  if (!addresses) return null;
+  for (const { match, folder } of COURSE_LIST_ADDRESS_ALIASES){
+    if (match.test(addresses)) return folder;
+  }
+  return null;
+}
+
 function classifyEmailAssignment(subject, text){
   const combined = `${subject || ""}\n${text || ""}`;
   if (!ASSIGNMENT_KEYWORDS.test(combined)) {
@@ -341,7 +369,7 @@ router.post("/sync", async (req, res) => {
       const bodyText = (msg.body && msg.body.content) || "";
       const combinedText = `${subject}\n${bodyText}`;
 
-      const courseFolder = matchCourseFolder(combinedText) || "uncategorized";
+      const courseFolder = matchCourseFolderFromRecipients(msg.toRecipients) || matchCourseFolder(combinedText) || "uncategorized";
       const { isAssignment, snippet: assignmentSnippet } = classifyEmailAssignment(subject, bodyText);
       if (isAssignment) assignmentsFound++;
 

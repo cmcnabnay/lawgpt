@@ -5902,9 +5902,14 @@ let documentsCache = [];
 // Extensions the Draft & Compile editor's Open pipeline actually understands
 // (see openDocumentFile) — used to decide whether a document card in the
 // Documents tab gets an "Open in Editor" button, or just "Download" (e.g.
-// for a .pptx or image Canvas file the editor can't render).
+// for a .pptx or image Canvas file the editor can't render). PDFs are
+// deliberately left out even though openDocumentFile can technically convert
+// one (via server-side LibreOffice) -- "Open" already gives a PDF its own
+// proper viewer (see openDocumentNative), and re-flowing it through that doc
+// conversion into an editable page loses the original layout, so a PDF card
+// only ever gets Open/Download, never Open in Editor.
 const EDITOR_OPENABLE_EXTS = new Set([
-  "docx", "doc", "odt", "ods", "pdf", "html", "htm", "txt",
+  "docx", "doc", "odt", "ods", "html", "htm", "txt",
   "py", "js", "ts", "c", "cpp", "java", "cs", "go", "rs", "rb", "php", "sh", "swift", "kt", "pl", "lua", "asm"
 ]);
 
@@ -6055,7 +6060,14 @@ function renderDocumentsList(){
           card.className = "doc-card";
 
           const addedLabel = doc.addedAt ? new Date(doc.addedAt).toLocaleString() : "";
-          const canOpenInEditor = doc.hasNativeFile && EDITOR_OPENABLE_EXTS.has(getDocFileExt(doc));
+          // Some hand-saved casebook excerpts sit on disk with no extension
+          // at all (e.g. "104-05") -- getDocFileExt returns "" for those, so
+          // fall back to contentType: a plain-text file opens in the editor
+          // fine (openDocumentFile round-trips an unrecognized extension as
+          // plain text) regardless of what its filename looks like.
+          const docExt = getDocFileExt(doc);
+          const canOpenInEditor = doc.hasNativeFile &&
+            (EDITOR_OPENABLE_EXTS.has(docExt) || (!docExt && doc.contentType === "text/plain"));
 
           card.innerHTML = `
             <div class="doc-card-main">
