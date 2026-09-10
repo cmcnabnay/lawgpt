@@ -620,17 +620,19 @@ router.post("/scrape", async (req, res) => {
 // start real attempts rather than being limited to scraping quizzes only
 // after they'd already been completed.
 //
-// The scraped Q&A is kept in the same in-memory documentStore a normal
-// Canvas import uses (and titled to EXACTLY match the quiz's schedule title,
-// quizTitle) -- so the existing fuzzy title-match lookup the "Complete"
-// button already runs on every click (lookupCanvasMatches ->
-// findDocumentMatches, in lawgpt.html) picks it up automatically, same
-// "Auto" badge in the assignment Context modal, for every user hitting this
-// server. It's deliberately NOT written to disk under documents/<course>/
-// the way a real Canvas import is, though -- see saveQuizScrapeDocument
-// below -- since it's tied to one specific, currently-open (and unsubmitted)
-// attempt rather than a stable course file, and this route (unlike
-// /api/canvas/scrape) isn't admin-only.
+// The scraped Q&A is saved as a real document, written to disk under
+// documents/<course>/ (see saveQuizScrapeDocument below) and titled to
+// EXACTLY match the quiz's schedule title, quizTitle -- so the assignment
+// Context modal's "Quiz" section (findQuizDocument, in lawgpt.html) can find
+// it later with a plain exact-title lookup against that course's documents,
+// no fuzzy matching or per-user bookkeeping needed. This route is
+// admin-gated the same as /api/canvas/scrape -- see requireDbAdmin on
+// /api/canvas/quiz in server.js -- because it writes a shared, permanent
+// course document (replacing any earlier document of that same title) that
+// every user's "Complete" then relies on; unlike a normal Canvas import it
+// also starts a real Canvas quiz attempt server-side (see below), which is
+// exactly why it stays admin-only rather than something any signed-in user
+// can trigger per quiz.
 //
 // This can't be tested against a live Canvas instance from here, so the
 // selectors below are deliberately defensive (several fallbacks per element)
@@ -638,50 +640,19 @@ router.post("/scrape", async (req, res) => {
 // instead of a raw stack trace. If Canvas's actual markup doesn't match what
 // this expects, the fix is almost always just adding another selector to
 // try, not a rewrite.
-//
-// Small local copy of server.js's isLocalhostRequest -- canvas-routes.js
-// can't require server.js back (server.js requires this module first, so
-// that would be a circular require resolving to an incomplete export).
-// Treats a scrape as admin-done the same way requireDbAdmin (server.js)
-// treats an admin *write*: a signed-in 'admin' account, or localhost (your
-// own dev/testing use, with no session at all).
-function isAdminRequest(req) {
-  const ip = req.ip || (req.connection && req.connection.remoteAddress) || "";
-  const isLocalhost = ip === "127.0.0.1" || ip === "::1" || ip === "::ffff:127.0.0.1";
-  return isLocalhost || Boolean(req.session && req.session.role === "admin");
-}
 
-// An admin's scrape is saved as a real document -- written to disk under
-// documents/<course>/ and left off the `ephemeral` flag -- same as a normal
-// Canvas import, since an admin scraping a quiz is a deliberate "add this to
-// the course's materials" action, and replaces any prior document of that
-// same title (admin's earlier scrape/import, or someone else's ephemeral
-// one) the same way re-importing a course already treats a repeat as
-// refreshing materials rather than accumulating duplicates.
-//
-// A non-admin's scrape is kept in-memory only (no disk file, `ephemeral:
-// true`) and never removes anything -- documentStore is left exactly as it
-// was, plus this one new entry. It's still excluded from the Documents tab's
-// own list (renderDocumentsList in lawgpt.html), since it isn't an imported
-// course document for them. It's also NOT relied on for attaching to this
-// quiz's Context -- that's done directly, by exact id, right after the
-// scrape succeeds (see the /quiz route below), rather than through
-// findDocumentMatches's fuzzy title search -- so this entry sitting
-// alongside an admin's same-titled real document (or another user's earlier
-// ephemeral scrape) doesn't create the kind of ambiguous double-match that
-// fuzzy search would.
-function saveQuizScrapeDocument(req, courseFolder, quizTitle, quizShowUrl, formatted) {
-  const isAdmin = isAdminRequest(req);
+// Written to disk under documents/<course>/, replacing any prior document of
+// that same title (an earlier scrape/import of this same quiz) the same way
+// re-importing a course already treats a repeat as refreshing materials
+// rather than accumulating duplicates -- this is what guarantees at most one
+// document per exact quiz title, which is what lets findQuizDocument
+// (lawgpt.html) auto-attach by title alone with no ambiguity.
+function saveQuizScrapeDocument(courseFolder, quizTitle, quizShowUrl, formatted) {
+  documentStore.getDocumentsByCourse(courseFolder)
+    .filter(d => d.title === quizTitle)
+    .forEach(d => documentStore.removeDocument(d.id));
 
-  if (isAdmin) {
-    documentStore.getDocumentsByCourse(courseFolder)
-      .filter(d => d.title === quizTitle)
-      .forEach(d => documentStore.removeDocument(d.id));
-  }
-
-  const nativeFile = isAdmin
-    ? saveNativeFile(courseFolder, quizTitle, "txt", Buffer.from(formatted, "utf-8"))
-    : null;
+  const nativeFile = saveNativeFile(courseFolder, quizTitle, "txt", Buffer.from(formatted, "utf-8"));
 
   return documentStore.addDocument({
     title: quizTitle,
@@ -691,9 +662,9 @@ function saveQuizScrapeDocument(req, courseFolder, quizTitle, quizShowUrl, forma
     courseId: courseFolder,
     courseName: null,
     fileBuffer: null,
-    fileName: nativeFile ? nativeFile.fileName : null,
-    filePath: nativeFile ? nativeFile.filePath : null,
-    ephemeral: !isAdmin
+    fileName: nativeFile.fileName,
+    filePath: nativeFile.filePath,
+    ephemeral: false
   });
 }
 
@@ -890,7 +861,7 @@ router.post("/quiz", async (req, res) => {
       lines.push(result.rawText);
       const formatted = lines.join("\n").trim() + "\n";
 
-      const document = saveQuizScrapeDocument(req, courseFolder, quizTitle, quizShowUrl, formatted);
+      const document = saveQuizScrapeDocument(courseFolder, quizTitle, quizShowUrl, formatted);
 
       return res.json({
         documentId: document.id,
@@ -1007,7 +978,7 @@ router.post("/quiz", async (req, res) => {
     });
     const formatted = lines.join("\n").trim() + "\n";
 
-    const document = saveQuizScrapeDocument(req, courseFolder, quizTitle, quizShowUrl, formatted);
+    const document = saveQuizScrapeDocument(courseFolder, quizTitle, quizShowUrl, formatted);
 
     return res.json({
       documentId: document.id,

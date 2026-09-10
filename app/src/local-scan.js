@@ -107,9 +107,10 @@ async function scanLocalDocuments() {
       let contentType = contentTypeFromExt(ext);
       const fullPath = path.join(courseFullPath, fileName);
 
-      let buffer;
+      let buffer, mtime;
       try {
         buffer = fs.readFileSync(fullPath);
+        mtime = fs.statSync(fullPath).mtime;
       } catch (err) {
         console.warn(`LawGPT: couldn't read local document ${filePath}:`, err.message);
         continue;
@@ -136,7 +137,11 @@ async function scanLocalDocuments() {
         courseName,
         fileBuffer,
         fileName,
-        filePath
+        filePath,
+        // The file's own on-disk last-modified time -- not "now" -- so the
+        // Documents tab shows when it was actually put there, not whenever
+        // this scan happened to run (server startup, or Refresh).
+        addedAt: mtime.toISOString()
       });
 
       added++;

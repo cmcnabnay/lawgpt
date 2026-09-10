@@ -259,21 +259,21 @@ function requireDbAdmin(req, res, next) {
 }
 
 // Take all routes defined by canvas-routes.js and attach them underneath
-// /api/canvas. Only the bulk course-materials import (/scrape) is
-// admin-gated (same requireDbAdmin as /api/db/*) -- it pulls in and
-// permanently stores an entire course's Documents tab for everyone, so it's
-// treated the same as any other admin-only bulk data operation. Quiz
-// scraping (/quiz) and the "Login instead" helper (/login-session) stay open
-// to any user: scraping is scoped to one quiz at a time, tied to that
-// user's own Canvas session/attempt, and (per saveQuizScrapeDocument in
-// canvas-routes.js) never written to disk or added to the Documents tab --
-// only surfaced through the same fuzzy title-match lookup everyone already
-// sees via the Context modal's "Auto" list.
+// /api/canvas. Both the bulk course-materials import (/scrape) and quiz
+// scraping (/quiz) are admin-gated (same requireDbAdmin as /api/db/*) --
+// each one permanently writes a shared document to disk under
+// documents/<course>/ (see saveQuizScrapeDocument in canvas-routes.js for
+// /quiz), replacing any earlier document of the same title for every user,
+// so both are treated as admin-only bulk data operations. The "Login
+// instead" helper (/login-session) stays open to any user -- it doesn't
+// touch documentStore at all.
 // A path-scoped app.use() runs before the broader one below for any request
-// under /api/canvas/scrape specifically, and calls next() only when allowed
-// -- letting the broader mount pick it up from there. Registration order
-// matters here: this line must come before the /api/canvas one.
+// under /api/canvas/scrape or /api/canvas/quiz specifically, and calls
+// next() only when allowed -- letting the broader mount pick it up from
+// there. Registration order matters here: these lines must come before the
+// /api/canvas one.
 app.use("/api/canvas/scrape", requireDbAdmin);
+app.use("/api/canvas/quiz", requireDbAdmin);
 app.use("/api/canvas", canvasRoutes);
 
 async function supabaseRequest(pathAndQuery, options) {

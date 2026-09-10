@@ -7993,13 +7993,20 @@ function buildQuizCard(quiz, courseCode){
   const actions = document.createElement("div");
   actions.className = "schedule-quiz-actions";
 
-  const scrapeBtn = document.createElement("button");
-  scrapeBtn.type = "button";
-  scrapeBtn.className = "schedule-notes-btn";
-  scrapeBtn.title = "Fetch this quiz's actual questions/answer choices from Canvas";
-  scrapeBtn.textContent = "Scrape Quiz";
-  scrapeBtn.addEventListener("click", () => openQuizScrapeModal(quiz, courseCode));
-  actions.appendChild(scrapeBtn);
+  // Quiz scraping writes a shared document to disk under documents/<course>/,
+  // replacing any earlier document of that same title for every user (see
+  // saveQuizScrapeDocument in canvas-routes.js) -- admin-only server-side
+  // (requireDbAdmin on /api/canvas/quiz, server.js), so hide the control
+  // entirely for anyone else rather than showing a button that will just 403.
+  if (isAdminUser){
+    const scrapeBtn = document.createElement("button");
+    scrapeBtn.type = "button";
+    scrapeBtn.className = "schedule-notes-btn";
+    scrapeBtn.title = "Fetch this quiz's actual questions/answer choices from Canvas";
+    scrapeBtn.textContent = "Scrape Quiz";
+    scrapeBtn.addEventListener("click", () => openQuizScrapeModal(quiz, courseCode));
+    actions.appendChild(scrapeBtn);
+  }
 
   appendQuizCompleteButton(actions, quiz, courseCode);
   card.appendChild(actions);
@@ -8433,6 +8440,20 @@ function findLocalCanvasMatches(queryText, courseCode){
   return findDocumentMatches(queryText, scoped);
 }
 
+// A quiz's auto-attached document, found fresh by an EXACT (case/whitespace-
+// insensitive) title match against this course's own documents in
+// documentsCache -- never fuzzy matching, and never more than one document.
+// Quiz scraping is admin-only and writes to disk under documents/<course>/,
+// replacing any prior document of the same title (see saveQuizScrapeDocument
+// in canvas-routes.js), so at most one document can ever have this exact
+// title -- no per-user bookkeeping needed to know which one is "the" quiz.
+function findQuizDocument(courseCode, quizTitle){
+  const wanted = String(quizTitle || "").trim().toLowerCase();
+  if (!wanted) return null;
+  return docsForCourse(courseCode, documentsCache)
+    .find(d => String(d.title || "").trim().toLowerCase() === wanted) || null;
+}
+
 async function fetchCanvasDocumentText(id){
   try {
     const res = await fetch(PROXY_ORIGIN + "/api/documents/" + encodeURIComponent(id));
@@ -8746,36 +8767,16 @@ function persistAssignmentContext(){
 function getAssignmentContext(courseCode, text){
   const saved = assignmentContextStore.get(docMatchKey(courseCode, text));
   return saved
-    ? { documentIds: saved.documentIds || [], prompt: saved.prompt || "", quizDocumentId: saved.quizDocumentId || null }
-    : { documentIds: [], prompt: "", quizDocumentId: null };
+    ? { documentIds: saved.documentIds || [], prompt: saved.prompt || "" }
+    : { documentIds: [], prompt: "" };
 }
+// For a quiz row, also counts as "has context" when a document matching this
+// quiz's exact title exists (see findQuizDocument) -- that's the document
+// "Complete" will attach automatically, so the button should read as
+// carrying context even before any manual documents/prompt are added.
 function hasAssignmentContext(courseCode, text){
   const ctx = getAssignmentContext(courseCode, text);
-  return ctx.documentIds.length > 0 || Boolean(ctx.prompt.trim()) || Boolean(ctx.quizDocumentId);
-}
-
-// Points a quiz's saved context at exactly one document, by id -- a separate
-// field (quizDocumentId) from the manually-curated documentIds list "+ Add
-// document" writes to, and rendered in its own "Quiz" section of the modal
-// (see renderContextAutoMatchList) rather than mixed into "Context
-// documents". Called right after a quiz scrape succeeds (see
-// quizScrapeRunBtn below) so the scraped content is unambiguously "the"
-// quiz for that row, without ever going through findDocumentMatches's fuzzy
-// title search -- which breaks down the moment more than one document
-// shares that exact title (an admin's real import alongside someone else's
-// ephemeral scrape, say), since fuzzy search has no way to prefer one over
-// the other and would surface both as separate "Auto" matches. Overwrites
-// any previous value rather than accumulating, since a fresh scrape should
-// replace what this quiz's context points at, not add to it.
-function setQuizContextDocument(courseCode, quizTitle, documentId){
-  const key = docMatchKey(courseCode, quizTitle);
-  const existing = getAssignmentContext(courseCode, quizTitle);
-  assignmentContextStore.set(key, {
-    documentIds: existing.documentIds,
-    prompt: existing.prompt,
-    quizDocumentId: documentId
-  });
-  persistAssignmentContext();
+  return ctx.documentIds.length > 0 || Boolean(ctx.prompt.trim()) || Boolean(findQuizDocument(courseCode, text));
 }
 
 // In-memory draft while the Context modal is open -- only written back to
@@ -8797,7 +8798,7 @@ function openAssignmentContextModal(courseCode, text, onSaved, isQuiz){
   contextModalOnSaved = onSaved;
   contextModalIsQuiz = Boolean(isQuiz);
   const saved = getAssignmentContext(courseCode, text);
-  contextModalDraft = { documentIds: saved.documentIds.slice(), prompt: saved.prompt, quizDocumentId: saved.quizDocumentId };
+  contextModalDraft = { documentIds: saved.documentIds.slice(), prompt: saved.prompt };
   document.getElementById("assignmentContextPromptTextarea").value = contextModalDraft.prompt;
   renderAssignmentContextDocList();
   renderContextAutoMatchList();
@@ -8812,11 +8813,13 @@ function openAssignmentContextModal(courseCode, text, onSaved, isQuiz){
 // of reading the generated report's own "Attached:" line after the fact.
 //
 // For a quiz (contextModalIsQuiz), there is no fuzzy matching at all --
-// completeQuiz() sends exactly contextModalDraft.quizDocumentId (see
-// setQuizContextDocument) and nothing else, so this instead shows that one
-// document under a "Quiz" label. Two different documents that happen to
-// share a title (an admin's real import alongside someone else's ephemeral
-// scrape) can never both show up here the way fuzzy matching would.
+// completeQuiz() sends exactly whatever findQuizDocument resolves to (an
+// exact title match against this course's documents) and nothing else, so
+// this instead shows that one document under a "Quiz" label. Since quiz
+// scraping is admin-only and always replaces any prior document of the same
+// title (see saveQuizScrapeDocument in canvas-routes.js), at most one
+// document can ever have this exact title -- two same-titled documents can
+// never both show up here the way fuzzy matching would.
 function renderContextAutoMatchList(){
   const wrap = document.getElementById("assignmentContextAutoMatchList");
   const labelEl = document.getElementById("assignmentContextAutoMatchLabel");
@@ -8824,9 +8827,7 @@ function renderContextAutoMatchList(){
 
   if (contextModalIsQuiz){
     labelEl.textContent = "Quiz (sent automatically, no need to add it below)";
-    const doc = contextModalDraft.quizDocumentId
-      ? documentsCache.find(d => d.id === contextModalDraft.quizDocumentId)
-      : null;
+    const doc = findQuizDocument(contextModalCourseCode, contextModalText);
     if (!doc){
       const empty = document.createElement("div");
       empty.className = "context-doc-empty";
@@ -8916,8 +8917,7 @@ document.getElementById("assignmentContextSaveBtn").addEventListener("click", ()
   contextModalDraft.prompt = document.getElementById("assignmentContextPromptTextarea").value;
   assignmentContextStore.set(docMatchKey(contextModalCourseCode, contextModalText), {
     documentIds: contextModalDraft.documentIds.slice(),
-    prompt: contextModalDraft.prompt,
-    quizDocumentId: contextModalDraft.quizDocumentId || null
+    prompt: contextModalDraft.prompt
   });
   persistAssignmentContext();
   if (contextModalOnSaved) contextModalOnSaved();
@@ -9035,13 +9035,13 @@ function appendQuizCompleteButton(row, quiz, courseCode){
 // instead (see that prompt for why).
 //
 // Deliberately does NOT call lookupCanvasMatches/findDocumentMatches -- a
-// quiz's attached source is exactly context.quizDocumentId (set directly by
-// quizScrapeRunBtn right after a scrape succeeds; see setQuizContextDocument
-// and the "Quiz" section of the Context modal), never a fuzzy title search.
-// Two documents that happen to share a title (an admin's real import
-// alongside someone else's ephemeral scrape) would otherwise both come back
-// as "matches" with no way to prefer one, which is exactly what produced
-// duplicate "Attached: X, X" text before this.
+// quiz's attached source is exactly findQuizDocument(courseCode, quiz.title)
+// (an exact title match, never a fuzzy one) and the "Quiz" section of the
+// Context modal shows that same lookup. Quiz scraping is admin-only and
+// always replaces any prior document of the same title (see
+// saveQuizScrapeDocument in canvas-routes.js), so at most one document can
+// ever match -- no risk of two same-titled documents both coming back as
+// "matches" with no way to prefer one.
 function completeQuiz(quiz, courseCode, btn){
   const courseLabel = courseCode === "civpro" ? "Civil Procedure" : courseCode === "contracts" ? "Contracts" : courseCode === "torts" ? "Torts" : "Lawyering Skills & Strategies";
   const dueHeader = quiz.dueDate + (quiz.dueTime ? " at " + quiz.dueTime : "");
@@ -9049,12 +9049,10 @@ function completeQuiz(quiz, courseCode, btn){
   const run = async () => {
     const context = getAssignmentContext(courseCode, quiz.title);
     const attached = [];
-    if (context.quizDocumentId){
-      const doc = documentsCache.find(d => d.id === context.quizDocumentId);
-      if (doc){
-        const docText = await fetchCanvasDocumentText(context.quizDocumentId);
-        if (docText) attached.push({ id: doc.id, title: doc.title, text: docText });
-      }
+    const quizDoc = findQuizDocument(courseCode, quiz.title);
+    if (quizDoc){
+      const docText = await fetchCanvasDocumentText(quizDoc.id);
+      if (docText) attached.push({ id: quizDoc.id, title: quizDoc.title, text: docText });
     }
     const originalCount = attached.length;
     for (const docId of context.documentIds){
@@ -9180,11 +9178,11 @@ document.getElementById("quizScrapeRunBtn").addEventListener("click", async () =
       ` Click Complete on this quiz's card to generate answers from it.`;
     statusEl.className = "doc-import-status ok";
     document.getElementById("quizScrapeCookie").value = "";
-    // Point this quiz's context at exactly the just-scraped document, by id
-    // -- not via findDocumentMatches's fuzzy title search (see
-    // setQuizContextDocument) -- so Complete and the Context modal's "Quiz"
-    // section both see precisely the quiz that was just scraped, every time.
-    if (data.documentId) setQuizContextDocument(courseCode, quiz.title, data.documentId);
+    // No need to point this quiz's context at the scraped document by id --
+    // it's titled to EXACTLY match quiz.title and saved to disk (see
+    // saveQuizScrapeDocument in canvas-routes.js), so findQuizDocument's
+    // exact-title lookup against documentsCache picks it up on its own, for
+    // every user, the moment the cache below refreshes.
     await refreshDocumentsCacheQuietly();
   } catch(e){
     statusEl.textContent = e.message;

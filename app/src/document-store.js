@@ -2,13 +2,19 @@ const crypto = require("crypto");
 
 const documents = new Map();
 
+// addedAt defaults to "now" (a fresh Canvas/email import or quiz scrape
+// really was just created), but a caller can pass its own -- local-scan.js
+// does, using the file's actual on-disk mtime, so a file that's sat in
+// documents/<course>/ since before this server process even started shows
+// its real last-modified time instead of whatever moment the scan happened
+// to run.
 function addDocument(document) {
   const id = crypto.randomUUID();
 
   const storedDocument = {
     id,
     ...document,
-    addedAt: new Date().toISOString()
+    addedAt: document.addedAt || new Date().toISOString()
   };
 
   documents.set(id, storedDocument);
