@@ -1,0 +1,24 @@
+582
+NOTES AND QUESTIONS ON ANDERSON V. LIBERTY LOBBY AND MATSUSHITA V. ZENITH
+1. Anderson v. Liberty Lobby is the most-cited case in American jurisprudence. By 2021, it will have been cited by over 300,000 court opinions on Westlaw. Why do you think it is so widely cited?
+
+2. What do you think of Justice Brennan’s concern in Anderson that the Court’s gloss on Rule 56 will “transform” summary judgment “into a full-blown paper trial on the merits,” given the experience of the Court in Matsushita?
+
+3. The Court in Matsushita assesses how “plausible” the plaintiffs’ predatory pricing theory is. Does this reference to plausibility have any connection to Twombly? Are these cases about procedure, or cases about antitrust? Can they be both? Is it a coincidence that the two Supreme Court decisions introducing plausibility requirements into pre-trial dispositions on the merits both involved antitrust claims?
+
+4. Would Zenith’s arguments have been stronger had the case been brought in 1995, when it was on the verge of bankruptcy? Does the fact that Zenith was rescued from bankruptcy and taken over by LG Electronics, a South Korean company, make its arguments look stronger in retrospect? Or weaker?
+
+INTRODUCTORY NOTE TO CELOTEX V. CATRETT
+Anderson announced broad principles on the division of authority between a judge deciding summary judgment and a jury weighing the evidence. Matsushita was a blockbuster antitrust case, which, like Anderson, laid down markers for when a court should grant summary judgment. But the trilogy is named for Celotex. In Celotex, the Court laid out the procedures for how parties may go about moving for summary judgment and opposing summary judgment.
+
+To be more concrete: If the purpose of summary judgment is to determine whether trial is necessary, we must consider what can happen at trial. At trial, the plaintiff bears the burden of production: if neither the plaintiff nor the defendant presents evidence, the plaintiff loses. If the plaintiff produces evidence (witness, documents, other trial exhibits) that, if believed by the jury, would entitle the plaintiff to relief, then the plaintiff has met the burden of
+583
+production. The defendant must now produce contrary evidence or lose. The plaintiff also bears the burden of persuasion: if, after both sides have presented their evidence, the evidence is in equipoise, such that the preponderance of the evidence supports neither the plaintiff nor the defendant, the plaintiff loses.*
+
+Given these burdens at the trial stage, Celotex attempts to unpack the burdens of production and persuasion at the summary judgment stage. The burden of persuasion is easy: like with any motion, the moving party bears the burden of persuading the court to grant the motion. The burden of production, though, is not so simple. What evidence, if any, must a moving party present in its summary judgment motion to satisfy its burden of production, such that the nonmoving party must now respond with evidence of its own?
+
+For a plaintiff to move for summary judgment and meet the burden of production, the plaintiff’s motion for summary judgment must show that (1) the plaintiff can produce evidence supporting plaintiff’s claim, and (2) based on this evidence, no reasonable jury could decide in favor of the defendant. In other words, a plaintiff’s motion for summary judgment must present evidence (affidavits, deposition testimony, documents, etc.), or the motion is a non-starter. After all, in the absence of evidence, plaintiff is guaranteed to lose at trial, even if the defendant has no evidence either. Thus, if the plaintiff presents no evidence in his motion for summary judgment, the defendant needs not respond with any evidence of her own.
+
+What about a defendant who moves for summary judgment? Surely, a defendant who presents evidence that, standing alone, disproves the plaintiff’s claim for relief has met the burden of production for summary judgment. At that point, the plaintiff must respond with his own controverting evidence to put the issue back into dispute such that a reasonable jury could, based on this evidence, decide in his favor.
+
+But must a defendant who moves for summary judgment present any evidence at all? At trial, the defendant can win without presenting any evidence at all, if the plaintiff fails to produce evidence supporting each element of his claim. This is the question posed in Celotex.

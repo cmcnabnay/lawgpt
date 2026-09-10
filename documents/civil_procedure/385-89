@@ -1,0 +1,97 @@
+385
+Privilege and Work Product Protection
+Not all materials that are highly relevant and easily retrieved are within the scope of discovery. In this section, we will discuss the two most common bases for withholding relevant, proportional materials from discovery: attorney-client privilege and work product protection.
+
+INTRODUCTORY NOTE ON ATTORNEY-CLIENT PRIVILEGE, SODEXOMAGIC V. DREXEL UNIVERSITY, AND UPJOHN V. UNITED STATES
+In the course of defining the scope of discovery, Rule 26(b)(1) requires not only that the materials in question be relevant, but that they be nonprivileged. The Rules do not define what materials are privileged, however. Rather, the Federal Rules of Evidence explicitly leave the development of privilege law to the continued evolution of the common law.
+
+The most familiar and frequently invoked privilege is the attorney-client privilege. (Other privileges, such as spousal privileges and physician-patient privileges, protect other categories of confidential communications, but we will focus solely on attorney-client privilege here.) The attorney-client privilege is an ancient concept in the common law. It provides an absolute shield from discovery for certain communications, no matter how relevant, and no matter how great the need of the requesting party. In order for materials or testimony to be subject to the attorney-client privilege, there are four, generally recognized elements that must be met:
+
+First, the communication involves a client or someone seeking to be a client.
+
+Second, the communication was made to a lawyer (or a lawyer’s subordinate) acting in her capacity as a lawyer.
+
+Third, the communication was confidential and made in the course of seeking legal advice and assistance.
+
+Fourth, the privilege has been claimed and not waived.
+
+As its fourth element reveals (and as the term “privilege” implies), the attorney-client privilege does not operate automatically—it must be invoked
+386
+and can be relinquished. But if a party makes a valid claim of attorney-client privilege, privileged materials are categorically undiscoverable. The privilege belongs to the client, and the client may invoke it to shield their communications from discovery.
+
+Although centuries old, the boundaries of the attorney-client privilege remain elusive to many attorneys. Generations of junior attorneys at law firms have had the experience of sorting through hundreds or thousands of documents to separate those that are privileged from those that are discoverable.
+
+Which documents are subject to the attorney-client privilege? The easy—but wrong—answer is to slap the label “attorney-client privileged” on anything with a lawyer’s name on it. In our next case, SodexoMAGIC v. Drexel University, a judge offers some simple and concrete guidance for determining when a communication is privileged and when it isn’t.
+
+And although ancient, the attorney-client privilege continues to pose new and difficult questions. For example, whether a communication is privileged depends on whether it is between an attorney and her client. Who is the “client”? When the client is an individual, answering this question is usually easy, but what if the client is a corporation or another type of large organization? The court in SodexoMAGIC addresses the simplest version of this scenario: when the president or vice president of a company seeks legal advice from corporate counsel (whether in-house counsel or an outside law firm), this is an attorney-client communication. But what about communications involving lower-level employees rather than the CEO? What about communications among hundreds of employees, rather than just one or two? Our second case, Upjohn v. United States, speaks to these questions.
+
+SodexoMAGIC, LLC v. Drexel University
+_________________________
+
+291 F.Supp.3d 681 (E.D. Pa. 2018)
+
+BAYLSON, J.
+
+I. INTRODUCTION
+
+The Court has reviewed the 50 documents submitted in camera by both Plaintiff and Defendant, as samples of disputed claims of privilege, and has assessed each party’s privilege determinations.
+
+387
+* * *
+
+In the present case, the challenged communications involve internal emails within Drexel and SodexoMAGIC, i.e., corporate attorney-client privilege. Pennsylvania courts have stated that communications between in-house counsel and the corporate client are protected to the same extent as communications between the corporation and outside counsel. Moreover, the Third Circuit has reiterated that “communication between a corporation’s counsel and the employees of the corporation are covered by the attorney-client privilege.” Many courts have held that privilege is to be narrowly construed.
+
+Communications with the subordinate of an attorney, such as a paralegal, are also protected by the attorney-client privilege so long as the subordinate is “acting as the agent of a duly qualified attorney under circumstances that would otherwise be sufficient to invoke the privilege.” In fact, “[a] document need not be authored or addressed to an attorney in order to be properly withheld on attorney-client privilege grounds.” Nonetheless, to successfully assert the attorney-client privilege, the corporation “must clearly demonstrate that the communication in question was made for the express purpose of securing legal not business advice,” and the party asserting the attorney-client privilege “bears the burden of proving that it applies to the communication at issue.” Notably, the party seeking to assert the privilege must “identify [a] specific attorney with whom a confidential communication was made” in order to satisfy this burden.
+
+Where lawyers (or their non-lawyer subordinates) are acting in a purely “scrivener-like” role, their emails and documents (including draft agreements) are themselves not privileged communications. Further, the privilege only protects communications from discovery. Facts are discoverable, even if discussed in privileged communications. Communications between client and counsel about draft contracts, and proposed contract language, are privileged.
+
+In order to guide the parties’ privilege determinations, below is a set of hypothetical email scenarios:
+
+1. President of Food Service Corporation A sends email to General Counsel, “What are the requirements of a binding contract for food service contract with College X?”
+
+2. General Counsel emails the President—with a list of the requirements for such a contract.
+
+388
+3. President to Corporation A’s VP, who as part of her job is engaged in negotiations with College X, “Our General Counsel has advised me that in order to form a binding contract with College X, we need to agree on requirements 1, 2, and 3.”
+
+* * *
+
+4. VP to Corporation A’s Sales Manager: “President has instructed us to proceed to negotiate a contract for food services with College X. Get to this ASAP.”
+
+5. Sales Manager to VP: “I’ve just met with Manager of College X and we have a handshake deal. How much detail do we need in the written contract?”
+
+6. VP to President: “Sales Manager reached a great deal for us. Let’s keep the written contract simple and direct to close the deal ASAP.”
+
+7. President to General Counsel: “Draft this contract as quickly as possible. Draft a contract including 1, 2, 3 and also 4, 5 and 6.”
+
+8. General Counsel to in-house Paralegal: “The President wants a contract with 1 through 6. Please take language from our prior contract with College Z to get the process started.”
+
+9. VP to Paralegal: “I heard you are working on our contract with College X. Please write these exact words into provision 6: ‘It is hereby agreed that the amount is $400.’ ”
+
+10. General Counsel to VP: “Here is my proposed contract attached to this e-mail. Show this to College X, but tell them it is non-negotiable.”
+
+11. VP to College X: “Here is our proposed contract. Our General Counsel says since we are giving you such a good deal, we must insist on these terms as written. Please send it back with your signature.”
+
+12. Emails by non-lawyers within each party, and between Corporation A and College X, following execution of the contract, disputing its interpretation, and at times indicating they rely on their counsel’s advice.
+
+389
+13. As a result of a dispute on contract interpretation between the parties, VP discusses this with President and then contacts General Counsel about her interpretation of the contract and GC responds. VP forwards this email to College X.
+
+[The court then gave its answers to the question of privilege for these thirteen hypothetical scenarios. The answers appear in the notes following the case, but before reviewing the notes, take some time to study the hypothetical scenarios and attempt to answer them yourself!—ed.]
+
+With these principles as its guide, the Court assessed all fifty documents submitted for in camera review. * * * [The court subsequently specified its ruling on each document.—ed.]
+
+The principles applied above should be employed by both parties to meet their respective discovery obligations.
+
+* * *
+
+
+
+•Internal emails of a corporation “between in-house counsel and the corporate client are protected” by attorney-client privilege “to the same extent as communications between the corporation and outside counsel”
+
+•To be protected, communications must be for purposes of legal, not business, advice
+
+Go online for bullet points on the background and holding of SodexoMAGIC v. Drexel University.
+
+NOTES AND QUESTIONS ON SODEXOMAGIC V. DREXEL UNIVERSITY
+In its opinion, the court in SodexoMAGIC provides a quiz, of sorts, on attorney-client privilege. Did you take the “quiz”? You can check your answers below, which are excerpted (with some minor clarifications and corrections) from the court’s opinion:

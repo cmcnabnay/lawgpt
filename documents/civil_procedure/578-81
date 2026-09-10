@@ -1,0 +1,46 @@
+578
+NOTES AND QUESTIONS ON MUELLER I
+1. The judge denied summary judgment for Taylor Swift and her co-defendants on David Mueller’s claims of interference with his employment at radio station KYGO. Why? Did the judge believe Mueller’s account of what happened? Did the judge disbelieve Swift’s account? Or are these questions irrelevant to why the judge denied summary judgment on these counts?
+
+2. All of the plaintiff’s claims arise out of the same event: Taylor Swift’s accusation that he had inappropriately grabbed her buttocks. Yet Judge Martínez granted summary judgment for the defendants on the slander claims despite denying summary judgment on all other claims. What was different about the slander claims? To be more precise: what was different about the slander claims that made them particularly well suited for resolution through summary judgment?
+
+INTRODUCTORY NOTE ON THE CELOTEX TRILOGY
+Anderson v. Liberty Lobby, Celotex v. Catrett, and Matsushita v. Zenith, all decisions glossing the standards for summary judgment and all decided within three months in 1986, are commonly referred to as the Celotex trilogy. Still widely cited, they were the Twiqbal of their day, intensely controversial and perceived by some contemporary legal scholars to effect—or at least reflect—a seismic change in the law.
+
+The core of the standard for summary judgment appears in Rule 56(a): “The court shall grant summary judgment if the movant shows that there is no genuine dispute as to any material fact and the movant is entitled to judgment as a matter of law.” This language poses key definitional questions: What makes a fact “material”? What makes a dispute “genuine”? When can the party opposing summary judgment avoid “judgment as a matter of law”? Anderson v. Liberty Lobby, Inc., 477 U.S. 242 (1986), attempts to answer these questions:
+
+By its very terms, [Rule 56] provides that the mere existence of some alleged factual dispute between the parties will not defeat an otherwise properly supported motion for summary judgment; the requirement is that there be no genuine issue of material fact.
+
+579
+As to materiality, the substantive law will identify which facts are material. Only disputes over facts that might affect the outcome of the suit under the governing law will properly preclude the entry of summary judgment. Factual disputes that are irrelevant or unnecessary will not be counted. * * *
+
+* * * [S]ummary judgment will not lie if the dispute about a material fact is “genuine,” that is, if the evidence is such that a reasonable jury could return a verdict for the nonmoving party.
+
+The Court emphasizes that summary judgment avoids the time and expense of trial when the outcome is a foregone conclusion:
+
+The inquiry performed is the threshold inquiry of determining whether there is the need for a trial—whether, in other words, there are any genuine factual issues that properly can be resolved only by a finder of fact because they may reasonably be resolved in favor of either party.
+
+Petitioners suggest, and we agree, that this standard mirrors the standard for a directed verdict under Federal Rule of Civil Procedure 50(a), which is that the trial judge must direct a verdict if, under the governing law, there can be but one reasonable conclusion as to the verdict. If reasonable minds could differ as to the import of the evidence, however, a verdict should not be directed.
+
+On the other hand, summary judgment cannot substitute for trial when the outcome depends on which witnesses a jury will believe or which reasonable inferences from the evidence a jury will draw:
+
+Our holding * * * by no means authorizes trial on affidavits. Credibility determinations, the weighing of the evidence, and the drawing of legitimate inferences from the facts are jury functions, not those of a judge, whether he is ruling on a motion for summary judgment or for a directed verdict. The evidence of the non-movant is to be believed, and all justifiable inferences are to be drawn in his favor.
+
+The Court distinguished between a jury weighing evidence and a jury simply disbelieving evidence. If the parties present contradictory evidence, it is for the jury, not the court, to credit one side’s evidence over the other’s. But
+580
+a non-moving cannot avoid summary judgment merely by arguing that a jury could disbelieve uncontradicted evidence of the moving party.
+
+Justice Brennan dissented. He wondered whether the Court was endorsing the use of summary judgment to abbreviate the judicial process, or whether the Court was unwittingly transforming summary judgment into a procedure that was anything but “summary”:
+
+I am fearful that this new rule—for this surely would be a brand new procedure—will transform what is meant to provide an expedited “summary” procedure into a full-blown paper trial on the merits. It is hard for me to imagine that a responsible counsel * * * will risk either moving for or responding to a summary judgment motion without coming forth with all of the evidence he can muster in support of his client’s case.
+
+Anderson v. Liberty Lobby was a libel case between a self-styled “citizen’s lobby” organized as a non-profit corporation and the editor of a magazine that published allegedly defamatory statements about the corporation. Importantly, though, nothing in the pronouncements quoted above depends in any way on the substance of the parties’ claims against each other: they are generally applicable principles.
+
+That is not say, however, that substantive law cannot affect the proper application of the summary judgment. As Anderson itself notes, “the substantive law will identify which facts are material.” 477 U.S. at 248. In tort, for example, evidence of the defendant’s carelessness will be material to a negligence claim but not to a strict liability claim.
+
+More subtly, though, substantive law can place limits on what counts as “justifiable inferences” that a jury can draw from the evidence. Another case in the trilogy, Matsushita Electric Industrial Co., Ltd. v. Zenith Radio Corp., 475 U.S. 574 (1986), addresses such a circumstance. The plaintiffs, American television manufacturers (including Zenith), sued twenty-one Japanese television manufacturers (including Matsushita). The claim was a conspiracy in violation of the Sherman Act and other antitrust law. Unlike most antitrust claims, which allege that the defendants conspired to raise prices, the plaintiffs’ claim in Matsushita was that the defendants were engaged in “predatory pricing”: conspiring to charge unusually low prices with the goal of driving the plaintiffs out of the market in hopes of jacking up prices thereafter.
+
+581
+Despite a gigantic quantity of discovery, the plaintiffs discovered no direct evidence of agreements between the defendants to fix prices of the televisions they sold in the United States.* After discovery, the defendants moved for summary judgment. In opposing the motion, the plaintiffs pointed to the fact that the defendants’ prices were lower than the plaintiffs’ prices and the defendants were gaining market share in the United States. This evidence was consistent with their theory that defendants had conspired to drive them out of the market as part of a concerted effort to raise prices in the future.
+
+But, the Supreme Court noted, this evidence was equally consistent with a simpler, “more plausible” theory: the defendants were competing vigorously by lowering costs and charging lower prices in order to attract consumers. This is usually why one company charges lower prices than another company—and it’s precisely the kind of conduct the antitrust laws are designed to encourage. Given this, can the plaintiffs avoid summary judgment by arguing that a jury could infer from the evidence that the lower prices were the product of an illegal conspiracy, rather than healthy competition? The Supreme Court said no. It explained that “antitrust law limits the range of permissible inferences from ambiguous evidence in a [Sherman Act] § 1 case. * * * To survive a motion for summary judgment or for a directed verdict, a plaintiff seeking damages for a violation of § 1 must present evidence ‘that tends to exclude the possibility’ that the alleged conspirators acted independently.” 475 U.S. at 588. In other words, evidence of lower prices, without more, provides the finder of fact with no basis to favor plaintiffs’ predatory pricing theory over other, more plausible theories. Thus, the Court concluded, the defendants are entitled to summary judgment.
