@@ -104,31 +104,17 @@ function handleStreamEvent(entry, evt){
   }
 }
 
-// -p (print mode) is what makes this non-interactive: one turn, then exit --
-// no TTY or approval prompts to hang on. --permission-mode auto lets it
-// proceed through routine tool calls on its own since nobody's watching a
-// terminal to approve them here.
-//
-// --session-id runId reuses the Agent tab's own run id (already a UUID) as
-// the Claude Code session id, instead of letting the CLI generate a random
-// one -- that's what makes a run findable afterward from an SSH session:
-// `cd` into the repo (sessions are scoped per project directory) and run
-// `claude --resume <runId>` to open that exact conversation, or just
-// `claude --resume` for the interactive picker, which will list it among
-// recent sessions since it's a real persisted session like any other.
-function startRun(userId, runId, prompt, cwd){
-  const entry = { userId, output: "", result: "", status: "running", child: null };
-  liveRuns.set(runId, entry);
-
+// Shared by startRun and continueRun below -- everything from spawning the
+// child process through wiring up its stdout/stderr/close handlers is
+// identical between "start a brand-new session" and "resume an existing one
+// with a follow-up message"; only the CLI args differ (--session-id vs
+// --resume), and the caller has already set up `entry` (fresh for a new run,
+// seeded with the prior transcript for a follow-up) and registered it in
+// liveRuns.
+function spawnClaude(entry, userId, runId, args, cwd){
   let child;
   try {
-    child = spawn("claude", [
-      "-p", prompt,
-      "--permission-mode", "auto",
-      "--output-format", "stream-json",
-      "--verbose",
-      "--session-id", runId
-    ], {
+    child = spawn("claude", args, {
       cwd,
       env: process.env,
       // Nothing ever writes to this process's stdin -- left open (the
@@ -139,8 +125,8 @@ function startRun(userId, runId, prompt, cwd){
     });
   } catch (err) {
     entry.status = "error";
-    entry.output = `Failed to start Claude Code: ${err.message}`;
-    agentStore.updateRun(userId, runId, { status: "error", output: entry.output });
+    entry.output += `Failed to start Claude Code: ${err.message}`;
+    agentStore.updateRun(userId, runId, { status: "error", output: entry.output, result: entry.result });
     liveRuns.delete(runId);
     return;
   }
@@ -198,6 +184,60 @@ function startRun(userId, runId, prompt, cwd){
   });
 }
 
+// -p (print mode) is what makes this non-interactive: one turn, then exit --
+// no TTY or approval prompts to hang on. --permission-mode auto lets it
+// proceed through routine tool calls on its own since nobody's watching a
+// terminal to approve them here.
+//
+// --session-id runId reuses the Agent tab's own run id (already a UUID) as
+// the Claude Code session id, instead of letting the CLI generate a random
+// one -- that's what makes a run findable afterward from an SSH session:
+// `cd` into the repo (sessions are scoped per project directory) and run
+// `claude --resume <runId>` to open that exact conversation, or just
+// `claude --resume` for the interactive picker, which will list it among
+// recent sessions since it's a real persisted session like any other.
+function startRun(userId, runId, prompt, cwd){
+  const entry = { userId, output: "", result: "", status: "running", child: null };
+  liveRuns.set(runId, entry);
+  spawnClaude(entry, userId, runId, [
+    "-p", prompt,
+    "--permission-mode", "auto",
+    "--output-format", "stream-json",
+    "--verbose",
+    "--session-id", runId
+  ], cwd);
+}
+
+// Sends a follow-up message into an already-finished run's own Claude Code
+// session, so the Agent tab's chatbox can keep a conversation going instead
+// of every message starting a brand-new, context-less session. --resume
+// runId picks the exact conversation back up (same session id --session-id
+// gave it originally); the transcript in agent-store.js is seeded with the
+// prior run's own output/result first so the terminal panel shows one
+// continuous conversation rather than resetting to blank on every message.
+// Callers (agent-routes.js) are responsible for checking the run isn't
+// already live before calling this -- two overlapping `claude --resume`
+// invocations against the same session would race each other.
+async function continueRun(userId, runId, followupPrompt, cwd){
+  const stored = await agentStore.getRun(userId, runId);
+  const priorOutput = (stored && stored.output) || "";
+  const entry = {
+    userId,
+    output: priorOutput + (priorOutput ? "\n\n" : "") + `> ${followupPrompt}\n`,
+    result: (stored && stored.result) || "",
+    status: "running",
+    child: null
+  };
+  liveRuns.set(runId, entry);
+  spawnClaude(entry, userId, runId, [
+    "--resume", runId,
+    "-p", followupPrompt,
+    "--permission-mode", "auto",
+    "--output-format", "stream-json",
+    "--verbose"
+  ], cwd);
+}
+
 function getLiveRun(runId){
   return liveRuns.get(runId) || null;
 }
@@ -214,4 +254,4 @@ function killRun(runId){
   liveRuns.delete(runId);
 }
 
-module.exports = { startRun, getLiveRun, killRun };
+module.exports = { startRun, continueRun, getLiveRun, killRun };

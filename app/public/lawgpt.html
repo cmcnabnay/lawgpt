@@ -1725,12 +1725,34 @@ pre code {
 .agent-run-status.running{ color:#d8b96a; }
 .agent-run-status.done{ color:#8fbf8f; }
 .agent-run-status.error{ color:var(--oxblood); }
+.agent-resume-row{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin:-6px 0 12px;
+}
 .agent-resume-hint{
   font-family:'IBM Plex Mono',monospace;
   font-size:11px;
   color:var(--text-muted);
-  margin:-6px 0 12px;
   user-select:all;
+}
+.agent-resume-terminal-btn{
+  flex:0 0 auto;
+  font-size:11px;
+  padding:3px 9px;
+  background:none;
+  border:1px solid var(--hairline);
+  border-radius:var(--radius);
+  color:var(--text-muted);
+  cursor:pointer;
+}
+.agent-resume-terminal-btn:hover{ border-color:var(--brass-dim); color:var(--brass); }
+.agent-followup-row{
+  flex:0 0 auto;
+  margin-top:12px;
+  padding:10px 0 0;
+  border-top:1px solid var(--hairline);
 }
 /* Terminal-over-Output, stacked vertically. Three states, toggled by JS
    (see applyAgentPanelLayout) via a modifier class on #agentPanels:
@@ -3043,7 +3065,10 @@ pre code {
       <div class="agent-main">
         <div class="documents-title" id="agentRunTitle">Select a run</div>
         <div class="agent-run-status" id="agentRunStatus"></div>
-        <div class="agent-resume-hint" id="agentResumeHint" style="display:none;"></div>
+        <div class="agent-resume-row" id="agentResumeHint" style="display:none;">
+          <span class="agent-resume-hint" id="agentResumeHintText"></span>
+          <button type="button" class="agent-resume-terminal-btn" id="agentOpenTerminalBtn" title="Resume this session in a terminal window on this machine (only works when lawgpt is running on your own computer)">Resume in Terminal</button>
+        </div>
         <div class="agent-panels" id="agentPanels">
           <div class="agent-panel" id="agentTerminalPanel">
             <div class="agent-panel-label agent-panel-label-clickable" id="agentTerminalLabel">
@@ -3055,6 +3080,10 @@ pre code {
             <div class="agent-panel-label">Output</div>
             <div class="notes-report-body agent-output-body" id="agentOutputBody"></div>
           </div>
+        </div>
+        <div class="notes-chat-input-row agent-followup-row" id="agentFollowupRow" style="display:none;">
+          <textarea class="notes-chat-input" id="agentFollowupInput" rows="1" placeholder="Send a follow-up message to this agent session…" spellcheck="false"></textarea>
+          <button type="button" class="notes-head-btn primary" id="agentFollowupSendBtn">Send</button>
         </div>
       </div>
     </div>
@@ -6552,6 +6581,8 @@ async function deleteAgentRun(id){
       document.getElementById("agentResumeHint").style.display = "none";
       document.getElementById("agentTerminalOutput").textContent = "";
       document.getElementById("agentOutputBody").innerHTML = "";
+      document.getElementById("agentFollowupRow").style.display = "none";
+      document.getElementById("agentFollowupInput").value = "";
       activeAgentRunStatus = null;
       agentTerminalExpanded = false;
       applyAgentPanelLayout(null);
@@ -6590,6 +6621,8 @@ async function openAgentRun(id){
   resumeEl.style.display = "none";
   outputEl.textContent = "";
   bodyEl.innerHTML = "";
+  document.getElementById("agentFollowupRow").style.display = "none";
+  document.getElementById("agentFollowupInput").value = "";
 
   try{
     const res = await fetch(PROXY_ORIGIN + "/api/agent/runs/" + encodeURIComponent(id));
@@ -6614,16 +6647,24 @@ function renderAgentRun(run){
   const titleEl = document.getElementById("agentRunTitle");
   const statusEl = document.getElementById("agentRunStatus");
   const resumeEl = document.getElementById("agentResumeHint");
+  const resumeTextEl = document.getElementById("agentResumeHintText");
   const outputEl = document.getElementById("agentTerminalOutput");
   const bodyEl = document.getElementById("agentOutputBody");
+  const followupRow = document.getElementById("agentFollowupRow");
+  const followupInput = document.getElementById("agentFollowupInput");
+  const followupSendBtn = document.getElementById("agentFollowupSendBtn");
   titleEl.textContent = run.title || "Agent run";
   statusEl.textContent = agentStatusLabel(run.status);
   statusEl.className = "agent-run-status " + (run.status || "");
   // The run's own id doubles as its Claude Code session id (see
   // agent-runtime.js's --session-id) -- from an SSH session on the server,
   // cd into the repo and run this to open/continue that exact conversation.
-  resumeEl.textContent = `claude --resume ${run.id}`;
-  resumeEl.style.display = "block";
+  // "Resume in Terminal" does the same thing but as a one-click local action
+  // (see agent-routes.js's requireLocalhost-gated /open-terminal) -- it
+  // silently 403s if this server isn't the same machine the browser is on,
+  // which is why the copy-pasteable text stays visible either way.
+  resumeTextEl.textContent = `claude --resume ${run.id}`;
+  resumeEl.style.display = "flex";
 
   // The moment a run leaves "running" (finishes or errors), force the
   // terminal back to collapsed so the Output panel takes over full-size --
@@ -6645,6 +6686,17 @@ function renderAgentRun(run){
   } else {
     bodyEl.innerHTML = "";
   }
+
+  // The follow-up box only ever sends into a run that's actually settled --
+  // sending a second message while one is still running would race it (see
+  // agent-routes.js's 409 on that), so it's disabled rather than hidden
+  // while "running", matching the same at-rest/in-flight split the Notes
+  // tab's chat box uses.
+  followupRow.style.display = "flex";
+  const busy = run.status === "running";
+  followupInput.disabled = busy;
+  followupSendBtn.disabled = busy;
+  followupSendBtn.textContent = busy ? "Working…" : "Send";
 }
 
 function pollAgentRun(id){
@@ -6669,6 +6721,82 @@ function pollAgentRun(id){
     }
   }, 1500);
 }
+
+// Sends a follow-up message into the open run's own Claude Code session
+// (see agent-runtime.js's continueRun / agent-routes.js's POST
+// /runs/:id/message) -- what lets a "Send to agent" run turn into an actual
+// back-and-forth instead of a one-shot fire. Disabled rather than hidden
+// while the previous turn is still running (see renderAgentRun) since the
+// backend rejects an overlapping send with a 409.
+async function sendAgentFollowup(){
+  const id = activeAgentRunId;
+  if (!id) return;
+  const input = document.getElementById("agentFollowupInput");
+  const sendBtn = document.getElementById("agentFollowupSendBtn");
+  const message = input.value.trim();
+  if (!message || input.disabled) return;
+
+  input.value = "";
+  autoGrow(input);
+  input.disabled = true;
+  sendBtn.disabled = true;
+  sendBtn.textContent = "Working…";
+  // Reflect "running" immediately rather than waiting for the first poll --
+  // continueRun's spawn happens moments after this request returns, so
+  // there'd otherwise be a beat where the UI still looks idle.
+  activeAgentRunStatus = "running";
+  applyAgentPanelLayout("running");
+  const statusEl = document.getElementById("agentRunStatus");
+  statusEl.textContent = agentStatusLabel("running");
+  statusEl.className = "agent-run-status running";
+
+  try{
+    const res = await fetch(PROXY_ORIGIN + "/api/agent/runs/" + encodeURIComponent(id) + "/message", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message })
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error((data && data.error && data.error.message) || "Couldn't send that message.");
+    pollAgentRun(id);
+  } catch(e){
+    alert("Couldn't send that message: " + e.message);
+    input.value = message;
+    autoGrow(input);
+    input.disabled = false;
+    sendBtn.disabled = false;
+    sendBtn.textContent = "Send";
+    activeAgentRunStatus = "done";
+    applyAgentPanelLayout("done");
+    statusEl.textContent = agentStatusLabel("done");
+    statusEl.className = "agent-run-status done";
+  }
+}
+
+document.getElementById("agentFollowupSendBtn").addEventListener("click", sendAgentFollowup);
+document.getElementById("agentFollowupInput").addEventListener("keydown", (e) => {
+  if (e.key === "Enter" && !e.shiftKey){
+    e.preventDefault();
+    sendAgentFollowup();
+  }
+});
+document.getElementById("agentFollowupInput").addEventListener("input", (e) => autoGrow(e.target));
+
+// "Resume in Terminal" -- opens a real terminal window on whatever machine
+// this server itself is running on (see agent-routes.js's requireLocalhost-
+// gated POST /runs/:id/open-terminal). Only actually succeeds when the
+// browser and server are on the same machine; otherwise the server 403s and
+// this just surfaces that message rather than pretending it worked.
+document.getElementById("agentOpenTerminalBtn").addEventListener("click", async () => {
+  if (!activeAgentRunId) return;
+  try{
+    const res = await fetch(PROXY_ORIGIN + "/api/agent/runs/" + encodeURIComponent(activeAgentRunId) + "/open-terminal", { method: "POST" });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error((data && data.error && data.error.message) || "Couldn't open a terminal.");
+  } catch(e){
+    alert(e.message);
+  }
+});
 
 async function markEmailDone(id, done){
   try{
