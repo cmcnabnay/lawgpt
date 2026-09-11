@@ -38,7 +38,7 @@ const crypto = require("crypto");
 const documentStore = require("./document-store");
 const emailStore = require("./email-store");
 const canvasRoutes = require("./canvas-routes");
-const { extractText, saveNativeFile, matchCourseFolder, isDocumentAttachment, extFromContentTypeOrTitle } = canvasRoutes;
+const { extractText, saveNativeFile, matchCourseFolder, isDocumentAttachment, extFromContentTypeOrTitle, deriveBaseName } = canvasRoutes;
 const { getAccessTokenSilent, getEmailConfig, getPersonalApiKey } = require("./email-auth");
 const agentStore = require("./agent-store");
 const agentRuntime = require("./agent-runtime");
@@ -379,6 +379,24 @@ router.post("/sync", async (req, res) => {
         for (const attachment of (attachmentsRes.value || [])) {
           if (attachment["@odata.type"] !== "#microsoft.graph.fileAttachment") continue;
           if (!attachment.name || !isDocumentAttachment(attachment.name, attachment.contentType)) continue;
+
+          // Check for this same file under ANY course folder first, not just
+          // the one this message's course guess landed on -- an email that
+          // the classifier can't tie to a course (falls through to
+          // "uncategorized") very often carries an attachment that's already
+          // correctly filed under its real course from a Canvas import or an
+          // earlier, better-classified email. Without this, that file gets
+          // re-downloaded into documents/uncategorized/ and a second,
+          // permanent document-store record is created for the same content
+          // -- the same "same entity, two records" bug the quiz-scrape fixes
+          // (4b72611, fbd0ce7) addressed, just via this path instead.
+          const baseName = deriveBaseName(attachment.name).toLowerCase();
+          const crossFolderExisting = documentStore.getAllDocuments()
+            .find(doc => doc.fileName && deriveBaseName(doc.fileName).toLowerCase() === baseName);
+          if (crossFolderExisting) {
+            documentIds.push(crossFolderExisting.id);
+            continue;
+          }
 
           const buffer = Buffer.from(attachment.contentBytes, "base64");
           const ext = extFromContentTypeOrTitle(attachment.contentType, attachment.name);

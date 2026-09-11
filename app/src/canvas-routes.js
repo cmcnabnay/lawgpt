@@ -1017,4 +1017,5 @@ module.exports.DOCS_ROOT = DOCS_ROOT;
 module.exports.saveNativeFile = saveNativeFile;
 module.exports.matchCourseFolder = matchCourseFolder;
 module.exports.isDocumentAttachment = isDocumentAttachment;
+module.exports.deriveBaseName = deriveBaseName;
 module.exports.extFromContentTypeOrTitle = extFromContentTypeOrTitle;
