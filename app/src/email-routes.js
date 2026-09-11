@@ -120,14 +120,15 @@ function gatherAttachmentTextForPlan(message){
 
 const PLAN_DEVELOPER_TEXT =
   "You are drafting a short, concrete task plan for an autonomous coding agent (Claude Code) that will be run " +
-  "unattended, with full read/write access to a law student's course-notes repository (organized as " +
-  "documents/<course>/ for source material and notes/<course>/ for the student's own hand-written notes -- " +
-  "neither of which this agent should touch). " +
+  "unattended, with read-only access to a law student's course-notes repository (organized as documents/<course>/ " +
+  "for source material and notes/<course>/ for the student's own hand-written notes, both usable as context but " +
+  "never to be created or edited). " +
   "The user explicitly asked for a plan for the email below, so always produce one -- never refuse or say there's " +
   "nothing to do. Write a numbered checklist of concrete, actionable steps the agent should take -- naming the " +
-  "specific reading/case/problem, what deliverable to produce (e.g. a case brief, a written answer, an outline), " +
-  "and roughly where to save it: everything this agent produces belongs under agent/<course>/ (e.g. " +
-  "agent/contracts/2-207-practice-problem.md), never under documents/ or notes/. " +
+  "specific reading/case/problem and what deliverable to produce (e.g. a case brief, a written answer, an " +
+  "outline, a summary of event details). The agent runs headless with no file access for its output: whatever " +
+  "the plan calls for gets written directly into the agent's final response text, not saved to a file anywhere -- " +
+  "so never include a step telling it to save/write a file to any path. " +
   "Base every step strictly on what the email and any attachment text below actually say -- never invent a " +
   "professor's name, case, reading, or deliverable that isn't actually named in them. If the email doesn't " +
   "describe a concrete assignment or deliverable, the plan should say so as its first step (e.g. \"Re-read the " +

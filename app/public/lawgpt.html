@@ -2140,6 +2140,9 @@ pre code {
 .notes-report-body p{ margin:0 0 12px; }
 .notes-report-body p:last-child{ margin-bottom:0; }
 .notes-report-body ul, .notes-report-body ol{ margin:0 0 12px; padding-left:20px; }
+.notes-report-body blockquote{ margin:0 0 12px; padding:2px 14px; border-left:2px solid var(--hairline); color:var(--text-muted); }
+.notes-report-body blockquote p{ margin:0 0 6px; }
+.notes-report-body blockquote p:last-child{ margin-bottom:0; }
 
 /* A markdown pipe table (e.g. the Case Comparisons grid) rendered as a real
    <table> by tryRenderMarkdownTable/formatParagraph, instead of the raw
@@ -4262,6 +4265,39 @@ function formatParagraph(para){
   if (/^\s*-{3,}\s*$/.test(para)) return "<p>&nbsp;</p>";
   const tableHtml = tryRenderMarkdownTable(para);
   if (tableHtml) return tableHtml;
+
+  // Lists and blockquotes are detected on the RAW (pre-escape) lines --
+  // escapeHtml would turn a blockquote's leading ">" into "&gt;" before a
+  // literal-character check could see it. Each extracted item's own text is
+  // escaped individually below, same as every other renderer path here.
+  const rawLines = para.split("\n");
+  const nonBlankRawLines = rawLines.filter(l => l.trim());
+
+  // A blockquote (the agent quoting a contract clause or email verbatim) --
+  // every non-blank line starts with ">". Multiple quoted lines collapse
+  // into one <blockquote> rather than one per line.
+  if (nonBlankRawLines.length && nonBlankRawLines.every(l => /^\s*>/.test(l))) {
+    const quoted = nonBlankRawLines.map(l => l.replace(/^\s*>\s?/, "")).join("\n");
+    return `<blockquote>${quoted.split(/\n+/).map(l => `<p>${boldInline(escapeHtml(l))}</p>`).join("")}</blockquote>`;
+  }
+
+  // An unordered list -- every non-blank line starts with "-"/"*"/"+ ". Has
+  // to come before the heading/plain-paragraph fallback below, which used
+  // to print each line's leading "-" literally instead of a real <li>.
+  const bulletMatch = (l) => /^\s*[-*+]\s+(.*)$/.exec(l);
+  if (nonBlankRawLines.length && nonBlankRawLines.every(bulletMatch)) {
+    const items = nonBlankRawLines.map(l => bulletMatch(l)[1]);
+    return `<ul>${items.map(i => `<li>${boldInline(escapeHtml(i))}</li>`).join("")}</ul>`;
+  }
+
+  // An ordered list -- every non-blank line starts with "1."/"1)" etc. Same
+  // reasoning as the bullet list above.
+  const numberedMatch = (l) => /^\s*\d+[.)]\s+(.*)$/.exec(l);
+  if (nonBlankRawLines.length && nonBlankRawLines.every(numberedMatch)) {
+    const items = nonBlankRawLines.map(l => numberedMatch(l)[1]);
+    return `<ol>${items.map(i => `<li>${boldInline(escapeHtml(i))}</li>`).join("")}</ol>`;
+  }
+
   const escaped = escapeHtml(para);
   const headingMatch = /^[ \t]*#{1,6}[ \t]+(.*)$/.exec(escaped);
   if (headingMatch && !headingMatch[1].includes("\n")){
@@ -4310,7 +4346,11 @@ function boldInline(line){
     // (a stray close with no matching open, or a leftover fragment) -- drop
     // it rather than show it.
     .replace(/&lt;\/?b&gt;/gi, "")
-    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+    // Markdown links, e.g. a registration link the agent quoted from an
+    // email -- escapeHtml leaves [ ] ( ) untouched, so this runs on the
+    // already-escaped text like everything else above.
+    .replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
 }
 
 // Detects a GitHub/Markdown-style pipe table -- a header row, a "|---|---|"
