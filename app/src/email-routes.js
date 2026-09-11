@@ -546,7 +546,10 @@ router.post("/messages/:id/agent/run", async (req, res) => {
     "the plan calls for must be written out directly in your response text, in full -- not summarized, not left " +
     "in a file, and not just a description of what you would have produced. " +
     "This is also running unattended: if a step is ambiguous, use your best judgment and proceed rather than " +
-    "stopping to ask a question nobody will see.\n\n" + message.plan;
+    "stopping to ask a question nobody will see.\n\n" +
+    "Plan:\n" + message.plan +
+    "\n\n---\n\nThe plan above was drafted from this email -- use it for any specifics (links, dates, names, " +
+    "addresses) the plan itself doesn't spell out:\n\n" + buildPlanContext(message);
 
   const runId = crypto.randomUUID();
   await agentStore.createRun(userId, {

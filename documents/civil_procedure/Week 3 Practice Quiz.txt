@@ -1,0 +1,109 @@
+Week 3 Practice Quiz — content scraped from Canvas New Quizzes on 9/10/2026, 10:15:37 PM.
+An attempt was started in Canvas to read this content, then left open/unsubmitted -- no answers were recorded or submitted.
+NOTE: New Quizzes renders via JavaScript, so this is the quiz player's visible page text rather than cleanly separated question/answer-choice fields the way a classic quiz's scrape is -- it may include some extra UI text (timer, navigation labels, etc.) alongside the actual questions and choices.
+NOTE: this quiz shows one question at a time -- paged through "Next" (without selecting any answer) to read all 7 screens below, each separated by a "----- next question -----" marker; some navigation chrome repeats on every screen.
+
+Flag question: Question 1
+Question 1
+1 pts
+
+In the State of O'Quinn, a defendant has committed the tort of "conversion" if (a) the plaintiff has rightful possession of a piece of property, (b) the defendant intentionally takes that property, and (c) the defendant did not have permission to take the property.
+
+P sues D for conversion. Assume that the case is in federal court. And assume that the following is the relevant text of P's Complaint:
+
+P had a car, which P bought last year.
+D drove off with P's car.
+While driving off, D shouted, "Haha, I took your car!"
+D did not ask for, nor did P give, P's permission to take the car.
+P therefore requests $100,000 in damages for the fair market value of the car.
+
+D files a motion to dismiss, arguing that the Complaint has failed to cite the O'Quinn state statutes and caselaw establishing the tort of conversion. You are the judge in the case: Is D right that the Complaint should be dismissed on this basis?
+
+(Remember, although it's state tort law, we're in federal court for this hypo, so the federal standard we learned applies. We'll learn when a state-law case can be in federal court later this semester.)
+
+Group of answer choices
+Yes, D is right and the Complaint should be dismissed on this basis.
+No, D is wrong and the Complaint should not be dismissed on this basis.
+Next
+
+----- next question -----
+
+Flag question: Question 2
+Question 2
+1 pts
+If a lawyer who is planning to bring a case in federal court is worried that their Complaint does not allege sufficient facts to make it "plausible," they can:
+Group of answer choices
+(A) Ask their client follow-up questions and do additional research.
+(B) Invent any facts needed to fill in the story.
+(C) Plead potentially true facts based on information and belief, if they have enough reason to believe those facts will have evidentiary support after discovery.
+(D) Both A and B.
+(E) Both A and C.
+ Previous
+Next
+
+----- next question -----
+
+Flag question: Question 3
+Question 3
+1 pts
+
+In Swanson v. Citibank, the court writes that “the plaintiff must give enough details about the subject-matter of the case to present a story that holds together.”
+
+True or false: that means that the Complaint must tell a story that does not contradict itself.
+
+Group of answer choices
+True
+False
+ Previous
+Next
+
+----- next question -----
+
+Flag question: Question 4
+Question 4
+1 pts
+P sues D. P requests that D waive service, per Rule 4(d). D waives service. The next thing that D does is file an Answer, 80 days after receiving the request to waive service. Is the Answer timely?
+Group of answer choices
+Yes.
+No.
+ Previous
+Next
+
+----- next question -----
+
+Flag question: Question 5
+Question 5
+1 pts
+P sues D. You are the attorney for D. After receiving P's Complaint, you draft and file D's Answer. Fifty days later, you realize that there was likely insufficient service of process, per Rule 12(b)(5). But that argument was not included in your Answer. Can you raise it now?
+Group of answer choices
+Yes.
+No.
+ Previous
+Next
+
+----- next question -----
+
+Flag question: Question 6
+Question 6
+1 pts
+P sues D. You are the attorney for D. After receiving P's Complaint, you draft and file D's Answer. Fifty days later, you realize that there is likely no subject-matter jurisdiction, per Rule 12(b)(1). But that argument was not included in your Answer. Can you raise it now?
+Group of answer choices
+Yes.
+No.
+ Previous
+Next
+
+----- next question -----
+
+Flag question: Question 7
+Question 7
+1 pts
+
+P sues D. You are the attorney for D. You make a timely Rule 12(b)(5) motion for insufficient service of process, on the ground that you never got a copy of the Complaint. You win your motion, and P provides a copy of the Complaint.
+
+The next day, you read the Complaint. You think it doesn't meet the "plausibility" standard. So you would like to make a 12(b)(6) motion to dismiss for failure to state a claim. Can you do so?
+
+Group of answer choices
+Yes.
+No.
+ Previous
