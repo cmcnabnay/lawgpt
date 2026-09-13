@@ -341,6 +341,7 @@
   .bubble p{ margin:0 0 12px; }
   .bubble p:last-child{ margin-bottom:0; }
   .bubble ul, .bubble ol{ margin:0 0 12px; padding-left:20px; }
+  .bubble li > ul, .bubble li > ol{ margin:2px 0 0; }
   .msg-cost{
     font-family:'IBM Plex Mono',monospace;
     font-size:10.5px;
@@ -2140,9 +2141,27 @@ pre code {
 .notes-report-body p{ margin:0 0 12px; }
 .notes-report-body p:last-child{ margin-bottom:0; }
 .notes-report-body ul, .notes-report-body ol{ margin:0 0 12px; padding-left:20px; }
+.notes-report-body li > ul, .notes-report-body li > ol{ margin:2px 0 0; }
 .notes-report-body blockquote{ margin:0 0 12px; padding:2px 14px; border-left:2px solid var(--hairline); color:var(--text-muted); }
 .notes-report-body blockquote p{ margin:0 0 6px; }
 .notes-report-body blockquote p:last-child{ margin-bottom:0; }
+.notes-report-edit-area{
+  display:block;
+  width:100%;
+  height:100%;
+  min-height:300px;
+  box-sizing:border-box;
+  resize:vertical;
+  background:var(--ink);
+  color:var(--text-light);
+  border:1px solid var(--hairline);
+  border-radius:6px;
+  padding:12px 14px;
+  font-family:'IBM Plex Mono',monospace;
+  font-size:12.5px;
+  line-height:1.6;
+}
+.notes-report-edit-area:focus{ outline:none; border-color:var(--brass-dim); }
 
 /* A markdown pipe table (e.g. the Case Comparisons grid) rendered as a real
    <table> by tryRenderMarkdownTable/formatParagraph, instead of the raw
@@ -3114,6 +3133,7 @@ pre code {
                   <div class="notes-report-cost" id="notesReportCost" style="display:none;"></div>
                 </div>
                 <div class="notes-report-actions">
+                  <button type="button" id="notesReportEditBtn" title="Edit this report's text in place">Edit</button>
                   <button type="button" id="notesReportOpenEditorBtn" title="Open this AI-generated report in the Draft &amp; Compile editor">Open in Editor</button>
                   <button type="button" class="primary" id="notesReportSaveBtn">Save</button>
                   <button type="button" id="notesReportDeleteBtn" style="display:none;">Delete</button>
@@ -4258,6 +4278,34 @@ function formatContent(text){
 // just escape and print those characters literally instead of the bold text
 // they were meant to produce -- a report showed "## 1. Elements" and
 // "**Rule:**" on the page verbatim instead of rendering as bold.
+
+// Builds a nested <ul>/<ol> from a flat array of list-marker lines, using
+// each line's leading-whitespace length as its indent depth. `lineMatch` is
+// the same regex-exec helper the caller used to confirm every line is a
+// list item; its capture groups are (indent, bulletMarker, numberMarker, text).
+function renderNestedList(lines, lineMatch){
+  const root = { depth: -1, ordered: false, children: [] };
+  const stack = [root];
+  for (const line of lines) {
+    const m = lineMatch(line);
+    const indent = m[1].length;
+    const ordered = !!m[3];
+    const text = m[4];
+    while (stack.length > 1 && stack[stack.length - 1].depth >= indent) stack.pop();
+    const node = { depth: indent, ordered, text, children: [] };
+    stack[stack.length - 1].children.push(node);
+    stack.push(node);
+  }
+  function render(node){
+    if (!node.children.length) return "";
+    const tag = node.children[0].ordered ? "ol" : "ul";
+    return `<${tag}>${node.children.map(c =>
+      `<li>${boldInline(escapeHtml(c.text))}${render(c)}</li>`
+    ).join("")}</${tag}>`;
+  }
+  return render(root);
+}
+
 function formatParagraph(para){
   // A bare "---" (the case/rule/definition separator the notes templates
   // are told to emit between repeated blocks) renders as blank vertical
@@ -4281,21 +4329,17 @@ function formatParagraph(para){
     return `<blockquote>${quoted.split(/\n+/).map(l => `<p>${boldInline(escapeHtml(l))}</p>`).join("")}</blockquote>`;
   }
 
-  // An unordered list -- every non-blank line starts with "-"/"*"/"+ ". Has
-  // to come before the heading/plain-paragraph fallback below, which used
-  // to print each line's leading "-" literally instead of a real <li>.
-  const bulletMatch = (l) => /^\s*[-*+]\s+(.*)$/.exec(l);
-  if (nonBlankRawLines.length && nonBlankRawLines.every(bulletMatch)) {
-    const items = nonBlankRawLines.map(l => bulletMatch(l)[1]);
-    return `<ul>${items.map(i => `<li>${boldInline(escapeHtml(i))}</li>`).join("")}</ul>`;
-  }
-
-  // An ordered list -- every non-blank line starts with "1."/"1)" etc. Same
-  // reasoning as the bullet list above.
-  const numberedMatch = (l) => /^\s*\d+[.)]\s+(.*)$/.exec(l);
-  if (nonBlankRawLines.length && nonBlankRawLines.every(numberedMatch)) {
-    const items = nonBlankRawLines.map(l => numberedMatch(l)[1]);
-    return `<ol>${items.map(i => `<li>${boldInline(escapeHtml(i))}</li>`).join("")}</ol>`;
+  // A (possibly nested) list -- every non-blank line starts with "-"/"*"/"+ "
+  // or "1."/"1)" etc. Has to come before the heading/plain-paragraph fallback
+  // below, which used to print each line's leading "-" literally instead of
+  // a real <li>. Nesting is inferred from each line's leading whitespace --
+  // e.g. an unindented "- Facts" subheader followed by indented "  - ..."
+  // items -- rather than flattening every line into one list regardless of
+  // indentation, which used to make sub-items render at the same level as
+  // the subheader that introduces them.
+  const listLineMatch = (l) => /^(\s*)(?:([-*+])|(\d+[.)]))\s+(.*)$/.exec(l);
+  if (nonBlankRawLines.length && nonBlankRawLines.every(listLineMatch)) {
+    return renderNestedList(nonBlankRawLines, listLineMatch);
   }
 
   const escaped = escapeHtml(para);
@@ -5600,7 +5644,30 @@ const COURSE_FOLDER_ORDER = ["civpro", "contracts", "torts", "lss"];
 // rather than needing every course key enumerated up front.
 const expandedNotesFolders = new Set();
 
+// Tracks in-place editing of the currently-open report's text (see the Edit
+// button below). notesReportEditingFor holds the report OBJECT being edited
+// rather than relying on currentReport, because every caller that swaps
+// reports (sidebar click, Close, Delete, a fresh generation) reassigns
+// currentReport and then calls renderReportPanel() directly -- there's no
+// single "switching reports" hook to commit an in-progress edit through
+// first, so renderReportPanel() itself has to notice and commit it.
+let notesReportEditing = false;
+let notesReportEditingFor = null;
+
+function commitNotesReportEdit(){
+  if (!notesReportEditing || !notesReportEditingFor) return;
+  const textarea = document.getElementById("notesReportEditArea");
+  if (textarea){
+    notesReportEditingFor.content = textarea.value;
+    notesReportEditingFor.edited = true;
+    if (notesReportEditingFor.id) persistState();
+  }
+  notesReportEditing = false;
+  notesReportEditingFor = null;
+}
+
 function renderReportPanel(){
+  commitNotesReportEdit();
   renderReportSidebar();
   syncCaseForm();
   renderNotesChat();
@@ -5643,6 +5710,10 @@ function renderReportPanel(){
   saveBtn.disabled = Boolean(currentReport.id) || Boolean(currentReport.loading);
   document.getElementById("notesReportDeleteBtn").style.display = currentReport.id ? "inline-block" : "none";
   document.getElementById("notesReportOpenEditorBtn").disabled = Boolean(currentReport.loading) || Boolean(currentReport.failed);
+
+  const editBtn = document.getElementById("notesReportEditBtn");
+  editBtn.textContent = "Edit";
+  editBtn.disabled = Boolean(currentReport.loading) || Boolean(currentReport.failed);
 }
 
 function renderReportSidebar(){
@@ -5730,11 +5801,37 @@ function renderReportSidebar(){
   });
 }
 
+// Toggles the report body between its rendered (formatted) view and a raw
+// textarea holding currentReport.content -- the same markdown-lite text
+// every other view (chat, Draft & Compile) works from, so an edit here
+// stays in sync everywhere else instead of drifting into a separate
+// browser-generated-HTML representation of its own.
+document.getElementById("notesReportEditBtn").addEventListener("click", () => {
+  if (!currentReport || currentReport.loading || currentReport.failed) return;
+  if (notesReportEditing){
+    commitNotesReportEdit();
+    renderReportPanel();
+    return;
+  }
+  notesReportEditing = true;
+  notesReportEditingFor = currentReport;
+  const bodyEl = document.getElementById("notesReportBody");
+  bodyEl.innerHTML = "";
+  const textarea = document.createElement("textarea");
+  textarea.id = "notesReportEditArea";
+  textarea.className = "notes-report-edit-area";
+  textarea.value = currentReport.content;
+  bodyEl.appendChild(textarea);
+  textarea.focus();
+  document.getElementById("notesReportEditBtn").textContent = "Done Editing";
+});
+
 // Sends the AI-generated report itself (currentReport.content) into the
 // Draft & Compile editor, rendered with the same paragraph/code-block
 // formatting formatContent() gives it in the chat and report views.
 document.getElementById("notesReportOpenEditorBtn").addEventListener("click", () => {
   if (!currentReport || currentReport.loading || currentReport.failed) return;
+  commitNotesReportEdit();
   loadFormattedTextIntoEditor(currentReport.content);
   document.getElementById("docTitle").value =
     [currentReport.classLabel, currentReport.title].filter(Boolean).join(" — ") || "Untitled Document";
@@ -5748,6 +5845,7 @@ document.getElementById("notesReportOpenEditorBtn").addEventListener("click", ()
 
 document.getElementById("notesReportSaveBtn").addEventListener("click", () => {
   if (!currentReport || currentReport.id || currentReport.loading) return;
+  commitNotesReportEdit();
   reportCounter++;
   currentReport.id = "r" + Date.now() + reportCounter;
   savedReports.unshift(currentReport);
@@ -11203,10 +11301,15 @@ function getPages(){ return Array.from(document.querySelectorAll("#docPages > .d
 // boundary -- two sibling contenteditable elements would each be an isolated
 // editing context that neither the caret nor a selection can cross.
 //
-// Tables are the one exception to "whole units move" above: a table too tall
-// for the remaining space on a page is split into two <table> elements (the
-// original, truncated, plus a continuation carrying the rest), the same way
-// Word breaks a table across a page boundary. See splitTableForOverflow.
+// Tables and lists are the exceptions to "whole units move" above: a table
+// (or a <ul>/<ol>) too tall for the remaining space on a page is split into
+// two elements (the original, truncated, plus a continuation carrying the
+// rest), the same way Word breaks a table or a bulleted list across a page
+// boundary -- a <ul> is otherwise a single top-level child of the page, so
+// without this every bullet in a list would jump to the next page together
+// the moment the list as a whole stopped fitting, rather than filling the
+// current page down to its last line like every other block does. See
+// splitTableForOverflow and splitListForOverflow.
 function getFocusedPage(){
   const pages = getPages();
   const sel = window.getSelection();
@@ -11248,6 +11351,14 @@ const TABLE_GROUP_ATTR = "data-lg-table-group";
 const TABLE_CONT_ATTR = "data-lg-table-cont";
 let tableGroupCounter = 0;
 
+// Same continuation-group scheme as tables (see above), applied to <ul>/<ol>
+// so a list split across pages by splitListForOverflow is reassembled into
+// one canonical list (mergeSplitLists) before every reflow recomputes split
+// points fresh, rather than re-splitting an already-split continuation.
+const LIST_GROUP_ATTR = "data-lg-list-group";
+const LIST_CONT_ATTR = "data-lg-list-cont";
+let listGroupCounter = 0;
+
 function tableBody(table){ return table.querySelector(":scope > tbody") || table; }
 
 // How much vertical room is left on `page` for `child` (a direct child
@@ -11284,6 +11395,30 @@ function mergeSplitTables(container){
     }
     head.removeAttribute(TABLE_GROUP_ATTR);
     head.removeAttribute(TABLE_CONT_ATTR);
+  });
+}
+
+function mergeSplitLists(container){
+  const groups = new Map();
+  container.querySelectorAll(`ul[${LIST_GROUP_ATTR}], ol[${LIST_GROUP_ATTR}]`).forEach(t => {
+    const id = t.getAttribute(LIST_GROUP_ATTR);
+    if (!groups.has(id)) groups.set(id, []);
+    groups.get(id).push(t);
+  });
+  groups.forEach(lists => {
+    if (lists.length < 2){
+      lists.forEach(t => { t.removeAttribute(LIST_GROUP_ATTR); t.removeAttribute(LIST_CONT_ATTR); });
+      return;
+    }
+    // Sort into document order so items are reassembled in the right sequence.
+    lists.sort((a, b) => (a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING) ? -1 : 1);
+    const head = lists[0];
+    for (let i = 1; i < lists.length; i++){
+      while (lists[i].firstChild) head.appendChild(lists[i].firstChild);
+      lists[i].remove();
+    }
+    head.removeAttribute(LIST_GROUP_ATTR);
+    head.removeAttribute(LIST_CONT_ATTR);
   });
 }
 
@@ -11414,10 +11549,51 @@ function splitTableForOverflow(table, availableHeight){
   return continuation;
 }
 
+// Attempts to split `list` (a <ul> or <ol>, already laid out, currently
+// overflowing its page) so that as many of its leading <li> items as fit
+// sit within availableHeight (px, from the list's own top). Returns the
+// continuation list to place on the next page, or null if nothing useful
+// could be split off (caller should fall back to moving the whole list
+// onward instead). Unlike splitTableForOverflow, this never splits *inside*
+// a single <li> -- an item either fits whole or moves whole -- which is
+// enough to stop an entire list from jumping to the next page as one block
+// the moment it no longer fits, without the added complexity of a
+// text-level cut mid-item.
+function splitListForOverflow(list, availableHeight){
+  const items = Array.from(list.children).filter(c => c.tagName === "LI");
+  if (items.length < 2) return null; // nothing to usefully keep behind
+
+  const listTop = list.getBoundingClientRect().top;
+  const availableBottomY = listTop + availableHeight;
+
+  let splitIndex = -1;
+  for (let i = 0; i < items.length; i++){
+    if (items[i].getBoundingClientRect().bottom > availableBottomY + 0.5){ splitIndex = i; break; }
+  }
+  if (splitIndex <= 0) return null; // whole list fits, or not even the first item does -- move the whole list instead
+
+  const continuation = list.cloneNode(false);
+  continuation.removeAttribute("id");
+  for (let i = items.length - 1; i >= splitIndex; i--) continuation.insertBefore(items[i], continuation.firstChild);
+
+  // Keep numbering continuous across the split for an ordered list.
+  if (continuation.tagName === "OL"){
+    const startBefore = parseInt(list.getAttribute("start") || "1", 10);
+    continuation.setAttribute("start", String(startBefore + splitIndex));
+  }
+
+  let groupId = list.getAttribute(LIST_GROUP_ATTR);
+  if (!groupId){ groupId = "lg" + (++listGroupCounter); list.setAttribute(LIST_GROUP_ATTR, groupId); }
+  continuation.setAttribute(LIST_GROUP_ATTR, groupId);
+  continuation.setAttribute(LIST_CONT_ATTR, "true");
+  return continuation;
+}
+
 function reflowPagesNow(){
   const container = getPagesContainer();
   if (!container) return;
   mergeSplitTables(container);
+  mergeSplitLists(container);
   let pages = getPages();
   if (!pages.length) return;
 
@@ -11464,12 +11640,15 @@ function reflowPagesNow(){
   let iter = 0;
 
   // 1. Push overflowing trailing content forward onto later pages. A table
-  // is allowed to be split even when it's the page's only child (splitting,
-  // unlike moving, can still make progress in that case).
+  // or list is allowed to be split even when it's the page's only child
+  // (splitting, unlike moving, can still make progress in that case).
+  const isSplittable = (el) => el && (el.tagName === "TABLE" || el.tagName === "UL" || el.tagName === "OL");
+  const splitForOverflow = (el, availableHeight) =>
+    el.tagName === "TABLE" ? splitTableForOverflow(el, availableHeight) : splitListForOverflow(el, availableHeight);
   for (let i = 0; i < pages.length && iter < MAX_ITER; i++){
     let page = pages[i];
     while (iter < MAX_ITER && page.scrollHeight > page.clientHeight + 1 &&
-           (page.childNodes.length > 1 || (page.lastChild && page.lastChild.tagName === "TABLE"))){
+           (page.childNodes.length > 1 || isSplittable(page.lastChild))){
       iter++;
       const last = page.lastChild;
       let next = pages[i + 1];
@@ -11478,9 +11657,9 @@ function reflowPagesNow(){
         container.appendChild(next);
         pages.push(next);
       }
-      if (last.tagName === "TABLE"){
+      if (isSplittable(last)){
         const availableHeight = remainingPageHeight(page, last);
-        const continuation = availableHeight > 0 ? splitTableForOverflow(last, availableHeight) : null;
+        const continuation = availableHeight > 0 ? splitForOverflow(last, availableHeight) : null;
         if (continuation){
           next.insertBefore(continuation, next.firstChild);
           continue;
@@ -11492,8 +11671,9 @@ function reflowPagesNow(){
   }
 
   // 2. Pull content back from later pages while there's spare room. A
-  // continuation table is left alone here -- mergeSplitTables reassembles it
-  // on the next reflow pass, which is where it'll be re-split correctly.
+  // continuation table or list is left alone here -- mergeSplitTables /
+  // mergeSplitLists reassembles it on the next reflow pass, which is where
+  // it'll be re-split correctly.
   //
   // Repeated as full passes (bounded by page count) rather than run just
   // once: a single left-to-right pass only ever looks one page ahead, so
@@ -11503,6 +11683,9 @@ function reflowPagesNow(){
   // one page closer. Each pass can only make things more compact (it never
   // undoes an earlier pair's pull within the same pass), so this converges
   // in at most one pass per page.
+  const isContinuation = (el) =>
+    (el.tagName === "TABLE" && el.hasAttribute(TABLE_CONT_ATTR)) ||
+    ((el.tagName === "UL" || el.tagName === "OL") && el.hasAttribute(LIST_CONT_ATTR));
   for (let pass = 0; pass < pages.length + 1 && iter < MAX_ITER; pass++){
     let movedThisPass = false;
     for (let i = 0; i < pages.length - 1 && iter < MAX_ITER; i++){
@@ -11510,13 +11693,13 @@ function reflowPagesNow(){
       let next = pages[i + 1];
       while (iter < MAX_ITER && next && next.childNodes.length){
         const first = next.firstChild;
-        if (first.tagName === "TABLE" && first.hasAttribute(TABLE_CONT_ATTR)) break;
+        if (isContinuation(first)) break;
         page.appendChild(first);
         iter++;
         if (page.scrollHeight > page.clientHeight + 1){
-          if (first.tagName === "TABLE"){
+          if (isSplittable(first)){
             const availableHeight = remainingPageHeight(page, first);
-            const continuation = availableHeight > 0 ? splitTableForOverflow(first, availableHeight) : null;
+            const continuation = availableHeight > 0 ? splitForOverflow(first, availableHeight) : null;
             if (continuation){
               next.insertBefore(continuation, next.firstChild);
               movedThisPass = true;
@@ -11906,27 +12089,34 @@ function insertParagraphWithScrollGuard(shiftKey){
 
 getPagesContainer().addEventListener("keydown", (e) => {
   const sel = window.getSelection();
-  if (!sel || !sel.rangeCount || !sel.isCollapsed) return;
+  if (!sel || !sel.rangeCount) return;
+
+  // Tab always indents (Shift+Tab outdents), regardless of whether the
+  // caret merely sits on a line or a whole block of text is selected --
+  // handled ahead of the isCollapsed guard below since a multi-line
+  // selection is exactly the "highlight a block, press Tab" case this is
+  // for. Inside a list item execCommand("indent") nests/un-nests the bullet
+  // the way Word does; on a plain line (or a selection spanning several) it
+  // wraps/unwraps the block(s) in a <blockquote>, which .doc-page styles
+  // with no border or padding (see the blockquote CSS above) so it reads as
+  // a plain paragraph indent rather than a quote. Previously this only ran
+  // inside a list item, so Tab anywhere else fell through to the browser's
+  // native contenteditable default of moving focus to the next element on
+  // the page instead of indenting.
+  if (e.key === "Tab"){
+    e.preventDefault();
+    document.execCommand(e.shiftKey ? "outdent" : "indent", false, null);
+    syncToolbarState();
+    schedulePageReflow();
+    return;
+  }
+
+  if (!sel.isCollapsed) return;
   const range = sel.getRangeAt(0);
 
   if (e.key === "Enter"){
     e.preventDefault();
     insertParagraphWithScrollGuard(e.shiftKey);
-    return;
-  }
-
-  if (e.key === "Tab"){
-    // Only take over Tab when the caret is inside a list item -- nest/un-nest
-    // that bullet the way Word does. Outside a list, leave Tab alone (its
-    // current, unhandled default) rather than changing existing behavior.
-    const node = range.startContainer;
-    const startEl = node.nodeType === Node.TEXT_NODE ? node.parentElement : node;
-    const li = startEl && startEl.closest && startEl.closest("li");
-    if (!li) return;
-    e.preventDefault();
-    document.execCommand(e.shiftKey ? "outdent" : "indent", false, null);
-    syncToolbarState();
-    schedulePageReflow();
     return;
   }
 
