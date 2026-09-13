@@ -2145,23 +2145,8 @@ pre code {
 .notes-report-body blockquote{ margin:0 0 12px; padding:2px 14px; border-left:2px solid var(--hairline); color:var(--text-muted); }
 .notes-report-body blockquote p{ margin:0 0 6px; }
 .notes-report-body blockquote p:last-child{ margin-bottom:0; }
-.notes-report-edit-area{
-  display:block;
-  width:100%;
-  height:100%;
-  min-height:300px;
-  box-sizing:border-box;
-  resize:vertical;
-  background:var(--ink);
-  color:var(--text-light);
-  border:1px solid var(--hairline);
-  border-radius:6px;
-  padding:12px 14px;
-  font-family:'IBM Plex Mono',monospace;
-  font-size:12.5px;
-  line-height:1.6;
-}
-.notes-report-edit-area:focus{ outline:none; border-color:var(--brass-dim); }
+.notes-report-body[contenteditable="true"]{ cursor:text; }
+.notes-report-body[contenteditable="true"]:focus{ outline:none; }
 
 /* A markdown pipe table (e.g. the Case Comparisons grid) rendered as a real
    <table> by tryRenderMarkdownTable/formatParagraph, instead of the raw
@@ -3133,7 +3118,6 @@ pre code {
                   <div class="notes-report-cost" id="notesReportCost" style="display:none;"></div>
                 </div>
                 <div class="notes-report-actions">
-                  <button type="button" id="notesReportEditBtn" title="Edit this report's text in place">Edit</button>
                   <button type="button" id="notesReportOpenEditorBtn" title="Open this AI-generated report in the Draft &amp; Compile editor">Open in Editor</button>
                   <button type="button" class="primary" id="notesReportSaveBtn">Save</button>
                   <button type="button" id="notesReportDeleteBtn" style="display:none;">Delete</button>
@@ -5644,30 +5628,7 @@ const COURSE_FOLDER_ORDER = ["civpro", "contracts", "torts", "lss"];
 // rather than needing every course key enumerated up front.
 const expandedNotesFolders = new Set();
 
-// Tracks in-place editing of the currently-open report's text (see the Edit
-// button below). notesReportEditingFor holds the report OBJECT being edited
-// rather than relying on currentReport, because every caller that swaps
-// reports (sidebar click, Close, Delete, a fresh generation) reassigns
-// currentReport and then calls renderReportPanel() directly -- there's no
-// single "switching reports" hook to commit an in-progress edit through
-// first, so renderReportPanel() itself has to notice and commit it.
-let notesReportEditing = false;
-let notesReportEditingFor = null;
-
-function commitNotesReportEdit(){
-  if (!notesReportEditing || !notesReportEditingFor) return;
-  const textarea = document.getElementById("notesReportEditArea");
-  if (textarea){
-    notesReportEditingFor.content = textarea.value;
-    notesReportEditingFor.edited = true;
-    if (notesReportEditingFor.id) persistState();
-  }
-  notesReportEditing = false;
-  notesReportEditingFor = null;
-}
-
 function renderReportPanel(){
-  commitNotesReportEdit();
   renderReportSidebar();
   syncCaseForm();
   renderNotesChat();
@@ -5701,19 +5662,24 @@ function renderReportPanel(){
     costEl.style.display = hasCost ? "block" : "none";
   }
 
-  document.getElementById("notesReportBody").innerHTML = currentReport.loading
+  const bodyEl = document.getElementById("notesReportBody");
+  bodyEl.innerHTML = currentReport.loading
     ? `<p>${escapeHtml(currentReport.content)}</p>`
-    : formatContent(currentReport.content);
+    // A report the user has directly edited in place (see the "input"
+    // listener on notesReportBody below) carries its own edited HTML --
+    // render that verbatim instead of re-deriving from the original
+    // markdown-lite currentReport.content, which would discard the edits.
+    : (currentReport.edited && currentReport.contentHtml != null)
+      ? currentReport.contentHtml
+      : formatContent(currentReport.content);
+  const editable = !currentReport.loading && !currentReport.failed;
+  bodyEl.setAttribute("contenteditable", editable ? "true" : "false");
 
   const saveBtn = document.getElementById("notesReportSaveBtn");
   saveBtn.textContent = currentReport.id ? "Saved \u2713" : "Save";
   saveBtn.disabled = Boolean(currentReport.id) || Boolean(currentReport.loading);
   document.getElementById("notesReportDeleteBtn").style.display = currentReport.id ? "inline-block" : "none";
   document.getElementById("notesReportOpenEditorBtn").disabled = Boolean(currentReport.loading) || Boolean(currentReport.failed);
-
-  const editBtn = document.getElementById("notesReportEditBtn");
-  editBtn.textContent = "Edit";
-  editBtn.disabled = Boolean(currentReport.loading) || Boolean(currentReport.failed);
 }
 
 function renderReportSidebar(){
@@ -5801,38 +5767,42 @@ function renderReportSidebar(){
   });
 }
 
-// Toggles the report body between its rendered (formatted) view and a raw
-// textarea holding currentReport.content -- the same markdown-lite text
-// every other view (chat, Draft & Compile) works from, so an edit here
-// stays in sync everywhere else instead of drifting into a separate
-// browser-generated-HTML representation of its own.
-document.getElementById("notesReportEditBtn").addEventListener("click", () => {
+// The report body is directly contenteditable (see the "contenteditable"
+// attribute renderReportPanel sets on it) -- clicking in just places a
+// caret and types normally, no separate Edit button or mode. Every edit is
+// captured here as the user's own browser-generated HTML into
+// currentReport.contentHtml (debounced, so a burst of keystrokes doesn't
+// hammer localStorage/the server with one write each) rather than trying to
+// convert back into the markdown-lite currentReport.content every other
+// view derives its HTML from -- there's no lossless way to reconstruct that
+// source text from arbitrary edited HTML, so once a report is edited its
+// contentHtml becomes the source of truth for display (see renderReportPanel).
+let notesReportEditDebounce = null;
+document.getElementById("notesReportBody").addEventListener("input", (e) => {
   if (!currentReport || currentReport.loading || currentReport.failed) return;
-  if (notesReportEditing){
-    commitNotesReportEdit();
-    renderReportPanel();
-    return;
-  }
-  notesReportEditing = true;
-  notesReportEditingFor = currentReport;
-  const bodyEl = document.getElementById("notesReportBody");
-  bodyEl.innerHTML = "";
-  const textarea = document.createElement("textarea");
-  textarea.id = "notesReportEditArea";
-  textarea.className = "notes-report-edit-area";
-  textarea.value = currentReport.content;
-  bodyEl.appendChild(textarea);
-  textarea.focus();
-  document.getElementById("notesReportEditBtn").textContent = "Done Editing";
+  const bodyEl = e.currentTarget;
+  currentReport.contentHtml = bodyEl.innerHTML;
+  currentReport.edited = true;
+  clearTimeout(notesReportEditDebounce);
+  notesReportEditDebounce = setTimeout(() => {
+    if (currentReport && currentReport.id) persistState();
+  }, 500);
 });
 
-// Sends the AI-generated report itself (currentReport.content) into the
-// Draft & Compile editor, rendered with the same paragraph/code-block
-// formatting formatContent() gives it in the chat and report views.
+// Sends the report into the Draft & Compile editor. An edited report sends
+// its edited HTML (currentReport.contentHtml) directly rather than through
+// loadFormattedTextIntoEditor's markdown-lite-text pipeline, which would
+// re-derive HTML from the original currentReport.content and silently drop
+// the user's edits.
 document.getElementById("notesReportOpenEditorBtn").addEventListener("click", () => {
   if (!currentReport || currentReport.loading || currentReport.failed) return;
-  commitNotesReportEdit();
-  loadFormattedTextIntoEditor(currentReport.content);
+  if (currentReport.edited && currentReport.contentHtml != null){
+    resetToSinglePage();
+    document.getElementById("docEditor").innerHTML = sanitizeImportedHtml(currentReport.contentHtml);
+    schedulePageReflow();
+  } else {
+    loadFormattedTextIntoEditor(currentReport.content);
+  }
   document.getElementById("docTitle").value =
     [currentReport.classLabel, currentReport.title].filter(Boolean).join(" — ") || "Untitled Document";
   savedFileHandle = null;
@@ -5845,7 +5815,6 @@ document.getElementById("notesReportOpenEditorBtn").addEventListener("click", ()
 
 document.getElementById("notesReportSaveBtn").addEventListener("click", () => {
   if (!currentReport || currentReport.id || currentReport.loading) return;
-  commitNotesReportEdit();
   reportCounter++;
   currentReport.id = "r" + Date.now() + reportCounter;
   savedReports.unshift(currentReport);
