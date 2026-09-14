@@ -2095,6 +2095,19 @@ pre code {
   text-overflow:ellipsis;
   white-space:nowrap;
 }
+.notes-report-title-name{
+  cursor:text;
+  border-radius:3px;
+  padding:0 2px;
+  margin:0 -2px;
+}
+.notes-report-title-name:hover{
+  box-shadow:0 1px 0 0 var(--text-muted);
+}
+.notes-report-title-name:focus{
+  outline:none;
+  box-shadow:0 1px 0 0 var(--parchment);
+}
 .notes-report-source{
   font-size:11px;
   margin-top:3px;
@@ -3113,7 +3126,7 @@ pre code {
             <div class="notes-report-panel" id="notesReportPanel" style="display:none;">
               <div class="notes-report-head">
                 <div class="notes-report-head-text">
-                  <div class="notes-report-title" id="notesReportTitle"></div>
+                  <div class="notes-report-title"><span id="notesReportTitlePrefix"></span><span id="notesReportTitleName" class="notes-report-title-name" contenteditable="true" spellcheck="false" title="Click to rename this report"></span></div>
                   <div class="notes-report-source" id="notesReportSource" style="display:none;"></div>
                   <div class="notes-report-cost" id="notesReportCost" style="display:none;"></div>
                 </div>
@@ -5769,8 +5782,19 @@ function renderReportPanel(){
 
   panel.style.display = "flex";
   const courseLabel = COURSE_LABELS[currentReport.course] || "";
-  document.getElementById("notesReportTitle").textContent =
-    [courseLabel, currentReport.classLabel, currentReport.title].filter(Boolean).join(" — ");
+  const titlePrefixParts = [courseLabel, currentReport.classLabel].filter(Boolean);
+  document.getElementById("notesReportTitlePrefix").textContent =
+    titlePrefixParts.length ? titlePrefixParts.join(" — ") + " — " : "";
+  // The title itself is a separate contenteditable span (see
+  // notesReportTitleNameEl's "input"/"blur" listeners below) so it can be
+  // renamed in place -- that rename is what shows up in the sidebar list.
+  // renderReportPanel() runs after all sorts of unrelated state changes
+  // (saving, chat replies, ...), so this only overwrites the span's text
+  // when it's NOT the thing currently focused -- otherwise an unrelated
+  // re-render while the user is mid-rename would yank their cursor back to
+  // the start of whatever's already saved.
+  const titleNameEl = document.getElementById("notesReportTitleName");
+  if (document.activeElement !== titleNameEl) titleNameEl.textContent = currentReport.title || "";
 
   const sourceEl = document.getElementById("notesReportSource");
   if (sourceEl){
@@ -5912,6 +5936,39 @@ document.getElementById("notesReportBody").addEventListener("input", (e) => {
   notesReportEditDebounce = setTimeout(() => {
     if (currentReport && currentReport.id) persistState();
   }, 500);
+});
+
+// Renaming a report: the title span (the part after the course/class
+// prefix -- see renderReportPanel) is directly contenteditable, same
+// click-to-edit convention as the report body above. renderReportSidebar()
+// on every keystroke keeps the left-hand list's row for this report in sync
+// live, since that list is exactly where this title also shows up.
+let notesReportTitleDebounce = null;
+const notesReportTitleNameEl = document.getElementById("notesReportTitleName");
+notesReportTitleNameEl.addEventListener("input", () => {
+  if (!currentReport) return;
+  currentReport.title = notesReportTitleNameEl.textContent;
+  renderReportSidebar();
+  clearTimeout(notesReportTitleDebounce);
+  notesReportTitleDebounce = setTimeout(() => {
+    if (currentReport && currentReport.id) persistState();
+  }, 500);
+});
+// Enter confirms the rename instead of inserting a line break into what's
+// meant to be a single-line title.
+notesReportTitleNameEl.addEventListener("keydown", (e) => {
+  if (e.key === "Enter"){ e.preventDefault(); notesReportTitleNameEl.blur(); }
+});
+// Falls back to a placeholder rather than leaving the title (and its
+// sidebar row) permanently blank if someone deletes all the text and clicks
+// away without typing a replacement.
+notesReportTitleNameEl.addEventListener("blur", () => {
+  if (!currentReport) return;
+  const trimmed = notesReportTitleNameEl.textContent.trim();
+  currentReport.title = trimmed || "Untitled";
+  notesReportTitleNameEl.textContent = currentReport.title;
+  renderReportSidebar();
+  if (currentReport.id) persistState();
 });
 
 // Sends the report into the Draft & Compile editor. An edited report sends
@@ -9909,16 +9966,27 @@ function plainTextToHtml(text){
     // "**Label**" the notes templates emit with no blank line after it) never
     // merges with a differently-formatted neighbor, so a heading doesn't get
     // glued onto the body text right after it.
+    //
+    // Seeded with this line's own content, scanning for continuations from
+    // i+1 -- guarantees i always advances by at least 1 per outer loop
+    // iteration. This used to start j=i and re-test line i itself against
+    // isPlainContinuation, which is fine for an ordinary paragraph line (it
+    // always passes) but a bare "|...|" markdown-style table row with no
+    // "+---+" border anywhere near it fails isPlainContinuation on itself
+    // too -- it isn't blank/bulleted/numbered/a page-break/a divider, but it
+    // IS a table line, which isPlainContinuation excludes. Falling through
+    // every branch above with j never advanced past i spun the outer while
+    // loop forever on that same line.
     const firstLineBold = isFullyBoldLine(content);
-    let j = i;
-    const parts = [];
+    const parts = [runsToInlineHtml(parseAnsiRuns(content))];
+    let j = i + 1;
     while (j < lines.length){
       const l = lines[j];
       if (!isPlainContinuation(l)) break;
       const lm = /^(\s*)(.*)$/.exec(l);
       if (lm[1].length !== leadSpaces) break;
       if (lm[1].length > 0 && lm[1].length % 4 !== 0) break; // a differently-aligned line, handled above
-      if (j > i && isFullyBoldLine(lm[2]) !== firstLineBold) break;
+      if (isFullyBoldLine(lm[2]) !== firstLineBold) break;
       parts.push(runsToInlineHtml(parseAnsiRuns(lm[2])));
       j++;
     }
