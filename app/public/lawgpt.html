@@ -5623,6 +5623,22 @@ function describeDocumentSource(documentIds){
   return { matched: true, label: `Attached to ${providerDisplayName()}: ` + titles.join(", ") };
 }
 
+// Same idea as describeDocumentSource above, but for generateAgentReport's
+// Complete-button flow (completeAssignment/completeQuiz) -- that flow never
+// touches OpenAI/OpenRouter at all, it hands the prompt to a headless Claude
+// Code agent (see /api/agent/run), so labeling it "Attached to OpenAI" (or
+// whatever provider happens to be selected in Settings) would misdescribe
+// what actually ran, even though the documents themselves are genuinely
+// attached the same way.
+function describeAgentDocumentSource(documentIds){
+  const titles = (documentIds || [])
+    .map(id => documentsCache.find(d => d.id === id))
+    .filter(Boolean)
+    .map(d => d.title);
+  if (!titles.length) return { matched: false, label: "No matching document found \u2014 the agent worked from general knowledge and repository access only." };
+  return { matched: true, label: "Sent to the agent: " + titles.join(", ") };
+}
+
 // Same Notes-tab rendering pipeline as generateReadingReport (currentReport,
 // loading state, re-enabling the triggering button) but instead of one
 // /api/chat call, hands the prompt to a real headless Claude Code run (see
@@ -5646,7 +5662,7 @@ async function generateAgentReport({ course, classLabel, title, prompt, document
   if (btn){ btn.disabled = true; btn.textContent = "Generating…"; }
   setView("notes");
   const seq = ++agentReportRunSeq;
-  const docSource = describeDocumentSource(documentIds);
+  const docSource = describeAgentDocumentSource(documentIds);
   currentReport = {
     id: null, course, classLabel, title, source: docSource,
     documentIds: documentIds || [],
