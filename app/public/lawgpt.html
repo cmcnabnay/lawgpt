@@ -1911,6 +1911,10 @@ pre code {
 }
 .notes-sidebar-item:hover{ background:var(--ink-3); }
 .notes-sidebar-item.active{ background:var(--ink-3); border-left-color:var(--brass); }
+.notes-sidebar-item{ cursor:grab; }
+.notes-sidebar-item.dragging{ opacity:.4; }
+.notes-sidebar-item.drag-over-top{ box-shadow:inset 0 2px 0 0 var(--brass); }
+.notes-sidebar-item.drag-over-bottom{ box-shadow:inset 0 -2px 0 0 var(--brass); }
 .notes-sidebar-item-title{
   display:block;
   font-size:12.5px;
@@ -5766,6 +5770,14 @@ const COURSE_FOLDER_ORDER = ["civpro", "contracts", "torts", "lss"];
 // rather than needing every course key enumerated up front.
 const expandedNotesFolders = new Set();
 
+// Tracks the id of whichever sidebar report is mid-drag (see the
+// dragstart/dragover/drop listeners in renderReportSidebar below) -- a
+// plain module-level variable rather than reading it back out of
+// DataTransfer, since dragover fires far too often to want to touch
+// DataTransfer.getData (which isn't even readable until drop on most
+// browsers) on every single event.
+let draggedReportId = null;
+
 function renderReportPanel(){
   renderReportSidebar();
   syncCaseForm();
@@ -5879,6 +5891,51 @@ function renderReportSidebar(){
       const item = document.createElement("button");
       item.type = "button";
       item.className = "notes-sidebar-item" + (currentReport && currentReport.id === r.id ? " active" : "");
+      item.draggable = true;
+
+      // Drag-and-drop reordering. Reorders the underlying savedReports
+      // array directly (not just this folder's filtered view) -- moving a
+      // report to a new position relative to another report within the
+      // same course folder changes their relative order in savedReports,
+      // which is what every folder's displayed order actually derives from
+      // (see the groups.forEach above: each folder is just savedReports
+      // filtered to that course, in array order). Dragging across folders
+      // (onto a report in a different course) is a no-op -- this only
+      // reorders within a folder, it doesn't recategorize a report.
+      item.addEventListener("dragstart", (e) => {
+        draggedReportId = r.id;
+        item.classList.add("dragging");
+        e.dataTransfer.effectAllowed = "move";
+      });
+      item.addEventListener("dragend", () => {
+        item.classList.remove("dragging");
+        list.querySelectorAll(".drag-over-top, .drag-over-bottom").forEach(el => el.classList.remove("drag-over-top", "drag-over-bottom"));
+        draggedReportId = null;
+      });
+      item.addEventListener("dragover", (e) => {
+        if (!draggedReportId || draggedReportId === r.id) return;
+        e.preventDefault();
+        const before = (e.clientY - item.getBoundingClientRect().top) < item.offsetHeight / 2;
+        item.classList.toggle("drag-over-top", before);
+        item.classList.toggle("drag-over-bottom", !before);
+      });
+      item.addEventListener("dragleave", () => {
+        item.classList.remove("drag-over-top", "drag-over-bottom");
+      });
+      item.addEventListener("drop", (e) => {
+        e.preventDefault();
+        const draggedId = draggedReportId;
+        const before = item.classList.contains("drag-over-top");
+        item.classList.remove("drag-over-top", "drag-over-bottom");
+        if (!draggedId || draggedId === r.id) return;
+        const dragged = savedReports.find(x => x.id === draggedId);
+        if (!dragged || dragged.course !== r.course) return; // only reorder within the same folder
+        savedReports = savedReports.filter(x => x.id !== draggedId);
+        const targetIndex = savedReports.findIndex(x => x.id === r.id);
+        savedReports.splice(before ? targetIndex : targetIndex + 1, 0, dragged);
+        persistState();
+        renderReportSidebar();
+      });
 
       const titleSpan = document.createElement("span");
       titleSpan.className = "notes-sidebar-item-title";
