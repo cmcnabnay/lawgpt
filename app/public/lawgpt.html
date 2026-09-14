@@ -5571,6 +5571,96 @@ function describeDocumentSource(documentIds){
   return { matched: true, label: `Attached to ${providerDisplayName()}: ` + titles.join(", ") };
 }
 
+// Same Notes-tab rendering pipeline as generateReadingReport (currentReport,
+// loading state, re-enabling the triggering button) but instead of one
+// /api/chat call, hands the prompt to a real headless Claude Code run (see
+// agent-routes.js's POST /run and agent-runtime.js) started in this repo's
+// own working directory. Used by completeAssignment/completeQuiz (practice
+// problems and practice quizzes, both "Complete" buttons) instead of
+// generateReadingReport so the agent can read documents/<course>/ and
+// notes/<course>/ directly for itself -- real filesystem access -- rather
+// than being limited to whatever document text got fetched and pasted into
+// the prompt ahead of time.
+//
+// agentReportRunSeq guards against two overlapping Complete clicks (e.g. one
+// quiz's run still polling when another's Complete button is clicked): only
+// the most recent call is allowed to overwrite the shared currentReport /
+// Notes panel. Each call's own triggering button is unrelated to that race
+// and always gets re-enabled once ITS run settles, regardless of whether a
+// newer call has since taken over the panel.
+let agentReportRunSeq = 0;
+async function generateAgentReport({ course, classLabel, title, prompt, documentIds, btn, idleLabel, agentTitle, source }){
+  idleLabel = idleLabel || "Notes";
+  if (btn){ btn.disabled = true; btn.textContent = "Generating…"; }
+  setView("notes");
+  const seq = ++agentReportRunSeq;
+  const docSource = describeDocumentSource(documentIds);
+  currentReport = {
+    id: null, course, classLabel, title, source: docSource,
+    documentIds: documentIds || [],
+    content: "Generating your report with the agent… this can take a few minutes, since it has full access to the course documents rather than just whatever's attached below.",
+    createdAt: new Date().toISOString(),
+    loading: true,
+    notes: "",
+    chat: []
+  };
+  renderReportPanel();
+
+  const agentPrompt =
+    "You are completing a law-school practice assignment or practice quiz for the student. " +
+    "You may read this repository for context -- it's organized as documents/<course>/ for source material " +
+    "(including this assignment's/quiz's own instructions or questions, and any other documents that might be " +
+    "relevant) and notes/<course>/ for the student's own hand-written notes. Use it to find the actual " +
+    "assignment or quiz text and anything else relevant, even beyond whatever is already described below. This " +
+    "is running headless with no one watching a terminal: your complete final response (not any file you write) " +
+    "is what gets saved and shown to the user, so the whole deliverable must be written out directly in your " +
+    "response text, in full -- not summarized, not left in a file, and not just a description of what you would " +
+    "have produced. Do not create, edit, or save any files anywhere in this repository.\n\n" + prompt;
+
+  let result, failedMsg;
+  try{
+    const runRes = await fetch(PROXY_ORIGIN + "/api/agent/run", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ prompt: agentPrompt, title: agentTitle || title, source: source || null })
+    });
+    const run = await runRes.json();
+    if (!runRes.ok) throw new Error((run && run.error && run.error.message) || "Couldn't start the agent.");
+
+    while (true){
+      await new Promise(r => setTimeout(r, 1500));
+      const pollRes = await fetch(PROXY_ORIGIN + "/api/agent/runs/" + encodeURIComponent(run.id));
+      const data = await pollRes.json();
+      if (!pollRes.ok) throw new Error((data && data.error && data.error.message) || "Poll failed.");
+      if (data.status === "running") continue;
+      if (data.status === "error") throw new Error("The agent run failed." + (data.output ? " " + data.output.slice(-500) : ""));
+      result = (data.result && data.result.trim()) || data.output || "The agent finished with no output.";
+      break;
+    }
+  } catch(err){
+    failedMsg = err.message;
+  }
+
+  if (seq === agentReportRunSeq){
+    if (failedMsg){
+      currentReport = {
+        id: null, course, classLabel, title, source: docSource,
+        documentIds: documentIds || [],
+        content: "Couldn't generate this report: " + failedMsg,
+        createdAt: new Date().toISOString(),
+        failed: true,
+        notes: currentReport.notes || "",
+        chat: []
+      };
+    } else {
+      currentReport = { id: null, course, classLabel, title, source: docSource, documentIds: documentIds || [], content: result, createdAt: new Date().toISOString(), notes: currentReport.notes || "", chat: [] };
+    }
+    renderReportPanel();
+  }
+
+  if (btn){ btn.disabled = false; btn.textContent = idleLabel; }
+}
+
 async function generateReadingReport({ course, classLabel, title, prompt, documentIds, btn, idleLabel }){
   idleLabel = idleLabel || "Notes";
   if (btn){ btn.disabled = true; btn.textContent = "Generating\u2026"; }
@@ -9225,14 +9315,17 @@ function completeAssignment(cls, text, courseCode, btn){
 
     const prompt = `I'm working on an assignment for ${courseLabel}, ${classHeader}. Here is the assignment line from the schedule:\n\n"${text}"\n\n${sourceNote}${contextPromptText}\n\n${getNotesPrompt("assignment")}`;
 
-    await generateReadingReport({
+    const shortTitle = text.length > 60 ? text.slice(0, 60) + "…" : text;
+    await generateAgentReport({
       course: courseCode,
       classLabel: cls.classLabel,
-      title: text.length > 60 ? text.slice(0, 60) + "…" : text,
+      title: shortTitle,
       prompt,
       documentIds: attached.map(a => a.id),
       btn,
-      idleLabel: "Complete"
+      idleLabel: "Complete",
+      agentTitle: `${courseLabel} — ${shortTitle}`,
+      source: { type: "practice-problem", course: courseCode, classLabel: cls.classLabel, text }
     });
   };
 
@@ -9327,14 +9420,16 @@ function completeQuiz(quiz, courseCode, btn){
 
     const prompt = `This is a Canvas quiz for ${courseLabel}: "${quiz.title}," worth ${quiz.points} points across ${quiz.questions} question${quiz.questions === 1 ? "" : "s"}, due ${dueHeader}. ${quiz.availabilityText || ""}\n\n${sourceNote}${coveredNote}${contextPromptText}\n\n${getNotesPrompt("quiz")}`;
 
-    await generateReadingReport({
+    await generateAgentReport({
       course: courseCode,
       classLabel: quiz.title,
       title: quiz.title,
       prompt,
       documentIds: attached.map(a => a.id),
       btn,
-      idleLabel: "Complete"
+      idleLabel: "Complete",
+      agentTitle: `${courseLabel} — ${quiz.title}`,
+      source: { type: "practice-quiz", course: courseCode, title: quiz.title }
     });
   };
 

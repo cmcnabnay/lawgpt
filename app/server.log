@@ -3,4 +3,4 @@
 > node src/server.js
 
 Proxy listening on http://localhost:3000
-Indexed 106 local document(s) from documents/.
+Indexed 139 local document(s) from documents/.
