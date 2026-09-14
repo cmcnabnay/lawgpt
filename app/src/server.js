@@ -612,13 +612,31 @@ app.get("/api/auth/me", (req, res) => {
   });
 });
 
-// The entire client-side "docket" blob (matters, savedReports, etc. -- see
-// STORAGE_KEY in lawgpt.html) round-trips through here unexamined. This
-// server doesn't need to understand its shape, just persist it per user.
+// The client-side "docket" blob (matters, savedReports, etc. -- see
+// STORAGE_KEY in lawgpt.html) is stored across separate columns rather than
+// one combined `data` JSONB blob (see migrations/2026-09-14-split-user-state-columns.sql)
+// -- matters/savedReports/customNotesPrompts each get their own column, plus
+// the three small scalars. GET re-assembles them into the same { matters,
+// savedReports, matterCounter, reportCounter, activeMatterId,
+// customNotesPrompts } shape the client has always sent/expected, so
+// lawgpt.html's persistState()/syncAfterLogin() didn't need to change.
 app.get("/api/user/state", requireAppDb, requireLogin, async (req, res) => {
   try {
-    const result = await appPool.query("SELECT data FROM user_state WHERE user_id = $1", [req.session.userId]);
-    res.json({ data: result.rows[0] ? result.rows[0].data : null });
+    const result = await appPool.query(
+      `SELECT matters, saved_reports, custom_notes_prompts, matter_counter, report_counter, active_matter_id
+       FROM user_state WHERE user_id = $1`,
+      [req.session.userId]
+    );
+    const row = result.rows[0];
+    const data = row ? {
+      matters: row.matters,
+      savedReports: row.saved_reports,
+      customNotesPrompts: row.custom_notes_prompts,
+      matterCounter: row.matter_counter,
+      reportCounter: row.report_counter,
+      activeMatterId: row.active_matter_id
+    } : null;
+    res.json({ data });
   } catch (err) {
     res.status(500).json({ error: { message: err.message } });
   }
@@ -631,9 +649,25 @@ app.post("/api/user/state", requireAppDb, requireLogin, async (req, res) => {
       return res.status(400).json({ error: { message: "No 'data' provided." } });
     }
     await appPool.query(
-      `INSERT INTO user_state (user_id, data, updated_at) VALUES ($1, $2, now())
-       ON CONFLICT (user_id) DO UPDATE SET data = EXCLUDED.data, updated_at = now()`,
-      [req.session.userId, JSON.stringify(data)]
+      `INSERT INTO user_state (user_id, matters, saved_reports, custom_notes_prompts, matter_counter, report_counter, active_matter_id, updated_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, now())
+       ON CONFLICT (user_id) DO UPDATE SET
+         matters = EXCLUDED.matters,
+         saved_reports = EXCLUDED.saved_reports,
+         custom_notes_prompts = EXCLUDED.custom_notes_prompts,
+         matter_counter = EXCLUDED.matter_counter,
+         report_counter = EXCLUDED.report_counter,
+         active_matter_id = EXCLUDED.active_matter_id,
+         updated_at = now()`,
+      [
+        req.session.userId,
+        JSON.stringify(data.matters || []),
+        JSON.stringify(data.savedReports || []),
+        JSON.stringify(data.customNotesPrompts || {}),
+        Number.isFinite(data.matterCounter) ? data.matterCounter : 0,
+        Number.isFinite(data.reportCounter) ? data.reportCounter : 0,
+        data.activeMatterId || null
+      ]
     );
     res.json({ ok: true });
   } catch (err) {

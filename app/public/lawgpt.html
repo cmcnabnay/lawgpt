@@ -3629,6 +3629,7 @@ async function refreshAuthStatus(){
     reportCounter = 0;
     customNotesPrompts = {};
     currentReport = null;
+    stateLoaded = false; // re-armed by the next syncAfterLogin(), same as a fresh page load
     renderDocket();
     renderChat();
     renderReportPanel();
@@ -3639,26 +3640,40 @@ async function refreshAuthStatus(){
 // has saved data (returning on a new browser/device), that replaces
 // whatever's local -- otherwise this is a first login, so the current
 // local docket (if any) is pushed up to become that account's starting data.
+//
+// Loads whenever a state ROW exists server-side at all, regardless of
+// whether its `matters` array happens to be empty -- checking
+// `data.data.matters.length` here used to mean an account with saved Notes
+// (savedReports) but no matters (e.g. someone who only ever uses the
+// Schedule tab's "Complete" button, never the chat docket) fell into the
+// `else` branch below on every single sign-in, which -- before stateLoaded
+// existed to stop it -- pushed this function's still-empty local
+// matters/savedReports straight over the account's real saved data. See
+// stateLoaded's own comment above for the other half of this bug.
 async function syncAfterLogin(){
   try{
     const res = await fetch(PROXY_ORIGIN + "/api/user/state");
     const data = await res.json();
-    if (data && data.data && Array.isArray(data.data.matters) && data.data.matters.length){
-      matters = data.data.matters;
+    if (data && data.data){
+      matters = Array.isArray(data.data.matters) ? data.data.matters : [];
       matters.forEach(m => {
         if (typeof m.notes !== "string") m.notes = "";
         if (!Array.isArray(m.attachedDocumentIds)) m.attachedDocumentIds = [];
       });
       matterCounter = typeof data.data.matterCounter === "number" ? data.data.matterCounter : matters.length;
-      activeMatterId = matters.some(m => m.id === data.data.activeMatterId) ? data.data.activeMatterId : matters[0].id;
+      activeMatterId = matters.some(m => m.id === data.data.activeMatterId) ? data.data.activeMatterId : (matters[0] ? matters[0].id : null);
       savedReports = Array.isArray(data.data.savedReports) ? data.data.savedReports : [];
       reportCounter = typeof data.data.reportCounter === "number" ? data.data.reportCounter : savedReports.length;
       customNotesPrompts = (data.data.customNotesPrompts && typeof data.data.customNotesPrompts === "object") ? data.data.customNotesPrompts : {};
+      stateLoaded = true;
       persistState();
       renderDocket();
       renderChat();
       renderReportPanel();
     } else {
+      // No state row for this account yet at all -- first-ever login, so
+      // seed the account with whatever's local (nothing, most likely).
+      stateLoaded = true;
       pushStateToServer();
     }
   } catch(e){
@@ -3752,6 +3767,7 @@ document.getElementById("accountLogoutBtn").addEventListener("click", async () =
   reportCounter = 0;
   customNotesPrompts = {};
   currentReport = null;
+  stateLoaded = false; // re-armed by the next syncAfterLogin(), same as a fresh page load
   agentRunsCache = [];
   activeAgentRunId = null;
   if (agentPollTimer) { clearTimeout(agentPollTimer); agentPollTimer = null; }
@@ -4021,6 +4037,25 @@ let matters = [];
 let activeMatterId = null;
 let matterCounter = 0;
 
+// Guards persistState() below against a real bug that used to wipe a signed-
+// in account's saved data: matters/savedReports start as the empty arrays
+// declared here on every page load, and stay empty until syncAfterLogin()'s
+// GET /api/user/state round-trip actually resolves. currentUser, on the
+// other hand, gets set synchronously as soon as the EARLIER /api/auth/me
+// call resolves (see refreshAuthStatus) -- so there's a real window, between
+// those two awaits, where persistState() would treat this account as
+// "signed in" while matters/savedReports are still just their empty
+// placeholders. Reloading the page and then switching tabs inside that
+// window (visibilitychange -- see the pagehide/visibilitychange/beforeunload
+// listener below) fired persistState() -> pushStateToServer(), which does a
+// full overwrite of user_state server-side (see POST /api/user/state in
+// server.js) -- silently replacing the account's real saved Notes with
+// nothing. stateLoaded stays false until syncAfterLogin() (or the signed-out
+// cleanup branch of refreshAuthStatus, or logout) has established what the
+// real state actually is, so persistState() has nothing to leak in that
+// window -- it simply no-ops instead of racing a write ahead of the read.
+let stateLoaded = false;
+
 // Saved reading reports (Schedule tab "Notes" -> AI report -> Notes tab),
 // independent of any matter — these live for as long as the docket does,
 // and are listed in the Notes tab's own sidebar (#notesSidebar).
@@ -4069,7 +4104,7 @@ function showStorageWarning(){
 // browser's anonymous use leaking into whoever uses it next, and to make
 // creating an account the actual way to keep anything.
 function persistState(){
-  if (!currentUser) return;
+  if (!currentUser || !stateLoaded) return;
   try{
     localStorage.setItem(STORAGE_KEY, JSON.stringify({ matters, matterCounter, activeMatterId, savedReports, reportCounter, customNotesPrompts, savedAt: Date.now() }));
   } catch(e){
