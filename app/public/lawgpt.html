@@ -1079,25 +1079,23 @@
     padding:36px 0;
     display:flex;
     justify-content:center;
+    /* Without this, flex's default align-items:stretch caps .doc-page's
+       height at the wrap's own (viewport) height instead of letting it grow
+       with content -- content past that point then renders as plain
+       overflow with no page background/border behind it, instead of
+       extending the page and making the wrap scrollable. */
+    align-items:flex-start;
     background:repeating-linear-gradient(180deg, var(--ink) 0px, var(--ink) 100%);
   }
-  #docPages{
+  .doc-page{
     --page-width: 816px;
-    --page-height: 1056px;
     --page-margin-top: 96px;
     --page-margin-right: 96px;
     --page-margin-bottom: 96px;
     --page-margin-left: 96px;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    gap:28px;
-    outline:none;
-  }
-  .doc-page{
     width:var(--page-width);
     max-width:var(--page-width);
-    height:var(--page-height);
+    min-height:1056px;
     background:var(--parchment);
     color:#2a2418;
     font-family:Georgia, 'Times New Roman', serif;
@@ -1107,20 +1105,30 @@
     border:1px solid var(--hairline);
     border-radius:2px;
     box-shadow:0 8px 30px rgba(0,0,0,0.35);
-    outline:none;
     position:relative;
-    overflow:hidden;
-    flex-shrink:0;
   }
-  .doc-page::after{
-    content: "Page " attr(data-page-number);
-    position:absolute;
-    left:0; right:0; bottom:14px;
+  #docEditorMount, #docEditorMount .ProseMirror{ outline:none; min-height:1.75em; }
+  /* Manually-inserted page-break marker (see the PageBreak node in
+     editor-src/editor-entry.js) -- a visual divider on screen, and a real
+     page break in the compiled/exported output (see compileToSource's
+     "html" branch and collectBlocks' [data-page-break] handling). Replaces
+     the old auto-reflow engine's per-page split entirely. */
+  .page-break{
+    margin:26px 0;
+    border-top:2px dashed #cfc6ac;
     text-align:center;
     font-family:'IBM Plex Mono',monospace;
     font-size:9.5px;
     letter-spacing:0.08em;
     color:#8a7f63;
+    padding-top:6px;
+    user-select:none;
+  }
+  #docEditorMount .ProseMirror p.is-editor-empty:first-child::before{
+    content: attr(data-placeholder);
+    color:#8a7f63;
+    float:left;
+    height:0;
     pointer-events:none;
   }
   .zoom-control{
@@ -2869,6 +2877,10 @@ pre code {
 
         <div class="rt-divider"></div>
 
+        <button class="rt-btn" id="btnPageBreak" title="Insert a manual page break">&#8676;&#9642;&#8677;</button>
+
+        <div class="rt-divider"></div>
+
         <button class="rt-btn" id="btnOutdent" data-cmd="outdent" title="Decrease indent">&#8676;&#124;</button>
         <button class="rt-btn" id="btnIndent" data-cmd="indent" title="Increase indent">&#124;&#8677;</button>
 
@@ -2973,8 +2985,8 @@ pre code {
 
       <div class="editor-body">
         <div class="doc-page-wrap">
-          <div id="docPages" contenteditable="true">
-            <div id="docEditor" class="doc-page" data-page-number="1"><div><br></div></div>
+          <div class="doc-page" id="docPage">
+            <div id="docEditorMount"></div>
           </div>
         </div>
         <div class="table-ctx-menu" id="tableCtxMenu">
@@ -3270,6 +3282,11 @@ return ctor.prototype=parent.prototype,child.prototype=new ctor,child.__super__=
 -1===i||i===this.parent.children.length-1)throw new Error("Already at the last node. "+this.debugInfo());return this.parent.children[i+1]},XMLNode.prototype.importDocument=function(doc){var clonedRoot;return clonedRoot=doc.root().clone(),clonedRoot.parent=this,clonedRoot.isRoot=!1,this.children.push(clonedRoot),this},XMLNode.prototype.debugInfo=function(name){var ref1,ref2;return name=name||this.name,null!=name||(null!=(ref1=this.parent)?ref1.name:void 0)?null==name?"parent: <"+this.parent.name+">":(null!=(ref2=this.parent)?ref2.name:void 0)?"node: <"+name+">, parent: <"+this.parent.name+">":"node: <"+name+">":""},XMLNode.prototype.ele=function(name,attributes,text){return this.element(name,attributes,text)},XMLNode.prototype.nod=function(name,attributes,text){return this.node(name,attributes,text)},XMLNode.prototype.txt=function(value){return this.text(value)},XMLNode.prototype.dat=function(value){return this.cdata(value)},XMLNode.prototype.com=function(value){return this.comment(value)},XMLNode.prototype.ins=function(target,value){return this.instruction(target,value)},XMLNode.prototype.doc=function(){return this.document()},XMLNode.prototype.dec=function(version,encoding,standalone){return this.declaration(version,encoding,standalone)},XMLNode.prototype.dtd=function(pubID,sysID){return this.doctype(pubID,sysID)},XMLNode.prototype.e=function(name,attributes,text){return this.element(name,attributes,text)},XMLNode.prototype.n=function(name,attributes,text){return this.node(name,attributes,text)},XMLNode.prototype.t=function(value){return this.text(value)},XMLNode.prototype.d=function(value){return this.cdata(value)},XMLNode.prototype.c=function(value){return this.comment(value)},XMLNode.prototype.r=function(value){return this.raw(value)},XMLNode.prototype.i=function(target,value){return this.instruction(target,value)},XMLNode.prototype.u=function(){return this.up()},XMLNode.prototype.importXMLBuilder=function(doc){return this.importDocument(doc)},XMLNode}()}).call(this)},{"./Utility":103,"./XMLCData":105,"./XMLComment":106,"./XMLDeclaration":111,"./XMLDocType":112,"./XMLElement":115,"./XMLProcessingInstruction":117,"./XMLRaw":118,"./XMLText":122}],117:[function(require,module,exports){(function(){var XMLNode,XMLProcessingInstruction,extend=function(child,parent){function ctor(){this.constructor=child}for(var key in parent)hasProp.call(parent,key)&&(child[key]=parent[key]);return ctor.prototype=parent.prototype,child.prototype=new ctor,child.__super__=parent.prototype,child},hasProp={}.hasOwnProperty;XMLNode=require("./XMLNode"),module.exports=XMLProcessingInstruction=function(superClass){function XMLProcessingInstruction(parent,target,value){if(XMLProcessingInstruction.__super__.constructor.call(this,parent),null==target)throw new Error("Missing instruction target. "+this.debugInfo());this.target=this.stringify.insTarget(target),value&&(this.value=this.stringify.insValue(value))}return extend(XMLProcessingInstruction,superClass),XMLProcessingInstruction.prototype.clone=function(){return Object.create(this)},XMLProcessingInstruction.prototype.toString=function(options){return this.options.writer.set(options).processingInstruction(this)},XMLProcessingInstruction}(XMLNode)}).call(this)},{"./XMLNode":116}],118:[function(require,module,exports){(function(){var XMLNode,XMLRaw,extend=function(child,parent){function ctor(){this.constructor=child}for(var key in parent)hasProp.call(parent,key)&&(child[key]=parent[key]);return ctor.prototype=parent.prototype,child.prototype=new ctor,child.__super__=parent.prototype,child},hasProp={}.hasOwnProperty;XMLNode=require("./XMLNode"),module.exports=XMLRaw=function(superClass){function XMLRaw(parent,text){if(XMLRaw.__super__.constructor.call(this,parent),null==text)throw new Error("Missing raw text. "+this.debugInfo());this.value=this.stringify.raw(text)}return extend(XMLRaw,superClass),XMLRaw.prototype.clone=function(){return Object.create(this)},XMLRaw.prototype.toString=function(options){return this.options.writer.set(options).raw(this)},XMLRaw}(XMLNode)}).call(this)},{"./XMLNode":116}],119:[function(require,module,exports){(function(){var XMLCData,XMLComment,XMLDTDAttList,XMLDTDElement,XMLDTDEntity,XMLDTDNotation,XMLDeclaration,XMLDocType,XMLElement,XMLProcessingInstruction,XMLRaw,XMLStreamWriter,XMLText,XMLWriterBase,extend=function(child,parent){function ctor(){this.constructor=child}for(var key in parent)hasProp.call(parent,key)&&(child[key]=parent[key]);return ctor.prototype=parent.prototype,child.prototype=new ctor,child.__super__=parent.prototype,child},hasProp={}.hasOwnProperty;XMLDeclaration=require("./XMLDeclaration"),XMLDocType=require("./XMLDocType"),XMLCData=require("./XMLCData"),XMLComment=require("./XMLComment"),XMLElement=require("./XMLElement"),XMLRaw=require("./XMLRaw"),XMLText=require("./XMLText"),XMLProcessingInstruction=require("./XMLProcessingInstruction"),XMLDTDAttList=require("./XMLDTDAttList"),XMLDTDElement=require("./XMLDTDElement"),XMLDTDEntity=require("./XMLDTDEntity"),XMLDTDNotation=require("./XMLDTDNotation"),XMLWriterBase=require("./XMLWriterBase"),module.exports=XMLStreamWriter=function(superClass){function XMLStreamWriter(stream,options){XMLStreamWriter.__super__.constructor.call(this,options),this.stream=stream}return extend(XMLStreamWriter,superClass),XMLStreamWriter.prototype.document=function(doc){var child,i,j,len,len1,ref,ref1,results;for(ref=doc.children,i=0,len=ref.length;len>i;i++)child=ref[i],child.isLastRootNode=!1;for(doc.children[doc.children.length-1].isLastRootNode=!0,ref1=doc.children,results=[],j=0,len1=ref1.length;len1>j;j++)switch(child=ref1[j],!1){case!(child instanceof XMLDeclaration):results.push(this.declaration(child));break;case!(child instanceof XMLDocType):results.push(this.docType(child));break;case!(child instanceof XMLComment):results.push(this.comment(child));break;case!(child instanceof XMLProcessingInstruction):results.push(this.processingInstruction(child));break;default:results.push(this.element(child))}return results},XMLStreamWriter.prototype.attribute=function(att){return this.stream.write(" "+att.name+'="'+att.value+'"')},XMLStreamWriter.prototype.cdata=function(node,level){return this.stream.write(this.space(level)+"<![CDATA["+node.text+"]]>"+this.endline(node))},XMLStreamWriter.prototype.comment=function(node,level){return this.stream.write(this.space(level)+"<!-- "+node.text+" -->"+this.endline(node))},XMLStreamWriter.prototype.declaration=function(node,level){return this.stream.write(this.space(level)),this.stream.write('<?xml version="'+node.version+'"'),null!=node.encoding&&this.stream.write(' encoding="'+node.encoding+'"'),null!=node.standalone&&this.stream.write(' standalone="'+node.standalone+'"'),this.stream.write(this.spacebeforeslash+"?>"),this.stream.write(this.endline(node))},XMLStreamWriter.prototype.docType=function(node,level){var child,i,len,ref;if(level||(level=0),this.stream.write(this.space(level)),this.stream.write("<!DOCTYPE "+node.root().name),node.pubID&&node.sysID?this.stream.write(' PUBLIC "'+node.pubID+'" "'+node.sysID+'"'):node.sysID&&this.stream.write(' SYSTEM "'+node.sysID+'"'),node.children.length>0){for(this.stream.write(" ["),this.stream.write(this.endline(node)),ref=node.children,i=0,len=ref.length;len>i;i++)switch(child=ref[i],!1){case!(child instanceof XMLDTDAttList):this.dtdAttList(child,level+1);break;case!(child instanceof XMLDTDElement):this.dtdElement(child,level+1);break;case!(child instanceof XMLDTDEntity):this.dtdEntity(child,level+1);break;case!(child instanceof XMLDTDNotation):this.dtdNotation(child,level+1);break;case!(child instanceof XMLCData):this.cdata(child,level+1);break;case!(child instanceof XMLComment):this.comment(child,level+1);break;case!(child instanceof XMLProcessingInstruction):this.processingInstruction(child,level+1);break;default:throw new Error("Unknown DTD node type: "+child.constructor.name)}this.stream.write("]")}return this.stream.write(this.spacebeforeslash+">"),this.stream.write(this.endline(node))},XMLStreamWriter.prototype.element=function(node,level){var att,child,i,len,name,ref,ref1,space;level||(level=0),space=this.space(level),this.stream.write(space+"<"+node.name),ref=node.attributes;for(name in ref)hasProp.call(ref,name)&&(att=ref[name],this.attribute(att));if(0===node.children.length||node.children.every(function(e){return""===e.value}))this.allowEmpty?this.stream.write("></"+node.name+">"):this.stream.write(this.spacebeforeslash+"/>");else if(this.pretty&&1===node.children.length&&null!=node.children[0].value)this.stream.write(">"),this.stream.write(node.children[0].value),this.stream.write("</"+node.name+">");else{for(this.stream.write(">"+this.newline),ref1=node.children,i=0,len=ref1.length;len>i;i++)switch(child=ref1[i],!1){case!(child instanceof XMLCData):this.cdata(child,level+1);break;case!(child instanceof XMLComment):this.comment(child,level+1);break;case!(child instanceof XMLElement):this.element(child,level+1);break;case!(child instanceof XMLRaw):this.raw(child,level+1);break;case!(child instanceof XMLText):this.text(child,level+1);break;case!(child instanceof XMLProcessingInstruction):this.processingInstruction(child,level+1);break;default:throw new Error("Unknown XML node type: "+child.constructor.name)}this.stream.write(space+"</"+node.name+">")}return this.stream.write(this.endline(node))},XMLStreamWriter.prototype.processingInstruction=function(node,level){return this.stream.write(this.space(level)+"<?"+node.target),node.value&&this.stream.write(" "+node.value),this.stream.write(this.spacebeforeslash+"?>"+this.endline(node))},XMLStreamWriter.prototype.raw=function(node,level){return this.stream.write(this.space(level)+node.value+this.endline(node))},XMLStreamWriter.prototype.text=function(node,level){return this.stream.write(this.space(level)+node.value+this.endline(node))},XMLStreamWriter.prototype.dtdAttList=function(node,level){return this.stream.write(this.space(level)+"<!ATTLIST "+node.elementName+" "+node.attributeName+" "+node.attributeType),"#DEFAULT"!==node.defaultValueType&&this.stream.write(" "+node.defaultValueType),node.defaultValue&&this.stream.write(' "'+node.defaultValue+'"'),this.stream.write(this.spacebeforeslash+">"+this.endline(node))},XMLStreamWriter.prototype.dtdElement=function(node,level){return this.stream.write(this.space(level)+"<!ELEMENT "+node.name+" "+node.value),this.stream.write(this.spacebeforeslash+">"+this.endline(node))},XMLStreamWriter.prototype.dtdEntity=function(node,level){return this.stream.write(this.space(level)+"<!ENTITY"),node.pe&&this.stream.write(" %"),this.stream.write(" "+node.name),node.value?this.stream.write(' "'+node.value+'"'):(node.pubID&&node.sysID?this.stream.write(' PUBLIC "'+node.pubID+'" "'+node.sysID+'"'):node.sysID&&this.stream.write(' SYSTEM "'+node.sysID+'"'),node.nData&&this.stream.write(" NDATA "+node.nData)),this.stream.write(this.spacebeforeslash+">"+this.endline(node))},XMLStreamWriter.prototype.dtdNotation=function(node,level){return this.stream.write(this.space(level)+"<!NOTATION "+node.name),node.pubID&&node.sysID?this.stream.write(' PUBLIC "'+node.pubID+'" "'+node.sysID+'"'):node.pubID?this.stream.write(' PUBLIC "'+node.pubID+'"'):node.sysID&&this.stream.write(' SYSTEM "'+node.sysID+'"'),this.stream.write(this.spacebeforeslash+">"+this.endline(node))},XMLStreamWriter.prototype.endline=function(node){return node.isLastRootNode?"":this.newline},XMLStreamWriter}(XMLWriterBase)}).call(this)},{"./XMLCData":105,"./XMLComment":106,"./XMLDTDAttList":107,"./XMLDTDElement":108,"./XMLDTDEntity":109,"./XMLDTDNotation":110,"./XMLDeclaration":111,"./XMLDocType":112,"./XMLElement":115,"./XMLProcessingInstruction":117,"./XMLRaw":118,"./XMLText":122,"./XMLWriterBase":123}],120:[function(require,module,exports){(function(){var XMLCData,XMLComment,XMLDTDAttList,XMLDTDElement,XMLDTDEntity,XMLDTDNotation,XMLDeclaration,XMLDocType,XMLElement,XMLProcessingInstruction,XMLRaw,XMLStringWriter,XMLText,XMLWriterBase,extend=function(child,parent){function ctor(){this.constructor=child}for(var key in parent)hasProp.call(parent,key)&&(child[key]=parent[key]);return ctor.prototype=parent.prototype,child.prototype=new ctor,child.__super__=parent.prototype,child},hasProp={}.hasOwnProperty;XMLDeclaration=require("./XMLDeclaration"),XMLDocType=require("./XMLDocType"),XMLCData=require("./XMLCData"),XMLComment=require("./XMLComment"),XMLElement=require("./XMLElement"),XMLRaw=require("./XMLRaw"),XMLText=require("./XMLText"),XMLProcessingInstruction=require("./XMLProcessingInstruction"),XMLDTDAttList=require("./XMLDTDAttList"),XMLDTDElement=require("./XMLDTDElement"),XMLDTDEntity=require("./XMLDTDEntity"),XMLDTDNotation=require("./XMLDTDNotation"),XMLWriterBase=require("./XMLWriterBase"),module.exports=XMLStringWriter=function(superClass){function XMLStringWriter(options){XMLStringWriter.__super__.constructor.call(this,options)}return extend(XMLStringWriter,superClass),XMLStringWriter.prototype.document=function(doc){var child,i,len,r,ref;for(this.textispresent=!1,r="",ref=doc.children,i=0,len=ref.length;len>i;i++)child=ref[i],r+=function(){switch(!1){case!(child instanceof XMLDeclaration):return this.declaration(child);case!(child instanceof XMLDocType):return this.docType(child);case!(child instanceof XMLComment):return this.comment(child);case!(child instanceof XMLProcessingInstruction):return this.processingInstruction(child);default:return this.element(child,0)}}.call(this);return this.pretty&&r.slice(-this.newline.length)===this.newline&&(r=r.slice(0,-this.newline.length)),r},XMLStringWriter.prototype.attribute=function(att){return" "+att.name+'="'+att.value+'"'},XMLStringWriter.prototype.cdata=function(node,level){return this.space(level)+"<![CDATA["+node.text+"]]>"+this.newline},XMLStringWriter.prototype.comment=function(node,level){return this.space(level)+"<!-- "+node.text+" -->"+this.newline},XMLStringWriter.prototype.declaration=function(node,level){var r;return r=this.space(level),r+='<?xml version="'+node.version+'"',null!=node.encoding&&(r+=' encoding="'+node.encoding+'"'),null!=node.standalone&&(r+=' standalone="'+node.standalone+'"'),r+=this.spacebeforeslash+"?>",r+=this.newline},XMLStringWriter.prototype.docType=function(node,level){var child,i,len,r,ref;if(level||(level=0),r=this.space(level),r+="<!DOCTYPE "+node.root().name,node.pubID&&node.sysID?r+=' PUBLIC "'+node.pubID+'" "'+node.sysID+'"':node.sysID&&(r+=' SYSTEM "'+node.sysID+'"'),node.children.length>0){for(r+=" [",r+=this.newline,ref=node.children,i=0,len=ref.length;len>i;i++)child=ref[i],r+=function(){switch(!1){case!(child instanceof XMLDTDAttList):return this.dtdAttList(child,level+1);case!(child instanceof XMLDTDElement):return this.dtdElement(child,level+1);case!(child instanceof XMLDTDEntity):return this.dtdEntity(child,level+1);case!(child instanceof XMLDTDNotation):return this.dtdNotation(child,level+1);case!(child instanceof XMLCData):return this.cdata(child,level+1);case!(child instanceof XMLComment):return this.comment(child,level+1);case!(child instanceof XMLProcessingInstruction):return this.processingInstruction(child,level+1);default:throw new Error("Unknown DTD node type: "+child.constructor.name)}}.call(this);r+="]"}return r+=this.spacebeforeslash+">",r+=this.newline},XMLStringWriter.prototype.element=function(node,level){var att,child,i,j,len,len1,name,r,ref,ref1,ref2,space,textispresentwasset;level||(level=0),textispresentwasset=!1,this.textispresent?(this.newline="",this.pretty=!1):(this.newline=this.newlinedefault,this.pretty=this.prettydefault),space=this.space(level),r="",r+=space+"<"+node.name,ref=node.attributes;for(name in ref)hasProp.call(ref,name)&&(att=ref[name],r+=this.attribute(att));if(0===node.children.length||node.children.every(function(e){return""===e.value}))r+=this.allowEmpty?"></"+node.name+">"+this.newline:this.spacebeforeslash+"/>"+this.newline;else if(this.pretty&&1===node.children.length&&null!=node.children[0].value)r+=">",r+=node.children[0].value,r+="</"+node.name+">"+this.newline;else{if(this.dontprettytextnodes)for(ref1=node.children,i=0,len=ref1.length;len>i;i++)if(child=ref1[i],null!=child.value){this.textispresent++,textispresentwasset=!0;break}for(this.textispresent&&(this.newline="",this.pretty=!1,space=this.space(level)),r+=">"+this.newline,ref2=node.children,j=0,len1=ref2.length;len1>j;j++)child=ref2[j],r+=function(){switch(!1){case!(child instanceof XMLCData):return this.cdata(child,level+1);case!(child instanceof XMLComment):return this.comment(child,level+1);case!(child instanceof XMLElement):return this.element(child,level+1);case!(child instanceof XMLRaw):return this.raw(child,level+1);case!(child instanceof XMLText):return this.text(child,level+1);case!(child instanceof XMLProcessingInstruction):return this.processingInstruction(child,level+1);default:throw new Error("Unknown XML node type: "+child.constructor.name)}}.call(this);textispresentwasset&&this.textispresent--,this.textispresent||(this.newline=this.newlinedefault,this.pretty=this.prettydefault),r+=space+"</"+node.name+">"+this.newline}return r},XMLStringWriter.prototype.processingInstruction=function(node,level){var r;return r=this.space(level)+"<?"+node.target,node.value&&(r+=" "+node.value),r+=this.spacebeforeslash+"?>"+this.newline},XMLStringWriter.prototype.raw=function(node,level){return this.space(level)+node.value+this.newline},XMLStringWriter.prototype.text=function(node,level){return this.space(level)+node.value+this.newline},XMLStringWriter.prototype.dtdAttList=function(node,level){var r;return r=this.space(level)+"<!ATTLIST "+node.elementName+" "+node.attributeName+" "+node.attributeType,"#DEFAULT"!==node.defaultValueType&&(r+=" "+node.defaultValueType),node.defaultValue&&(r+=' "'+node.defaultValue+'"'),r+=this.spacebeforeslash+">"+this.newline},XMLStringWriter.prototype.dtdElement=function(node,level){return this.space(level)+"<!ELEMENT "+node.name+" "+node.value+this.spacebeforeslash+">"+this.newline},XMLStringWriter.prototype.dtdEntity=function(node,level){var r;return r=this.space(level)+"<!ENTITY",node.pe&&(r+=" %"),r+=" "+node.name,node.value?r+=' "'+node.value+'"':(node.pubID&&node.sysID?r+=' PUBLIC "'+node.pubID+'" "'+node.sysID+'"':node.sysID&&(r+=' SYSTEM "'+node.sysID+'"'),node.nData&&(r+=" NDATA "+node.nData)),r+=this.spacebeforeslash+">"+this.newline},XMLStringWriter.prototype.dtdNotation=function(node,level){var r;return r=this.space(level)+"<!NOTATION "+node.name,node.pubID&&node.sysID?r+=' PUBLIC "'+node.pubID+'" "'+node.sysID+'"':node.pubID?r+=' PUBLIC "'+node.pubID+'"':node.sysID&&(r+=' SYSTEM "'+node.sysID+'"'),r+=this.spacebeforeslash+">"+this.newline},XMLStringWriter.prototype.openNode=function(node,level){var att,name,r,ref;if(level||(level=0),node instanceof XMLElement){r=this.space(level)+"<"+node.name,ref=node.attributes;for(name in ref)hasProp.call(ref,name)&&(att=ref[name],r+=this.attribute(att));return r+=(node.children?">":"/>")+this.newline}return r=this.space(level)+"<!DOCTYPE "+node.rootNodeName,node.pubID&&node.sysID?r+=' PUBLIC "'+node.pubID+'" "'+node.sysID+'"':node.sysID&&(r+=' SYSTEM "'+node.sysID+'"'),r+=(node.children?" [":">")+this.newline},XMLStringWriter.prototype.closeNode=function(node,level){switch(level||(level=0),!1){case!(node instanceof XMLElement):return this.space(level)+"</"+node.name+">"+this.newline;case!(node instanceof XMLDocType):return this.space(level)+"]>"+this.newline}},XMLStringWriter}(XMLWriterBase)}).call(this)},{"./XMLCData":105,"./XMLComment":106,"./XMLDTDAttList":107,"./XMLDTDElement":108,"./XMLDTDEntity":109,"./XMLDTDNotation":110,"./XMLDeclaration":111,"./XMLDocType":112,"./XMLElement":115,"./XMLProcessingInstruction":117,"./XMLRaw":118,"./XMLText":122,"./XMLWriterBase":123}],121:[function(require,module,exports){(function(){var XMLStringifier,bind=function(fn,me){return function(){return fn.apply(me,arguments)}},hasProp={}.hasOwnProperty;module.exports=XMLStringifier=function(){function XMLStringifier(options){this.assertLegalChar=bind(this.assertLegalChar,this);var key,ref,value;options||(options={}),this.noDoubleEncoding=options.noDoubleEncoding,ref=options.stringify||{};for(key in ref)hasProp.call(ref,key)&&(value=ref[key],this[key]=value)}return XMLStringifier.prototype.eleName=function(val){return val=""+val||"",this.assertLegalChar(val)},XMLStringifier.prototype.eleText=function(val){return val=""+val||"",this.assertLegalChar(this.elEscape(val))},XMLStringifier.prototype.cdata=function(val){return val=""+val||"",val=val.replace("]]>","]]]]><![CDATA[>"),this.assertLegalChar(val)},XMLStringifier.prototype.comment=function(val){if(val=""+val||"",val.match(/--/))throw new Error("Comment text cannot contain double-hypen: "+val);return this.assertLegalChar(val)},XMLStringifier.prototype.raw=function(val){return""+val||""},XMLStringifier.prototype.attName=function(val){return val=""+val||""},XMLStringifier.prototype.attValue=function(val){return val=""+val||"",this.attEscape(val)},XMLStringifier.prototype.insTarget=function(val){return""+val||""},XMLStringifier.prototype.insValue=function(val){if(val=""+val||"",val.match(/\?>/))throw new Error("Invalid processing instruction value: "+val);return val},XMLStringifier.prototype.xmlVersion=function(val){if(val=""+val||"",!val.match(/1\.[0-9]+/))throw new Error("Invalid version number: "+val);return val},XMLStringifier.prototype.xmlEncoding=function(val){if(val=""+val||"",!val.match(/^[A-Za-z](?:[A-Za-z0-9._-])*$/))throw new Error("Invalid encoding: "+val);return val},XMLStringifier.prototype.xmlStandalone=function(val){return val?"yes":"no"},XMLStringifier.prototype.dtdPubID=function(val){return""+val||""},XMLStringifier.prototype.dtdSysID=function(val){return""+val||""},XMLStringifier.prototype.dtdElementValue=function(val){return""+val||""},XMLStringifier.prototype.dtdAttType=function(val){return""+val||""},XMLStringifier.prototype.dtdAttDefault=function(val){return null!=val?""+val||"":val},XMLStringifier.prototype.dtdEntityValue=function(val){return""+val||""},XMLStringifier.prototype.dtdNData=function(val){return""+val||""},XMLStringifier.prototype.convertAttKey="@",XMLStringifier.prototype.convertPIKey="?",XMLStringifier.prototype.convertTextKey="#text",XMLStringifier.prototype.convertCDataKey="#cdata",XMLStringifier.prototype.convertCommentKey="#comment",XMLStringifier.prototype.convertRawKey="#raw",XMLStringifier.prototype.assertLegalChar=function(str){var res;if(res=str.match(/[\0\uFFFE\uFFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?:[^\uD800-\uDBFF]|^)[\uDC00-\uDFFF]/))throw new Error("Invalid character in string: "+str+" at index "+res.index);return str},XMLStringifier.prototype.elEscape=function(str){var ampregex;return ampregex=this.noDoubleEncoding?/(?!&\S+;)&/g:/&/g,str.replace(ampregex,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\r/g,"&#xD;")},XMLStringifier.prototype.attEscape=function(str){var ampregex;return ampregex=this.noDoubleEncoding?/(?!&\S+;)&/g:/&/g,str.replace(ampregex,"&amp;").replace(/</g,"&lt;").replace(/"/g,"&quot;").replace(/\t/g,"&#x9;").replace(/\n/g,"&#xA;").replace(/\r/g,"&#xD;")},XMLStringifier}()}).call(this)},{}],122:[function(require,module,exports){(function(){var XMLNode,XMLText,extend=function(child,parent){function ctor(){this.constructor=child}for(var key in parent)hasProp.call(parent,key)&&(child[key]=parent[key]);return ctor.prototype=parent.prototype,child.prototype=new ctor,child.__super__=parent.prototype,child},hasProp={}.hasOwnProperty;XMLNode=require("./XMLNode"),module.exports=XMLText=function(superClass){function XMLText(parent,text){if(XMLText.__super__.constructor.call(this,parent),null==text)throw new Error("Missing element text. "+this.debugInfo());this.value=this.stringify.eleText(text)}return extend(XMLText,superClass),XMLText.prototype.clone=function(){return Object.create(this)},XMLText.prototype.toString=function(options){return this.options.writer.set(options).text(this)},XMLText}(XMLNode)}).call(this)},{"./XMLNode":116}],123:[function(require,module,exports){(function(){var XMLWriterBase,hasProp={}.hasOwnProperty;module.exports=XMLWriterBase=function(){function XMLWriterBase(options){var key,ref,ref1,ref2,ref3,ref4,ref5,ref6,value;options||(options={}),this.pretty=options.pretty||!1,this.allowEmpty=null!=(ref=options.allowEmpty)?ref:!1,this.pretty?(this.indent=null!=(ref1=options.indent)?ref1:"  ",this.newline=null!=(ref2=options.newline)?ref2:"\n",this.offset=null!=(ref3=options.offset)?ref3:0,this.dontprettytextnodes=null!=(ref4=options.dontprettytextnodes)?ref4:0):(this.indent="",this.newline="",this.offset=0,this.dontprettytextnodes=0),this.spacebeforeslash=null!=(ref5=options.spacebeforeslash)?ref5:"",this.spacebeforeslash===!0&&(this.spacebeforeslash=" "),this.newlinedefault=this.newline,this.prettydefault=this.pretty,ref6=options.writer||{};for(key in ref6)hasProp.call(ref6,key)&&(value=ref6[key],this[key]=value)}return XMLWriterBase.prototype.set=function(options){var key,ref,value;options||(options={}),"pretty"in options&&(this.pretty=options.pretty),"allowEmpty"in options&&(this.allowEmpty=options.allowEmpty),this.pretty?(this.indent="indent"in options?options.indent:"  ",this.newline="newline"in options?options.newline:"\n",this.offset="offset"in options?options.offset:0,this.dontprettytextnodes="dontprettytextnodes"in options?options.dontprettytextnodes:0):(this.indent="",this.newline="",this.offset=0,this.dontprettytextnodes=0),this.spacebeforeslash="spacebeforeslash"in options?options.spacebeforeslash:"",this.spacebeforeslash===!0&&(this.spacebeforeslash=" "),this.newlinedefault=this.newline,this.prettydefault=this.pretty,ref=options.writer||{};for(key in ref)hasProp.call(ref,key)&&(value=ref[key],this[key]=value);return this},XMLWriterBase.prototype.space=function(level){var indent;return this.pretty?(indent=(level||0)+this.offset+1,indent>0?new Array(indent).join(this.indent):""):""},XMLWriterBase}()}).call(this)},{}],124:[function(require,module,exports){(function(){var XMLDocument,XMLDocumentCB,XMLStreamWriter,XMLStringWriter,assign,isFunction,ref;ref=require("./Utility"),assign=ref.assign,isFunction=ref.isFunction,XMLDocument=require("./XMLDocument"),XMLDocumentCB=require("./XMLDocumentCB"),XMLStringWriter=require("./XMLStringWriter"),XMLStreamWriter=require("./XMLStreamWriter"),module.exports.create=function(name,xmldec,doctype,options){var doc,root;if(null==name)throw new Error("Root element needs a name.");return options=assign({},xmldec,doctype,options),doc=new XMLDocument(options),root=doc.element(name),options.headless||(doc.declaration(options),(null!=options.pubID||null!=options.sysID)&&doc.doctype(options)),root},module.exports.begin=function(options,onData,onEnd){var ref1;return isFunction(options)&&(ref1=[options,onData],onData=ref1[0],onEnd=ref1[1],options={}),onData?new XMLDocumentCB(options,onData,onEnd):new XMLDocument(options)},module.exports.stringWriter=function(options){return new XMLStringWriter(options)},module.exports.streamWriter=function(stream,options){return new XMLStreamWriter(stream,options)}}).call(this)},{"./Utility":103,"./XMLDocument":113,"./XMLDocumentCB":114,"./XMLStreamWriter":119,"./XMLStringWriter":120}]},{},[21])(21)});
 
 </script>
+
+<!-- The document editor's rich-text engine (TipTap/ProseMirror), bundled
+     from editor-src/editor-entry.js via `npm run build:editor` -- exposes
+     window.LawgptEditor.createEditor(mountEl, options). -->
+<script src="editor-bundle.js"></script>
 
 <script>
 // ====== CONFIGURATION ======
@@ -4387,15 +4404,11 @@ function formatParagraph(para){
   if (lines.length === 1) return `<p>${boldInline(lines[0])}</p>`;
   // A multi-line chunk (e.g. a case/rule/definition brief's Facts, Issue,
   // Holding, ... fields, one per source line with no blank line between
-  // them) used to become one <p> with the lines <br>-joined together. The
-  // page-reflow pagination (schedulePageReflow) only ever moves a *whole*
-  // top-level page child to the next page, never splits inside one -- so
-  // that single giant paragraph either fit entirely or jumped whole to the
-  // next page, leaving a large gap behind it on the page it left. Emitting
-  // one <p class="doc-line"> per line (kept visually tight by that class,
-  // same spacing .doc-page li already uses) makes each line its own
-  // top-level child, so reflow can fill a page down to its very last line
-  // before breaking instead of leaving one big multi-line block dangling.
+  // them) used to become one <p> with the lines <br>-joined together.
+  // Emitting one <p class="doc-line"> per line instead (kept visually tight
+  // by that class, same spacing .doc-page li uses) gives collectBlocks one
+  // block per line when this is opened in the document editor, instead of
+  // one block with embedded line breaks.
   return lines.map(line => `<p class="doc-line">${boldInline(line)}</p>`).join("");
 }
 
@@ -6095,9 +6108,7 @@ notesReportTitleNameEl.addEventListener("blur", () => {
 document.getElementById("notesReportOpenEditorBtn").addEventListener("click", () => {
   if (!currentReport || currentReport.loading || currentReport.failed) return;
   if (currentReport.edited && currentReport.contentHtml != null){
-    resetToSinglePage();
-    document.getElementById("docEditor").innerHTML = sanitizeImportedHtml(currentReport.contentHtml);
-    schedulePageReflow();
+    docEditor.commands.setContent(sanitizeImportedHtml(currentReport.contentHtml));
   } else {
     loadFormattedTextIntoEditor(currentReport.content);
   }
@@ -6106,7 +6117,6 @@ document.getElementById("notesReportOpenEditorBtn").addEventListener("click", ()
   savedFileHandle = null;
   savedFileLang = null;
   savedFileExt = null;
-  updateDocPlaceholder();
   syncToolbarState();
   setView("editor");
 });
@@ -11351,7 +11361,13 @@ function collectBlocks(root){
       }
     }
     Array.from(node.childNodes).forEach(child => {
-      if (child.nodeType === 1 && child.tagName === "TABLE"){
+      if (child.nodeType === 1 && child.hasAttribute && child.hasAttribute("data-page-break")){
+        // A manually-inserted page-break marker (see the PageBreak node in
+        // editor-src/editor-entry.js) -- becomes the same {type:"pagebreak"}
+        // block compileToSource used to synthesize between discrete pages.
+        flush();
+        blocks.push({ type: "pagebreak" });
+      } else if (child.nodeType === 1 && child.tagName === "TABLE"){
         flush();
         tableToBlocks(child, indent, align, blocks);
       } else if (child.nodeType === 1 && ["UL","OL"].includes(child.tagName)){
@@ -11566,605 +11582,67 @@ function composeDocumentText(blocks, useAnsi){
   return outLines.join("\n");
 }
 
-// ---- Multi-page pagination (auto page breaks, like Word) ----
-// #docPages holds one or more .doc-page contenteditable divs. Each page has a
-// fixed height (set via CSS custom properties on #docPages so margin changes
-// apply document-wide). When a page's content overflows its box, the
-// overflowing block-level nodes are moved onto the next page (creating one if
-// needed); when a page has spare room, content is pulled back from the next
-// page. This is block-level pagination (paragraphs/tables/list items move as
-// whole units) rather than a true mid-paragraph text reflow, which keeps the
-// implementation robust while still giving the page-by-page feel of a word
-// processor — including in the compiled output (see composeDocumentText).
-function getPagesContainer(){ return document.getElementById("docPages"); }
-function getPages(){ return Array.from(document.querySelectorAll("#docPages > .doc-page")); }
-// #docPages itself is the single contenteditable host (individual .doc-page
-// divs are plain children, not separate editing roots) specifically so the
-// native caret and Selection/Range API can move and extend across a page
-// boundary -- two sibling contenteditable elements would each be an isolated
-// editing context that neither the caret nor a selection can cross.
-//
-// Tables and lists are the exceptions to "whole units move" above: a table
-// (or a <ul>/<ol>) too tall for the remaining space on a page is split into
-// two elements (the original, truncated, plus a continuation carrying the
-// rest), the same way Word breaks a table or a bulleted list across a page
-// boundary -- a <ul> is otherwise a single top-level child of the page, so
-// without this every bullet in a list would jump to the next page together
-// the moment the list as a whole stopped fitting, rather than filling the
-// current page down to its last line like every other block does. See
-// splitTableForOverflow and splitListForOverflow.
-function getFocusedPage(){
-  const pages = getPages();
-  const sel = window.getSelection();
-  if (sel && sel.rangeCount){
-    const node = sel.anchorNode;
-    const found = pages.find(p => p === node || p.contains(node));
-    if (found) return found;
-  }
-  return pages[pages.length - 1] || pages[0];
-}
-function createPageElement(){
-  const page = document.createElement("div");
-  page.className = "doc-page";
-  return page;
-}
-function renumberPages(){
-  getPages().forEach((p, i) => p.setAttribute("data-page-number", String(i + 1)));
-}
-function resetToSinglePage(){
-  const pages = getPages();
-  for (let i = 1; i < pages.length; i++) pages[i].remove();
-  renumberPages();
-}
-
-let pageReflowTimer = null;
-function schedulePageReflow(){
-  clearTimeout(pageReflowTimer);
-  pageReflowTimer = setTimeout(reflowPagesNow, 220);
-}
-
-// ---- Table pagination (splitting a <table> across a page boundary) ----
-// A table that's a continuation of one on an earlier page carries
-// data-lg-table-group (shared with the table(s) it continues) and
-// data-lg-table-cont ("this piece is not the first"). Every reflow starts by
-// merging any such groups back into one canonical <table> (mergeSplitTables)
-// before recomputing anything, so split points are always derived fresh from
-// the document's current content rather than incrementally drifting.
-const TABLE_GROUP_ATTR = "data-lg-table-group";
-const TABLE_CONT_ATTR = "data-lg-table-cont";
-let tableGroupCounter = 0;
-
-// Same continuation-group scheme as tables (see above), applied to <ul>/<ol>
-// so a list split across pages by splitListForOverflow is reassembled into
-// one canonical list (mergeSplitLists) before every reflow recomputes split
-// points fresh, rather than re-splitting an already-split continuation.
-const LIST_GROUP_ATTR = "data-lg-list-group";
-const LIST_CONT_ATTR = "data-lg-list-cont";
-let listGroupCounter = 0;
-
-function tableBody(table){ return table.querySelector(":scope > tbody") || table; }
-
-// How much vertical room is left on `page` for `child` (a direct child
-// positioned at child.offsetTop) before hitting the page's bottom margin.
-// page.clientHeight spans the *whole* padded box -- top margin, content, and
-// bottom margin all included -- so naively using clientHeight - offsetTop as
-// the budget lets content bleed into the reserved bottom-margin strip; that
-// strip has to be subtracted back out here.
-function remainingPageHeight(page, child){
-  const paddingBottom = parseFloat(getComputedStyle(page).paddingBottom) || 0;
-  return (page.clientHeight - paddingBottom) - child.offsetTop;
-}
-
-function mergeSplitTables(container){
-  const groups = new Map();
-  container.querySelectorAll(`table[${TABLE_GROUP_ATTR}]`).forEach(t => {
-    const id = t.getAttribute(TABLE_GROUP_ATTR);
-    if (!groups.has(id)) groups.set(id, []);
-    groups.get(id).push(t);
-  });
-  groups.forEach(tables => {
-    if (tables.length < 2){
-      tables.forEach(t => { t.removeAttribute(TABLE_GROUP_ATTR); t.removeAttribute(TABLE_CONT_ATTR); });
-      return;
-    }
-    // Sort into document order so rows are reassembled in the right sequence.
-    tables.sort((a, b) => (a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING) ? -1 : 1);
-    const head = tables[0];
-    const headBody = tableBody(head);
-    for (let i = 1; i < tables.length; i++){
-      const body = tableBody(tables[i]);
-      while (body.firstChild) headBody.appendChild(body.firstChild);
-      tables[i].remove();
-    }
-    head.removeAttribute(TABLE_GROUP_ATTR);
-    head.removeAttribute(TABLE_CONT_ATTR);
-  });
-}
-
-function mergeSplitLists(container){
-  const groups = new Map();
-  container.querySelectorAll(`ul[${LIST_GROUP_ATTR}], ol[${LIST_GROUP_ATTR}]`).forEach(t => {
-    const id = t.getAttribute(LIST_GROUP_ATTR);
-    if (!groups.has(id)) groups.set(id, []);
-    groups.get(id).push(t);
-  });
-  groups.forEach(lists => {
-    if (lists.length < 2){
-      lists.forEach(t => { t.removeAttribute(LIST_GROUP_ATTR); t.removeAttribute(LIST_CONT_ATTR); });
-      return;
-    }
-    // Sort into document order so items are reassembled in the right sequence.
-    lists.sort((a, b) => (a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING) ? -1 : 1);
-    const head = lists[0];
-    for (let i = 1; i < lists.length; i++){
-      while (lists[i].firstChild) head.appendChild(lists[i].firstChild);
-      lists[i].remove();
-    }
-    head.removeAttribute(LIST_GROUP_ATTR);
-    head.removeAttribute(LIST_CONT_ATTR);
-  });
-}
-
-// Finds the (node, offset) text position inside `container` beyond which
-// rendered content no longer fits above `availableBottomY` (a viewport Y
-// coordinate), by binary-searching each text node's rendered height. Because
-// browsers keep whole wrapped lines (and whole words, via word-wrap) inside a
-// single line box, every character on the last line that still fits shares
-// that line's bottom, and every character on the first line that doesn't
-// fit shares a lower one -- so the boundary this finds naturally lands
-// between two wrapped lines, not mid-character. Returns null if everything
-// already fits, or if no text-level split point could be found (e.g. the
-// overflowing content is a non-text element like an image).
-function findSplitPoint(container, availableBottomY){
-  if (!container.firstChild) return null;
-  const fullRange = document.createRange();
-  fullRange.selectNodeContents(container);
-  if (fullRange.getBoundingClientRect().bottom <= availableBottomY + 0.5) return null;
-
-  const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT, {
-    acceptNode: n => n.textContent.length ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_SKIP
-  });
-  const testRange = document.createRange();
-  let node;
-  while ((node = walker.nextNode())){
-    const len = node.textContent.length;
-    testRange.setStart(node, 0);
-    testRange.setEnd(node, len);
-    if (testRange.getBoundingClientRect().bottom <= availableBottomY + 0.5) continue; // whole node fits -- keep scanning forward
-
-    testRange.setEnd(node, 1);
-    if (testRange.getBoundingClientRect().bottom > availableBottomY + 0.5) return { node, offset: 0 }; // not even one char fits here
-
-    let lo = 1, hi = len;
-    while (lo < hi){
-      const mid = Math.ceil((lo + hi) / 2);
-      testRange.setEnd(node, mid);
-      if (testRange.getBoundingClientRect().bottom <= availableBottomY + 0.5) lo = mid; else hi = mid - 1;
-    }
-    return { node, offset: lo };
-  }
-  return null;
-}
-
-// Moves everything in `cell` at or after the split point into a returned
-// DocumentFragment, leaving what fits above availableBottomY behind in cell.
-function extractCellContentBelow(cell, availableBottomY){
-  const cutPoint = findSplitPoint(cell, availableBottomY);
-  if (!cutPoint) return null;
-  const range = document.createRange();
-  range.setStart(cutPoint.node, cutPoint.offset);
-  range.setEndAfter(cell.lastChild);
-  return range.extractContents();
-}
-
-// findSplitPoint cuts at the TEXT content's bottom, but what actually has to
-// fit within the page is the cell's bordered/padded box, which extends a bit
-// further (padding-bottom + border-bottom below the last line of text). Cut
-// this much earlier than the nominal budget so the row's real box -- not
-// just its text -- ends up inside availableBottomY. Without this, a row that
-// still overflows by exactly that fixed gap after being cut looks identical
-// to a fresh, unsplit overflow on the next reflow pass: same splitIndex,
-// same "still too tall" verdict, but findSplitPoint now finds nothing left
-// to remove (the text already fits), so the split makes no further progress
-// and reflow keeps re-"splitting" the same row into empty pieces forever.
-const CELL_BOX_SLACK = 16;
-
-// Splits one <tr> at availableBottomY into a kept row (mutated in place,
-// left behind) and a returned continuation row carrying whatever didn't fit.
-// Cells whose content fit entirely get an empty (but still editable) cell in
-// the continuation row, matching the reference behavior of short cells simply
-// not appearing again on the next page.
-function splitRowAtHeight(row, availableBottomY){
-  const cells = Array.from(row.children).filter(c => c.tagName === "TD" || c.tagName === "TH");
-  const contRow = document.createElement("tr");
-  cells.forEach(cell => {
-    const contCell = document.createElement(cell.tagName.toLowerCase());
-    Array.from(cell.attributes).forEach(attr => contCell.setAttribute(attr.name, attr.value));
-    const moved = extractCellContentBelow(cell, availableBottomY - CELL_BOX_SLACK);
-    if (moved && moved.hasChildNodes()) contCell.appendChild(moved);
-    if (!contCell.hasChildNodes()) contCell.innerHTML = "<br>";
-    if (!cell.hasChildNodes()) cell.innerHTML = "<br>";
-    contRow.appendChild(contCell);
-  });
-  return contRow;
-}
-
-// Attempts to split `table` (already laid out, currently overflowing its
-// page) so that as much of it as fits sits within availableHeight (px, from
-// the table's own top). Returns the continuation <table> to place on the
-// next page, or null if nothing useful could be split off (caller should
-// fall back to moving the whole table onward instead).
-function splitTableForOverflow(table, availableHeight){
-  if (table.querySelector("[rowspan]")) return null; // row-spanning cells make a mid-row split ambiguous -- not supported
-  const tbody = tableBody(table);
-  const rows = Array.from(tbody.children).filter(r => r.tagName === "TR");
-  if (!rows.length) return null;
-
-  const tableTop = table.getBoundingClientRect().top;
-  const availableBottomY = tableTop + availableHeight;
-  const MIN_ROW_ROOM = 24; // px -- roughly one line; below this a partial row isn't worth slicing
-
-  let splitIndex = -1;
-  for (let i = 0; i < rows.length; i++){
-    if (rows[i].getBoundingClientRect().bottom > availableBottomY + 0.5){ splitIndex = i; break; }
-  }
-  if (splitIndex === -1) return null; // the whole table actually fits
-
-  const rowTop = rows[splitIndex].getBoundingClientRect().top;
-  const remainingForRow = availableBottomY - rowTop;
-  const splitThisRow = remainingForRow >= MIN_ROW_ROOM;
-  if (splitIndex === 0 && !splitThisRow) return null; // nothing at all would fit on this page -- move the whole table instead
-
-  const continuation = table.cloneNode(false);
-  continuation.removeAttribute("id");
-  const contTbody = document.createElement("tbody");
-  continuation.appendChild(contTbody);
-  const colgroup = table.querySelector(":scope > colgroup");
-  if (colgroup) continuation.insertBefore(colgroup.cloneNode(true), contTbody);
-
-  for (let i = rows.length - 1; i > splitIndex; i--) contTbody.insertBefore(rows[i], contTbody.firstChild);
-  contTbody.insertBefore(splitThisRow ? splitRowAtHeight(rows[splitIndex], availableBottomY) : rows[splitIndex], contTbody.firstChild);
-
-  let groupId = table.getAttribute(TABLE_GROUP_ATTR);
-  if (!groupId){ groupId = "tg" + (++tableGroupCounter); table.setAttribute(TABLE_GROUP_ATTR, groupId); }
-  continuation.setAttribute(TABLE_GROUP_ATTR, groupId);
-  continuation.setAttribute(TABLE_CONT_ATTR, "true");
-  return continuation;
-}
-
-// Attempts to split `list` (a <ul> or <ol>, already laid out, currently
-// overflowing its page) so that as many of its leading <li> items as fit
-// sit within availableHeight (px, from the list's own top). Returns the
-// continuation list to place on the next page, or null if nothing useful
-// could be split off (caller should fall back to moving the whole list
-// onward instead). Unlike splitTableForOverflow, this never splits *inside*
-// a single <li> -- an item either fits whole or moves whole -- which is
-// enough to stop an entire list from jumping to the next page as one block
-// the moment it no longer fits, without the added complexity of a
-// text-level cut mid-item.
-function splitListForOverflow(list, availableHeight){
-  const items = Array.from(list.children).filter(c => c.tagName === "LI");
-  if (items.length < 2) return null; // nothing to usefully keep behind
-
-  const listTop = list.getBoundingClientRect().top;
-  const availableBottomY = listTop + availableHeight;
-
-  let splitIndex = -1;
-  for (let i = 0; i < items.length; i++){
-    if (items[i].getBoundingClientRect().bottom > availableBottomY + 0.5){ splitIndex = i; break; }
-  }
-  if (splitIndex <= 0) return null; // whole list fits, or not even the first item does -- move the whole list instead
-
-  const continuation = list.cloneNode(false);
-  continuation.removeAttribute("id");
-  for (let i = items.length - 1; i >= splitIndex; i--) continuation.insertBefore(items[i], continuation.firstChild);
-
-  // Keep numbering continuous across the split for an ordered list.
-  if (continuation.tagName === "OL"){
-    const startBefore = parseInt(list.getAttribute("start") || "1", 10);
-    continuation.setAttribute("start", String(startBefore + splitIndex));
-  }
-
-  let groupId = list.getAttribute(LIST_GROUP_ATTR);
-  if (!groupId){ groupId = "lg" + (++listGroupCounter); list.setAttribute(LIST_GROUP_ATTR, groupId); }
-  continuation.setAttribute(LIST_GROUP_ATTR, groupId);
-  continuation.setAttribute(LIST_CONT_ATTR, "true");
-  return continuation;
-}
-
-function reflowPagesNow(){
-  const container = getPagesContainer();
-  if (!container) return;
-  mergeSplitTables(container);
-  mergeSplitLists(container);
-  let pages = getPages();
-  if (!pages.length) return;
-
-  // Not unconditionally saving/restoring the caret around the reparenting
-  // below. A Selection Range's boundaries are (node, offset) pairs that
-  // track the node itself -- moving a node to a new parent via
-  // appendChild/insertBefore (as pages 1-2 below do) does not invalidate an
-  // existing Range/Selection pointing into it, and for almost every reflow
-  // the caret just silently ends up on whichever page the node now lives
-  // on, with no extra work needed. A previous version of this function
-  // re-applied the selection with sel.addRange() whenever anything moved --
-  // but the caret was almost never actually lost, so that call was pure
-  // redundancy nearly every time, and it's an expensive one: addRange()
-  // makes the browser re-run its scroll-selection-into-view logic. Since
-  // step 2 below (pulling content back from later pages) finds *something*
-  // to move on nearly every reflow of any multi-page document (almost no
-  // page is ever pixel-perfectly full), that redundant addRange() was
-  // firing on nearly every keystroke, including Enter -- which is what was
-  // actually forcing the scroll position to "jump", even while typing at
-  // the top of a page nowhere near the moved content.
-  //
-  // There is one real exception, though: pressing Enter at the very end of
-  // a page creates a new, empty block (<div><br></div>) and places the
-  // caret in it; when that exact node is then the one reflow moves to the
-  // next page (step 1, immediately below), Chrome does NOT keep the live
-  // Selection on it -- it silently collapses the selection back to the end
-  // of the node's old parent instead, leaving the caret stranded on the
-  // page the blank line just left, even though the blank line itself lands
-  // correctly on the next page. So: note the caret's (node, offset) now,
-  // and after reflow, only if the Selection no longer matches what was
-  // noted (i.e. the browser actually dropped it) put it back by node
-  // reference -- never unconditionally, so the common case above stays
-  // exactly as cheap as the comment above describes.
-  const sel = window.getSelection();
-  let savedSel = null;
-  if (sel && sel.rangeCount && container.contains(sel.anchorNode) && container.contains(sel.focusNode)){
-    savedSel = {
-      anchorNode: sel.anchorNode, anchorOffset: sel.anchorOffset,
-      focusNode: sel.focusNode, focusOffset: sel.focusOffset,
-    };
-  }
-
-  const MAX_ITER = 50000;
-  let iter = 0;
-
-  // 1. Push overflowing trailing content forward onto later pages. A table
-  // or list is allowed to be split even when it's the page's only child
-  // (splitting, unlike moving, can still make progress in that case).
-  const isSplittable = (el) => el && (el.tagName === "TABLE" || el.tagName === "UL" || el.tagName === "OL");
-  const splitForOverflow = (el, availableHeight) =>
-    el.tagName === "TABLE" ? splitTableForOverflow(el, availableHeight) : splitListForOverflow(el, availableHeight);
-  for (let i = 0; i < pages.length && iter < MAX_ITER; i++){
-    let page = pages[i];
-    while (iter < MAX_ITER && page.scrollHeight > page.clientHeight + 1 &&
-           (page.childNodes.length > 1 || isSplittable(page.lastChild))){
-      iter++;
-      const last = page.lastChild;
-      let next = pages[i + 1];
-      if (!next){
-        next = createPageElement();
-        container.appendChild(next);
-        pages.push(next);
-      }
-      if (isSplittable(last)){
-        const availableHeight = remainingPageHeight(page, last);
-        const continuation = availableHeight > 0 ? splitForOverflow(last, availableHeight) : null;
-        if (continuation){
-          next.insertBefore(continuation, next.firstChild);
-          continue;
-        }
-        if (page.childNodes.length === 1) break; // moving the sole child achieves nothing -- avoid spinning forever
-      }
-      next.insertBefore(last, next.firstChild);
-    }
-  }
-
-  // 2. Pull content back from later pages while there's spare room. A
-  // continuation table or list is left alone here -- mergeSplitTables /
-  // mergeSplitLists reassembles it on the next reflow pass, which is where
-  // it'll be re-split correctly.
-  //
-  // Repeated as full passes (bounded by page count) rather than run just
-  // once: a single left-to-right pass only ever looks one page ahead, so
-  // content that needs to hop forward through several pages in one go --
-  // e.g. after deleting most of a table that had spread across many pages --
-  // wouldn't fully compact until several *more* reflow calls each dragged it
-  // one page closer. Each pass can only make things more compact (it never
-  // undoes an earlier pair's pull within the same pass), so this converges
-  // in at most one pass per page.
-  const isContinuation = (el) =>
-    (el.tagName === "TABLE" && el.hasAttribute(TABLE_CONT_ATTR)) ||
-    ((el.tagName === "UL" || el.tagName === "OL") && el.hasAttribute(LIST_CONT_ATTR));
-  for (let pass = 0; pass < pages.length + 1 && iter < MAX_ITER; pass++){
-    let movedThisPass = false;
-    for (let i = 0; i < pages.length - 1 && iter < MAX_ITER; i++){
-      let page = pages[i];
-      let next = pages[i + 1];
-      while (iter < MAX_ITER && next && next.childNodes.length){
-        const first = next.firstChild;
-        if (isContinuation(first)) break;
-        page.appendChild(first);
-        iter++;
-        if (page.scrollHeight > page.clientHeight + 1){
-          if (isSplittable(first)){
-            const availableHeight = remainingPageHeight(page, first);
-            const continuation = availableHeight > 0 ? splitForOverflow(first, availableHeight) : null;
-            if (continuation){
-              next.insertBefore(continuation, next.firstChild);
-              movedThisPass = true;
-              continue;
-            }
-          }
-          // Didn't actually fit — put it back and stop trying for this page.
-          next.insertBefore(first, next.firstChild);
-          break;
-        }
-        movedThisPass = true;
-      }
-    }
-    if (!movedThisPass) break;
-  }
-
-  // 3. Drop now-empty trailing pages (always keep at least the first page).
-  pages = getPages();
-  for (let i = pages.length - 1; i > 0; i--){
-    const p = pages[i];
-    const onlyEmptyBr = p.childNodes.length === 1 && p.firstChild.nodeType === 1 && p.firstChild.tagName === "BR";
-    if (p.childNodes.length === 0 || onlyEmptyBr) p.remove(); else break;
-  }
-
-  // Only restore the caret if the browser actually dropped it somewhere
-  // between the note above and here (see the comment there) -- if it's
-  // still exactly where it was, this is a no-op, same as before.
-  if (savedSel && document.contains(savedSel.anchorNode) && document.contains(savedSel.focusNode)){
-    const stillIntact = sel.rangeCount > 0 &&
-      sel.anchorNode === savedSel.anchorNode && sel.anchorOffset === savedSel.anchorOffset &&
-      sel.focusNode === savedSel.focusNode && sel.focusOffset === savedSel.focusOffset;
-    if (!stillIntact){
-      try{
-        sel.setBaseAndExtent(savedSel.anchorNode, savedSel.anchorOffset, savedSel.focusNode, savedSel.focusOffset);
-      } catch(e){
-        // Offsets no longer valid (the node's own content changed shape) --
-        // leave the selection wherever the browser put it rather than throw.
-      }
-    }
-  }
-
-  renumberPages();
-  updateDocPlaceholder();
-}
-
-function updateDocPlaceholder(){
-  const pages = getPages();
-  const totalText = pages.map(p => p.textContent).join("").trim();
-  pages.forEach((p, i) => p.setAttribute("data-empty", (i === 0 && totalText.length === 0) ? "true" : "false"));
-}
-updateDocPlaceholder();
-getPagesContainer().addEventListener("input", () => {
-  updateDocPlaceholder();
-  schedulePageReflow();
+// ---- Document editor: TipTap/ProseMirror engine ----
+// Replaces the old hand-built contenteditable + execCommand editor and its
+// custom pagination/reflow engine with a real ProseMirror-based editor
+// (window.LawgptEditor, bundled from editor-src/editor-entry.js via
+// `npm run build:editor` -- see editor-bundle.js). The document is one
+// continuous flow; page breaks are explicit, manually-inserted markers (see
+// the PageBreak node and the "Insert Page Break" toolbar button below)
+// instead of live auto-reflow across fixed-size pages -- ProseMirror itself
+// owns caret/selection/Enter/Tab-in-list/Backspace-at-start behavior, so
+// none of the old editor's caret-restore, scroll-guard, or backspace-guard
+// hacks are needed any more.
+const docPageEl = document.getElementById("docPage");
+const docEditorMount = document.getElementById("docEditorMount");
+const docEditor = LawgptEditor.createEditor(docEditorMount, {
+  content: "<p></p>",
+  placeholder: "Start drafting…",
+  onUpdate: () => syncToolbarState(),
+  onSelectionUpdate: () => syncToolbarState(),
 });
 
-// ---- Toolbar wiring ----
-// After toggling a list (insertUnorderedList / insertOrderedList), Chrome and
-// other Chromium-based browsers collapse the caret to the very START of the
-// line that was just converted, instead of leaving it where the person had
-// it (almost always the end, mid-typing). That made the next keystrokes land
-// in the wrong place — e.g. typing after clicking the bullet button would
-// insert new text *before* what was already on the line.
-//
-// Fixing this by re-selecting the original DOM node doesn't work: execCommand
-// detaches/replaces the text node when it wraps the line in <li>. Instead we
-// record the caret's plain character offset within its enclosing line
-// *before* the command runs, then after the command, walk the corresponding
-// distance back in from the start of whatever line the browser landed the
-// caret in (the same line's text content is preserved, just re-wrapped).
-const LINE_CONTAINER_TAGS = ["DIV", "P", "LI", "BLOCKQUOTE", "TD", "TH"];
-
-function findLineContainer(node, root){
-  let el = node && node.nodeType === Node.TEXT_NODE ? node.parentNode : node;
-  while (el && el !== root && !LINE_CONTAINER_TAGS.includes(el.nodeName)) el = el.parentNode;
-  return el || root;
-}
-
-// Character offset of (node, offset) counted from the start of its line
-// container's text content.
-function lineCharOffset(root, node, offset){
-  const container = findLineContainer(node, root);
-  let total = 0;
-  const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT, null);
-  let n;
-  while ((n = walker.nextNode())){
-    if (n === node) return total + offset;
-    total += n.textContent.length;
-  }
-  return total;
-}
-
-// Inverse of lineCharOffset: finds the (node, offset) that sits `target`
-// characters into `container`'s text content.
-function nodeAtCharOffset(container, target){
-  const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT, null);
-  let remaining = target;
-  let last = null, n;
-  while ((n = walker.nextNode())){
-    last = n;
-    if (remaining <= n.textContent.length) return { node: n, offset: Math.max(0, remaining) };
-    remaining -= n.textContent.length;
-  }
-  return last ? { node: last, offset: last.textContent.length } : { node: container, offset: 0 };
-}
-
-function restoreCaretAfterListToggle(preAnchorNode, preAnchorOffset, preFocusNode, preFocusOffset, editor){
-  if (!preAnchorNode) return;
-  const anchorChars = lineCharOffset(editor, preAnchorNode, preAnchorOffset);
-  const focusChars = preFocusNode ? lineCharOffset(editor, preFocusNode, preFocusOffset) : anchorChars;
-
-  const sel = window.getSelection();
-  if (!sel.anchorNode || !editor.contains(sel.anchorNode)) return;
-  // The line the browser's default behavior collapsed into — same text
-  // content as before, just now wrapped in a <li>.
-  const landedContainer = findLineContainer(sel.anchorNode, editor);
-
-  const a = nodeAtCharOffset(landedContainer, anchorChars);
-  const f = nodeAtCharOffset(landedContainer, focusChars);
-  const range = document.createRange();
-  range.setStart(a.node, a.offset);
-  range.setEnd(f.node, f.offset);
-  sel.removeAllRanges();
-  sel.addRange(range);
-}
-
+// ---- Generic toolbar command wiring ----
+// Maps each toolbar button's data-cmd to the equivalent TipTap chain call.
+const TOOLBAR_COMMANDS = {
+  bold: e => e.chain().focus().toggleBold().run(),
+  italic: e => e.chain().focus().toggleItalic().run(),
+  underline: e => e.chain().focus().toggleUnderline().run(),
+  justifyLeft: e => e.chain().focus().setTextAlign("left").run(),
+  justifyCenter: e => e.chain().focus().setTextAlign("center").run(),
+  justifyRight: e => e.chain().focus().setTextAlign("right").run(),
+  justifyFull: e => e.chain().focus().setTextAlign("justify").run(),
+  insertUnorderedList: e => e.chain().focus().toggleBulletList().run(),
+  insertOrderedList: e => e.chain().focus().toggleOrderedList().run(),
+  outdent: e => e.chain().focus().liftListItem("listItem").run(),
+  indent: e => e.chain().focus().sinkListItem("listItem").run(),
+  superscript: e => e.chain().focus().unsetSubscript().toggleSuperscript().run(),
+  subscript: e => e.chain().focus().unsetSuperscript().toggleSubscript().run(),
+};
 document.querySelectorAll(".rt-btn[data-cmd]").forEach(btn => {
   btn.addEventListener("mousedown", (e) => e.preventDefault()); // keep selection focused
   btn.addEventListener("click", () => {
-    const cmd = btn.getAttribute("data-cmd");
-    const editor = getFocusedPage();
-    getPagesContainer().focus();
-    // If the caret isn't already inside the editor (e.g. this is the first
-    // click after switching to the Draft & Compile tab), execCommand has
-    // nowhere to apply and silently no-ops. Place the caret at the end of
-    // the document in that case so the command always has a target.
-    const sel = window.getSelection();
-    if (!sel.anchorNode || !editor.contains(sel.anchorNode)){
-      const range = document.createRange();
-      range.selectNodeContents(editor);
-      range.collapse(false);
-      sel.removeAllRanges();
-      sel.addRange(range);
-    }
-
-    const preAnchorNode = sel.anchorNode, preAnchorOffset = sel.anchorOffset;
-    const preFocusNode = sel.focusNode, preFocusOffset = sel.focusOffset;
-
-    document.execCommand(cmd, false, null);
-
-    if (cmd === "insertUnorderedList" || cmd === "insertOrderedList"){
-      restoreCaretAfterListToggle(preAnchorNode, preAnchorOffset, preFocusNode, preFocusOffset, editor);
-    }
+    const run = TOOLBAR_COMMANDS[btn.getAttribute("data-cmd")];
+    if (run) run(docEditor);
     syncToolbarState();
-    schedulePageReflow();
   });
 });
 
+document.getElementById("btnPageBreak").addEventListener("mousedown", (e) => e.preventDefault());
+document.getElementById("btnPageBreak").addEventListener("click", () => {
+  docEditor.chain().focus().insertPageBreak().run();
+});
+
+// ---- Font family / size / color ----
 document.getElementById("fontFamilySelect").addEventListener("change", (e) => {
-  document.execCommand("fontName", false, e.target.value);
-  getPagesContainer().focus();
-  schedulePageReflow();
+  docEditor.chain().focus().setFontFamily(e.target.value).run();
 });
 
-// execCommand fontSize only accepts a 1-7 scale; use the classic swap-and-restyle
-// trick to apply an arbitrary pixel size to the current selection instead.
 function applyFontSize(px){
-  getPagesContainer().focus();
-  document.execCommand("fontSize", false, "7");
-  // Scoped to the whole container, not just one page, since a selection can
-  // now span multiple pages.
-  getPagesContainer().querySelectorAll('font[size="7"]').forEach(el => {
-    el.removeAttribute("size");
-    el.style.fontSize = px + "px";
-  });
-  schedulePageReflow();
+  docEditor.chain().focus().setFontSize(px + "px").run();
 }
-
 const fontSizeInput = document.getElementById("fontSizeInput");
-fontSizeInput.addEventListener("mousedown", () => {
-  getPagesContainer().focus();
-});
+fontSizeInput.addEventListener("mousedown", () => docEditor.commands.focus());
 fontSizeInput.addEventListener("change", () => {
   const px = Math.min(400, Math.max(1, parseInt(fontSizeInput.value, 10) || 11));
   fontSizeInput.value = px;
@@ -12176,7 +11654,6 @@ fontSizeInput.addEventListener("keydown", (e) => {
     fontSizeInput.dispatchEvent(new Event("change"));
   }
 });
-
 document.getElementById("btnShrinkFont").addEventListener("mousedown", (e) => e.preventDefault());
 document.getElementById("btnShrinkFont").addEventListener("click", () => {
   const px = Math.max(1, (parseInt(fontSizeInput.value, 10) || 11) - 1);
@@ -12190,303 +11667,54 @@ document.getElementById("btnGrowFont").addEventListener("click", () => {
   applyFontSize(px);
 });
 
-// ---- Document zoom (view-only scale, like Word's zoom slider — doesn't
-// affect the actual font sizes stored in the document, only how large the
-// page is rendered on screen). Uses the CSS `zoom` property rather than
-// `transform: scale` so the page's own layout/scrollbars reflow correctly
-// at any zoom level instead of just visually stretching.
-const docPagesEl = document.getElementById("docPages");
+const fontColorInput = document.getElementById("fontColorInput");
+fontColorInput.addEventListener("input", (e) => {
+  docEditor.chain().focus().setColor(e.target.value).run();
+  document.getElementById("fontColorSwatch").style.background = e.target.value;
+});
+
+// ---- Document zoom (view-only scale, like Word's zoom slider) ----
 const zoomSlider = document.getElementById("zoomSlider");
 const zoomValue = document.getElementById("zoomValue");
 const ZOOM_KEY = "lawgpt.zoom";
 let zoomPct = parseInt(localStorage.getItem(ZOOM_KEY), 10) || 100;
-
 function applyZoom(pct){
   zoomPct = Math.min(200, Math.max(50, pct));
-  docPagesEl.style.zoom = (zoomPct / 100);
+  docPageEl.style.zoom = (zoomPct / 100);
   zoomSlider.value = zoomPct;
   zoomValue.textContent = zoomPct + "%";
   try{ localStorage.setItem(ZOOM_KEY, zoomPct); } catch(e){ /* non-critical UI preference */ }
 }
 applyZoom(zoomPct);
-
 zoomSlider.addEventListener("input", () => applyZoom(parseInt(zoomSlider.value, 10)));
 document.getElementById("zoomOutBtn").addEventListener("click", () => applyZoom(zoomPct - 10));
 document.getElementById("zoomInBtn").addEventListener("click", () => applyZoom(zoomPct + 10));
 zoomValue.addEventListener("click", () => applyZoom(100));
-
 document.getElementById("editorView").addEventListener("wheel", (e) => {
   if (!e.ctrlKey) return;
   e.preventDefault();
   applyZoom(zoomPct + (e.deltaY < 0 ? 10 : -10));
 }, { passive: false });
 
-// Reads the rendered font size (in px) at the caret or start of the current
-// selection, so the toolbar's size field always reflects the text you're
-// actually in/highlighting rather than a stale value from the last edit.
-function getCurrentFontSizePx(){
-  const editor = getPagesContainer();
-  const sel = window.getSelection();
-  if (!sel || sel.rangeCount === 0) return null;
-  let node = sel.anchorNode;
-  if (!node || !editor.contains(node)) return null;
-  if (node.nodeType === Node.TEXT_NODE) node = node.parentNode;
-  if (!(node instanceof Element)) return null;
-  const px = parseFloat(window.getComputedStyle(node).fontSize);
-  return Number.isFinite(px) ? Math.round(px) : null;
-}
-
-function syncFontSizeDisplay(){
-  const px = getCurrentFontSizePx();
-  if (px != null && document.activeElement !== fontSizeInput) fontSizeInput.value = px;
-}
-
+// ---- Toolbar active-state sync ----
 function syncToolbarState(){
-  try{
-    document.getElementById("btnBold").classList.toggle("active", document.queryCommandState("bold"));
-    document.getElementById("btnItalic").classList.toggle("active", document.queryCommandState("italic"));
-    document.getElementById("btnUnderline").classList.toggle("active", document.queryCommandState("underline"));
-    document.getElementById("btnAlignLeft").classList.toggle("active", document.queryCommandState("justifyLeft"));
-    document.getElementById("btnAlignCenter").classList.toggle("active", document.queryCommandState("justifyCenter"));
-    document.getElementById("btnAlignRight").classList.toggle("active", document.queryCommandState("justifyRight"));
-    document.getElementById("btnAlignJustify").classList.toggle("active", document.queryCommandState("justifyFull"));
-    document.getElementById("btnSuperscript").classList.toggle("active", document.queryCommandState("superscript"));
-    document.getElementById("btnSubscript").classList.toggle("active", document.queryCommandState("subscript"));
-    document.getElementById("btnBulletList").classList.toggle("active", document.queryCommandState("insertUnorderedList"));
-    document.getElementById("btnNumberList").classList.toggle("active", document.queryCommandState("insertOrderedList"));
-  } catch(e){ /* queryCommandState can throw in some browsers; ignore */ }
-  syncFontSizeDisplay();
-}
-getPagesContainer().addEventListener("keyup", syncToolbarState);
-getPagesContainer().addEventListener("mouseup", syncToolbarState);
-document.addEventListener("selectionchange", () => {
-  if (getPagesContainer().contains(document.activeElement)){
-    syncFontSizeDisplay();
-  }
-});
-
-// ---- Word-style list shortcuts: Tab/Shift+Tab nests/un-nests a bullet
-// inside another bullet, and typing "- " at the start of a blank line turns
-// it into a bulleted list, the same autoformat Word applies. ----
-function textBeforeCaretInBlock(range, block){
-  const pre = document.createRange();
-  pre.selectNodeContents(block);
-  pre.setEnd(range.startContainer, range.startOffset);
-  return pre.toString();
-}
-
-// ---- Enter: take it over completely instead of reacting to it ----
-// Word never scrolls the view when the cursor's new position is going to be
-// visible anyway -- it only scrolls when the cursor would otherwise land
-// off-screen. Left alone, the browser's native scroll-into-view for a
-// freshly-created line can be far more aggressive than that.
-//
-// Two earlier versions of this tried to let the native Enter action run and
-// then react to whatever scroll it caused: first with a single
-// requestAnimationFrame check, then with a live 'scroll' listener kept
-// active for a window afterward to also catch a scroll that settles across
-// more than one step. Both caused real problems of their own, because both
-// are racing the browser's own in-flight handling of the very same
-// keystroke rather than avoiding that race: a visible down-then-up flash
-// (the correction only ever runs after the wrong position has already been
-// painted at least once), and -- worse -- the first Enter press
-// intermittently appearing to do nothing at all (repeatedly overwriting
-// scrollTop from a 'scroll' handler while Chrome was apparently still in
-// the middle of its own multi-step handling of that same keystroke left its
-// caret/selection bookkeeping confused until a second, unrelated Enter
-// press forced it to resolve).
-//
-// This version sidesteps the race instead of trying to win it: it prevents
-// the key's default action and performs the paragraph break itself, via
-// execCommand("insertParagraph") -- the exact editing command Chrome's own
-// native Enter handling invokes for a contenteditable region, so taking it
-// over this way changes nothing about the resulting content or formatting,
-// only who calls it and what runs immediately afterward. Because our call
-// completes synchronously, we get one chance to fix up the scroll position
-// in the very same synchronous turn, before the browser has any opportunity
-// to paint an in-between frame -- and a single requestAnimationFrame check
-// afterward as a backstop, in case the browser's own adjustment is instead
-// deferred to the next frame rather than happening inline.
-function maybeRevertUnneededScroll(scroller, beforeTop){
-  const afterTop = scroller.scrollTop;
-  if (afterTop === beforeTop) return;
-  const sel2 = window.getSelection();
-  if (!sel2 || !sel2.rangeCount) return;
-  const caretRange = sel2.getRangeAt(0);
-  // A collapsed Range positioned in a freshly-created empty block (e.g.
-  // Enter at the end of a paragraph produces <p><br></p>, with nothing
-  // typed into it yet) has no text box to report: both getClientRects()
-  // and getBoundingClientRect() return an all-zero rect. That's exactly
-  // the common case here -- Enter starting a new line -- so falling back
-  // to the *block element's* rect (which does have real height, from the
-  // line box the browser renders for it) rather than bailing out is what
-  // makes this correction actually fire on a plain Enter instead of
-  // silently no-opping every time.
-  let caretRect = caretRange.getClientRects()[0] || caretRange.getBoundingClientRect();
-  if (!caretRect || caretRect.height === 0){
-    const node = caretRange.startContainer;
-    const el = node.nodeType === Node.TEXT_NODE ? node.parentElement : node;
-    if (el && typeof el.getBoundingClientRect === "function") caretRect = el.getBoundingClientRect();
-  }
-  if (!caretRect || caretRect.height === 0) return;
-  const wrapRect = scroller.getBoundingClientRect();
-  // caretRect is measured post-scroll. Scrolling scrollTop back down to
-  // beforeTop moves the viewport back up by this same delta, which moves
-  // everything's on-screen position DOWN by delta (not up) -- so
-  // reverting adds delta to the caret's current viewport position, it
-  // doesn't subtract it.
-  const delta = afterTop - beforeTop;
-  const wouldBeTop = caretRect.top + delta;
-  const wouldBeBottom = caretRect.bottom + delta;
-  if (wouldBeTop >= wrapRect.top && wouldBeBottom <= wrapRect.bottom){
-    scroller.scrollTop = beforeTop;
+  document.getElementById("btnBold").classList.toggle("active", docEditor.isActive("bold"));
+  document.getElementById("btnItalic").classList.toggle("active", docEditor.isActive("italic"));
+  document.getElementById("btnUnderline").classList.toggle("active", docEditor.isActive("underline"));
+  document.getElementById("btnAlignLeft").classList.toggle("active", docEditor.isActive({ textAlign: "left" }));
+  document.getElementById("btnAlignCenter").classList.toggle("active", docEditor.isActive({ textAlign: "center" }));
+  document.getElementById("btnAlignRight").classList.toggle("active", docEditor.isActive({ textAlign: "right" }));
+  document.getElementById("btnAlignJustify").classList.toggle("active", docEditor.isActive({ textAlign: "justify" }));
+  document.getElementById("btnSuperscript").classList.toggle("active", docEditor.isActive("superscript"));
+  document.getElementById("btnSubscript").classList.toggle("active", docEditor.isActive("subscript"));
+  document.getElementById("btnBulletList").classList.toggle("active", docEditor.isActive("bulletList"));
+  document.getElementById("btnNumberList").classList.toggle("active", docEditor.isActive("orderedList"));
+  const attrs = docEditor.getAttributes("textStyle");
+  if (attrs && attrs.fontSize && document.activeElement !== fontSizeInput){
+    const px = parseInt(attrs.fontSize, 10);
+    if (Number.isFinite(px)) fontSizeInput.value = px;
   }
 }
-
-function insertParagraphWithScrollGuard(shiftKey){
-  const scroller = document.querySelector(".doc-page-wrap");
-  const beforeTop = scroller ? scroller.scrollTop : null;
-
-  // Shift+Enter is a soft line break within the same block (<br>); plain
-  // Enter splits into a new block. Native Enter handling picks between
-  // insertLineBreak and insertParagraph the same way -- preserve that
-  // distinction now that we're invoking the command ourselves.
-  document.execCommand(shiftKey ? "insertLineBreak" : "insertParagraph", false, null);
-
-  // Deliberately a single check, deferred to the next frame -- NOT a
-  // synchronous check right after execCommand, and NOT a live 'scroll'
-  // listener kept around for a window afterward (both tried before this).
-  // Both of those reset scrollTop very soon after -- in the same tick, or
-  // as an immediate reaction to the browser's own in-flight scroll -- and
-  // both caused Enter to intermittently need a second press to actually do
-  // anything (the DOM edit was almost certainly still happening; forcing a
-  // synchronous layout via scrollTop right on top of the browser's own
-  // still-settling handling of that same edit left it visually/behaviorally
-  // stuck until an unrelated second keystroke resolved it). Waiting a full
-  // frame before touching scrollTop at all avoids racing that in-flight
-  // state in the first place.
-  if (scroller && beforeTop !== null){
-    requestAnimationFrame(() => maybeRevertUnneededScroll(scroller, beforeTop));
-  }
-}
-
-getPagesContainer().addEventListener("keydown", (e) => {
-  const sel = window.getSelection();
-  if (!sel || !sel.rangeCount) return;
-
-  // Tab always indents (Shift+Tab outdents), regardless of whether the
-  // caret merely sits on a line or a whole block of text is selected --
-  // handled ahead of the isCollapsed guard below since a multi-line
-  // selection is exactly the "highlight a block, press Tab" case this is
-  // for. Inside a list item execCommand("indent") nests/un-nests the bullet
-  // the way Word does; on a plain line (or a selection spanning several) it
-  // wraps/unwraps the block(s) in a <blockquote>, which .doc-page styles
-  // with no border or padding (see the blockquote CSS above) so it reads as
-  // a plain paragraph indent rather than a quote. Previously this only ran
-  // inside a list item, so Tab anywhere else fell through to the browser's
-  // native contenteditable default of moving focus to the next element on
-  // the page instead of indenting.
-  if (e.key === "Tab"){
-    e.preventDefault();
-    document.execCommand(e.shiftKey ? "outdent" : "indent", false, null);
-    syncToolbarState();
-    schedulePageReflow();
-    return;
-  }
-
-  if (!sel.isCollapsed) return;
-  const range = sel.getRangeAt(0);
-
-  if (e.key === "Enter"){
-    e.preventDefault();
-    insertParagraphWithScrollGuard(e.shiftKey);
-    return;
-  }
-
-  if (e.key === " "){
-    // "- " at the very start of a line (nothing else typed before it in this
-    // block) converts the current line into a bulleted list, mirroring
-    // Word's autoformat. Only fires on a plain text node so it can't
-    // misfire mid-word or inside existing markup.
-    const node = range.startContainer;
-    if (node.nodeType !== Node.TEXT_NODE) return;
-    if (textBeforeCaretInBlock(range, getFocusedPage()) !== "-") return;
-    e.preventDefault();
-    node.textContent = node.textContent.slice(0, range.startOffset - 1) + node.textContent.slice(range.startOffset);
-    const caret = document.createRange();
-    caret.setStart(node, range.startOffset - 1);
-    caret.collapse(true);
-    sel.removeAllRanges();
-    sel.addRange(caret);
-    document.execCommand("insertUnorderedList", false, null);
-    syncToolbarState();
-    schedulePageReflow();
-    return;
-  }
-
-  if (e.key === "Backspace"){
-    // Guards against a real browser quirk, not our own pagination code:
-    // .doc-page divs are plain block-level children of the single
-    // #docPages editing host (see the comment above getFocusedPage), not
-    // separate editing roots the browser specially protects. When the
-    // caret is at the absolute start of the document -- nothing at all
-    // before it, not even an empty paragraph -- and Backspace runs its
-    // default action, the browser tries to merge the current block
-    // backward into "whatever precedes it"; finding nothing, it can just
-    // delete the enclosing block itself, which for us means the entire
-    // first .doc-page div (border, shadow, "Page 1" footer and all)
-    // vanishes. Word does nothing when you backspace at the very start of
-    // a document, so match that: block it outright rather than letting
-    // the browser improvise. Backspacing at the start of page 2+ is left
-    // alone -- that's a normal cross-page merge, not this bug.
-    const node = range.startContainer;
-    const startEl = node.nodeType === Node.TEXT_NODE ? node.parentElement : node;
-    const page = startEl && startEl.closest && startEl.closest(".doc-page");
-    if (page && getPages()[0] === page && isCollapsedAtPageStart(range, page)){
-      e.preventDefault();
-    }
-  }
-});
-
-// True if `range` (collapsed) sits at the very first possible caret
-// position inside `page` -- offset 0, and no earlier sibling at any level
-// between the caret and the page itself. Content-type-agnostic (works the
-// same for text, a leading <br>, an empty <p>, a list, etc.) since it just
-// walks the DOM structure rather than inspecting text content.
-function isCollapsedAtPageStart(range, page){
-  if (range.startOffset !== 0) return false;
-  let node = range.startContainer;
-  while (node && node !== page){
-    if (node.previousSibling) return false;
-    node = node.parentNode;
-  }
-  return node === page;
-}
-
-// ---- Font color ----
-const fontColorInput = document.getElementById("fontColorInput");
-let savedSelectionRange = null;
-getPagesContainer().addEventListener("mouseup", () => { savedSelectionRange = grabSelection(); });
-getPagesContainer().addEventListener("keyup", () => { savedSelectionRange = grabSelection(); });
-function grabSelection(){
-  const sel = window.getSelection();
-  if (sel && sel.rangeCount > 0){
-    const r = sel.getRangeAt(0);
-    if (getPagesContainer().contains(r.commonAncestorContainer)) return r.cloneRange();
-  }
-  return savedSelectionRange;
-}
-fontColorInput.addEventListener("input", (e) => {
-  getPagesContainer().focus();
-  if (savedSelectionRange){
-    const sel = window.getSelection();
-    sel.removeAllRanges();
-    sel.addRange(savedSelectionRange);
-  }
-  document.execCommand("foreColor", false, e.target.value);
-  document.getElementById("fontColorSwatch").style.background = e.target.value;
-  savedSelectionRange = grabSelection();
-});
 
 // ---- Insert table ----
 const tablePopover = document.getElementById("tablePopover");
@@ -12519,19 +11747,7 @@ document.addEventListener("click", (e) => {
   }
 });
 function insertTable(rows, cols){
-  getPagesContainer().focus();
-  let html = '<table><tbody>';
-  for (let r = 0; r < rows; r++){
-    html += '<tr>';
-    for (let c = 0; c < cols; c++){
-      html += '<td>&nbsp;</td>';
-    }
-    html += '</tr>';
-  }
-  html += '</tbody></table><p><br></p>';
-  document.execCommand("insertHTML", false, html);
-  updateDocPlaceholder();
-  schedulePageReflow();
+  docEditor.chain().focus().insertTable({ rows, cols, withHeaderRow: true }).run();
 }
 
 // ---- Word-style hover grid table picker ----
@@ -12559,7 +11775,7 @@ function highlightTableGrid(rows, cols){
     const r = parseInt(cell.dataset.row, 10), c = parseInt(cell.dataset.col, 10);
     cell.classList.toggle("hover", r <= rows && c <= cols);
   });
-  tableGridLabel.textContent = rows + " \u00d7 " + cols + " Table";
+  tableGridLabel.textContent = rows + " × " + cols + " Table";
 }
 tableGridPicker.addEventListener("mouseleave", () => {
   Array.from(tableGridPicker.children).forEach(cell => cell.classList.remove("hover"));
@@ -12583,13 +11799,11 @@ try{
 
 function setMargins(inches){
   currentMargins = inches;
-  const el = getPagesContainer();
-  el.style.setProperty("--page-margin-top", (inches.top * PPI) + "px");
-  el.style.setProperty("--page-margin-bottom", (inches.bottom * PPI) + "px");
-  el.style.setProperty("--page-margin-left", (inches.left * PPI) + "px");
-  el.style.setProperty("--page-margin-right", (inches.right * PPI) + "px");
+  docPageEl.style.setProperty("--page-margin-top", (inches.top * PPI) + "px");
+  docPageEl.style.setProperty("--page-margin-bottom", (inches.bottom * PPI) + "px");
+  docPageEl.style.setProperty("--page-margin-left", (inches.left * PPI) + "px");
+  docPageEl.style.setProperty("--page-margin-right", (inches.right * PPI) + "px");
   try{ localStorage.setItem(MARGINS_KEY, JSON.stringify(inches)); } catch(e){ /* non-critical UI preference */ }
-  schedulePageReflow();
 }
 setMargins(currentMargins);
 
@@ -12655,8 +11869,8 @@ document.addEventListener("click", (e) => {
 
 // ---- Table row/column context menu ----
 // Right-clicking inside a table cell opens a Word-style context menu with
-// insert/delete row and column actions, instead of showing buttons whenever
-// the cell is simply clicked.
+// insert/delete row and column actions (now backed by @tiptap/extension-
+// table's own commands instead of hand-rolled DOM manipulation).
 const tableCtxMenu = document.getElementById("tableCtxMenu");
 let activeTableCell = null;
 
@@ -12677,7 +11891,6 @@ function hideTableCtxMenu(){
 function showTableCtxMenu(cell, x, y){
   activeTableCell = cell;
   tableCtxMenu.classList.add("show");
-  // Position within the viewport so the menu never renders off-screen.
   const menuRect = tableCtxMenu.getBoundingClientRect();
   const left = Math.min(x, window.innerWidth - menuRect.width - 8);
   const top = Math.min(y, window.innerHeight - menuRect.height - 8);
@@ -12685,20 +11898,16 @@ function showTableCtxMenu(cell, x, y){
   tableCtxMenu.style.top = Math.max(8, top) + "px";
 }
 
-getPagesContainer().addEventListener("contextmenu", (e) => {
+docEditorMount.addEventListener("contextmenu", (e) => {
   const cell = findEnclosingCell(e.target);
-  if (!cell) { hideTableCtxMenu(); return; }
+  if (!cell){ hideTableCtxMenu(); return; }
   e.preventDefault();
-  // Place the caret where the person right-clicked so row/column actions
-  // apply to the intended cell.
-  const range = document.caretRangeFromPoint
-    ? document.caretRangeFromPoint(e.clientX, e.clientY)
-    : null;
-  if (range){
-    const sel = window.getSelection();
-    sel.removeAllRanges();
-    sel.addRange(range);
-  }
+  // Move the ProseMirror selection into the clicked cell so the row/column
+  // commands below (which act on the current selection) apply to it.
+  try{
+    const pos = docEditor.view.posAtDOM(cell, 0);
+    docEditor.chain().setTextSelection(pos).run();
+  } catch(err){ /* cell not resolvable to a doc position -- menu still opens */ }
   showTableCtxMenu(cell, e.clientX, e.clientY);
 });
 document.addEventListener("click", (e) => {
@@ -12708,150 +11917,19 @@ document.addEventListener("click", (e) => {
 document.addEventListener("scroll", hideTableCtxMenu, true);
 window.addEventListener("resize", hideTableCtxMenu);
 
-function tableCellsInRow(row){
-  return Array.from(row.children).filter(c => c.tagName === "TD" || c.tagName === "TH");
-}
-function tableAllRows(table){
-  return Array.from(table.querySelectorAll(":scope > tbody > tr, :scope > tr, :scope > thead > tr"));
-}
-function tableCellIndex(cell){
-  return tableCellsInRow(cell.parentElement).indexOf(cell);
-}
-function insertTableColumn(cell, after){
-  const table = cell.closest("table");
-  if (!table) return;
-  const idx = tableCellIndex(cell);
-  tableAllRows(table).forEach(row => {
-    const cells = tableCellsInRow(row);
-    const ref = cells[idx];
-    if (!ref) return;
-    const newCell = document.createElement(ref.tagName === "TH" ? "th" : "td");
-    newCell.innerHTML = "&nbsp;";
-    if (after) ref.after(newCell); else ref.before(newCell);
-  });
-  schedulePageReflow();
-}
-function deleteTableColumn(cell){
-  const table = cell.closest("table");
-  if (!table) return;
-  const idx = tableCellIndex(cell);
-  const rows = tableAllRows(table);
-  const totalCols = Math.max(0, ...rows.map(r => tableCellsInRow(r).length));
-  if (totalCols <= 1){ deleteTableEl(table); return; }
-  rows.forEach(row => {
-    const cells = tableCellsInRow(row);
-    if (cells[idx]) cells[idx].remove();
-  });
-  hideTableCtxMenu();
-  schedulePageReflow();
-}
-function insertTableRow(cell, after){
-  const row = cell.parentElement;
-  const cellsInRow = tableCellsInRow(row);
-  const newRow = document.createElement("tr");
-  cellsInRow.forEach(c => {
-    const newCell = document.createElement(c.tagName.toLowerCase());
-    newCell.innerHTML = "&nbsp;";
-    newRow.appendChild(newCell);
-  });
-  if (after) row.after(newRow); else row.before(newRow);
-  schedulePageReflow();
-}
-function deleteTableRow(cell){
-  const table = cell.closest("table");
-  const rows = table ? tableAllRows(table) : [];
-  if (rows.length <= 1){ deleteTableEl(table); return; }
-  cell.parentElement.remove();
-  hideTableCtxMenu();
-  schedulePageReflow();
-}
-function deleteTableEl(table){
-  if (table) table.remove();
-  hideTableCtxMenu();
-  schedulePageReflow();
-}
-
-// ---- Paste: tables in, tables out ----
-// Copying already works with no code of ours involved: selecting a table
-// (or a range of its cells) and pressing Ctrl+C puts real <table> markup on
-// the clipboard, because that's just how a browser serializes a DOM
-// selection -- the browser's default paste then reconstructs a real table
-// from it. The one case the *default* paste gets wrong for a document editor
-// is pasting table content while the caret is already inside another table:
-// left alone, the browser just inserts the pasted <table> as a new table
-// nested inside whatever cell the caret happens to be in. This handler
-// intercepts that one case and instead merges the pasted grid's cells into
-// the destination table starting at the target cell -- growing rows/columns
-// as needed -- the same "paste values into the grid" behavior Excel/Sheets
-// use. Every other paste (no table on the clipboard, or pasting outside of
-// a table) is left to behave like a normal rich-text/plain-text paste.
-function pasteMergeIntoTable(targetCell, sourceTable){
-  const destTable = targetCell.closest("table");
-  const startRowIndex = tableAllRows(destTable).indexOf(targetCell.parentElement);
-  const startColIndex = tableCellIndex(targetCell);
-  const srcRows = tableAllRows(sourceTable);
-
-  srcRows.forEach((srcRow, r) => {
-    const destRowIndex = startRowIndex + r;
-    while (tableAllRows(destTable).length <= destRowIndex){
-      const rows = tableAllRows(destTable);
-      insertTableRow(rows[rows.length - 1].lastElementChild, true);
-    }
-    const destRow = tableAllRows(destTable)[destRowIndex];
-    tableCellsInRow(srcRow).forEach((srcCell, c) => {
-      const destColIndex = startColIndex + c;
-      while (tableCellsInRow(destRow).length <= destColIndex){
-        const cells = tableCellsInRow(destRow);
-        insertTableColumn(cells[cells.length - 1], true);
-      }
-      tableCellsInRow(destRow)[destColIndex].innerHTML = srcCell.innerHTML || "<br>";
-    });
-  });
-}
-
-getPagesContainer().addEventListener("paste", (e) => {
-  e.preventDefault();
-  const html = e.clipboardData ? e.clipboardData.getData("text/html") : "";
-  const text = e.clipboardData ? e.clipboardData.getData("text/plain") : "";
-
-  if (html){
-    const parsed = document.createElement("div");
-    parsed.innerHTML = html;
-    const sourceTable = parsed.querySelector("table");
-    const sel = window.getSelection();
-    const targetCell = sel && sel.rangeCount ? findEnclosingCell(sel.getRangeAt(0).startContainer) : null;
-
-    // Only treat this as a "table into table" paste when the clipboard's own
-    // content is essentially just the table (i.e. it really was copied from
-    // a table selection) -- a table that happens to appear somewhere inside
-    // a larger pasted document should still be inserted as its own new
-    // table, not spliced into whatever cell the caret is in.
-    const isPastingATable = sourceTable &&
-      parsed.textContent.trim().length === sourceTable.textContent.trim().length;
-
-    if (targetCell && isPastingATable){
-      pasteMergeIntoTable(targetCell, sourceTable);
-    } else {
-      document.execCommand("insertHTML", false, html);
-    }
-  } else if (text){
-    document.execCommand("insertText", false, text);
-  }
-  updateDocPlaceholder();
-  schedulePageReflow();
-});
 tableCtxMenu.addEventListener("mousedown", (e) => e.preventDefault());
 tableCtxMenu.addEventListener("click", (e) => {
   const btn = e.target.closest("button[data-taction]");
   if (!btn || !activeTableCell) return;
   const action = btn.getAttribute("data-taction");
-  if (action === "insertColBefore") insertTableColumn(activeTableCell, false);
-  else if (action === "insertColAfter") insertTableColumn(activeTableCell, true);
-  else if (action === "deleteCol") deleteTableColumn(activeTableCell);
-  else if (action === "insertRowBefore") insertTableRow(activeTableCell, false);
-  else if (action === "insertRowAfter") insertTableRow(activeTableCell, true);
-  else if (action === "deleteRow") deleteTableRow(activeTableCell);
-  else if (action === "deleteTable") deleteTableEl(activeTableCell.closest("table"));
+  const chain = docEditor.chain().focus();
+  if (action === "insertColBefore") chain.addColumnBefore().run();
+  else if (action === "insertColAfter") chain.addColumnAfter().run();
+  else if (action === "deleteCol") chain.deleteColumn().run();
+  else if (action === "insertRowBefore") chain.addRowBefore().run();
+  else if (action === "insertRowAfter") chain.addRowAfter().run();
+  else if (action === "deleteRow") chain.deleteRow().run();
+  else if (action === "deleteTable") chain.deleteTable().run();
   hideTableCtxMenu();
 });
 
@@ -12860,14 +11938,14 @@ tableCtxMenu.addEventListener("click", (e) => {
 // overrides the document title as the source of the file's base name.
 function compileToSource(lang, opts){
   opts = opts || {};
-  const pages = getPages();
   const titleRaw = document.getElementById("docTitle").value.trim() || "Untitled Document";
 
-  // "Compile to HTML" produces the formatted document itself; every other
+  // "Compile to HTML" produces the formatted document itself (page breaks
+  // the user inserted are already literal .page-break divs in this HTML --
+  // see the PageBreak node in editor-src/editor-entry.js); every other
   // language runs the draft through the (needlessly elaborate) compiler pipeline.
   if (lang === "html"){
-    const pageBreakHtml = '<div style="page-break-before:always;border-top:2px dashed #cfc6ac;margin:26px 0;"></div>';
-    const bodyHtml = pages.map(p => p.innerHTML).join(pageBreakHtml);
+    const bodyHtml = docEditor.getHTML();
     const source = buildDocumentHtml(titleRaw, bodyHtml);
     const filename = (titleRaw.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "document") + ".html";
     return { source, filename, ext: "html", lang };
@@ -12890,14 +11968,16 @@ function compileToSource(lang, opts){
     filename = `${safeBase}.${meta.ext}`;
   }
 
-  // Walk each page's content in order, inserting a page-break block between
-  // pages so the compiled ASCII output shows the same page breaks the
-  // editor does.
-  const blocks = [];
-  pages.forEach((page, i) => {
-    if (i > 0) blocks.push({ type: "pagebreak" });
-    blocks.push(...collectBlocks(page));
-  });
+  // Parse the editor's current HTML into a detached container and walk it
+  // with the same collectBlocks() used to always walk a live .doc-page --
+  // TipTap's default HTML output (<p>, <ul>/<ol>/<li>, <table>, <strong>/
+  // <em>) is directly compatible with that walker, and collectBlocks itself
+  // turns any manually-inserted page-break marker into {type:"pagebreak"}
+  // (see its [data-page-break] clause), so no separate per-page loop is
+  // needed any more.
+  const root = document.createElement("div");
+  root.innerHTML = docEditor.getHTML();
+  const blocks = collectBlocks(root);
   const composedText = composeDocumentText(blocks, useAnsi);
   const source = buildSource(composedText, lang, { javaClassName });
   return { source, filename, ext: meta.ext, lang };
@@ -13409,28 +12489,17 @@ document.getElementById("backupImportInput").addEventListener("change", async (e
 
 // ---- New: clear the editor back to a blank, untitled document ----
 document.getElementById("newDocBtn").addEventListener("click", () => {
-  const pages = getPages();
-  const hasContent = pages.some(p => p.textContent.trim().length);
+  const hasContent = docEditor.getText().trim().length > 0;
   if (hasContent && !confirm("Start a new document? Any unsaved changes to the current one will be lost.")){
     return;
   }
-  resetToSinglePage();
-  const editor = document.getElementById("docEditor");
-  // Seed a single empty block rather than leaving the page with zero DOM
-  // children. A truly empty contenteditable page has no block for the
-  // caret to live in, and Chrome's Enter handling (via
-  // execCommand("insertParagraph"), see insertParagraphWithScrollGuard)
-  // behaves inconsistently until one exists -- this matches the per-empty-
-  // line markup loadPlainTextIntoEditor already uses, which is why Enter
-  // works fine once a document has been populated through that path.
-  editor.innerHTML = "<div><br></div>";
+  docEditor.commands.setContent("<p></p>");
   document.getElementById("docTitle").value = "Untitled Document";
   savedFileHandle = null;
   savedFileLang = null;
   savedFileExt = null;
-  updateDocPlaceholder();
   syncToolbarState();
-  editor.focus();
+  docEditor.commands.focus();
 });
 
 // ---- Open: import documents from elsewhere into the editor ----
@@ -13479,37 +12548,26 @@ function sanitizeImportedHtml(html){
   return container.innerHTML;
 }
 
-// Loads plain text into the editor as one <div> per line (matching how a
-// contenteditable normally represents typed paragraphs), so the result is
+// Loads plain text into the editor as one <p> per line, so the result is
 // editable right away rather than a single inert text blob.
 function loadPlainTextIntoEditor(text){
-  resetToSinglePage();
-  const editor = document.getElementById("docEditor");
   const lines = (text || "").replace(/\r\n/g, "\n").split("\n");
-  editor.innerHTML = lines.map(line => {
-    const escaped = escapeHtml(line);
-    return `<div>${escaped.length ? escaped : "<br>"}</div>`;
-  }).join("");
-  schedulePageReflow();
+  docEditor.commands.setContent(lines.map(line => `<p>${escapeHtml(line)}</p>`).join(""));
 }
 
 // Like loadPlainTextIntoEditor, but keeps the paragraph/code-block
 // formatting formatContent() already gives this text in the chat and AI
 // report views (bold-code fences as <pre><code>, blank-line-separated
-// paragraphs) instead of dumping every line into its own div.
+// paragraphs) instead of dumping every line into its own paragraph.
 function loadFormattedTextIntoEditor(text){
-  resetToSinglePage();
-  const editor = document.getElementById("docEditor");
-  editor.innerHTML = sanitizeImportedHtml(formatContent(text || ""));
-  schedulePageReflow();
+  docEditor.commands.setContent(sanitizeImportedHtml(formatContent(text || "")));
 }
 
 // Inverse of loadPlainTextIntoEditor: reads the editor's current content
-// back out as plain text (across every page, in order), so a file opened as
-// .txt (or any other extension with no specific importer) can be saved back
-// verbatim, one line per block.
+// back out as plain text, so a file opened as .txt (or any other extension
+// with no specific importer) can be saved back verbatim.
 function getEditorPlainText(){
-  return getPages().map(p => p.innerText).join("\n").replace(/\r\n/g, "\n");
+  return docEditor.getText().replace(/\r\n/g, "\n");
 }
 
 function extractBodyHtml(htmlText){
@@ -13650,7 +12708,6 @@ function base64ToArrayBuffer(base64){
 async function openDocumentFile(file, handle){
   const name = file.name;
   const ext = (name.split(".").pop() || "").toLowerCase();
-  const editor = document.getElementById("docEditor");
   const openBtn = document.getElementById("openDocBtn");
   const originalLabel = openBtn.textContent;
   const baseTitle = name.replace(/\.[^/.]+$/, "") || "Untitled Document";
@@ -13670,15 +12727,11 @@ async function openDocumentFile(file, handle){
   openBtn.textContent = "Opening…";
   openBtn.disabled = true;
   try{
-    // Whatever file this turns out to be, it replaces the whole document —
-    // start from a single page so we don't leave stale pages from whatever
-    // was open before mixed in with the freshly imported content.
-    resetToSinglePage();
     if (ext === "docx"){
       if (!window.mammoth) throw new Error("The .docx reader didn't load. Check your connection and reload the page.");
       const buf = await file.arrayBuffer();
       const result = await window.mammoth.convertToHtml({ arrayBuffer: buf });
-      editor.innerHTML = sanitizeImportedHtml(result.value);
+      docEditor.commands.setContent(sanitizeImportedHtml(result.value));
 
     } else if (ext === "doc"){
       const buf = await file.arrayBuffer();
@@ -13692,10 +12745,7 @@ async function openDocumentFile(file, handle){
       // No PDF parser runs in the browser here, so this converts the PDF to
       // .docx server-side via headless LibreOffice (POST /api/convert-to-docx)
       // and opens the result through the exact same mammoth pipeline used
-      // for a real .docx above. Raw pdf-parse text doesn't reflow cleanly
-      // into the editor's fixed-height pages (it left blank trailing pages
-      // with just a page-count artifact); routing through docx conversion
-      // instead gives properly flowing, editable paragraphs.
+      // for a real .docx above.
       if (!window.mammoth) throw new Error("The .docx reader didn't load. Check your connection and reload the page.");
       const buf = await file.arrayBuffer();
       const fileBase64 = arrayBufferToBase64(buf);
@@ -13708,19 +12758,18 @@ async function openDocumentFile(file, handle){
       if (!res.ok) throw new Error((data && data.error) || "Couldn't convert this PDF.");
       const docxBuf = base64ToArrayBuffer(data.fileBase64);
       const result = await window.mammoth.convertToHtml({ arrayBuffer: docxBuf });
-      editor.innerHTML = sanitizeImportedHtml(result.value);
-
+      docEditor.commands.setContent(sanitizeImportedHtml(result.value));
 
     } else if (ext === "odt" || ext === "ods"){
       if (!window.JSZip) throw new Error("The OpenDocument reader didn't load. Check your connection and reload the page.");
       const buf = await file.arrayBuffer();
       const html = await convertOpenDocumentToHtml(buf, ext);
-      editor.innerHTML = sanitizeImportedHtml(html);
+      docEditor.commands.setContent(sanitizeImportedHtml(html));
 
     } else if (ext === "html" || ext === "htm"){
       const text = await file.text();
       const restored = tryRestoreFromCompiledHtml(text);
-      editor.innerHTML = restored !== null ? restored : sanitizeImportedHtml(extractBodyHtml(text));
+      docEditor.commands.setContent(restored !== null ? restored : sanitizeImportedHtml(extractBodyHtml(text)));
       // Recompiling to HTML reproduces this exact document, so Save can
       // write straight back to it (whether or not the marker round-trip fired).
       nextSavedFileLang = "html";
@@ -13739,7 +12788,7 @@ async function openDocumentFile(file, handle){
       const text = await file.text();
       const decompiled = decompileSourceFile(text, ext);
       if (decompiled !== null){
-        editor.innerHTML = sanitizeImportedHtml(plainTextToHtml(decompiled));
+        docEditor.commands.setContent(sanitizeImportedHtml(plainTextToHtml(decompiled)));
         // Recompiling through this same language reproduces the file, so Save works.
         nextSavedFileLang = extToLang(ext);
       } else {
@@ -13760,9 +12809,7 @@ async function openDocumentFile(file, handle){
     }
 
     document.getElementById("docTitle").value = baseTitle;
-    updateDocPlaceholder();
     syncToolbarState();
-    schedulePageReflow();
 
     // Only wire up Save once the import above has actually succeeded, and
     // only when we both have a handle (File System Access API available)
