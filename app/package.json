@@ -2,10 +2,20 @@
   "name": "app",
   "main": "src/server.js",
   "scripts": {
-    "start": "node src/server.js"
+    "start": "node src/server.js",
+    "build:editor": "esbuild editor-src/editor-entry.js --bundle --format=iife --global-name=LawgptEditor --outfile=public/editor-bundle.js"
   },
   "dependencies": {
     "@azure/msal-node": "^5.6.0",
+    "@tiptap/core": "^3.31.3",
+    "@tiptap/extension-placeholder": "^3.31.3",
+    "@tiptap/extension-subscript": "^3.31.3",
+    "@tiptap/extension-superscript": "^3.31.3",
+    "@tiptap/extension-table": "^3.31.3",
+    "@tiptap/extension-text-align": "^3.31.3",
+    "@tiptap/extension-text-style": "^3.31.3",
+    "@tiptap/pm": "^3.31.3",
+    "@tiptap/starter-kit": "^3.31.3",
     "bcryptjs": "^3.0.3",
     "cheerio": "^1.2.0",
     "connect-pg-simple": "^10.0.0",
@@ -19,5 +29,8 @@
     "pdf-parse": "^2.4.5",
     "pg": "^8.23.0",
     "puppeteer": "^25.10.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.2"
   }
 }
