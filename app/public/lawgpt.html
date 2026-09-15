@@ -1079,6 +1079,12 @@
     padding:36px 0;
     display:flex;
     justify-content:center;
+    /* Without this, flex's default align-items:stretch caps .doc-page's
+       height at the wrap's own (viewport) height instead of letting it grow
+       with content -- content past that point then renders as plain
+       overflow with no page background/border behind it, instead of
+       extending the page and making the wrap scrollable. */
+    align-items:flex-start;
     background:repeating-linear-gradient(180deg, var(--ink) 0px, var(--ink) 100%);
   }
   .doc-page{
