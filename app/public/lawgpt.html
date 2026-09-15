@@ -6011,6 +6011,49 @@ document.getElementById("notesReportBody").addEventListener("input", (e) => {
   }, 500);
 });
 
+// Tab indents the line the caret is on (Shift+Tab un-indents) instead of the
+// browser's default of jumping focus out of the box. "Line" means the
+// nearest block-level ancestor of the caret -- e.g. the specific <li> inside
+// a <ul>, not the whole list -- so indenting one bullet doesn't drag its
+// siblings along. Applied as an inline margin-left (rather than
+// execCommand("indent"), which would wrap the line in a <blockquote> and
+// pick up that element's quote styling -- border, muted color -- from the
+// CSS above) so it reads as a plain indent. Goes through the same
+// contentHtml/edited/persistState bookkeeping as the "input" listener above
+// since a programmatic style change doesn't fire a DOM "input" event on its
+// own.
+const NOTES_INDENT_STEP = 24; // px per level
+const NOTES_LINE_TAGS = new Set(["P","LI","H1","H2","H3","H4","H5","H6","BLOCKQUOTE","DIV","TD","TH"]);
+function findNotesLine(node, root){
+  let el = node.nodeType === Node.TEXT_NODE ? node.parentElement : node;
+  while (el && el !== root){
+    if (NOTES_LINE_TAGS.has(el.tagName)) return el;
+    el = el.parentElement;
+  }
+  return null;
+}
+document.getElementById("notesReportBody").addEventListener("keydown", (e) => {
+  if (e.key !== "Tab") return;
+  e.preventDefault();
+  if (!currentReport || currentReport.loading || currentReport.failed) return;
+  const sel = window.getSelection();
+  if (!sel || !sel.rangeCount) return;
+  const bodyEl = e.currentTarget;
+  const line = findNotesLine(sel.getRangeAt(0).startContainer, bodyEl);
+  if (!line) return;
+
+  const current = parseInt(line.style.marginLeft || "0", 10) || 0;
+  const next = e.shiftKey ? Math.max(0, current - NOTES_INDENT_STEP) : current + NOTES_INDENT_STEP;
+  line.style.marginLeft = next ? next + "px" : "";
+
+  currentReport.contentHtml = bodyEl.innerHTML;
+  currentReport.edited = true;
+  clearTimeout(notesReportEditDebounce);
+  notesReportEditDebounce = setTimeout(() => {
+    if (currentReport && currentReport.id) persistState();
+  }, 500);
+});
+
 // Renaming a report: the title span (the part after the course/class
 // prefix -- see renderReportPanel) is directly contenteditable, same
 // click-to-edit convention as the report body above. renderReportSidebar()
