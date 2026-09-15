@@ -1,0 +1,218 @@
+Week 2 Practice Quiz — content scraped from Canvas New Quizzes on 9/15/2026, 12:06:52 AM.
+An attempt was started in Canvas to read this content, then left open/unsubmitted -- no answers were recorded or submitted.
+NOTE: New Quizzes renders via JavaScript, so this is the quiz player's visible page text rather than cleanly separated question/answer-choice fields the way a classic quiz's scrape is -- it may include some extra UI text (timer, navigation labels, etc.) alongside the actual questions and choices.
+NOTE: this quiz shows one question at a time -- paged through "Next" (without selecting any answer) to read all 10 screens below, each separated by a "----- next question -----" marker; some navigation chrome repeats on every screen.
+
+Flag question: Question 1
+Question 1
+1 pts
+
+The following facts apply to the first 5 questions.
+
+P is suing D for breach of contract in state court, in the state of O'Quinn. P is seeking $1,000,000 in damages. The state of O'Quinn has the following statute establishing procedures for breach of contract claims:
+
+"In a breach of contract case, if the case proceeds to trial, the plaintiff at trial shall first present all evidence--including witnesses, documents, or tangible things--that support the plaintiff's case. The defendant may cross-examine the plaintiff's witnesses. The defendant may then present any witnesses that support the defendant's case, but the defendant may not present any documents or tangible things unless the plaintiff consents to the defendant doing so."
+
+You are the lawyer for D. The case is going to trial. You would very much like to present a number of documents which you believe prove that P and D never formed a contract. Therefore, you would like to argue to the court that D has a Due Process right to present that evidence at trial, regardless of whether P consents to it.
+
+What legal test should you apply?
+
+Group of answer choices
+The Winter test to determine if D deserves preliminary relief.
+The Mullane test to determine if D received sufficient notice about the case.
+The Mathews/Doehr test to determine if D has sufficient opportunity to be heard.
+FRCP Rule 8 to determine if P's Complaint was sufficient.
+There is no argument that D can make, because state courts do not have to provide Due Process.
+Next
+
+----- next question -----
+
+Flag question: Question 2
+Question 2
+1 pts
+
+The following facts apply to the first 5 questions.
+
+P is suing D for breach of contract in state court, in the state of O'Quinn. P is seeking $1,000,000 in damages. The state of O'Quinn has the following statute establishing procedures for breach of contract claims:
+
+"In a breach of contract case, if the case proceeds to trial, the plaintiff at trial shall first present all evidence--including witnesses, documents, or tangible things--that support the plaintiff's case. The defendant may cross-examine the plaintiff's witnesses. The defendant may then present any witnesses that support the defendant's case, but the defendant may not present any documents or tangible things unless the plaintiff consents to the defendant doing so."
+
+You are the lawyer for D. The case is going to trial. You would very much like to present a number of documents which you believe prove that P and D never formed a contract. Therefore, you would like to argue to the court that D has a Due Process right to present that evidence at trial, regardless of whether P consents to it.
+
+At prong 1 of the Doehr test, what should you argue?
+
+Group of answer choices
+P's interest is significant, because $1,000,000 is a lot of money.
+P's interest is not particularly significant, because both parties were likely sophisticated businesses.
+The public interest is significant, because breach of contract is a serious issue.
+D's interest is significant, because $1,000,000 is a lot of money.
+ Previous
+Next
+
+----- next question -----
+
+Flag question: Question 3
+Question 3
+1 pts
+
+The following facts apply to the first 5 questions.
+
+P is suing D for breach of contract in state court, in the state of O'Quinn. P is seeking $1,000,000 in damages. The state of O'Quinn has the following statute establishing procedures for breach of contract claims:
+
+"In a breach of contract case, if the case proceeds to trial, the plaintiff at trial shall first present all evidence--including witnesses, documents, or tangible things--that support the plaintiff's case. The defendant may cross-examine the plaintiff's witnesses. The defendant may then present any witnesses that support the defendant's case, but the defendant may not present any documents or tangible things unless the plaintiff consents to the defendant doing so."
+
+You are the lawyer for D. The case is going to trial. You would very much like to present a number of documents which you believe prove that P and D never formed a contract. Therefore, you would like to argue to the court that D has a Due Process right to present that evidence at trial, regardless of whether P consents to it.
+
+At prong 2 of the Doehr test, what should you argue?
+
+Group of answer choices
+There isn't much risk of an erroneous decision, because there is a trial, D gets to present witnesses, and D gets to cross-examine all of P's witnesses.
+There is meaningful risk of an erroneous decision, because D doesn't get to present any documents unless P allows it, while P does get to present documents. And there is meaningful probable value to allowing D to present documents, since documents are often likely to be relevant for contracts cases.
+There isn't much risk of an erroneous decision, because there is a trial, D gets to present witnesses, and D gets to cross-examine all of P's witnesses. However, there is a high probable value to adding an additional process: trial by combat.
+There is some risk of an erroneous decision, because D doesn't get to present documents. But the probable value of any additional procedures is low, because D still gets to present witnesses.
+ Previous
+Next
+
+----- next question -----
+
+Flag question: Question 4
+Question 4
+1 pts
+
+The following facts apply to the first 5 questions.
+
+P is suing D for breach of contract in state court, in the state of O'Quinn. P is seeking $1,000,000 in damages. The state of O'Quinn has the following statute establishing procedures for breach of contract claims:
+
+"In a breach of contract case, if the case proceeds to trial, the plaintiff at trial shall first present all evidence--including witnesses, documents, or tangible things--that support the plaintiff's case. The defendant may cross-examine the plaintiff's witnesses. The defendant may then present any witnesses that support the defendant's case, but the defendant may not present any documents or tangible things unless the plaintiff consents to the defendant doing so."
+
+You are the lawyer for D. The case is going to trial. You would very much like to present a number of documents which you believe prove that P and D never formed a contract. Therefore, you would like to argue to the court that D has a Due Process right to present that evidence at trial, regardless of whether P consents to it.
+
+At prong 3 of the Doehr test, what should you argue?
+
+Group of answer choices
+There is some burden on P, because if D can present documents, that might add time to the trial, and more time costs more in attorney's fees. There is also some burden on the government, because additional time for the trial costs the court some money to run the trial.
+There is no burden on P, because P is already going to trial. And there is no burden on the government, because there is going to be a trial regardless.
+There is no burden on P, because P is already going to trial. But there is some burden on the government, because extra days of trial costs money and makes the court less efficient.
+There is a quite significant burden on P, because giving D extra opportunities to present evidence lowers the chances that P will win the case. But there is minimal burden on the government, because a few extra days of trial only costs a bit.
+ Previous
+Next
+
+----- next question -----
+
+Flag question: Question 5
+Question 5
+1 pts
+
+The following facts apply to the first 5 questions.
+
+P is suing D for breach of contract in state court, in the state of O'Quinn. P is seeking $1,000,000 in damages. The state of O'Quinn has the following statute establishing procedures for breach of contract claims:
+
+"In a breach of contract case, if the case proceeds to trial, the plaintiff at trial shall first present all evidence--including witnesses, documents, or tangible things--that support the plaintiff's case. The defendant may cross-examine the plaintiff's witnesses. The defendant may then present any witnesses that support the defendant's case, but the defendant may not present any documents or tangible things unless the plaintiff consents to the defendant doing so."
+
+The case is going to trial. D's lawyer would very much like to present a number of documents which they believe prove that P and D never formed a contract. Therefore, D's lawyer has argued the court that D has a Due Process right to present that evidence at trial, regardless of whether P consents to it.
+
+You are now the judge in the case. How should you rule about whether the O'Quinn state statute provides Due Process?
+
+Group of answer choices
+It's a close call, but the burden on P of more process is far too much.
+It's a close call, because D has a significant interest at stake, but adding more process isn't worth the cost of that process.
+Exercising my equitable discretion as a judge, it will be much easier to run the trial without additional process.
+Given D's significant interest, the significant value of letting D present the same evidence as P, and the relatively small cost of more process, D should get to present more evidence.
+ Previous
+Next
+
+----- next question -----
+
+Flag question: Question 6
+Question 6
+1 pts
+The purpose of the pleading system under the FRCP is to knock as many cases out of court as possible based on procedural technicalities.
+Group of answer choices
+True
+False
+ Previous
+Next
+
+----- next question -----
+
+Flag question: Question 7
+Question 7
+1 pts
+If your client is seeking an injunction--which is an equitable remedy--and if your case belongs in federal court, then you should sue in a federal court of equity, not in a federal court of law.
+Group of answer choices
+True
+False
+ Previous
+Next
+
+----- next question -----
+
+Flag question: Question 8
+Question 8
+1 pts
+
+In the State of O'Quinn, a defendant has committed the tort of "conversion" if (a) the plaintiff has rightful possession of a piece of property, (b) the defendant intentionally takes that property, and (c) the defendant did not have permission to take the property.
+
+P sues D for conversion. Assume that the case is in federal court. And assume that the following is the relevant text of P's Complaint:
+
+P had rightful possession of the property.
+D took that property.
+D intended to take that property.
+D did not have P's permission to take the property.
+P requests $100,000 in damages.
+
+D files a motion to dismiss. You are the judge in the case: Is the Complaint sufficient?
+
+ 
+
+Group of answer choices
+Yes.
+No.
+ Previous
+Next
+
+----- next question -----
+
+Flag question: Question 9
+Question 9
+1 pts
+
+In the State of O'Quinn, a defendant has committed the tort of "conversion" if (a) the plaintiff has rightful possession of a piece of property, (b) the defendant intentionally takes that property, and (c) the defendant did not have permission to take the property.
+
+P sues D for conversion. Assume that the case is in federal court. And assume that the following is the relevant text of P's Complaint:
+
+P had a car, which P bought last year.
+D drove off with P's car.
+While driving off, D shouted, "Haha, I took your car!"
+D did not ask for, nor did P give, P's permission to take the car.
+
+D files a motion to dismiss. You are the judge in the case: Applying the law we have learned so far, is the Complaint sufficient?
+
+Group of answer choices
+Yes.
+No.
+ Previous
+Next
+
+----- next question -----
+
+Flag question: Question 10
+Question 10
+1 pts
+
+In the State of O'Quinn, a defendant has committed the tort of "conversion" if (a) the plaintiff has rightful possession of a piece of property, (b) the defendant intentionally takes that property, and (c) the defendant did not have permission to take the property.
+
+P sues D for conversion. Assume that the case is in federal court. And assume that the following is the relevant text of P's Complaint:
+
+P had a car, which P bought last year.
+D drove off with P's car.
+While driving off, D shouted, "Haha, I took your car!"
+D did not ask for, nor did P give, P's permission to take the car.
+P therefore requests $100,000 in damages for the fair market value of the car.
+
+D files a motion to dismiss. You are the judge in the case: Applying the law we have learned so far, is the Complaint sufficient?
+
+Group of answer choices
+Yes.
+No.
+ Previous
