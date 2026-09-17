@@ -46,6 +46,16 @@ function getDocumentByFilePath(filePath) {
   return null;
 }
 
+// Used by email-routes.js's stale-message reclassification backfill, to
+// update a document's courseId/courseName/filePath in place after its file
+// is moved on disk from documents/uncategorized/ into its real course folder.
+function updateDocument(id, patch) {
+  const document = documents.get(id);
+  if (!document) return null;
+  Object.assign(document, patch);
+  return document;
+}
+
 function removeDocument(id) {
   return documents.delete(id);
 }
@@ -95,6 +105,7 @@ module.exports = {
   getAllDocuments,
   getDocumentsByCourse,
   getDocumentByFilePath,
+  updateDocument,
   removeDocument,
   clearDocuments,
   searchDocuments

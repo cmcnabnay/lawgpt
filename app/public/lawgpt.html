@@ -1714,6 +1714,133 @@ pre code {
   background:none; border:none; padding:0; margin-left:6px;
   font:inherit; color:var(--brass); text-decoration:underline; cursor:pointer;
 }
+.calendar-view{ flex:1; min-height:0; display:flex; }
+.calendar-wrap{
+  flex:1;
+  min-height:0;
+  overflow-y:auto;
+  padding:28px 32px 48px;
+}
+.calendar-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:16px;
+  margin-bottom:18px;
+  flex-wrap:wrap;
+}
+.calendar-nav{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.calendar-month-label{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:13px;
+  letter-spacing:0.04em;
+  color:var(--text-light);
+  min-width:150px;
+  text-align:center;
+}
+.calendar-grid{
+  display:grid;
+  grid-template-columns:repeat(7, 1fr);
+  gap:6px;
+}
+.calendar-weekday{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:10px;
+  letter-spacing:0.1em;
+  text-transform:uppercase;
+  color:var(--text-muted);
+  text-align:center;
+  padding-bottom:4px;
+}
+.calendar-day{
+  min-height:76px;
+  background:var(--ink-2);
+  border:1px solid var(--hairline);
+  border-radius:var(--radius);
+  padding:6px 7px;
+  cursor:default;
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+}
+.calendar-day.calendar-day-empty{ background:transparent; border-color:transparent; }
+.calendar-day.calendar-day-has-events{ cursor:pointer; }
+.calendar-day.calendar-day-has-events:hover{ border-color:var(--brass-dim); }
+.calendar-day.calendar-day-today{ border-color:var(--brass); }
+.calendar-day-number{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:11px;
+  color:var(--text-muted);
+}
+.calendar-day.calendar-day-today .calendar-day-number{ color:var(--brass); }
+.calendar-day-dot-row{ display:flex; flex-wrap:wrap; gap:3px; }
+.calendar-event-dot{
+  width:6px;
+  height:6px;
+  border-radius:50%;
+  background:#8fb3d9;
+}
+.calendar-day-event-title{
+  font-size:10.5px;
+  color:var(--text-light);
+  line-height:1.3;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.calendar-day-panel{
+  width:340px;
+  flex:0 0 auto;
+  border-left:1px solid var(--hairline);
+  padding:20px;
+  overflow-y:auto;
+}
+.calendar-day-panel-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  margin-bottom:14px;
+}
+.calendar-day-events{ display:flex; flex-direction:column; gap:12px; }
+.calendar-event-card{
+  background:var(--ink-2);
+  border:1px solid var(--hairline);
+  border-radius:var(--radius);
+  padding:12px 14px;
+}
+.calendar-event-time{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:10.5px;
+  text-transform:uppercase;
+  letter-spacing:0.04em;
+  color:var(--brass-dim);
+  margin-bottom:4px;
+}
+.calendar-event-title{
+  font-size:13px;
+  color:var(--text-light);
+  margin-bottom:4px;
+}
+.calendar-event-title[contenteditable="true"]{ outline:none; border-bottom:1px dashed var(--hairline); }
+.calendar-event-desc{ font-size:12px; color:var(--text-muted); line-height:1.5; }
+.calendar-event-source{ font-size:11px; color:var(--text-muted); margin-top:6px; }
+.calendar-event-actions{ display:flex; gap:8px; margin-top:8px; }
+.calendar-event-actions button{
+  background:transparent;
+  border:1px solid var(--hairline);
+  color:var(--text-muted);
+  border-radius:var(--radius);
+  padding:4px 10px;
+  font-size:11px;
+  cursor:pointer;
+}
+.calendar-event-actions button:hover{ border-color:var(--brass-dim); color:var(--brass); }
+.calendar-empty{ color:var(--text-muted); font-size:12px; }
 .agent-view{ flex:1; min-height:0; display:flex; }
 .agent-main{
   flex:1;
@@ -1802,6 +1929,13 @@ pre code {
   color:var(--text-muted);
   margin-bottom:6px;
 }
+.agent-panel-label-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+}
+.agent-panel-label-row .agent-panel-label{ margin-bottom:0; }
 .agent-panel-label-clickable{
   cursor:pointer;
   user-select:none;
@@ -2783,6 +2917,7 @@ pre code {
       <button class="view-tab" id="tabNotes" data-view="notes">Notes</button>
       <button class="view-tab" id="tabDatabase" data-view="database">Database</button>
       <button class="view-tab" id="tabEmail" data-view="email">Email</button>
+      <button class="view-tab" id="tabCalendar" data-view="calendar">Calendar</button>
       <button class="view-tab" id="tabAgent" data-view="agent">Agent</button>
       <button class="settings-gear-btn" id="accountBtn" aria-label="Account" title="Sign in to save your notes and chat history">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -3092,6 +3227,32 @@ pre code {
       </div>
     </div>
 
+    <div class="calendar-view" id="calendarView" style="display:none;">
+      <div class="calendar-wrap">
+        <div class="calendar-head">
+          <div>
+            <div class="documents-title">Calendar</div>
+            <div class="documents-subtitle">Dates and events pulled automatically from synced email -- click "Sync now" on the Email tab to refresh.</div>
+          </div>
+          <div class="calendar-nav">
+            <button type="button" class="doc-refresh-btn" id="calendarPrevBtn" title="Previous month">&#8592;</button>
+            <div class="calendar-month-label" id="calendarMonthLabel"></div>
+            <button type="button" class="doc-refresh-btn" id="calendarNextBtn" title="Next month">&#8594;</button>
+            <button type="button" class="doc-refresh-btn" id="calendarTodayBtn">Today</button>
+          </div>
+        </div>
+        <div class="calendar-grid" id="calendarGrid"></div>
+      </div>
+
+      <div class="calendar-day-panel" id="calendarDayPanel" style="display:none;">
+        <div class="calendar-day-panel-head">
+          <div class="documents-title" id="calendarDayPanelTitle"></div>
+          <button type="button" class="notes-right-close-btn" id="calendarDayPanelCloseBtn" aria-label="Close" title="Close">&#10005;</button>
+        </div>
+        <div class="calendar-day-events" id="calendarDayEvents"></div>
+      </div>
+    </div>
+
     <div class="agent-view" id="agentView" style="display:none;">
       <aside class="notes-sidebar" id="agentSidebar">
         <div class="notes-sidebar-label">Agent runs</div>
@@ -3113,7 +3274,10 @@ pre code {
             <pre class="agent-terminal" id="agentTerminalOutput"></pre>
           </div>
           <div class="agent-panel" id="agentOutputPanel">
-            <div class="agent-panel-label">Output</div>
+            <div class="agent-panel-label-row">
+              <div class="agent-panel-label">Output</div>
+              <button type="button" class="notes-head-btn" id="agentSendToEditorBtn" title="Send this run's output to the Draft &amp; Compile editor">Send to Editor</button>
+            </div>
             <div class="notes-report-body agent-output-body" id="agentOutputBody"></div>
           </div>
         </div>
@@ -4624,6 +4788,7 @@ function setView(view){
   const scheduleView = document.getElementById("scheduleView");
   const documentsView = document.getElementById("documentsView");
   const emailView = document.getElementById("emailView");
+  const calendarView = document.getElementById("calendarView");
   const agentView = document.getElementById("agentView");
   const notesView = document.getElementById("notesView");
   const databaseView = document.getElementById("databaseView");
@@ -4632,6 +4797,7 @@ function setView(view){
   const tabSchedule = document.getElementById("tabSchedule");
   const tabDocuments = document.getElementById("tabDocuments");
   const tabEmail = document.getElementById("tabEmail");
+  const tabCalendar = document.getElementById("tabCalendar");
   const tabAgent = document.getElementById("tabAgent");
   const tabNotes = document.getElementById("tabNotes");
   const tabDatabase = document.getElementById("tabDatabase");
@@ -4641,6 +4807,7 @@ function setView(view){
   scheduleView.style.display = "none";
   documentsView.style.display = "none";
   emailView.style.display = "none";
+  calendarView.style.display = "none";
   agentView.style.display = "none";
   notesView.style.display = "none";
   databaseView.style.display = "none";
@@ -4649,6 +4816,7 @@ function setView(view){
   tabSchedule.classList.remove("active");
   tabDocuments.classList.remove("active");
   tabEmail.classList.remove("active");
+  tabCalendar.classList.remove("active");
   tabAgent.classList.remove("active");
   tabNotes.classList.remove("active");
   tabDatabase.classList.remove("active");
@@ -4677,6 +4845,10 @@ function setView(view){
     emailView.style.display = "block";
     tabEmail.classList.add("active");
     refreshEmailMessages();
+  } else if (view === "calendar"){
+    calendarView.style.display = "block";
+    tabCalendar.classList.add("active");
+    refreshCalendarEvents();
   } else if (view === "agent"){
     agentView.style.display = "flex";
     tabAgent.classList.add("active");
@@ -4700,6 +4872,7 @@ document.getElementById("tabEditor").addEventListener("click", () => setView("ed
 document.getElementById("tabSchedule").addEventListener("click", () => setView("schedule"));
 document.getElementById("tabDocuments").addEventListener("click", () => setView("documents"));
 document.getElementById("tabEmail").addEventListener("click", () => setView("email"));
+document.getElementById("tabCalendar").addEventListener("click", () => setView("calendar"));
 document.getElementById("tabAgent").addEventListener("click", () => setView("agent"));
 document.getElementById("tabNotes").addEventListener("click", () => setView("notes"));
 document.getElementById("tabDatabase").addEventListener("click", () => setView("database"));
@@ -6121,6 +6294,20 @@ document.getElementById("notesReportOpenEditorBtn").addEventListener("click", ()
   setView("editor");
 });
 
+// Sends an agent run's final deliverable into the Draft & Compile editor --
+// same pattern as notesReportOpenEditorBtn above, just off run.result
+// (already-compiled plain text) instead of a report's HTML/markdown-lite text.
+document.getElementById("agentSendToEditorBtn").addEventListener("click", () => {
+  if (!currentAgentRun || !currentAgentRun.result || !currentAgentRun.result.trim()) return;
+  loadFormattedTextIntoEditor(currentAgentRun.result);
+  document.getElementById("docTitle").value = currentAgentRun.title || "Untitled Document";
+  savedFileHandle = null;
+  savedFileLang = null;
+  savedFileExt = null;
+  syncToolbarState();
+  setView("editor");
+});
+
 document.getElementById("notesReportSaveBtn").addEventListener("click", () => {
   if (!currentReport || currentReport.id || currentReport.loading) return;
   reportCounter++;
@@ -6891,6 +7078,10 @@ async function runEmailAgent(id, planText, btn){
 // polling pattern already used for the email-setup device-code flow.
 let agentRunsCache = [];
 let activeAgentRunId = null;
+// The last run rendered by renderAgentRun() -- used by the "Send to Editor"
+// button, same currentReport pattern the Notes tab uses for its own
+// Open-in-Editor button.
+let currentAgentRun = null;
 let agentPollTimer = null;
 // Drives the Terminal/Output panel split (see the state-running/collapsed/
 // expanded CSS on #agentPanels) -- reset per run open, and forced back to
@@ -6998,6 +7189,8 @@ async function deleteAgentRun(id){
       document.getElementById("agentOutputBody").innerHTML = "";
       document.getElementById("agentFollowupRow").style.display = "none";
       document.getElementById("agentFollowupInput").value = "";
+      currentAgentRun = null;
+      document.getElementById("agentSendToEditorBtn").disabled = true;
       activeAgentRunStatus = null;
       agentTerminalExpanded = false;
       applyAgentPanelLayout(null);
@@ -7038,6 +7231,8 @@ async function openAgentRun(id){
   bodyEl.innerHTML = "";
   document.getElementById("agentFollowupRow").style.display = "none";
   document.getElementById("agentFollowupInput").value = "";
+  currentAgentRun = null;
+  document.getElementById("agentSendToEditorBtn").disabled = true;
 
   try{
     const res = await fetch(PROXY_ORIGIN + "/api/agent/runs/" + encodeURIComponent(id));
@@ -7059,6 +7254,8 @@ async function openAgentRun(id){
 // characters.
 function renderAgentRun(run){
   if (String(run.id) !== String(activeAgentRunId)) return; // user switched runs mid-poll
+  currentAgentRun = run;
+  document.getElementById("agentSendToEditorBtn").disabled = !(run.result && run.result.trim());
   const titleEl = document.getElementById("agentRunTitle");
   const statusEl = document.getElementById("agentRunStatus");
   const resumeEl = document.getElementById("agentResumeHint");
@@ -7246,7 +7443,10 @@ document.getElementById("emailSyncBtn").addEventListener("click", async () => {
     statusEl.textContent =
       `Synced: ${data.added} new email${data.added === 1 ? "" : "s"}, ` +
       `${data.assignmentsFound} assignment${data.assignmentsFound === 1 ? "" : "s"}, ` +
-      `${data.documentsDownloaded} document${data.documentsDownloaded === 1 ? "" : "s"} downloaded.`;
+      `${data.documentsDownloaded} document${data.documentsDownloaded === 1 ? "" : "s"} downloaded, ` +
+      `${data.eventsFound || 0} calendar event${data.eventsFound === 1 ? "" : "s"} found` +
+      (data.reclassified ? `, ${data.reclassified} email${data.reclassified === 1 ? "" : "s"} recategorized` : "") +
+      ".";
     statusEl.className = "email-status ok";
 
     emailMessagesCache = data.messages || [];
@@ -7259,6 +7459,252 @@ document.getElementById("emailSyncBtn").addEventListener("click", async () => {
     btn.disabled = false;
   }
 });
+
+
+// ====== CALENDAR: dates/events extracted automatically from synced email ======
+// Populated by email-routes.js's extractCalendarEvents (run for every message
+// on every "Sync now"); this tab is read-only-ish -- title/date can be
+// corrected by hand (the local chrono-node parser isn't perfect) and a bad
+// extraction can be deleted, but nothing here re-runs the extraction itself.
+let calendarEventsCache = [];
+let calendarViewMonth = new Date(); // any date within the month currently shown
+let calendarSelectedDay = null; // "YYYY-MM-DD" or null
+
+function calendarDayKey(isoDateString){
+  const d = new Date(isoDateString);
+  return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+}
+
+async function refreshCalendarEvents(){
+  const grid = document.getElementById("calendarGrid");
+  grid.innerHTML = `<div class="calendar-empty">Loading events…</div>`;
+  try{
+    const res = await fetch(PROXY_ORIGIN + "/api/calendar/events");
+    if (!res.ok) throw new Error("Server returned " + res.status);
+    const data = await res.json();
+    calendarEventsCache = data.events || [];
+    renderCalendarGrid();
+  } catch(e){
+    grid.innerHTML = `<div class="calendar-empty">Couldn't load calendar events: ${escapeHtml(e.message)}</div>`;
+  }
+}
+
+function renderCalendarGrid(){
+  const grid = document.getElementById("calendarGrid");
+  const label = document.getElementById("calendarMonthLabel");
+  const year = calendarViewMonth.getFullYear();
+  const month = calendarViewMonth.getMonth();
+
+  label.textContent = calendarViewMonth.toLocaleDateString(undefined, { month: "long", year: "numeric" });
+
+  const eventsByDay = {};
+  calendarEventsCache.forEach(ev => {
+    const key = calendarDayKey(ev.date);
+    (eventsByDay[key] = eventsByDay[key] || []).push(ev);
+  });
+
+  const firstOfMonth = new Date(year, month, 1);
+  const startWeekday = firstOfMonth.getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const todayKey = calendarDayKey(new Date().toISOString());
+
+  grid.innerHTML = "";
+  ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].forEach(w => {
+    const el = document.createElement("div");
+    el.className = "calendar-weekday";
+    el.textContent = w;
+    grid.appendChild(el);
+  });
+
+  for (let i = 0; i < startWeekday; i++){
+    const filler = document.createElement("div");
+    filler.className = "calendar-day calendar-day-empty";
+    grid.appendChild(filler);
+  }
+
+  for (let day = 1; day <= daysInMonth; day++){
+    const key = year + "-" + String(month + 1).padStart(2, "0") + "-" + String(day).padStart(2, "0");
+    const dayEvents = eventsByDay[key] || [];
+    const cell = document.createElement("div");
+    cell.className = "calendar-day" +
+      (dayEvents.length ? " calendar-day-has-events" : "") +
+      (key === todayKey ? " calendar-day-today" : "");
+
+    const num = document.createElement("div");
+    num.className = "calendar-day-number";
+    num.textContent = String(day);
+    cell.appendChild(num);
+
+    if (dayEvents.length){
+      const dots = document.createElement("div");
+      dots.className = "calendar-day-dot-row";
+      dayEvents.slice(0, 6).forEach(() => {
+        const dot = document.createElement("span");
+        dot.className = "calendar-event-dot";
+        dots.appendChild(dot);
+      });
+      cell.appendChild(dots);
+
+      const preview = document.createElement("div");
+      preview.className = "calendar-day-event-title";
+      preview.textContent = dayEvents[0].title || "(untitled event)";
+      cell.appendChild(preview);
+
+      cell.addEventListener("click", () => openCalendarDay(key));
+    }
+
+    grid.appendChild(cell);
+  }
+
+  if (calendarSelectedDay) renderCalendarDayPanel(calendarSelectedDay);
+}
+
+function openCalendarDay(key){
+  calendarSelectedDay = key;
+  document.getElementById("calendarDayPanel").style.display = "flex";
+  renderCalendarDayPanel(key);
+}
+
+function closeCalendarDayPanel(){
+  calendarSelectedDay = null;
+  document.getElementById("calendarDayPanel").style.display = "none";
+}
+
+function renderCalendarDayPanel(key){
+  const events = calendarEventsCache.filter(ev => calendarDayKey(ev.date) === key);
+  const titleEl = document.getElementById("calendarDayPanelTitle");
+  const body = document.getElementById("calendarDayEvents");
+  const [y, m, d] = key.split("-").map(Number);
+  titleEl.textContent = new Date(y, m - 1, d).toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" });
+
+  if (!events.length){
+    body.innerHTML = `<div class="calendar-empty">No events on this day.</div>`;
+    return;
+  }
+
+  body.innerHTML = "";
+  events.forEach(ev => {
+    const card = document.createElement("div");
+    card.className = "calendar-event-card";
+
+    const time = document.createElement("div");
+    time.className = "calendar-event-time";
+    time.textContent = ev.hasTime
+      ? new Date(ev.date).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" })
+      : "Date only";
+    card.appendChild(time);
+
+    // Editable in place -- the local parser isn't always right about exactly
+    // which sentence is the "title", so a quick hand fix beats deleting and
+    // losing the event entirely.
+    const title = document.createElement("div");
+    title.className = "calendar-event-title";
+    title.contentEditable = "true";
+    title.spellcheck = false;
+    title.textContent = ev.title || "(untitled event)";
+    title.addEventListener("blur", () => {
+      const trimmed = title.textContent.trim();
+      if (trimmed && trimmed !== ev.title) saveCalendarEventEdit(ev.id, { title: trimmed });
+    });
+    card.appendChild(title);
+
+    if (ev.description){
+      const desc = document.createElement("div");
+      desc.className = "calendar-event-desc";
+      desc.textContent = ev.description;
+      card.appendChild(desc);
+    }
+
+    if (ev.sourceSubject){
+      const source = document.createElement("div");
+      source.className = "calendar-event-source";
+      source.textContent = "From: " + ev.sourceSubject;
+      card.appendChild(source);
+    }
+
+    const actions = document.createElement("div");
+    actions.className = "calendar-event-actions";
+
+    const viewBtn = document.createElement("button");
+    viewBtn.type = "button";
+    viewBtn.textContent = "View email";
+    viewBtn.addEventListener("click", () => openCalendarEventSource(ev.sourceMessageId));
+    actions.appendChild(viewBtn);
+
+    const delBtn = document.createElement("button");
+    delBtn.type = "button";
+    delBtn.textContent = "Delete";
+    delBtn.addEventListener("click", () => deleteCalendarEvent(ev.id));
+    actions.appendChild(delBtn);
+
+    card.appendChild(actions);
+    body.appendChild(card);
+  });
+}
+
+async function saveCalendarEventEdit(id, patch){
+  try{
+    const res = await fetch(PROXY_ORIGIN + "/api/calendar/events/" + encodeURIComponent(id), {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(patch)
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error((data && data.error && data.error.message) || "Couldn't save that change.");
+    const idx = calendarEventsCache.findIndex(e => String(e.id) === String(id));
+    if (idx !== -1) calendarEventsCache[idx] = { ...calendarEventsCache[idx], ...data };
+  } catch(e){
+    alert("Couldn't save that change: " + e.message);
+  }
+}
+
+async function deleteCalendarEvent(id){
+  if (!confirm("Remove this event from the calendar?")) return;
+  try{
+    const res = await fetch(PROXY_ORIGIN + "/api/calendar/events/" + encodeURIComponent(id), { method: "DELETE" });
+    if (!res.ok){
+      const data = await res.json().catch(() => null);
+      throw new Error((data && data.error && data.error.message) || "Delete failed.");
+    }
+    calendarEventsCache = calendarEventsCache.filter(e => String(e.id) !== String(id));
+    renderCalendarGrid();
+    if (calendarSelectedDay) renderCalendarDayPanel(calendarSelectedDay);
+  } catch(e){
+    alert("Couldn't delete this event: " + e.message);
+  }
+}
+
+// Reuses the Email tab's own modal (openEmailView) rather than building a
+// second one -- fetches the message list first if the Email tab hasn't been
+// opened yet this session, since emailMessagesCache would otherwise be empty.
+async function openCalendarEventSource(id){
+  if (!id) return;
+  let msg = emailMessagesCache.find(m => String(m.id) === String(id));
+  if (!msg){
+    try{
+      const res = await fetch(PROXY_ORIGIN + "/api/email/messages");
+      const data = await res.json();
+      emailMessagesCache = data.messages || [];
+      msg = emailMessagesCache.find(m => String(m.id) === String(id));
+    } catch(e){ /* fall through to the not-found alert below */ }
+  }
+  if (msg) openEmailView(msg);
+  else alert("Couldn't find the source email -- it may have been deleted.");
+}
+
+document.getElementById("calendarPrevBtn").addEventListener("click", () => {
+  calendarViewMonth = new Date(calendarViewMonth.getFullYear(), calendarViewMonth.getMonth() - 1, 1);
+  renderCalendarGrid();
+});
+document.getElementById("calendarNextBtn").addEventListener("click", () => {
+  calendarViewMonth = new Date(calendarViewMonth.getFullYear(), calendarViewMonth.getMonth() + 1, 1);
+  renderCalendarGrid();
+});
+document.getElementById("calendarTodayBtn").addEventListener("click", () => {
+  calendarViewMonth = new Date();
+  renderCalendarGrid();
+});
+document.getElementById("calendarDayPanelCloseBtn").addEventListener("click", closeCalendarDayPanel);
 
 
 // ====== SCHEDULE: reading schedules for Civil Procedure and LSS ======
