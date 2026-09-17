@@ -1757,6 +1757,15 @@ pre code {
 }
 .calendar-backfill-status.ok{ color:#8fbf8f; }
 .calendar-backfill-status.err{ color:#d98b8b; }
+.calendar-backfill-session{
+  font-size:11px;
+  font-family:var(--font-mono, monospace);
+  color:var(--text-muted);
+  min-height:14px;
+  margin-top:-6px;
+  margin-bottom:10px;
+  user-select:all;
+}
 
 /* Pinned to the top of .calendar-wrap's own scroll while the hour grid
    below scrolls underneath it -- needs an opaque background (matching the
@@ -3324,9 +3333,11 @@ pre code {
             <button type="button" class="doc-refresh-btn" id="calendarNextBtn" title="Next week">&#8594;</button>
             <div class="calendar-week-label" id="calendarWeekLabel"></div>
             <button type="button" class="doc-refresh-btn" id="calendarBackfillBtn" title="One-time: sync every already-synced email (not just new ones) for events">Sync all email for events</button>
+            <button type="button" class="doc-refresh-btn" id="calendarRecheckBtn" title="Wipes all calendar events and re-extracts every synced email from scratch (e.g. after a fix to event extraction)">Force recheck all email</button>
           </div>
         </div>
         <div class="calendar-backfill-status" id="calendarBackfillStatus"></div>
+        <div class="calendar-backfill-session" id="calendarBackfillSession"></div>
 
         <div class="calendar-sticky-top">
           <div class="calendar-week-header" id="calendarWeekHeader"></div>
@@ -7889,33 +7900,49 @@ async function openCalendarEventSource(id){
   else alert("Couldn't find the source email -- it may have been deleted.");
 }
 
-// ---- One-time retroactive backfill (calendar-backfill.js) ----
-// Runs as a background job server-side; this just starts it and polls its
+// ---- One-time retroactive backfill, and force-recheck (calendar-backfill.js) ----
+// Both run as a background job server-side (one per account, shared job
+// registry -- see calendar-backfill.js) so this just starts one and polls its
 // status rather than waiting on one long request, since a mailbox with a lot
-// of mail can take minutes (one Claude Code CLI call per email).
+// of mail can take minutes (one Claude Code CLI call per email). job.type
+// ("backfill" or "recheck") distinguishes which is running so the status
+// text/buttons line up correctly regardless of which one was clicked.
 function renderBackfillStatus(job){
   const statusEl = document.getElementById("calendarBackfillStatus");
-  const btn = document.getElementById("calendarBackfillBtn");
+  const sessionEl = document.getElementById("calendarBackfillSession");
+  const backfillBtn = document.getElementById("calendarBackfillBtn");
+  const recheckBtn = document.getElementById("calendarRecheckBtn");
+  const isRecheck = job && job.type === "recheck";
+  // The Claude Code session behind the most recently finished email's
+  // extraction (see calendar-extract.js) -- `claude --resume <uuid>` reopens
+  // that exact one-shot call's transcript, useful for checking why a
+  // particular event came out wrong (or didn't come out at all).
+  sessionEl.textContent = (job && job.lastSessionId) ? `claude --resume ${job.lastSessionId}` : "";
   if (!job || job.status === "idle"){
     statusEl.textContent = "";
     statusEl.className = "calendar-backfill-status";
-    btn.disabled = false;
+    backfillBtn.disabled = false;
+    recheckBtn.disabled = false;
     return;
   }
   if (job.status === "running"){
-    statusEl.textContent = `Syncing already-synced email for events: ${job.processed}/${job.total}` +
+    statusEl.textContent = (isRecheck ? "Rechecking every synced email from scratch: " : "Syncing already-synced email for events: ") +
+      `${job.processed}/${job.total}` +
       (job.eventsFound ? `, ${job.eventsFound} event${job.eventsFound === 1 ? "" : "s"} found so far…` : "…");
     statusEl.className = "calendar-backfill-status";
-    btn.disabled = true;
+    backfillBtn.disabled = true;
+    recheckBtn.disabled = true;
   } else if (job.status === "done"){
     statusEl.textContent = `Done: checked ${job.total} email${job.total === 1 ? "" : "s"}, found ${job.eventsFound} event${job.eventsFound === 1 ? "" : "s"}` +
       (job.failed ? ` (${job.failed} couldn't be checked -- click again to retry those)` : "") + ".";
     statusEl.className = "calendar-backfill-status ok";
-    btn.disabled = false;
+    backfillBtn.disabled = false;
+    recheckBtn.disabled = false;
   } else if (job.status === "error"){
-    statusEl.textContent = "Backfill failed: " + (job.error || "unknown error");
+    statusEl.textContent = (isRecheck ? "Force recheck failed: " : "Backfill failed: ") + (job.error || "unknown error");
     statusEl.className = "calendar-backfill-status err";
-    btn.disabled = false;
+    backfillBtn.disabled = false;
+    recheckBtn.disabled = false;
   }
 }
 
@@ -7960,6 +7987,30 @@ document.getElementById("calendarBackfillBtn").addEventListener("click", async (
   statusEl.className = "calendar-backfill-status";
   try{
     const res = await fetch(PROXY_ORIGIN + "/api/calendar/backfill", { method: "POST" });
+    const data = await res.json();
+    if (!res.ok) throw new Error((data && data.error && data.error.message) || "Couldn't start.");
+    renderBackfillStatus(data);
+    pollCalendarBackfill();
+  } catch(e){
+    statusEl.textContent = "Couldn't start: " + e.message;
+    statusEl.className = "calendar-backfill-status err";
+    btn.disabled = false;
+  }
+});
+
+// Force recheck wipes every stored calendar event (including any manually
+// edited) and re-extracts from every synced email regardless of
+// calendarChecked -- meant for after a fix to extraction/date handling, not
+// routine use, so this confirms before doing anything.
+document.getElementById("calendarRecheckBtn").addEventListener("click", async () => {
+  if (!confirm("This deletes ALL current calendar events (including any you edited) and re-checks every synced email from scratch. This can take a while for a large mailbox. Continue?")) return;
+  const btn = document.getElementById("calendarRecheckBtn");
+  const statusEl = document.getElementById("calendarBackfillStatus");
+  btn.disabled = true;
+  statusEl.textContent = "Starting…";
+  statusEl.className = "calendar-backfill-status";
+  try{
+    const res = await fetch(PROXY_ORIGIN + "/api/calendar/recheck", { method: "POST" });
     const data = await res.json();
     if (!res.ok) throw new Error((data && data.error && data.error.message) || "Couldn't start.");
     renderBackfillStatus(data);

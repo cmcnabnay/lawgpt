@@ -58,4 +58,14 @@ router.get("/backfill/status", (req, res) => {
   res.json(calendarBackfill.getStatus(req.session.userId) || { status: "idle" });
 });
 
+// Re-extracts every already-synced email regardless of calendarChecked, and
+// wipes existing calendar_events first -- see calendar-backfill.js. Shares
+// the same job registry/status polling as /backfill (only one job per
+// account at a time either way); the frontend tells them apart via
+// job.type.
+router.post("/recheck", async (req, res) => {
+  const job = await calendarBackfill.startForceRecheck(req.session.userId);
+  res.json(job);
+});
+
 module.exports = router;

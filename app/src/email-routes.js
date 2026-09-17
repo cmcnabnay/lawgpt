@@ -522,7 +522,7 @@ router.post("/sync", async (req, res) => {
       const messageForEvents = { id: msg.id, subject, body: bodyText, date: msg.receivedDateTime || null, courseFolder };
       let calendarChecked = false;
       try {
-        const events = await extractCalendarEventsForMessage(messageForEvents);
+        const { events } = await extractCalendarEventsForMessage(messageForEvents);
         newCalendarEvents.push(...events);
         calendarChecked = true;
       } catch (err) {

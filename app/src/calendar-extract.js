@@ -14,10 +14,14 @@
 // instruction, instead of trying to special-case the parser further.
 //
 // Each call is a fresh, independent, non-interactive session (-p, one turn,
-// no tools, no session id) -- there's no reason for one email's extraction to
-// share a Claude Code session with another's. See agent-runtime.js for the
-// sibling (but session-based, streaming) use of the same CLI for the Agent
-// tab; this is deliberately the lighter-weight one-shot form of it.
+// no tools) -- there's no reason for one email's extraction to share a
+// Claude Code session with another's. It's still given its own
+// --session-id (a fresh UUID we generate, same trick agent-runtime.js uses)
+// purely so the exact call behind any one email's extraction can be replayed
+// afterward with `claude --resume <that uuid>` -- useful for debugging a
+// wrong/missing event, since otherwise a one-shot `-p` call's transcript is
+// gone the moment it exits. See agent-runtime.js for the sibling (but
+// long-lived, streaming) use of the same CLI for the Agent tab.
 
 const { spawn } = require("child_process");
 const crypto = require("crypto");
@@ -56,17 +60,19 @@ function buildPrompt(message) {
   return `${EXTRACTION_INSTRUCTIONS}\n\nEMAIL:\nSubject: ${subject}\nReceived: ${received}\nBody:\n${body}`;
 }
 
-// Spawns `claude -p <prompt> --output-format json` -- a single, tool-free,
-// non-interactive turn. Resolves the raw stdout, or null on any failure
-// (missing binary, timeout, non-zero exit with no usable output) so the
-// caller can decide how to handle "couldn't extract this one" without the
-// whole sync/backfill run dying over it.
-function runClaudeExtraction(prompt) {
+// Spawns `claude -p <prompt> --output-format json --session-id <sessionId>`
+// -- a single, tool-free, non-interactive turn, pinned to a caller-supplied
+// session id purely so it can be replayed afterward via `claude --resume`.
+// Resolves the raw stdout, or null on any failure (missing binary, timeout,
+// non-zero exit with no usable output) so the caller can decide how to
+// handle "couldn't extract this one" without the whole sync/backfill run
+// dying over it.
+function runClaudeExtraction(prompt, sessionId) {
   return new Promise((resolve) => {
     let settled = false;
     let child;
     try {
-      child = spawn("claude", ["-p", prompt, "--output-format", "json"], {
+      child = spawn("claude", ["-p", prompt, "--output-format", "json", "--session-id", sessionId], {
         env: process.env,
         stdio: ["ignore", "pipe", "pipe"]
       });
@@ -149,18 +155,22 @@ function toEventDate(dateStr, timeStr) {
 }
 
 // Runs extraction for one already-fetched message (shape: { id, subject,
-// body, date, courseFolder }) and returns finished calendar-event objects
-// ready for calendarStore.addEvents. Throws (rather than swallowing) on a
-// failed/timed-out CLI call, so callers (email-routes.js's /sync,
-// calendar-backfill.js) can tell "genuinely no events" (empty array) apart
-// from "couldn't check this one" and leave it eligible for a retry instead of
-// silently marking it done.
+// body, date, courseFolder }) and returns { events, sessionId } --
+// sessionId is the Claude Code session this extraction ran in (null if no
+// CLI call was actually made, i.e. the empty-message shortcut below), so a
+// caller can surface `claude --resume <sessionId>` for replaying/debugging
+// that exact extraction. Throws (rather than swallowing) on a failed/timed-
+// out CLI call, so callers (email-routes.js's /sync, calendar-backfill.js)
+// can tell "genuinely no events" (empty array) apart from "couldn't check
+// this one" and leave it eligible for a retry instead of silently marking it
+// done.
 async function extractCalendarEventsForMessage(message) {
   const subject = message.subject || "";
   const body = message.body || "";
-  if (!subject.trim() && !body.trim()) return [];
+  if (!subject.trim() && !body.trim()) return { events: [], sessionId: null };
 
-  const stdout = await runClaudeExtraction(buildPrompt(message));
+  const sessionId = crypto.randomUUID();
+  const stdout = await runClaudeExtraction(buildPrompt(message), sessionId);
   if (stdout === null) {
     throw new Error("Claude Code extraction failed or timed out.");
   }
@@ -189,7 +199,7 @@ async function extractCalendarEventsForMessage(message) {
       createdAt: new Date().toISOString()
     });
   }
-  return events;
+  return { events, sessionId };
 }
 
 module.exports = { extractCalendarEventsForMessage };

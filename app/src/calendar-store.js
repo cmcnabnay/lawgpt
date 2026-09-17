@@ -116,4 +116,12 @@ async function deleteEvent(userId, id) {
   return true;
 }
 
-module.exports = { getAll, addEvents, updateEvent, deleteEvent };
+// Wipes every stored event for the account -- used by calendar-backfill.js's
+// force-recheck, which regenerates everything from scratch, so stale events
+// (including any from before a fix to the extraction/date logic) don't stick
+// around alongside the freshly re-extracted ones.
+async function clearAll(userId) {
+  await save(userId, []);
+}
+
+module.exports = { getAll, addEvents, updateEvent, deleteEvent, clearAll };

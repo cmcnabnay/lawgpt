@@ -39,11 +39,52 @@ async function startBackfill(userId) {
 
   const messages = (await emailStore.getAll(userId)).filter(m => !m.calendarChecked);
   const job = {
+    type: "backfill",
     status: "running",
     total: messages.length,
     processed: 0,
     eventsFound: 0,
     failed: 0,
+    lastSessionId: null,
+    startedAt: new Date().toISOString(),
+    finishedAt: null,
+    error: null
+  };
+  jobs.set(userId, job);
+
+  runJob(userId, messages, job).catch(err => {
+    job.status = "error";
+    job.error = err.message;
+    job.finishedAt = new Date().toISOString();
+  });
+
+  return job;
+}
+
+// Unlike startBackfill (which only ever looks at messages still missing
+// calendarChecked), this re-extracts EVERY already-synced message,
+// regardless of that flag, and wipes the account's existing calendar_events
+// first. Exists so that events stored before a fix to calendar-extract.js
+// (e.g. the server/browser-timezone bug the "date"/"time" fields used to
+// have) can be regenerated correctly, rather than being stuck forever since
+// their source emails are already calendarChecked. Deliberately not the
+// default action (startBackfill) -- it re-runs a Claude Code CLI call per
+// email in the whole mailbox, and it throws away every existing calendar
+// event (including ones a user manually edited) before it starts.
+async function startForceRecheck(userId) {
+  const existing = jobs.get(userId);
+  if (existing && existing.status === "running") return existing;
+
+  await calendarStore.clearAll(userId);
+  const messages = await emailStore.getAll(userId);
+  const job = {
+    type: "recheck",
+    status: "running",
+    total: messages.length,
+    processed: 0,
+    eventsFound: 0,
+    failed: 0,
+    lastSessionId: null,
     startedAt: new Date().toISOString(),
     finishedAt: null,
     error: null
@@ -80,7 +121,8 @@ async function runJob(userId, messages, job) {
     while (index < messages.length) {
       const message = messages[index++];
       try {
-        const events = await extractCalendarEventsForMessage(message);
+        const { events, sessionId } = await extractCalendarEventsForMessage(message);
+        if (sessionId) job.lastSessionId = sessionId;
         await serializeWrite(async () => {
           if (events.length) {
             await calendarStore.addEvents(userId, events);
@@ -106,4 +148,4 @@ async function runJob(userId, messages, job) {
   job.finishedAt = new Date().toISOString();
 }
 
-module.exports = { startBackfill, getStatus };
+module.exports = { startBackfill, startForceRecheck, getStatus };
