@@ -1715,11 +1715,18 @@ pre code {
   font:inherit; color:var(--brass); text-decoration:underline; cursor:pointer;
 }
 .calendar-view{ flex:1; min-height:0; display:flex; }
+/* A single scrolling container for the whole tab (same proven pattern as
+   .email-view/.documents-view -- flex:1 + min-height:0 + overflow-y:auto on
+   ONE element) rather than a nested chain of flex/scroll regions, which
+   turned out not to actually get a bounded height from its ancestors and
+   just grew past the viewport with nothing to scroll it (reported: the grid
+   "cuts off" around 6pm with no way to reach the evening hours). The week
+   header + all-day row stay visible while scrolling via position:sticky
+   instead of a separate scroll region. */
 .calendar-wrap{
   flex:1;
   min-height:0;
-  display:flex;
-  flex-direction:column;
+  overflow-y:auto;
   padding:28px 32px 20px;
 }
 .calendar-head{
@@ -1751,9 +1758,19 @@ pre code {
 .calendar-backfill-status.ok{ color:#8fbf8f; }
 .calendar-backfill-status.err{ color:#d98b8b; }
 
+/* Pinned to the top of .calendar-wrap's own scroll while the hour grid
+   below scrolls underneath it -- needs an opaque background (matching the
+   page background) since content scrolls directly behind it. */
+.calendar-sticky-top{
+  position:sticky;
+  top:0;
+  z-index:2;
+  background:var(--ink);
+}
+
 /* Week grid: an hour-gutter column + 7 day columns, shared across the header
-   row, the all-day row, and the scrollable hourly body below it -- kept in
-   sync via the same grid-template-columns on all three. */
+   row, the all-day row, and the hourly body below them -- kept in sync via
+   the same grid-template-columns on all three. */
 .calendar-week-header,
 .calendar-allday-row{
   display:grid;
@@ -1793,6 +1810,8 @@ pre code {
 .calendar-allday-row > div{
   background:var(--ink-2);
   min-height:22px;
+  min-width:0; /* grid items default to min-width:auto, which lets nowrap pill text below force the cell (and the pills in it) wider than its 1fr track and spill into the next day's column -- this is what actually keeps it clipped to its own day */
+  overflow:hidden;
   padding:3px 4px;
   display:flex;
   flex-direction:column;
@@ -1804,6 +1823,7 @@ pre code {
   background:#8fb3d9;
   border-radius:3px;
   padding:2px 6px;
+  min-width:0;
   overflow:hidden;
   text-overflow:ellipsis;
   white-space:nowrap;
@@ -1811,10 +1831,7 @@ pre code {
 }
 .calendar-allday-pill:hover{ filter:brightness(1.1); }
 .calendar-week-body{
-  flex:1;
-  min-height:0;
   display:flex;
-  overflow-y:auto;
   border:1px solid var(--hairline);
   border-top:none;
 }
@@ -3306,13 +3323,15 @@ pre code {
             <button type="button" class="doc-refresh-btn" id="calendarPrevBtn" title="Previous week">&#8592;</button>
             <button type="button" class="doc-refresh-btn" id="calendarNextBtn" title="Next week">&#8594;</button>
             <div class="calendar-week-label" id="calendarWeekLabel"></div>
-            <button type="button" class="doc-refresh-btn" id="calendarBackfillBtn" title="One-time: scan every already-synced email (not just new ones) for events">Parse all synced email for events</button>
+            <button type="button" class="doc-refresh-btn" id="calendarBackfillBtn" title="One-time: sync every already-synced email (not just new ones) for events">Sync all email for events</button>
           </div>
         </div>
         <div class="calendar-backfill-status" id="calendarBackfillStatus"></div>
 
-        <div class="calendar-week-header" id="calendarWeekHeader"></div>
-        <div class="calendar-allday-row" id="calendarAlldayRow"></div>
+        <div class="calendar-sticky-top">
+          <div class="calendar-week-header" id="calendarWeekHeader"></div>
+          <div class="calendar-allday-row" id="calendarAlldayRow"></div>
+        </div>
         <div class="calendar-week-body" id="calendarWeekBody">
           <div class="calendar-hours-col" id="calendarHoursCol"></div>
           <div class="calendar-week-columns" id="calendarWeekColumns"></div>
@@ -7844,7 +7863,7 @@ function renderBackfillStatus(job){
     return;
   }
   if (job.status === "running"){
-    statusEl.textContent = `Scanning already-synced email for events: ${job.processed}/${job.total}` +
+    statusEl.textContent = `Syncing already-synced email for events: ${job.processed}/${job.total}` +
       (job.eventsFound ? `, ${job.eventsFound} event${job.eventsFound === 1 ? "" : "s"} found so far…` : "…");
     statusEl.className = "calendar-backfill-status";
     btn.disabled = true;

@@ -22,11 +22,11 @@
 const { spawn } = require("child_process");
 const crypto = require("crypto");
 
-const MAX_EVENTS_PER_MESSAGE = 8;
-const MAX_BODY_CHARS_FOR_EXTRACTION = 6000;
+const MAX_EVENTS_PER_MESSAGE = 15; // a weekly digest-style newsletter can legitimately list this many separate real events
+const MAX_BODY_CHARS_FOR_EXTRACTION = 8000; // matches MAX_BODY_CHARS in email-routes.js -- the most that's ever actually stored
 const EXTRACTION_TIMEOUT_MS = 45000;
 
-const EXTRACTION_INSTRUCTIONS = `You are reading one email sent to a law student, looking for real calendar-worthy events -- something happening at a specific date/time that belongs on their calendar: a class session, review session, meeting, exam, assignment due date, RSVP deadline, or similar.
+const EXTRACTION_INSTRUCTIONS = `You are reading one email sent to a law student, looking for real calendar-worthy events -- something happening at a specific date/time that belongs on their calendar: a class session, review session, meeting, exam, assignment due date, RSVP deadline, or similar. This may be a single-topic email or a mass weekly digest/newsletter listing many unrelated announcements -- either way, evaluate each potential event independently against every rule below.
 
 Read the whole email for what it actually means, not just which sentences contain a date-shaped word:
 
@@ -35,6 +35,11 @@ Read the whole email for what it actually means, not just which sentences contai
 - Only extract an event if the email states (or clearly implies via a relative phrase like "tomorrow" or "next Friday") an actual date or day for it. Skip vague scheduling talk with no resolvable date ("assignments for next week" with no date attached is not extractable on its own).
 - Resolve relative dates ("tomorrow", "next Monday") using the email's own received date as the reference point -- but the event's real date is whatever that resolves to, not the received date itself.
 - If a date is followed by a clear label (e.g. "Note: Monday, 10/5: Tentative Midterm date"), that IS a real event -- title it after the label ("Tentative Midterm"), not after surrounding prose.
+- If the same real-world event or deadline is mentioned more than once in this email (e.g. summarized in a schedule/table AND again in prose, or repeated for emphasis), output it only ONCE. Never emit two entries for what is really the same event.
+
+Time -- be conservative, this is the part most often gotten wrong:
+- Only set "time" when the email states an actual specific clock time in ordinary human-readable form next to that specific event (e.g. "9:00 AM", "2 pm", "noon", "2 - 4 pm" -- use the start time for a range). If you have any doubt about whether a time belongs to this particular event, or the email doesn't give one at all, set "time" to null -- do NOT guess, estimate, default to a round hour, or space events apart by assigning them different times so they don't collide.
+- Never take a time from anywhere except plain prose written by the sender: not from the email's own Received/sent timestamp, not from any raw calendar/ICS data (lines like "DTSTART", "TZID", timestamps ending in "Z", or webcal/.ics links), and never convert a stated time to a different timezone -- copy the digits exactly as a human reading this email would understand them.
 
 For each real event found, output an object with:
 - "title": short (under 15 words), describing what the event actually is

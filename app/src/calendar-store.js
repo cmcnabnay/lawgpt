@@ -1,9 +1,10 @@
 // calendar-store.js
 //
 // Per-account store for calendar events extracted from synced email (see
-// email-routes.js's extractCalendarEvents, called from /sync). Same
-// app_user-backed per-user JSONB pattern already used for agent_runs/
-// email_sync_state/doc_overrides -- see agent-store.js, which this mirrors.
+// calendar-extract.js, called from email-routes.js's /sync and from
+// calendar-backfill.js). Same app_user-backed per-user JSONB pattern already
+// used for agent_runs/email_sync_state/doc_overrides -- see agent-store.js,
+// which this mirrors.
 //
 // Requires (run once against the Supabase app_user DB, alongside whatever
 // created users/user_state -- see ~/Documents/setup-user-accounts.sql):
@@ -37,15 +38,51 @@ async function getAll(userId) {
   return events.slice().sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0));
 }
 
-// Appends events from a freshly-synced message. Called once per /sync with
-// every new message's extracted events already batched together, alongside
-// emailStore.addMessages -- re-syncing never reprocesses an already-stored
-// message (see email-store.js's addMessages dedupe by id), so this never
-// needs its own dedupe pass.
+function calendarDayKeyOf(isoDateString) {
+  const d = new Date(isoDateString);
+  return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+}
+
+// Strips the kind of prefix/punctuation that makes the same real-world event
+// look like two different titles depending on which email mentioned it (a
+// syllabus line "9/25: Buyers send redline draft to sellers." vs. a
+// follow-up email's prose "Buyer groups send redlines to Seller groups").
+function normalizeEventTitle(title) {
+  return (title || "")
+    .toLowerCase()
+    .replace(/^\s*\d{1,2}\/\d{1,2}(\/\d{2,4})?\s*[:\-]\s*/, "")
+    .replace(/[.,;:!?"'`]+$/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+// Same calendar day, and either an exact title match or one title contains
+// the other once normalized -- a message announcing something and a later
+// reminder about the same thing are usually phrased as near-duplicates like
+// this rather than word-for-word identical.
+function isDuplicateEvent(existing, candidate) {
+  if (calendarDayKeyOf(existing.date) !== calendarDayKeyOf(candidate.date)) return false;
+  const a = normalizeEventTitle(existing.title);
+  const b = normalizeEventTitle(candidate.title);
+  if (!a || !b) return false;
+  if (a === b) return true;
+  return a.length >= 8 && b.length >= 8 && (a.includes(b) || b.includes(a));
+}
+
+// Appends events from a freshly-synced message (or a backfill batch),
+// skipping any candidate that looks like the same real-world event as one
+// already stored -- the same deadline can legitimately be mentioned in more
+// than one email (an announcement, then a reminder), and each is extracted
+// independently with no visibility into the others, so this is the one place
+// that actually catches it.
 async function addEvents(userId, newEvents) {
   if (!newEvents || !newEvents.length) return await load(userId);
   const events = await load(userId);
-  events.push(...newEvents);
+  for (const candidate of newEvents) {
+    if (!events.some(existing => isDuplicateEvent(existing, candidate))) {
+      events.push(candidate);
+    }
+  }
   await save(userId, events);
   return events;
 }
