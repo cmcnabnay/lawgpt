@@ -9,6 +9,7 @@ const express = require("express");
 const router = express.Router();
 
 const calendarStore = require("./calendar-store");
+const calendarBackfill = require("./calendar-backfill");
 
 function requireLogin(req, res, next) {
   if (!req.session || !req.session.userId) {
@@ -41,6 +42,20 @@ router.delete("/events/:id", async (req, res) => {
   const ok = await calendarStore.deleteEvent(req.session.userId, req.params.id);
   if (!ok) return res.status(404).json({ error: { message: "No calendar event with that id." } });
   res.json({ ok: true });
+});
+
+// One-time (well, re-runnable) retroactive pass over every already-synced
+// email -- see calendar-backfill.js. Fires the job and returns immediately
+// with its starting status; the frontend polls GET /backfill/status rather
+// than waiting on this request, since a mailbox with a lot of mail can take
+// minutes to get through.
+router.post("/backfill", async (req, res) => {
+  const job = await calendarBackfill.startBackfill(req.session.userId);
+  res.json(job);
+});
+
+router.get("/backfill/status", (req, res) => {
+  res.json(calendarBackfill.getStatus(req.session.userId) || { status: "idle" });
 });
 
 module.exports = router;

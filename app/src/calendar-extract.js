@@ -1,0 +1,183 @@
+// calendar-extract.js
+//
+// Identifies real calendar-worthy events in a single email's subject/body,
+// via a one-shot headless Claude Code CLI call (`claude -p ... --output-format
+// json`) rather than a local date-pattern parser. A plain regex/NLP date
+// parser (this app's first attempt, chrono-node) can't tell "the review
+// session is Friday at 2pm" (a real future event) apart from "thank you for
+// attending the review session earlier today" (a past reference that merely
+// happens to contain a date-shaped word) -- both look identical to a parser
+// that only recognizes date patterns, and in testing that produced false
+// events pulled straight from a subject line or greeting. Reading the whole
+// email for what's actually being said needs real language understanding --
+// that's the whole reason this delegates to Claude Code, per direct
+// instruction, instead of trying to special-case the parser further.
+//
+// Each call is a fresh, independent, non-interactive session (-p, one turn,
+// no tools, no session id) -- there's no reason for one email's extraction to
+// share a Claude Code session with another's. See agent-runtime.js for the
+// sibling (but session-based, streaming) use of the same CLI for the Agent
+// tab; this is deliberately the lighter-weight one-shot form of it.
+
+const { spawn } = require("child_process");
+const crypto = require("crypto");
+
+const MAX_EVENTS_PER_MESSAGE = 8;
+const MAX_BODY_CHARS_FOR_EXTRACTION = 6000;
+const EXTRACTION_TIMEOUT_MS = 45000;
+
+const EXTRACTION_INSTRUCTIONS = `You are reading one email sent to a law student, looking for real calendar-worthy events -- something happening at a specific date/time that belongs on their calendar: a class session, review session, meeting, exam, assignment due date, RSVP deadline, or similar.
+
+Read the whole email for what it actually means, not just which sentences contain a date-shaped word:
+
+- Only extract something that is a FUTURE commitment relative to when this email was sent. An email thanking someone for attending, recapping what already happened, or referencing "earlier today" / "today's session" / "the session we just had" is NOT describing an upcoming event, even though it may mention "today" -- skip it entirely.
+- Never invent an event out of the greeting ("Good afternoon,"), sign-off, or the email's own subject line. A title must describe what the event actually is, in your own words if needed -- never just copy the subject line or the first sentence unless that sentence genuinely is the event description.
+- Only extract an event if the email states (or clearly implies via a relative phrase like "tomorrow" or "next Friday") an actual date or day for it. Skip vague scheduling talk with no resolvable date ("assignments for next week" with no date attached is not extractable on its own).
+- Resolve relative dates ("tomorrow", "next Monday") using the email's own received date as the reference point -- but the event's real date is whatever that resolves to, not the received date itself.
+- If a date is followed by a clear label (e.g. "Note: Monday, 10/5: Tentative Midterm date"), that IS a real event -- title it after the label ("Tentative Midterm"), not after surrounding prose.
+
+For each real event found, output an object with:
+- "title": short (under 15 words), describing what the event actually is
+- "date": the event's date as YYYY-MM-DD
+- "time": 24-hour "HH:MM" if a specific time is stated, otherwise null
+- "description": one sentence, quoting or paraphrasing the relevant part of the email
+
+Respond with ONLY a JSON array of these objects -- no markdown code fences, no prose before or after. If there are no real calendar-worthy events in this email, respond with exactly: []`;
+
+function buildPrompt(message) {
+  const subject = message.subject || "(no subject)";
+  const received = message.date || "unknown";
+  const body = (message.body || "").slice(0, MAX_BODY_CHARS_FOR_EXTRACTION);
+  return `${EXTRACTION_INSTRUCTIONS}\n\nEMAIL:\nSubject: ${subject}\nReceived: ${received}\nBody:\n${body}`;
+}
+
+// Spawns `claude -p <prompt> --output-format json` -- a single, tool-free,
+// non-interactive turn. Resolves the raw stdout, or null on any failure
+// (missing binary, timeout, non-zero exit with no usable output) so the
+// caller can decide how to handle "couldn't extract this one" without the
+// whole sync/backfill run dying over it.
+function runClaudeExtraction(prompt) {
+  return new Promise((resolve) => {
+    let settled = false;
+    let child;
+    try {
+      child = spawn("claude", ["-p", prompt, "--output-format", "json"], {
+        env: process.env,
+        stdio: ["ignore", "pipe", "pipe"]
+      });
+    } catch (err) {
+      resolve(null);
+      return;
+    }
+
+    let stdout = "";
+    const timer = setTimeout(() => {
+      if (settled) return;
+      settled = true;
+      try { child.kill(); } catch (err) { /* already exited */ }
+      resolve(null);
+    }, EXTRACTION_TIMEOUT_MS);
+
+    child.stdout.on("data", (chunk) => { stdout += chunk.toString(); });
+    child.on("error", () => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      resolve(null);
+    });
+    child.on("close", () => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      resolve(stdout);
+    });
+  });
+}
+
+function parseEventsFromClaudeOutput(stdout) {
+  if (!stdout) return [];
+  let envelope;
+  try {
+    envelope = JSON.parse(stdout);
+  } catch (err) {
+    return [];
+  }
+  const text = (envelope && typeof envelope.result === "string") ? envelope.result : "";
+  const match = text.match(/\[[\s\S]*\]/);
+  if (!match) return [];
+  try {
+    const parsed = JSON.parse(match[0]);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (err) {
+    return [];
+  }
+}
+
+// Combines a YYYY-MM-DD date with an optional HH:MM time into a stored ISO
+// datetime -- date-only events are anchored at local noon rather than
+// midnight, so they can't drift onto the wrong calendar day depending on the
+// viewer's timezone offset.
+function toEventDate(dateStr, timeStr) {
+  const dateMatch = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dateStr || "");
+  if (!dateMatch) return null;
+  const year = Number(dateMatch[1]);
+  const month = Number(dateMatch[2]);
+  const day = Number(dateMatch[3]);
+
+  let hour = 12, minute = 0, hasTime = false;
+  const timeMatch = /^(\d{1,2}):(\d{2})$/.exec(timeStr || "");
+  if (timeMatch) {
+    hour = Number(timeMatch[1]);
+    minute = Number(timeMatch[2]);
+    hasTime = true;
+  }
+
+  const dt = new Date(year, month - 1, day, hour, minute, 0);
+  if (Number.isNaN(dt.getTime())) return null;
+  return { date: dt.toISOString(), hasTime };
+}
+
+// Runs extraction for one already-fetched message (shape: { id, subject,
+// body, date, courseFolder }) and returns finished calendar-event objects
+// ready for calendarStore.addEvents. Throws (rather than swallowing) on a
+// failed/timed-out CLI call, so callers (email-routes.js's /sync,
+// calendar-backfill.js) can tell "genuinely no events" (empty array) apart
+// from "couldn't check this one" and leave it eligible for a retry instead of
+// silently marking it done.
+async function extractCalendarEventsForMessage(message) {
+  const subject = message.subject || "";
+  const body = message.body || "";
+  if (!subject.trim() && !body.trim()) return [];
+
+  const stdout = await runClaudeExtraction(buildPrompt(message));
+  if (stdout === null) {
+    throw new Error("Claude Code extraction failed or timed out.");
+  }
+
+  const raw = parseEventsFromClaudeOutput(stdout).slice(0, MAX_EVENTS_PER_MESSAGE);
+  const events = [];
+  for (const item of raw) {
+    if (!item || typeof item !== "object") continue;
+    const resolved = toEventDate(item.date, item.time);
+    if (!resolved) continue;
+
+    const title = (typeof item.title === "string" && item.title.trim())
+      ? item.title.trim().slice(0, 140)
+      : (subject.slice(0, 140) || "(untitled event)");
+
+    events.push({
+      id: crypto.randomUUID(),
+      title,
+      date: resolved.date,
+      hasTime: resolved.hasTime,
+      description: (typeof item.description === "string" ? item.description : "").slice(0, 300),
+      sourceMessageId: message.id,
+      sourceSubject: subject,
+      courseFolder: message.courseFolder || "uncategorized",
+      createdAt: new Date().toISOString()
+    });
+  }
+  return events;
+}
+
+module.exports = { extractCalendarEventsForMessage };

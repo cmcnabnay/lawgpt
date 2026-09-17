@@ -35,12 +35,12 @@ const router = express.Router();
 const path = require("path");
 const fs = require("fs");
 const crypto = require("crypto");
-const chrono = require("chrono-node");
 
 const documentStore = require("./document-store");
 const userDocumentStore = require("./user-document-store");
 const emailStore = require("./email-store");
 const calendarStore = require("./calendar-store");
+const { extractCalendarEventsForMessage } = require("./calendar-extract");
 const canvasRoutes = require("./canvas-routes");
 const { extractText, DOCS_ROOT, matchCourseFolder, isDocumentAttachment, deriveBaseName } = canvasRoutes;
 const { getAccessTokenSilent, getEmailConfig, getPersonalApiKey } = require("./email-auth");
@@ -280,61 +280,6 @@ function classifyEmailAssignment(subject, text){
   return { isAssignment: true, snippet };
 }
 
-// Splits combined subject+body text into sentence-ish chunks the same way
-// classifyEmailAssignment does, so a date's surrounding sentence can be
-// looked up by character offset (what chrono-node's result.index gives us)
-// -- gives the Calendar tab a short, relevant description instead of either
-// the bare date text or the whole email body.
-function sentenceContaining(text, index){
-  let offset = 0;
-  const sentences = text.split(/(?<=[.!?])\s+|\n+/);
-  for (const raw of sentences){
-    const start = offset;
-    offset += raw.length + 1; // approximate the separator that was split on
-    if (index >= start && index <= offset) return raw.trim();
-  }
-  return null;
-}
-
-const MAX_EVENTS_PER_MESSAGE = 5;
-const MAX_EVENT_DESCRIPTION_CHARS = 200;
-
-// Free, local natural-language date/time extraction (chrono-node) rather than
-// an OpenAI call per email -- run automatically on every synced message (see
-// /sync below), so it can't carry the per-email API cost the plan-generation
-// feature deliberately avoids paying unasked (see generateAndStorePlan's
-// comment above). Reference date is the email's own received time, so
-// relative phrasing ("this Friday", "next week") resolves against when the
-// email actually arrived rather than whenever /sync happens to run.
-function extractCalendarEvents(message){
-  const subject = message.subject || "";
-  const body = message.body || "";
-  const combined = `${subject}\n${body}`;
-  const referenceDate = message.date ? new Date(message.date) : new Date();
-
-  let results;
-  try {
-    results = chrono.parse(combined, referenceDate, { forwardDate: true });
-  } catch (err) {
-    return [];
-  }
-
-  return results.slice(0, MAX_EVENTS_PER_MESSAGE).map(result => {
-    const sentence = sentenceContaining(combined, result.index) || subject;
-    return {
-      id: crypto.randomUUID(),
-      title: sentence.slice(0, 140) || subject || "(untitled event)",
-      date: result.start.date().toISOString(),
-      hasTime: result.start.isCertain("hour"),
-      description: sentence.slice(0, MAX_EVENT_DESCRIPTION_CHARS),
-      sourceMessageId: message.id,
-      sourceSubject: subject,
-      courseFolder: message.courseFolder || "uncategorized",
-      createdAt: new Date().toISOString()
-    };
-  });
-}
-
 async function graphGet(accessToken, url, extraHeaders){
   const res = await fetch(url, {
     headers: {
@@ -566,8 +511,23 @@ router.post("/sync", async (req, res) => {
         }
       }
 
+      // Delegated to Claude Code (calendar-extract.js) rather than a local
+      // date-pattern parser -- telling "the review session is Friday at 2pm"
+      // (a real event) apart from "thank you for attending the review
+      // session earlier today" (a past reference, not an event) needs actual
+      // reading comprehension, not just date-shaped-text matching. Left
+      // unchecked (calendarChecked stays false) on failure/timeout so the
+      // one-time backfill (calendar-backfill.js) can retry it later instead
+      // of silently treating a failed check as "nothing to find".
       const messageForEvents = { id: msg.id, subject, body: bodyText, date: msg.receivedDateTime || null, courseFolder };
-      newCalendarEvents.push(...extractCalendarEvents(messageForEvents));
+      let calendarChecked = false;
+      try {
+        const events = await extractCalendarEventsForMessage(messageForEvents);
+        newCalendarEvents.push(...events);
+        calendarChecked = true;
+      } catch (err) {
+        console.error("Calendar extraction failed for message", msg.id, err.message);
+      }
 
       newMessages.push({
         id: msg.id,
@@ -581,6 +541,7 @@ router.post("/sync", async (req, res) => {
         isAssignment,
         assignmentSnippet,
         documentIds,
+        calendarChecked,
         done: false,
         plan: null,
         planError: null,
@@ -730,5 +691,4 @@ module.exports = router;
 // Attached so these can be unit-tested directly without a live Graph
 // connection.
 module.exports.classifyEmailAssignment = classifyEmailAssignment;
-module.exports.extractCalendarEvents = extractCalendarEvents;
 module.exports.matchCourseFolderFromRecipients = matchCourseFolderFromRecipients;

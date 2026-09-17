@@ -1718,15 +1718,16 @@ pre code {
 .calendar-wrap{
   flex:1;
   min-height:0;
-  overflow-y:auto;
-  padding:28px 32px 48px;
+  display:flex;
+  flex-direction:column;
+  padding:28px 32px 20px;
 }
 .calendar-head{
   display:flex;
   align-items:flex-start;
   justify-content:space-between;
   gap:16px;
-  margin-bottom:18px;
+  margin-bottom:14px;
   flex-wrap:wrap;
 }
 .calendar-nav{
@@ -1734,65 +1735,131 @@ pre code {
   align-items:center;
   gap:10px;
 }
-.calendar-month-label{
+.calendar-week-label{
   font-family:'IBM Plex Mono',monospace;
   font-size:13px;
   letter-spacing:0.04em;
   color:var(--text-light);
-  min-width:150px;
+  min-width:170px;
+}
+.calendar-backfill-status{
+  font-size:11.5px;
+  color:var(--text-muted);
+  min-height:16px;
+  margin-bottom:10px;
+}
+.calendar-backfill-status.ok{ color:#8fbf8f; }
+.calendar-backfill-status.err{ color:#d98b8b; }
+
+/* Week grid: an hour-gutter column + 7 day columns, shared across the header
+   row, the all-day row, and the scrollable hourly body below it -- kept in
+   sync via the same grid-template-columns on all three. */
+.calendar-week-header,
+.calendar-allday-row{
+  display:grid;
+  grid-template-columns:52px repeat(7, 1fr);
+  gap:1px;
+  background:var(--hairline);
+  border:1px solid var(--hairline);
+}
+.calendar-week-header{ border-bottom:none; }
+.calendar-week-header > div{
+  background:var(--ink-2);
+  padding:8px 6px;
   text-align:center;
 }
-.calendar-grid{
-  display:grid;
-  grid-template-columns:repeat(7, 1fr);
-  gap:6px;
-}
-.calendar-weekday{
+.calendar-week-header .calendar-weekday{
   font-family:'IBM Plex Mono',monospace;
-  font-size:10px;
+  font-size:9.5px;
   letter-spacing:0.1em;
   text-transform:uppercase;
   color:var(--text-muted);
-  text-align:center;
-  padding-bottom:4px;
 }
-.calendar-day{
-  min-height:76px;
+.calendar-week-header .calendar-date-num{
+  font-size:15px;
+  color:var(--text-light);
+  margin-top:2px;
+}
+.calendar-week-header .calendar-header-today .calendar-date-num{
+  color:var(--ink);
+  background:var(--brass);
+  border-radius:50%;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:24px;
+  height:24px;
+}
+.calendar-allday-row > div{
   background:var(--ink-2);
-  border:1px solid var(--hairline);
-  border-radius:var(--radius);
-  padding:6px 7px;
-  cursor:default;
+  min-height:22px;
+  padding:3px 4px;
   display:flex;
   flex-direction:column;
-  gap:4px;
+  gap:2px;
 }
-.calendar-day.calendar-day-empty{ background:transparent; border-color:transparent; }
-.calendar-day.calendar-day-has-events{ cursor:pointer; }
-.calendar-day.calendar-day-has-events:hover{ border-color:var(--brass-dim); }
-.calendar-day.calendar-day-today{ border-color:var(--brass); }
-.calendar-day-number{
-  font-family:'IBM Plex Mono',monospace;
-  font-size:11px;
-  color:var(--text-muted);
-}
-.calendar-day.calendar-day-today .calendar-day-number{ color:var(--brass); }
-.calendar-day-dot-row{ display:flex; flex-wrap:wrap; gap:3px; }
-.calendar-event-dot{
-  width:6px;
-  height:6px;
-  border-radius:50%;
-  background:#8fb3d9;
-}
-.calendar-day-event-title{
+.calendar-allday-pill{
   font-size:10.5px;
-  color:var(--text-light);
-  line-height:1.3;
+  color:var(--ink);
+  background:#8fb3d9;
+  border-radius:3px;
+  padding:2px 6px;
   overflow:hidden;
   text-overflow:ellipsis;
   white-space:nowrap;
+  cursor:pointer;
 }
-.calendar-day-panel{
+.calendar-allday-pill:hover{ filter:brightness(1.1); }
+.calendar-week-body{
+  flex:1;
+  min-height:0;
+  display:flex;
+  overflow-y:auto;
+  border:1px solid var(--hairline);
+  border-top:none;
+}
+.calendar-hours-col{
+  flex:0 0 52px;
+  position:relative;
+  background:var(--ink-2);
+  border-right:1px solid var(--hairline);
+}
+.calendar-hour-label{
+  position:absolute;
+  right:6px;
+  transform:translateY(-50%);
+  font-family:'IBM Plex Mono',monospace;
+  font-size:9.5px;
+  color:var(--text-muted);
+}
+.calendar-week-columns{
+  flex:1;
+  display:grid;
+  grid-template-columns:repeat(7, 1fr);
+  position:relative;
+  background-image:repeating-linear-gradient(to bottom, var(--hairline) 0, var(--hairline) 1px, transparent 1px, transparent var(--hour-height, 48px));
+}
+.calendar-day-column{
+  position:relative;
+  border-right:1px solid var(--hairline);
+}
+.calendar-day-column.calendar-header-today{ background:rgba(191,160,90,0.05); }
+.calendar-event-block{
+  position:absolute;
+  left:2px;
+  right:2px;
+  background:#8fb3d9;
+  color:var(--ink);
+  border-radius:4px;
+  padding:2px 6px;
+  font-size:10.5px;
+  line-height:1.25;
+  overflow:hidden;
+  cursor:pointer;
+}
+.calendar-event-block:hover{ filter:brightness(1.1); }
+.calendar-event-block-time{ font-weight:600; }
+.calendar-event-panel{
   width:340px;
   flex:0 0 auto;
   border-left:1px solid var(--hairline);
@@ -3235,21 +3302,29 @@ pre code {
             <div class="documents-subtitle">Dates and events pulled automatically from synced email -- click "Sync now" on the Email tab to refresh.</div>
           </div>
           <div class="calendar-nav">
-            <button type="button" class="doc-refresh-btn" id="calendarPrevBtn" title="Previous month">&#8592;</button>
-            <div class="calendar-month-label" id="calendarMonthLabel"></div>
-            <button type="button" class="doc-refresh-btn" id="calendarNextBtn" title="Next month">&#8594;</button>
             <button type="button" class="doc-refresh-btn" id="calendarTodayBtn">Today</button>
+            <button type="button" class="doc-refresh-btn" id="calendarPrevBtn" title="Previous week">&#8592;</button>
+            <button type="button" class="doc-refresh-btn" id="calendarNextBtn" title="Next week">&#8594;</button>
+            <div class="calendar-week-label" id="calendarWeekLabel"></div>
+            <button type="button" class="doc-refresh-btn" id="calendarBackfillBtn" title="One-time: scan every already-synced email (not just new ones) for events">Parse all synced email for events</button>
           </div>
         </div>
-        <div class="calendar-grid" id="calendarGrid"></div>
+        <div class="calendar-backfill-status" id="calendarBackfillStatus"></div>
+
+        <div class="calendar-week-header" id="calendarWeekHeader"></div>
+        <div class="calendar-allday-row" id="calendarAlldayRow"></div>
+        <div class="calendar-week-body" id="calendarWeekBody">
+          <div class="calendar-hours-col" id="calendarHoursCol"></div>
+          <div class="calendar-week-columns" id="calendarWeekColumns"></div>
+        </div>
       </div>
 
-      <div class="calendar-day-panel" id="calendarDayPanel" style="display:none;">
+      <div class="calendar-event-panel" id="calendarEventPanel" style="display:none;">
         <div class="calendar-day-panel-head">
-          <div class="documents-title" id="calendarDayPanelTitle"></div>
-          <button type="button" class="notes-right-close-btn" id="calendarDayPanelCloseBtn" aria-label="Close" title="Close">&#10005;</button>
+          <div class="documents-title">Event</div>
+          <button type="button" class="notes-right-close-btn" id="calendarEventPanelCloseBtn" aria-label="Close" title="Close">&#10005;</button>
         </div>
-        <div class="calendar-day-events" id="calendarDayEvents"></div>
+        <div class="calendar-day-events" id="calendarEventPanelBody"></div>
       </div>
     </div>
 
@@ -7462,13 +7537,27 @@ document.getElementById("emailSyncBtn").addEventListener("click", async () => {
 
 
 // ====== CALENDAR: dates/events extracted automatically from synced email ======
-// Populated by email-routes.js's extractCalendarEvents (run for every message
-// on every "Sync now"); this tab is read-only-ish -- title/date can be
-// corrected by hand (the local chrono-node parser isn't perfect) and a bad
-// extraction can be deleted, but nothing here re-runs the extraction itself.
+// Populated by email-routes.js's calendar-extract.js (a Claude Code CLI call
+// per email, not a local date-pattern parser -- see that file for why).
+// "Sync now" only ever runs it on newly-fetched messages; calendarBackfillBtn
+// below is the separate, explicit one-time catch-up over everything synced
+// before that (see calendar-backfill.js). Week view, Google-Calendar-style:
+// an all-day row for date-only events, an hourly grid for timed ones.
 let calendarEventsCache = [];
-let calendarViewMonth = new Date(); // any date within the month currently shown
-let calendarSelectedDay = null; // "YYYY-MM-DD" or null
+let calendarWeekStart = startOfCalendarWeek(new Date()); // Sunday 00:00 of the displayed week
+let calendarSelectedEventId = null;
+let calendarBackfillPollTimer = null;
+
+const CALENDAR_HOUR_START = 7;   // 7 AM
+const CALENDAR_HOUR_END = 21;    // 9 PM (inclusive)
+const CALENDAR_HOUR_HEIGHT = 48; // px per hour row
+const CALENDAR_DEFAULT_EVENT_MINUTES = 45; // no duration data, so every timed block gets a fixed visual height
+
+function startOfCalendarWeek(date){
+  const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  d.setDate(d.getDate() - d.getDay());
+  return d;
+}
 
 function calendarDayKey(isoDateString){
   const d = new Date(isoDateString);
@@ -7476,26 +7565,49 @@ function calendarDayKey(isoDateString){
 }
 
 async function refreshCalendarEvents(){
-  const grid = document.getElementById("calendarGrid");
-  grid.innerHTML = `<div class="calendar-empty">Loading events…</div>`;
+  const columns = document.getElementById("calendarWeekColumns");
+  columns.innerHTML = `<div class="calendar-empty" style="padding:12px;">Loading events…</div>`;
   try{
     const res = await fetch(PROXY_ORIGIN + "/api/calendar/events");
     if (!res.ok) throw new Error("Server returned " + res.status);
     const data = await res.json();
     calendarEventsCache = data.events || [];
-    renderCalendarGrid();
+    renderCalendarWeek();
   } catch(e){
-    grid.innerHTML = `<div class="calendar-empty">Couldn't load calendar events: ${escapeHtml(e.message)}</div>`;
+    columns.innerHTML = `<div class="calendar-empty" style="padding:12px;">Couldn't load calendar events: ${escapeHtml(e.message)}</div>`;
   }
+  pollBackfillStatusOnce();
 }
 
-function renderCalendarGrid(){
-  const grid = document.getElementById("calendarGrid");
-  const label = document.getElementById("calendarMonthLabel");
-  const year = calendarViewMonth.getFullYear();
-  const month = calendarViewMonth.getMonth();
+// Same fetch as refreshCalendarEvents but without the "Loading…" flash --
+// used right after a backfill finishes, so newly-found events just appear.
+async function refreshCalendarEventsQuiet(){
+  try{
+    const res = await fetch(PROXY_ORIGIN + "/api/calendar/events");
+    if (!res.ok) return;
+    const data = await res.json();
+    calendarEventsCache = data.events || [];
+    renderCalendarWeek();
+  } catch(e){ /* keep showing whatever was already rendered */ }
+}
 
-  label.textContent = calendarViewMonth.toLocaleDateString(undefined, { month: "long", year: "numeric" });
+function renderCalendarWeek(){
+  const header = document.getElementById("calendarWeekHeader");
+  const alldayRow = document.getElementById("calendarAlldayRow");
+  const hoursCol = document.getElementById("calendarHoursCol");
+  const columns = document.getElementById("calendarWeekColumns");
+  const label = document.getElementById("calendarWeekLabel");
+
+  const days = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(calendarWeekStart);
+    d.setDate(d.getDate() + i);
+    return d;
+  });
+  const todayKey = calendarDayKey(new Date().toISOString());
+
+  label.textContent =
+    days[0].toLocaleDateString(undefined, { month: "short", day: "numeric" }) + " – " +
+    days[6].toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
 
   const eventsByDay = {};
   calendarEventsCache.forEach(ev => {
@@ -7503,143 +7615,168 @@ function renderCalendarGrid(){
     (eventsByDay[key] = eventsByDay[key] || []).push(ev);
   });
 
-  const firstOfMonth = new Date(year, month, 1);
-  const startWeekday = firstOfMonth.getDay();
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
-  const todayKey = calendarDayKey(new Date().toISOString());
-
-  grid.innerHTML = "";
-  ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].forEach(w => {
-    const el = document.createElement("div");
-    el.className = "calendar-weekday";
-    el.textContent = w;
-    grid.appendChild(el);
+  // Header row: weekday + date number, today highlighted.
+  header.innerHTML = "";
+  header.appendChild(document.createElement("div"));
+  days.forEach(d => {
+    const key = calendarDayKey(d.toISOString());
+    const cell = document.createElement("div");
+    if (key === todayKey) cell.classList.add("calendar-header-today");
+    const wk = document.createElement("div");
+    wk.className = "calendar-weekday";
+    wk.textContent = d.toLocaleDateString(undefined, { weekday: "short" });
+    const num = document.createElement("div");
+    num.className = "calendar-date-num";
+    num.textContent = String(d.getDate());
+    cell.appendChild(wk);
+    cell.appendChild(num);
+    header.appendChild(cell);
   });
 
-  for (let i = 0; i < startWeekday; i++){
-    const filler = document.createElement("div");
-    filler.className = "calendar-day calendar-day-empty";
-    grid.appendChild(filler);
-  }
-
-  for (let day = 1; day <= daysInMonth; day++){
-    const key = year + "-" + String(month + 1).padStart(2, "0") + "-" + String(day).padStart(2, "0");
-    const dayEvents = eventsByDay[key] || [];
+  // All-day row: date-only events as small pills, one per day column.
+  alldayRow.innerHTML = "";
+  const alldayCorner = document.createElement("div");
+  alldayCorner.style.cssText = "font-size:9px;color:var(--text-muted);text-align:center;padding-top:3px;";
+  alldayCorner.textContent = "All day";
+  alldayRow.appendChild(alldayCorner);
+  days.forEach(d => {
+    const key = calendarDayKey(d.toISOString());
     const cell = document.createElement("div");
-    cell.className = "calendar-day" +
-      (dayEvents.length ? " calendar-day-has-events" : "") +
-      (key === todayKey ? " calendar-day-today" : "");
+    (eventsByDay[key] || []).filter(ev => !ev.hasTime).forEach(ev => {
+      const pill = document.createElement("div");
+      pill.className = "calendar-allday-pill";
+      pill.textContent = ev.title || "(untitled event)";
+      pill.title = ev.title || "";
+      pill.addEventListener("click", () => openCalendarEvent(ev.id));
+      cell.appendChild(pill);
+    });
+    alldayRow.appendChild(cell);
+  });
 
-    const num = document.createElement("div");
-    num.className = "calendar-day-number";
-    num.textContent = String(day);
-    cell.appendChild(num);
+  // Hourly grid: hour labels on the left, timed events absolutely positioned
+  // within their day column by time-of-day (no duration data, so every block
+  // gets a fixed visual height).
+  const totalHeight = (CALENDAR_HOUR_END - CALENDAR_HOUR_START + 1) * CALENDAR_HOUR_HEIGHT;
 
-    if (dayEvents.length){
-      const dots = document.createElement("div");
-      dots.className = "calendar-day-dot-row";
-      dayEvents.slice(0, 6).forEach(() => {
-        const dot = document.createElement("span");
-        dot.className = "calendar-event-dot";
-        dots.appendChild(dot);
-      });
-      cell.appendChild(dots);
-
-      const preview = document.createElement("div");
-      preview.className = "calendar-day-event-title";
-      preview.textContent = dayEvents[0].title || "(untitled event)";
-      cell.appendChild(preview);
-
-      cell.addEventListener("click", () => openCalendarDay(key));
-    }
-
-    grid.appendChild(cell);
+  hoursCol.innerHTML = "";
+  hoursCol.style.setProperty("--hour-height", CALENDAR_HOUR_HEIGHT + "px");
+  hoursCol.style.height = totalHeight + "px";
+  for (let h = CALENDAR_HOUR_START; h <= CALENDAR_HOUR_END; h++){
+    const hourLabel = document.createElement("div");
+    hourLabel.className = "calendar-hour-label";
+    hourLabel.style.top = ((h - CALENDAR_HOUR_START) * CALENDAR_HOUR_HEIGHT) + "px";
+    hourLabel.textContent = ((h % 12) || 12) + (h < 12 ? " AM" : " PM");
+    hoursCol.appendChild(hourLabel);
   }
 
-  if (calendarSelectedDay) renderCalendarDayPanel(calendarSelectedDay);
+  columns.innerHTML = "";
+  columns.style.setProperty("--hour-height", CALENDAR_HOUR_HEIGHT + "px");
+  columns.style.height = totalHeight + "px";
+  days.forEach(d => {
+    const key = calendarDayKey(d.toISOString());
+    const col = document.createElement("div");
+    col.className = "calendar-day-column" + (key === todayKey ? " calendar-header-today" : "");
+    col.style.height = totalHeight + "px";
+
+    (eventsByDay[key] || []).filter(ev => ev.hasTime).forEach(ev => {
+      const evDate = new Date(ev.date);
+      const rawMinutes = (evDate.getHours() - CALENDAR_HOUR_START) * 60 + evDate.getMinutes();
+      const maxMinutes = (CALENDAR_HOUR_END - CALENDAR_HOUR_START + 1) * 60 - CALENDAR_DEFAULT_EVENT_MINUTES;
+      const minutesFromStart = Math.max(0, Math.min(rawMinutes, maxMinutes));
+      const top = (minutesFromStart / 60) * CALENDAR_HOUR_HEIGHT;
+      const height = Math.max((CALENDAR_DEFAULT_EVENT_MINUTES / 60) * CALENDAR_HOUR_HEIGHT, 18);
+
+      const block = document.createElement("div");
+      block.className = "calendar-event-block";
+      block.style.top = top + "px";
+      block.style.height = height + "px";
+      block.innerHTML = `<span class="calendar-event-block-time">${escapeHtml(evDate.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" }))}</span> ${escapeHtml(ev.title || "(untitled event)")}`;
+      block.addEventListener("click", () => openCalendarEvent(ev.id));
+      col.appendChild(block);
+    });
+
+    columns.appendChild(col);
+  });
+
+  if (calendarSelectedEventId) renderCalendarEventPanel();
 }
 
-function openCalendarDay(key){
-  calendarSelectedDay = key;
-  document.getElementById("calendarDayPanel").style.display = "flex";
-  renderCalendarDayPanel(key);
+// Clicking any tile -- an all-day pill or a timed block -- opens this same
+// single-event detail panel with the title (editable in place, since the
+// model's title guess isn't always exactly right), description, and the
+// View email / Delete actions the user asked for.
+function openCalendarEvent(id){
+  calendarSelectedEventId = id;
+  document.getElementById("calendarEventPanel").style.display = "flex";
+  renderCalendarEventPanel();
 }
 
-function closeCalendarDayPanel(){
-  calendarSelectedDay = null;
-  document.getElementById("calendarDayPanel").style.display = "none";
+function closeCalendarEventPanel(){
+  calendarSelectedEventId = null;
+  document.getElementById("calendarEventPanel").style.display = "none";
 }
 
-function renderCalendarDayPanel(key){
-  const events = calendarEventsCache.filter(ev => calendarDayKey(ev.date) === key);
-  const titleEl = document.getElementById("calendarDayPanelTitle");
-  const body = document.getElementById("calendarDayEvents");
-  const [y, m, d] = key.split("-").map(Number);
-  titleEl.textContent = new Date(y, m - 1, d).toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" });
-
-  if (!events.length){
-    body.innerHTML = `<div class="calendar-empty">No events on this day.</div>`;
+function renderCalendarEventPanel(){
+  const body = document.getElementById("calendarEventPanelBody");
+  const ev = calendarEventsCache.find(e => String(e.id) === String(calendarSelectedEventId));
+  if (!ev){
+    closeCalendarEventPanel();
     return;
   }
 
   body.innerHTML = "";
-  events.forEach(ev => {
-    const card = document.createElement("div");
-    card.className = "calendar-event-card";
+  const card = document.createElement("div");
+  card.className = "calendar-event-card";
 
-    const time = document.createElement("div");
-    time.className = "calendar-event-time";
-    time.textContent = ev.hasTime
-      ? new Date(ev.date).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" })
-      : "Date only";
-    card.appendChild(time);
+  const evDate = new Date(ev.date);
+  const dateLine = document.createElement("div");
+  dateLine.className = "calendar-event-time";
+  dateLine.textContent = evDate.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" }) +
+    (ev.hasTime ? " · " + evDate.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" }) : " · Date only");
+  card.appendChild(dateLine);
 
-    // Editable in place -- the local parser isn't always right about exactly
-    // which sentence is the "title", so a quick hand fix beats deleting and
-    // losing the event entirely.
-    const title = document.createElement("div");
-    title.className = "calendar-event-title";
-    title.contentEditable = "true";
-    title.spellcheck = false;
-    title.textContent = ev.title || "(untitled event)";
-    title.addEventListener("blur", () => {
-      const trimmed = title.textContent.trim();
-      if (trimmed && trimmed !== ev.title) saveCalendarEventEdit(ev.id, { title: trimmed });
-    });
-    card.appendChild(title);
-
-    if (ev.description){
-      const desc = document.createElement("div");
-      desc.className = "calendar-event-desc";
-      desc.textContent = ev.description;
-      card.appendChild(desc);
-    }
-
-    if (ev.sourceSubject){
-      const source = document.createElement("div");
-      source.className = "calendar-event-source";
-      source.textContent = "From: " + ev.sourceSubject;
-      card.appendChild(source);
-    }
-
-    const actions = document.createElement("div");
-    actions.className = "calendar-event-actions";
-
-    const viewBtn = document.createElement("button");
-    viewBtn.type = "button";
-    viewBtn.textContent = "View email";
-    viewBtn.addEventListener("click", () => openCalendarEventSource(ev.sourceMessageId));
-    actions.appendChild(viewBtn);
-
-    const delBtn = document.createElement("button");
-    delBtn.type = "button";
-    delBtn.textContent = "Delete";
-    delBtn.addEventListener("click", () => deleteCalendarEvent(ev.id));
-    actions.appendChild(delBtn);
-
-    card.appendChild(actions);
-    body.appendChild(card);
+  const title = document.createElement("div");
+  title.className = "calendar-event-title";
+  title.contentEditable = "true";
+  title.spellcheck = false;
+  title.textContent = ev.title || "(untitled event)";
+  title.addEventListener("blur", () => {
+    const trimmed = title.textContent.trim();
+    if (trimmed && trimmed !== ev.title) saveCalendarEventEdit(ev.id, { title: trimmed });
   });
+  card.appendChild(title);
+
+  if (ev.description){
+    const desc = document.createElement("div");
+    desc.className = "calendar-event-desc";
+    desc.textContent = ev.description;
+    card.appendChild(desc);
+  }
+
+  if (ev.sourceSubject){
+    const source = document.createElement("div");
+    source.className = "calendar-event-source";
+    source.textContent = "From: " + ev.sourceSubject;
+    card.appendChild(source);
+  }
+
+  const actions = document.createElement("div");
+  actions.className = "calendar-event-actions";
+
+  const viewBtn = document.createElement("button");
+  viewBtn.type = "button";
+  viewBtn.textContent = "View email";
+  viewBtn.addEventListener("click", () => openCalendarEventSource(ev.sourceMessageId));
+  actions.appendChild(viewBtn);
+
+  const delBtn = document.createElement("button");
+  delBtn.type = "button";
+  delBtn.textContent = "Delete";
+  delBtn.addEventListener("click", () => deleteCalendarEvent(ev.id));
+  actions.appendChild(delBtn);
+
+  card.appendChild(actions);
+  body.appendChild(card);
 }
 
 async function saveCalendarEventEdit(id, patch){
@@ -7653,6 +7790,7 @@ async function saveCalendarEventEdit(id, patch){
     if (!res.ok) throw new Error((data && data.error && data.error.message) || "Couldn't save that change.");
     const idx = calendarEventsCache.findIndex(e => String(e.id) === String(id));
     if (idx !== -1) calendarEventsCache[idx] = { ...calendarEventsCache[idx], ...data };
+    renderCalendarWeek();
   } catch(e){
     alert("Couldn't save that change: " + e.message);
   }
@@ -7667,8 +7805,8 @@ async function deleteCalendarEvent(id){
       throw new Error((data && data.error && data.error.message) || "Delete failed.");
     }
     calendarEventsCache = calendarEventsCache.filter(e => String(e.id) !== String(id));
-    renderCalendarGrid();
-    if (calendarSelectedDay) renderCalendarDayPanel(calendarSelectedDay);
+    if (String(calendarSelectedEventId) === String(id)) closeCalendarEventPanel();
+    renderCalendarWeek();
   } catch(e){
     alert("Couldn't delete this event: " + e.message);
   }
@@ -7692,19 +7830,101 @@ async function openCalendarEventSource(id){
   else alert("Couldn't find the source email -- it may have been deleted.");
 }
 
+// ---- One-time retroactive backfill (calendar-backfill.js) ----
+// Runs as a background job server-side; this just starts it and polls its
+// status rather than waiting on one long request, since a mailbox with a lot
+// of mail can take minutes (one Claude Code CLI call per email).
+function renderBackfillStatus(job){
+  const statusEl = document.getElementById("calendarBackfillStatus");
+  const btn = document.getElementById("calendarBackfillBtn");
+  if (!job || job.status === "idle"){
+    statusEl.textContent = "";
+    statusEl.className = "calendar-backfill-status";
+    btn.disabled = false;
+    return;
+  }
+  if (job.status === "running"){
+    statusEl.textContent = `Scanning already-synced email for events: ${job.processed}/${job.total}` +
+      (job.eventsFound ? `, ${job.eventsFound} event${job.eventsFound === 1 ? "" : "s"} found so far…` : "…");
+    statusEl.className = "calendar-backfill-status";
+    btn.disabled = true;
+  } else if (job.status === "done"){
+    statusEl.textContent = `Done: checked ${job.total} email${job.total === 1 ? "" : "s"}, found ${job.eventsFound} event${job.eventsFound === 1 ? "" : "s"}` +
+      (job.failed ? ` (${job.failed} couldn't be checked -- click again to retry those)` : "") + ".";
+    statusEl.className = "calendar-backfill-status ok";
+    btn.disabled = false;
+  } else if (job.status === "error"){
+    statusEl.textContent = "Backfill failed: " + (job.error || "unknown error");
+    statusEl.className = "calendar-backfill-status err";
+    btn.disabled = false;
+  }
+}
+
+async function pollCalendarBackfill(){
+  if (calendarBackfillPollTimer) clearTimeout(calendarBackfillPollTimer);
+  try{
+    const res = await fetch(PROXY_ORIGIN + "/api/calendar/backfill/status");
+    const data = await res.json();
+    renderBackfillStatus(data);
+    if (data && data.status === "running"){
+      calendarBackfillPollTimer = setTimeout(pollCalendarBackfill, 2000);
+    } else if (data && data.status === "done"){
+      calendarBackfillPollTimer = null;
+      await refreshCalendarEventsQuiet();
+    } else {
+      calendarBackfillPollTimer = null;
+    }
+  } catch(e){
+    calendarBackfillPollTimer = setTimeout(pollCalendarBackfill, 4000);
+  }
+}
+
+// Checked once whenever the Calendar tab is opened, in case a backfill was
+// left running (or just finished) from earlier -- so progress isn't lost by
+// navigating away and back.
+async function pollBackfillStatusOnce(){
+  try{
+    const res = await fetch(PROXY_ORIGIN + "/api/calendar/backfill/status");
+    const data = await res.json();
+    renderBackfillStatus(data);
+    if (data && data.status === "running" && !calendarBackfillPollTimer){
+      pollCalendarBackfill();
+    }
+  } catch(e){ /* leave status blank */ }
+}
+
+document.getElementById("calendarBackfillBtn").addEventListener("click", async () => {
+  const btn = document.getElementById("calendarBackfillBtn");
+  const statusEl = document.getElementById("calendarBackfillStatus");
+  btn.disabled = true;
+  statusEl.textContent = "Starting…";
+  statusEl.className = "calendar-backfill-status";
+  try{
+    const res = await fetch(PROXY_ORIGIN + "/api/calendar/backfill", { method: "POST" });
+    const data = await res.json();
+    if (!res.ok) throw new Error((data && data.error && data.error.message) || "Couldn't start.");
+    renderBackfillStatus(data);
+    pollCalendarBackfill();
+  } catch(e){
+    statusEl.textContent = "Couldn't start: " + e.message;
+    statusEl.className = "calendar-backfill-status err";
+    btn.disabled = false;
+  }
+});
+
 document.getElementById("calendarPrevBtn").addEventListener("click", () => {
-  calendarViewMonth = new Date(calendarViewMonth.getFullYear(), calendarViewMonth.getMonth() - 1, 1);
-  renderCalendarGrid();
+  calendarWeekStart.setDate(calendarWeekStart.getDate() - 7);
+  renderCalendarWeek();
 });
 document.getElementById("calendarNextBtn").addEventListener("click", () => {
-  calendarViewMonth = new Date(calendarViewMonth.getFullYear(), calendarViewMonth.getMonth() + 1, 1);
-  renderCalendarGrid();
+  calendarWeekStart.setDate(calendarWeekStart.getDate() + 7);
+  renderCalendarWeek();
 });
 document.getElementById("calendarTodayBtn").addEventListener("click", () => {
-  calendarViewMonth = new Date();
-  renderCalendarGrid();
+  calendarWeekStart = startOfCalendarWeek(new Date());
+  renderCalendarWeek();
 });
-document.getElementById("calendarDayPanelCloseBtn").addEventListener("click", closeCalendarDayPanel);
+document.getElementById("calendarEventPanelCloseBtn").addEventListener("click", closeCalendarEventPanel);
 
 
 // ====== SCHEDULE: reading schedules for Civil Procedure and LSS ======
