@@ -33,14 +33,26 @@ async function save(userId, events) {
   await appPool.query("UPDATE users SET calendar_events = $1 WHERE id = $2", [JSON.stringify(events), userId]);
 }
 
-async function getAll(userId) {
-  const events = await load(userId);
-  return events.slice().sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0));
+function sortKeyOf(ev) {
+  // ev.date is a plain "YYYY-MM-DD" string (see calendar-extract.js) -- for
+  // events stored before that change, ev.date is a full ISO datetime, whose
+  // leading "YYYY-MM-DDT..." still sorts correctly alongside the new format.
+  return (ev.date || "") + "T" + (ev.time || "00:00");
 }
 
-function calendarDayKeyOf(isoDateString) {
-  const d = new Date(isoDateString);
-  return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+async function getAll(userId) {
+  const events = await load(userId);
+  return events.slice().sort((a, b) => sortKeyOf(a).localeCompare(sortKeyOf(b)));
+}
+
+// Extracts just the YYYY-MM-DD calendar-day prefix, whether ev.date is the
+// current plain-date format or an old pre-fix ISO datetime string (both
+// start with the date in that form) -- deliberately not routed through
+// `new Date(...)`, which would reinterpret a date-only string as UTC
+// midnight and can shift it a day in negative-UTC-offset timezones.
+function calendarDayKeyOf(dateStr) {
+  const match = /^(\d{4}-\d{2}-\d{2})/.exec(dateStr || "");
+  return match ? match[1] : String(dateStr || "");
 }
 
 // Strips the kind of prefix/punctuation that makes the same real-world event

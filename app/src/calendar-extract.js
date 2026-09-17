@@ -118,28 +118,34 @@ function parseEventsFromClaudeOutput(stdout) {
   }
 }
 
-// Combines a YYYY-MM-DD date with an optional HH:MM time into a stored ISO
-// datetime -- date-only events are anchored at local noon rather than
-// midnight, so they can't drift onto the wrong calendar day depending on the
-// viewer's timezone offset.
+// Validates a YYYY-MM-DD date and optional HH:MM time and returns them as
+// plain strings -- deliberately NOT collapsed into a single Date/ISO
+// datetime. Building a Date from these (server-local wall clock) and
+// serializing with .toISOString() bakes in the Node process's own timezone;
+// the frontend then re-reads that UTC instant in the *browser's* timezone,
+// so any server/browser TZ mismatch shifts every event by a constant offset
+// (this was the root cause of events all appearing to land around the same
+// wrong hour). Keeping date and time as separate, timezone-free strings and
+// rendering them verbatim sidesteps the whole conversion.
 function toEventDate(dateStr, timeStr) {
   const dateMatch = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dateStr || "");
   if (!dateMatch) return null;
-  const year = Number(dateMatch[1]);
   const month = Number(dateMatch[2]);
   const day = Number(dateMatch[3]);
+  if (month < 1 || month > 12 || day < 1 || day > 31) return null;
 
-  let hour = 12, minute = 0, hasTime = false;
+  let time = null, hasTime = false;
   const timeMatch = /^(\d{1,2}):(\d{2})$/.exec(timeStr || "");
   if (timeMatch) {
-    hour = Number(timeMatch[1]);
-    minute = Number(timeMatch[2]);
-    hasTime = true;
+    const hour = Number(timeMatch[1]);
+    const minute = Number(timeMatch[2]);
+    if (hour >= 0 && hour <= 23 && minute >= 0 && minute <= 59) {
+      time = String(hour).padStart(2, "0") + ":" + String(minute).padStart(2, "0");
+      hasTime = true;
+    }
   }
 
-  const dt = new Date(year, month - 1, day, hour, minute, 0);
-  if (Number.isNaN(dt.getTime())) return null;
-  return { date: dt.toISOString(), hasTime };
+  return { date: dateStr, time, hasTime };
 }
 
 // Runs extraction for one already-fetched message (shape: { id, subject,
@@ -174,6 +180,7 @@ async function extractCalendarEventsForMessage(message) {
       id: crypto.randomUUID(),
       title,
       date: resolved.date,
+      time: resolved.time,
       hasTime: resolved.hasTime,
       description: (typeof item.description === "string" ? item.description : "").slice(0, 300),
       sourceMessageId: message.id,

@@ -7578,9 +7578,44 @@ function startOfCalendarWeek(date){
   return d;
 }
 
-function calendarDayKey(isoDateString){
-  const d = new Date(isoDateString);
+// For an actual JS Date object (day headers, "today") -- formats its local
+// Y-M-D directly, no ISO/UTC round trip.
+function localDateKey(d){
   return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+}
+
+// For an event's stored `date` field -- a plain "YYYY-MM-DD" string (or, for
+// events stored before the timezone fix, a full ISO datetime whose leading
+// "YYYY-MM-DDT..." still matches). Deliberately not routed through
+// `new Date(...)`: parsing a date-only string as UTC midnight and reading it
+// back in the browser's local timezone can shift it onto the wrong day --
+// this was part of the original "everything lands around the same wrong
+// hour" bug.
+function calendarDayKey(dateStr){
+  const match = /^(\d{4}-\d{2}-\d{2})/.exec(dateStr || "");
+  return match ? match[1] : "";
+}
+
+// 24h "HH:MM" -> "H:MM AM/PM". Used for both new-format events (ev.time) and
+// as part of the legacy fallback below.
+function formatEventTime(hour, minute){
+  const period = hour < 12 ? "AM" : "PM";
+  const h12 = (hour % 12) || 12;
+  return h12 + ":" + String(minute).padStart(2, "0") + " " + period;
+}
+
+// New-format events carry ev.time ("HH:MM", timezone-free) directly. Events
+// stored before the timezone fix have no ev.time -- only a server-local-
+// then-UTC ev.date -- so the best available fallback is the old (browser-TZ)
+// interpretation, which may still be off by the original server/browser
+// offset. Returns { hour, minute } in 24h form.
+function eventTimeParts(ev){
+  if (ev.time && /^\d{1,2}:\d{2}$/.test(ev.time)) {
+    const [h, m] = ev.time.split(":").map(Number);
+    return { hour: h, minute: m };
+  }
+  const legacy = new Date(ev.date);
+  return { hour: legacy.getHours(), minute: legacy.getMinutes() };
 }
 
 async function refreshCalendarEvents(){
@@ -7622,7 +7657,7 @@ function renderCalendarWeek(){
     d.setDate(d.getDate() + i);
     return d;
   });
-  const todayKey = calendarDayKey(new Date().toISOString());
+  const todayKey = localDateKey(new Date());
 
   label.textContent =
     days[0].toLocaleDateString(undefined, { month: "short", day: "numeric" }) + " – " +
@@ -7638,7 +7673,7 @@ function renderCalendarWeek(){
   header.innerHTML = "";
   header.appendChild(document.createElement("div"));
   days.forEach(d => {
-    const key = calendarDayKey(d.toISOString());
+    const key = localDateKey(d);
     const cell = document.createElement("div");
     if (key === todayKey) cell.classList.add("calendar-header-today");
     const wk = document.createElement("div");
@@ -7659,7 +7694,7 @@ function renderCalendarWeek(){
   alldayCorner.textContent = "All day";
   alldayRow.appendChild(alldayCorner);
   days.forEach(d => {
-    const key = calendarDayKey(d.toISOString());
+    const key = localDateKey(d);
     const cell = document.createElement("div");
     (eventsByDay[key] || []).filter(ev => !ev.hasTime).forEach(ev => {
       const pill = document.createElement("div");
@@ -7692,14 +7727,14 @@ function renderCalendarWeek(){
   columns.style.setProperty("--hour-height", CALENDAR_HOUR_HEIGHT + "px");
   columns.style.height = totalHeight + "px";
   days.forEach(d => {
-    const key = calendarDayKey(d.toISOString());
+    const key = localDateKey(d);
     const col = document.createElement("div");
     col.className = "calendar-day-column" + (key === todayKey ? " calendar-header-today" : "");
     col.style.height = totalHeight + "px";
 
     (eventsByDay[key] || []).filter(ev => ev.hasTime).forEach(ev => {
-      const evDate = new Date(ev.date);
-      const rawMinutes = (evDate.getHours() - CALENDAR_HOUR_START) * 60 + evDate.getMinutes();
+      const { hour, minute } = eventTimeParts(ev);
+      const rawMinutes = (hour - CALENDAR_HOUR_START) * 60 + minute;
       const maxMinutes = (CALENDAR_HOUR_END - CALENDAR_HOUR_START + 1) * 60 - CALENDAR_DEFAULT_EVENT_MINUTES;
       const minutesFromStart = Math.max(0, Math.min(rawMinutes, maxMinutes));
       const top = (minutesFromStart / 60) * CALENDAR_HOUR_HEIGHT;
@@ -7709,7 +7744,7 @@ function renderCalendarWeek(){
       block.className = "calendar-event-block";
       block.style.top = top + "px";
       block.style.height = height + "px";
-      block.innerHTML = `<span class="calendar-event-block-time">${escapeHtml(evDate.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" }))}</span> ${escapeHtml(ev.title || "(untitled event)")}`;
+      block.innerHTML = `<span class="calendar-event-block-time">${escapeHtml(formatEventTime(hour, minute))}</span> ${escapeHtml(ev.title || "(untitled event)")}`;
       block.addEventListener("click", () => openCalendarEvent(ev.id));
       col.appendChild(block);
     });
@@ -7747,11 +7782,16 @@ function renderCalendarEventPanel(){
   const card = document.createElement("div");
   card.className = "calendar-event-card";
 
-  const evDate = new Date(ev.date);
+  // Built from the plain "YYYY-MM-DD" day key's own components (not parsed
+  // as an ISO string) so the displayed weekday/month/day can't shift a day
+  // depending on the browser's timezone offset.
+  const dayKey = calendarDayKey(ev.date);
+  const [dy, dm, dd] = dayKey.split("-").map(Number);
+  const evDateLocal = dayKey ? new Date(dy, dm - 1, dd) : new Date(ev.date);
   const dateLine = document.createElement("div");
   dateLine.className = "calendar-event-time";
-  dateLine.textContent = evDate.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" }) +
-    (ev.hasTime ? " · " + evDate.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" }) : " · Date only");
+  dateLine.textContent = evDateLocal.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" }) +
+    (ev.hasTime ? " · " + formatEventTime(eventTimeParts(ev).hour, eventTimeParts(ev).minute) : " · Date only");
   card.appendChild(dateLine);
 
   const title = document.createElement("div");
