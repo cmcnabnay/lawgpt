@@ -1887,6 +1887,39 @@ pre code {
 }
 .calendar-event-block:hover{ filter:brightness(1.1); }
 .calendar-event-block-time{ font-weight:600; }
+.calendar-event-more-pill{
+  position:absolute;
+  left:2px;
+  right:2px;
+  background:var(--ink-2);
+  border:1px solid var(--brass-dim);
+  color:var(--brass-dim);
+  border-radius:4px;
+  padding:1px 6px;
+  font-size:9.5px;
+  line-height:1.3;
+  text-align:center;
+  cursor:pointer;
+}
+.calendar-event-more-pill:hover{ color:var(--brass); border-color:var(--brass); }
+.calendar-more-events-list{ display:flex; flex-direction:column; gap:8px; }
+.calendar-more-events-row{
+  background:var(--ink-2);
+  border:1px solid var(--hairline);
+  border-radius:var(--radius);
+  padding:10px 12px;
+  cursor:pointer;
+}
+.calendar-more-events-row:hover{ border-color:var(--brass-dim); }
+.calendar-more-events-row-time{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:10.5px;
+  text-transform:uppercase;
+  letter-spacing:0.04em;
+  color:var(--brass-dim);
+  margin-bottom:2px;
+}
+.calendar-more-events-row-title{ font-size:13px; color:var(--text-light); }
 .calendar-event-time{
   font-family:'IBM Plex Mono',monospace;
   font-size:11px;
@@ -3355,6 +3388,16 @@ pre code {
         <h2>Event</h2>
         <div id="calendarEventModalBody"></div>
         <div class="settings-actions" id="calendarEventModalActions"></div>
+      </div>
+    </div>
+
+    <div class="modal-overlay" id="calendarMoreEventsOverlay" style="display:none;">
+      <div class="modal">
+        <h2>More events at this time</h2>
+        <div class="calendar-more-events-list" id="calendarMoreEventsBody"></div>
+        <div class="settings-actions" style="margin-top:14px;">
+          <button type="button" class="btn-secondary" id="calendarMoreEventsCloseBtn">Close</button>
+        </div>
       </div>
     </div>
 
@@ -7762,8 +7805,24 @@ function renderCalendarWeek(){
     col.className = "calendar-day-column" + (key === todayKey ? " calendar-header-today" : "");
     col.style.height = totalHeight + "px";
 
+    // Grouped by exact clock time rather than rendered one-by-one -- several
+    // unrelated events can legitimately share a time slot (e.g. a handful of
+    // separate "12:00 PM" announcements extracted from different emails the
+    // same day), and every block here is absolutely positioned purely by
+    // time-of-day with a fixed visual height, so without this they'd all
+    // land on the exact same rectangle -- only the last one painted would
+    // ever be visible or clickable, silently hiding the rest. Only the first
+    // event in each group gets its own block; the rest surface through a
+    // "+N more" pill beneath it that opens a picker (see
+    // openCalendarMoreEvents).
+    const timedByTime = {};
     (eventsByDay[key] || []).filter(ev => ev.hasTime).forEach(ev => {
-      const { hour, minute } = eventTimeParts(ev);
+      (timedByTime[ev.time] = timedByTime[ev.time] || []).push(ev);
+    });
+
+    Object.values(timedByTime).forEach(group => {
+      const primary = group[0];
+      const { hour, minute } = eventTimeParts(primary);
       const rawMinutes = (hour - CALENDAR_HOUR_START) * 60 + minute;
       const maxMinutes = (CALENDAR_HOUR_END - CALENDAR_HOUR_START + 1) * 60 - CALENDAR_DEFAULT_EVENT_MINUTES;
       const minutesFromStart = Math.max(0, Math.min(rawMinutes, maxMinutes));
@@ -7774,9 +7833,21 @@ function renderCalendarWeek(){
       block.className = "calendar-event-block";
       block.style.top = top + "px";
       block.style.height = height + "px";
-      block.innerHTML = `<span class="calendar-event-block-time">${escapeHtml(formatEventTime(hour, minute))}</span> ${escapeHtml(ev.title || "(untitled event)")}`;
-      block.addEventListener("click", () => openCalendarEvent(ev.id));
+      block.innerHTML = `<span class="calendar-event-block-time">${escapeHtml(formatEventTime(hour, minute))}</span> ${escapeHtml(primary.title || "(untitled event)")}`;
+      block.addEventListener("click", () => openCalendarEvent(primary.id));
       col.appendChild(block);
+
+      if (group.length > 1){
+        const more = document.createElement("div");
+        more.className = "calendar-event-more-pill";
+        more.style.top = (top + height + 2) + "px";
+        more.textContent = `+${group.length - 1} more`;
+        more.addEventListener("click", (e) => {
+          e.stopPropagation();
+          openCalendarMoreEvents(group.slice(1));
+        });
+        col.appendChild(more);
+      }
     });
 
     columns.appendChild(col);
@@ -7800,6 +7871,42 @@ function closeCalendarEventPanel(){
   calendarSelectedEventId = null;
   document.getElementById("calendarEventOverlay").style.display = "none";
 }
+
+// The "+N more" pill's picker -- lists the other events sharing a time slot
+// (see the grouping in renderCalendarWeek) so they're each still reachable,
+// not just whichever one happened to be rendered as the slot's main block.
+function openCalendarMoreEvents(events){
+  const body = document.getElementById("calendarMoreEventsBody");
+  body.innerHTML = "";
+  events.forEach(ev => {
+    const { hour, minute } = eventTimeParts(ev);
+    const row = document.createElement("div");
+    row.className = "calendar-more-events-row";
+    const time = document.createElement("div");
+    time.className = "calendar-more-events-row-time";
+    time.textContent = formatEventTime(hour, minute);
+    const title = document.createElement("div");
+    title.className = "calendar-more-events-row-title";
+    title.textContent = ev.title || "(untitled event)";
+    row.appendChild(time);
+    row.appendChild(title);
+    row.addEventListener("click", () => {
+      closeCalendarMoreEvents();
+      openCalendarEvent(ev.id);
+    });
+    body.appendChild(row);
+  });
+  document.getElementById("calendarMoreEventsOverlay").style.display = "flex";
+}
+
+function closeCalendarMoreEvents(){
+  document.getElementById("calendarMoreEventsOverlay").style.display = "none";
+}
+
+document.getElementById("calendarMoreEventsCloseBtn").addEventListener("click", closeCalendarMoreEvents);
+document.getElementById("calendarMoreEventsOverlay").addEventListener("click", (e) => {
+  if (e.target === document.getElementById("calendarMoreEventsOverlay")) closeCalendarMoreEvents();
+});
 
 function renderCalendarEventModal(){
   const body = document.getElementById("calendarEventModalBody");
