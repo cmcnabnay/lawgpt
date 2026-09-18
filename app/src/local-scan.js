@@ -65,7 +65,21 @@ function extFromFileName(fileName) {
   return Object.prototype.hasOwnProperty.call(EXT_TO_CONTENT_TYPE, ext) ? ext : "";
 }
 
-async function scanLocalDocuments() {
+// Guards against concurrent scans stepping on each other -- the Documents tab
+// (refreshDocumentsList) and every Schedule-tab open (refreshDocumentsCacheQuietly)
+// both hit POST /api/documents/refresh-local, and two overlapping calls could
+// each pass the "already indexed?" check for the same on-disk file before
+// either finished adding it, producing two document-store records for one
+// file. Concurrent callers now share a single in-flight scan instead.
+let scanInFlight = null;
+
+function scanLocalDocuments() {
+  if (scanInFlight) return scanInFlight;
+  scanInFlight = doScan().finally(() => { scanInFlight = null; });
+  return scanInFlight;
+}
+
+async function doScan() {
   let added = 0;
 
   // Drop any previously indexed document (from an earlier scan, or a Canvas

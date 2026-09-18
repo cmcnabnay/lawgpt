@@ -22,6 +22,7 @@ const DOCS_ROOT = canvasRoutes.DOCS_ROOT;
 // Loads code from email-routes.js
 const emailRoutes = require("./email-routes");
 const agentRoutes = require("./agent-routes");
+const calendarRoutes = require("./calendar-routes");
 const documentOverrideStore = require("./document-override-store");
 const { getPca, SCOPES } = require("./email-auth");
 
@@ -30,6 +31,7 @@ const app = express();
 
 //In memory document store
 const documentStore = require("./document-store");
+const userDocumentStore = require("./user-document-store");
 const { scanLocalDocuments } = require("./local-scan");
 
 app.use(cors());
@@ -229,6 +231,16 @@ if (appPool) {
 app.use("/api/email", emailRoutes);
 // Same reasoning as above -- the Agent tab's routes all require req.session too.
 app.use("/api/agent", agentRoutes);
+// Same reasoning as above -- the Calendar tab's routes all require req.session too.
+// Force recheck (calendar-routes.js's /recheck) wipes and rebuilds an
+// account's entire calendar from scratch -- a slow bulk operation (one
+// Claude Code CLI call per synced email) that also throws away any events
+// the user manually edited -- so, like the Canvas bulk-import routes above,
+// it's restricted to admin accounts (requireDbAdmin, defined below --
+// hoisted, so available here despite the textual order) rather than left
+// open to every signed-in user to trigger on themselves by accident.
+app.use("/api/calendar/recheck", requireDbAdmin);
+app.use("/api/calendar", calendarRoutes);
 
 function requireAppDb(req, res, next) {
   if (!appPool) {
@@ -1020,27 +1032,54 @@ app.post("/api/chat", async (req, res) => {
   }
 });
 
-app.get("/api/documents", (req, res) => {
-  res.json(
-    documentStore.getAllDocuments().map(doc => ({
-      id: doc.id,
-      title: doc.title,
-      url: doc.url,
-      contentType: doc.contentType,
-      courseId: doc.courseId,
-      courseName: doc.courseName || null,
-      fileName: doc.fileName || null,
-      addedAt: doc.addedAt,
-      textLength: doc.text ? doc.text.length : 0,
-      hasOriginalFile: Boolean(doc.fileBuffer),
-      hasNativeFile: Boolean(doc.filePath),
-      ephemeral: Boolean(doc.ephemeral)
-    }))
-  );
+// Shared response shape for both the shared/default catalog (documentStore --
+// Canvas imports, files sitting in documents/<course>/) and a signed-in
+// user's own email-synced documents (userDocumentStore, Supabase-backed --
+// see user-document-store.js). `mine` lets the Documents tab tell them apart
+// if it ever wants to (badge, separate section); today it just merges both
+// into one list.
+function toDocumentSummary(doc, mine) {
+  return {
+    id: doc.id,
+    title: doc.title,
+    url: doc.url || null,
+    contentType: doc.contentType,
+    courseId: doc.courseId,
+    courseName: doc.courseName || null,
+    fileName: doc.fileName || null,
+    addedAt: doc.addedAt,
+    textLength: doc.text ? doc.text.length : 0,
+    hasOriginalFile: Boolean(doc.fileBuffer) || Boolean(doc.hasOriginalFile),
+    hasNativeFile: Boolean(doc.filePath),
+    ephemeral: Boolean(doc.ephemeral),
+    mine: Boolean(mine)
+  };
+}
+
+// Merges the shared/default catalog with the signed-in account's own
+// email-synced documents -- on a shared deployment, downloaded email
+// attachments are stored per-account (see user-document-store.js) rather
+// than in the shared, unauthenticated documentStore, so they only need to be
+// added in here, for whoever's session actually owns them.
+async function getMergedDocumentSummaries(userId) {
+  const shared = documentStore.getAllDocuments().map(doc => toDocumentSummary(doc, false));
+  if (!userId) return shared;
+  const mine = (await userDocumentStore.getAllForUser(userId)).map(doc => toDocumentSummary(doc, true));
+  return shared.concat(mine);
+}
+
+app.get("/api/documents", async (req, res) => {
+  res.json(await getMergedDocumentSummaries(req.session && req.session.userId));
 });
 
-app.get("/api/documents/:id", (req, res) => {
-  const document = documentStore.getDocument(req.params.id);
+app.get("/api/documents/:id", async (req, res) => {
+  let document = documentStore.getDocument(req.params.id);
+  let mine = false;
+
+  if (!document && req.session && req.session.userId) {
+    document = await userDocumentStore.getDocument(req.session.userId, req.params.id);
+    mine = true;
+  }
 
   if (!document) {
     return res.status(404).json({
@@ -1056,35 +1095,57 @@ app.get("/api/documents/:id", (req, res) => {
   res.json({
     ...documentWithoutBuffer,
     hasOriginalFile: Boolean(fileBuffer),
-    hasNativeFile: Boolean(document.filePath)
+    hasNativeFile: Boolean(document.filePath),
+    mine
   });
 });
 
 // Streams the document's native file (the exact bytes downloaded from
-// Canvas) back to the browser — used by the Documents tab's "Open in
-// Editor" and "Download" actions.
-app.get("/api/documents/:id/file", (req, res) => {
+// Canvas, or, for a per-account email attachment, the bytes stored in that
+// account's own Supabase row) back to the browser — used by the Documents
+// tab's "Open in Editor" and "Download" actions. A per-account document is
+// only ever looked up scoped to the requesting session's own userId (see
+// userDocumentStore.getDocument), so there's no way to fetch another
+// account's file by guessing its id.
+app.get("/api/documents/:id/file", async (req, res) => {
   const document = documentStore.getDocument(req.params.id);
 
-  if (!document || !document.filePath) {
-    return res.status(404).json({ error: "No native file is stored for this document." });
+  if (document) {
+    if (!document.filePath) {
+      return res.status(404).json({ error: "No native file is stored for this document." });
+    }
+
+    const fullPath = path.join(DOCS_ROOT, document.filePath);
+    if (!fullPath.startsWith(DOCS_ROOT)) {
+      return res.status(400).json({ error: "Invalid file path." });
+    }
+
+    res.setHeader("Content-Type", document.contentType || "application/octet-stream");
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="${(document.fileName || "document").replace(/"/g, "")}"`
+    );
+    return res.sendFile(fullPath, err => {
+      if (err && !res.headersSent) {
+        res.status(404).json({ error: "File not found on disk." });
+      }
+    });
   }
 
-  const fullPath = path.join(DOCS_ROOT, document.filePath);
-  if (!fullPath.startsWith(DOCS_ROOT)) {
-    return res.status(400).json({ error: "Invalid file path." });
+  if (!req.session || !req.session.userId) {
+    return res.status(404).json({ error: "Document not found." });
+  }
+  const userDocument = await userDocumentStore.getDocument(req.session.userId, req.params.id);
+  if (!userDocument || !userDocument.fileBuffer) {
+    return res.status(404).json({ error: "No stored file for this document." });
   }
 
-  res.setHeader("Content-Type", document.contentType || "application/octet-stream");
+  res.setHeader("Content-Type", userDocument.contentType || "application/octet-stream");
   res.setHeader(
     "Content-Disposition",
-    `attachment; filename="${(document.fileName || "document").replace(/"/g, "")}"`
+    `attachment; filename="${(userDocument.fileName || "document").replace(/"/g, "")}"`
   );
-  res.sendFile(fullPath, err => {
-    if (err && !res.headersSent) {
-      res.status(404).json({ error: "File not found on disk." });
-    }
-  });
+  res.send(userDocument.fileBuffer);
 });
 
 // Generic text extraction for files that aren't from Canvas (e.g. a PDF
@@ -1123,20 +1184,7 @@ app.post("/api/documents/refresh-local", async (req, res) => {
     const added = await scanLocalDocuments();
     res.json({
       added,
-      documents: documentStore.getAllDocuments().map(doc => ({
-        id: doc.id,
-        title: doc.title,
-        url: doc.url,
-        contentType: doc.contentType,
-        courseId: doc.courseId,
-        courseName: doc.courseName || null,
-        fileName: doc.fileName || null,
-        addedAt: doc.addedAt,
-        textLength: doc.text ? doc.text.length : 0,
-        hasOriginalFile: Boolean(doc.fileBuffer),
-        hasNativeFile: Boolean(doc.filePath),
-        ephemeral: Boolean(doc.ephemeral)
-      }))
+      documents: await getMergedDocumentSummaries(req.session && req.session.userId)
     });
   } catch (err) {
     console.error("Local document scan failed:", err);

@@ -33,12 +33,16 @@
 const express = require("express");
 const router = express.Router();
 const path = require("path");
+const fs = require("fs");
 const crypto = require("crypto");
 
 const documentStore = require("./document-store");
+const userDocumentStore = require("./user-document-store");
 const emailStore = require("./email-store");
+const calendarStore = require("./calendar-store");
+const { extractCalendarEventsForMessage } = require("./calendar-extract");
 const canvasRoutes = require("./canvas-routes");
-const { extractText, saveNativeFile, matchCourseFolder, isDocumentAttachment, extFromContentTypeOrTitle, deriveBaseName } = canvasRoutes;
+const { extractText, DOCS_ROOT, matchCourseFolder, isDocumentAttachment, deriveBaseName } = canvasRoutes;
 const { getAccessTokenSilent, getEmailConfig, getPersonalApiKey } = require("./email-auth");
 const agentStore = require("./agent-store");
 const agentRuntime = require("./agent-runtime");
@@ -110,9 +114,17 @@ const MAX_ATTACHMENT_CHARS_FOR_PLAN = 8000;
 // email buries past the first couple sentences.
 const MAX_BODY_CHARS = 8000;
 
-function gatherAttachmentTextForPlan(message){
-  return (message.documentIds || [])
-    .map(id => documentStore.getDocument(id))
+// Attachment ids can live in either the shared documentStore (Canvas imports,
+// files already on disk) or, for one this account downloaded itself via email
+// sync, this user's own per-account userDocumentStore -- see the /sync loop
+// below for which one a given attachment actually lands in.
+async function gatherAttachmentTextForPlan(message, userId){
+  const docs = await Promise.all(
+    (message.documentIds || []).map(async id => {
+      return documentStore.getDocument(id) || (userId ? await userDocumentStore.getDocument(userId, id) : null);
+    })
+  );
+  return docs
     .filter(doc => doc && doc.text)
     .map(doc => `ATTACHMENT: ${doc.fileName || doc.title}\n\n${doc.text.slice(0, MAX_ATTACHMENT_CHARS_FOR_PLAN)}`)
     .join("\n\n---\n\n");
@@ -136,8 +148,8 @@ const PLAN_DEVELOPER_TEXT =
   "date, a link, an event), make a later step out of that instead of inventing coursework that isn't there. " +
   "Do not include generic advice or disclaimers. Keep it under 10 steps. Output only the numbered list, nothing else.";
 
-function buildPlanContext(message){
-  const attachmentText = gatherAttachmentTextForPlan(message);
+async function buildPlanContext(message, userId){
+  const attachmentText = await gatherAttachmentTextForPlan(message, userId);
   return [
     `Subject: ${message.subject}`,
     `From: ${message.from}`,
@@ -161,7 +173,7 @@ async function generatePlanText(message, userId){
       model: PLAN_MODEL,
       input: [
         { role: "developer", content: [{ type: "input_text", text: PLAN_DEVELOPER_TEXT }] },
-        { role: "user", content: [{ type: "input_text", text: buildPlanContext(message) }] }
+        { role: "user", content: [{ type: "input_text", text: await buildPlanContext(message, userId) }] }
       ]
     })
   });
@@ -344,6 +356,68 @@ async function fetchDeltaMessages(accessToken, folderId, storedDeltaLink){
   return { messages, deltaLink };
 }
 
+// Moves a document's on-disk file (and its documentStore record) into its
+// newly-reclassified course folder -- used by reclassifyStaleMessages below.
+// No-ops safely (just updates the record) for a document with no on-disk file
+// at all, and leaves the record untouched if the move itself fails (e.g. the
+// file was already moved or deleted by hand) rather than throwing mid-sync.
+function moveDocumentToCourseFolder(document, newFolder){
+  if (!document.filePath) {
+    documentStore.updateDocument(document.id, { courseId: newFolder, courseName: newFolder });
+    return;
+  }
+  const newFilePath = path.join(newFolder, document.fileName || path.basename(document.filePath));
+  const oldFullPath = path.join(DOCS_ROOT, document.filePath);
+  const newFullPath = path.join(DOCS_ROOT, newFilePath);
+  try {
+    fs.mkdirSync(path.join(DOCS_ROOT, newFolder), { recursive: true });
+    fs.renameSync(oldFullPath, newFullPath);
+  } catch (err) {
+    return;
+  }
+  documentStore.updateDocument(document.id, { courseId: newFolder, courseName: newFolder, filePath: newFilePath });
+}
+
+// Backfill for mail synced before COURSE_LIST_ADDRESS_ALIASES existed (or
+// before a later alias was added) -- toRecipients is never persisted on the
+// stored message (see email-store.js), so a message already filed under
+// "uncategorized" can't be reclassified from what's on disk alone. Re-fetches
+// just that one field from Graph (cheap) for each still-uncategorized stored
+// message and reclassifies it -- and any documents it downloaded -- if that
+// changes the answer. Run at the end of every /sync rather than only once, so
+// it also catches messages that stay unresolved because the alias table
+// itself gets extended later.
+async function reclassifyStaleMessages(userId, accessToken){
+  const state = await emailStore.load(userId);
+  let reclassified = 0;
+
+  for (const message of state.messages){
+    if (message.courseFolder !== "uncategorized") continue;
+
+    let toRecipients;
+    try {
+      const data = await graphGet(accessToken, `${GRAPH_ROOT}/me/messages/${message.id}?$select=toRecipients`);
+      toRecipients = data.toRecipients;
+    } catch (err) {
+      continue; // message may have been deleted from the mailbox since it was synced
+    }
+
+    const newFolder = matchCourseFolderFromRecipients(toRecipients) ||
+      matchCourseFolder(`${message.subject}\n${message.body || ""}`) || "uncategorized";
+    if (newFolder === "uncategorized") continue;
+
+    for (const docId of (message.documentIds || [])){
+      const document = documentStore.getDocument(docId);
+      if (document) moveDocumentToCourseFolder(document, newFolder);
+    }
+
+    await emailStore.updateMessage(userId, message.id, { courseFolder: newFolder });
+    reclassified++;
+  }
+
+  return reclassified;
+}
+
 router.post("/sync", async (req, res) => {
   const userId = req.session.userId;
   const tokenResult = await getAccessTokenSilent(userId);
@@ -362,6 +436,7 @@ router.post("/sync", async (req, res) => {
     const { messages: rawMessages, deltaLink } = await fetchDeltaMessages(accessToken, folder.id, state.deltaLinks[FOLDER_KEY]);
 
     const newMessages = [];
+    const newCalendarEvents = [];
     let assignmentsFound = 0;
     let documentsDownloaded = 0;
 
@@ -399,39 +474,59 @@ router.post("/sync", async (req, res) => {
             continue;
           }
 
-          const buffer = Buffer.from(attachment.contentBytes, "base64");
-          const ext = extFromContentTypeOrTitle(attachment.contentType, attachment.name);
-          const nativeFile = saveNativeFile(courseFolder, attachment.name, ext, buffer);
-          if (!nativeFile) continue;
+          // Also check this account's own previously-downloaded documents --
+          // re-syncing mail that was already pulled in on an earlier sync
+          // shouldn't create a second private copy for the same file.
+          const ownExisting = await userDocumentStore.getDocumentByFileName(userId, attachment.name);
+          if (ownExisting) {
+            documentIds.push(ownExisting.id);
+            continue;
+          }
 
+          const buffer = Buffer.from(attachment.contentBytes, "base64");
+
+          // Unlike Canvas imports, an emailed attachment is this one
+          // account's own mail -- on a shared deployment, saving it into the
+          // shared documents/<course>/ folder and shared documentStore would
+          // show up for every other signed-in user too. Stored instead in
+          // this account's own Supabase-backed table (see
+          // user-document-store.js), never touching disk.
           const extracted = await extractText(buffer, attachment.contentType || "", attachment.name);
           const extractError = (extracted && typeof extracted === "object" && extracted.__error) ? extracted.__error : null;
-          const isPdf = ext === "pdf";
-          const fileBuffer = isPdf && buffer.length <= MAX_STORED_PDF_BYTES ? buffer : null;
+          const fileBuffer = buffer.length <= MAX_STORED_PDF_BYTES ? buffer : null;
 
-          // Re-check for an existing entry here, right before adding, rather
-          // than before the extractText() await above -- a concurrent /sync
-          // call (a second click, a second tab) can run its own check-and-add
-          // during that await, and a check done before it would miss the
-          // duplicate that call just created.
-          const existing = documentStore.getDocumentByFilePath(nativeFile.filePath);
-          if (existing) documentStore.removeDocument(existing.id);
-
-          const document = documentStore.addDocument({
+          const document = await userDocumentStore.addDocument(userId, {
             title: attachment.name,
-            url: null,
             contentType: attachment.contentType || "",
             text: extractError ? null : (extracted || null),
             courseId: courseFolder,
             courseName: courseFolder,
             fileBuffer,
-            fileName: nativeFile.fileName,
-            filePath: nativeFile.filePath
+            fileName: attachment.name
           });
+          if (!document) continue;
 
           documentIds.push(document.id);
           documentsDownloaded++;
         }
+      }
+
+      // Delegated to Claude Code (calendar-extract.js) rather than a local
+      // date-pattern parser -- telling "the review session is Friday at 2pm"
+      // (a real event) apart from "thank you for attending the review
+      // session earlier today" (a past reference, not an event) needs actual
+      // reading comprehension, not just date-shaped-text matching. Left
+      // unchecked (calendarChecked stays false) on failure/timeout so the
+      // one-time backfill (calendar-backfill.js) can retry it later instead
+      // of silently treating a failed check as "nothing to find".
+      const messageForEvents = { id: msg.id, subject, body: bodyText, date: msg.receivedDateTime || null, courseFolder };
+      let calendarChecked = false;
+      try {
+        const { events } = await extractCalendarEventsForMessage(messageForEvents);
+        newCalendarEvents.push(...events);
+        calendarChecked = true;
+      } catch (err) {
+        console.error("Calendar extraction failed for message", msg.id, err.message);
       }
 
       newMessages.push({
@@ -446,6 +541,7 @@ router.post("/sync", async (req, res) => {
         isAssignment,
         assignmentSnippet,
         documentIds,
+        calendarChecked,
         done: false,
         plan: null,
         planError: null,
@@ -457,6 +553,8 @@ router.post("/sync", async (req, res) => {
     }
 
     await emailStore.addMessages(userId, newMessages, FOLDER_KEY, deltaLink);
+    await calendarStore.addEvents(userId, newCalendarEvents);
+    const reclassified = await reclassifyStaleMessages(userId, accessToken);
 
     // Plans are only drafted when the user actually asks for one -- via the
     // Email tab's "Generate plan" button (POST /messages/:id/plan below) --
@@ -470,6 +568,8 @@ router.post("/sync", async (req, res) => {
       added: newMessages.length,
       assignmentsFound,
       documentsDownloaded,
+      eventsFound: newCalendarEvents.length,
+      reclassified,
       messages: await emailStore.getAll(userId)
     });
   } catch (err) {
@@ -568,7 +668,7 @@ router.post("/messages/:id/agent/run", async (req, res) => {
     "stopping to ask a question nobody will see.\n\n" +
     "Plan:\n" + message.plan +
     "\n\n---\n\nThe plan above was drafted from this email -- use it for any specifics (links, dates, names, " +
-    "addresses) the plan itself doesn't spell out:\n\n" + buildPlanContext(message);
+    "addresses) the plan itself doesn't spell out:\n\n" + await buildPlanContext(message, userId);
 
   const runId = crypto.randomUUID();
   await agentStore.createRun(userId, {
@@ -588,6 +688,7 @@ router.post("/messages/:id/agent/run", async (req, res) => {
 });
 
 module.exports = router;
-// Attached so this can be unit-tested directly without a live Graph
+// Attached so these can be unit-tested directly without a live Graph
 // connection.
 module.exports.classifyEmailAssignment = classifyEmailAssignment;
+module.exports.matchCourseFolderFromRecipients = matchCourseFolderFromRecipients;

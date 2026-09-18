@@ -477,7 +477,9 @@
     margin:0 0 6px;
   }
   .settings-form input[type="password"],
-  .settings-form input[type="text"]{
+  .settings-form input[type="text"],
+  .settings-form input[type="date"],
+  .settings-form input[type="time"]{
     width:100%;
     background:var(--ink);
     border:1px solid var(--hairline);
@@ -1714,6 +1716,232 @@ pre code {
   background:none; border:none; padding:0; margin-left:6px;
   font:inherit; color:var(--brass); text-decoration:underline; cursor:pointer;
 }
+.calendar-view{ flex:1; min-height:0; display:flex; }
+/* A single scrolling container for the whole tab (same proven pattern as
+   .email-view/.documents-view -- flex:1 + min-height:0 + overflow-y:auto on
+   ONE element) rather than a nested chain of flex/scroll regions, which
+   turned out not to actually get a bounded height from its ancestors and
+   just grew past the viewport with nothing to scroll it (reported: the grid
+   "cuts off" around 6pm with no way to reach the evening hours). The week
+   header + all-day row stay visible while scrolling via position:sticky
+   instead of a separate scroll region. */
+.calendar-wrap{
+  flex:1;
+  min-height:0;
+  overflow-y:auto;
+  padding:28px 32px 20px;
+}
+.calendar-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:16px;
+  margin-bottom:14px;
+  flex-wrap:wrap;
+}
+.calendar-nav{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.calendar-week-label{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:13px;
+  letter-spacing:0.04em;
+  color:var(--text-light);
+  min-width:170px;
+}
+.calendar-backfill-status{
+  font-size:11.5px;
+  color:var(--text-muted);
+  min-height:16px;
+  margin-bottom:10px;
+}
+.calendar-backfill-status.ok{ color:#8fbf8f; }
+.calendar-backfill-status.err{ color:#d98b8b; }
+.calendar-backfill-session{
+  font-size:11px;
+  font-family:var(--font-mono, monospace);
+  color:var(--text-muted);
+  min-height:14px;
+  margin-top:-6px;
+  margin-bottom:10px;
+  user-select:all;
+}
+
+/* Pinned to the top of .calendar-wrap's own scroll while the hour grid
+   below scrolls underneath it -- needs an opaque background (matching the
+   page background) since content scrolls directly behind it. */
+.calendar-sticky-top{
+  position:sticky;
+  top:0;
+  z-index:2;
+  background:var(--ink);
+}
+
+/* Week grid: an hour-gutter column + 7 day columns, shared across the header
+   row, the all-day row, and the hourly body below them -- kept in sync via
+   the same grid-template-columns on all three. */
+.calendar-week-header,
+.calendar-allday-row{
+  display:grid;
+  grid-template-columns:52px repeat(7, 1fr);
+  gap:1px;
+  background:var(--hairline);
+  border:1px solid var(--hairline);
+}
+.calendar-week-header{ border-bottom:none; }
+.calendar-week-header > div{
+  background:var(--ink-2);
+  padding:8px 6px;
+  text-align:center;
+}
+.calendar-week-header .calendar-weekday{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:9.5px;
+  letter-spacing:0.1em;
+  text-transform:uppercase;
+  color:var(--text-muted);
+}
+.calendar-week-header .calendar-date-num{
+  font-size:15px;
+  color:var(--text-light);
+  margin-top:2px;
+}
+.calendar-week-header .calendar-header-today .calendar-date-num{
+  color:var(--ink);
+  background:var(--brass);
+  border-radius:50%;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:24px;
+  height:24px;
+}
+.calendar-allday-row > div{
+  background:var(--ink-2);
+  min-height:22px;
+  min-width:0; /* grid items default to min-width:auto, which lets nowrap pill text below force the cell (and the pills in it) wider than its 1fr track and spill into the next day's column -- this is what actually keeps it clipped to its own day */
+  overflow:hidden;
+  padding:3px 4px;
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+}
+.calendar-allday-pill{
+  font-size:10.5px;
+  color:var(--ink);
+  background:#8fb3d9;
+  border-radius:3px;
+  padding:2px 6px;
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  cursor:pointer;
+}
+.calendar-allday-pill:hover{ filter:brightness(1.1); }
+.calendar-week-body{
+  display:flex;
+  border:1px solid var(--hairline);
+  border-top:none;
+}
+.calendar-hours-col{
+  flex:0 0 52px;
+  position:relative;
+  background:var(--ink-2);
+  border-right:1px solid var(--hairline);
+}
+.calendar-hour-label{
+  position:absolute;
+  right:6px;
+  transform:translateY(-50%);
+  font-family:'IBM Plex Mono',monospace;
+  font-size:9.5px;
+  color:var(--text-muted);
+}
+.calendar-week-columns{
+  flex:1;
+  display:grid;
+  grid-template-columns:repeat(7, 1fr);
+  position:relative;
+  background-image:repeating-linear-gradient(to bottom, var(--hairline) 0, var(--hairline) 1px, transparent 1px, transparent var(--hour-height, 48px));
+}
+.calendar-day-column{
+  position:relative;
+  border-right:1px solid var(--hairline);
+}
+.calendar-day-column.calendar-header-today{ background:rgba(191,160,90,0.05); }
+.calendar-event-block{
+  position:absolute;
+  left:2px;
+  right:2px;
+  background:#8fb3d9;
+  color:var(--ink);
+  border-radius:4px;
+  padding:2px 6px;
+  font-size:10.5px;
+  line-height:1.25;
+  overflow:hidden;
+  cursor:pointer;
+}
+.calendar-event-block:hover{ filter:brightness(1.1); }
+.calendar-event-block-time{ font-weight:600; }
+.calendar-event-more-pill{
+  position:absolute;
+  left:2px;
+  right:2px;
+  background:var(--ink-2);
+  border:1px solid var(--brass-dim);
+  color:var(--brass-dim);
+  border-radius:4px;
+  padding:1px 6px;
+  font-size:9.5px;
+  line-height:1.3;
+  text-align:center;
+  cursor:pointer;
+}
+.calendar-event-more-pill:hover{ color:var(--brass); border-color:var(--brass); }
+.calendar-more-events-list{ display:flex; flex-direction:column; gap:8px; }
+.calendar-more-events-row{
+  background:var(--ink-2);
+  border:1px solid var(--hairline);
+  border-radius:var(--radius);
+  padding:10px 12px;
+  cursor:pointer;
+}
+.calendar-more-events-row:hover{ border-color:var(--brass-dim); }
+.calendar-more-events-row-time{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:10.5px;
+  text-transform:uppercase;
+  letter-spacing:0.04em;
+  color:var(--brass-dim);
+  margin-bottom:2px;
+}
+.calendar-more-events-row-title{ font-size:13px; color:var(--text-light); }
+.calendar-event-time{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:11px;
+  text-transform:uppercase;
+  letter-spacing:0.04em;
+  color:var(--brass-dim);
+  margin-bottom:6px;
+}
+.calendar-event-title{
+  font-family:'Fraunces',serif;
+  font-size:18px;
+  color:var(--parchment);
+  margin-bottom:6px;
+}
+.calendar-event-title[contenteditable="true"]{ outline:none; border-bottom:1px dashed var(--hairline); }
+.calendar-event-location{ font-size:13px; color:var(--brass-dim); margin-bottom:10px; }
+.calendar-event-location[contenteditable="true"]{ outline:none; border-bottom:1px dashed var(--hairline); }
+.calendar-event-location:empty::before{ content:"+ Add location"; color:var(--text-muted); opacity:0.7; }
+.calendar-event-desc{ font-size:13px; color:var(--text-muted); line-height:1.6; margin-bottom:10px; }
+.calendar-event-source{ font-size:11px; color:var(--text-muted); }
+#calendarEventModalActions{ margin-top:18px; }
+.calendar-empty{ color:var(--text-muted); font-size:12px; }
 .agent-view{ flex:1; min-height:0; display:flex; }
 .agent-main{
   flex:1;
@@ -1802,6 +2030,13 @@ pre code {
   color:var(--text-muted);
   margin-bottom:6px;
 }
+.agent-panel-label-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+}
+.agent-panel-label-row .agent-panel-label{ margin-bottom:0; }
 .agent-panel-label-clickable{
   cursor:pointer;
   user-select:none;
@@ -2692,6 +2927,29 @@ pre code {
   </div>
 </div>
 
+<div class="modal-overlay" id="calendarNewEventOverlay" style="display:none;">
+  <div class="modal">
+    <h2>Add event</h2>
+    <div class="settings-form">
+      <label for="calendarNewEventTitle">Title</label>
+      <input type="text" id="calendarNewEventTitle" placeholder="Event title" autocomplete="off">
+      <label for="calendarNewEventDate">Date</label>
+      <input type="date" id="calendarNewEventDate" autocomplete="off">
+      <label for="calendarNewEventTime">Time (leave blank for an all-day event)</label>
+      <input type="time" id="calendarNewEventTime" autocomplete="off">
+      <label for="calendarNewEventLocation">Location</label>
+      <input type="text" id="calendarNewEventLocation" placeholder="Room, building, Zoom, etc." autocomplete="off">
+      <label for="calendarNewEventDescription">Description</label>
+      <textarea class="settings-prompt-textarea context-prompt-textarea" id="calendarNewEventDescription" placeholder="Any extra detail…" spellcheck="true"></textarea>
+      <div class="settings-actions">
+        <button type="button" id="calendarNewEventSaveBtn">Add event</button>
+        <button type="button" class="btn-secondary" id="calendarNewEventCloseBtn">Cancel</button>
+        <span class="settings-status" id="calendarNewEventStatus"></span>
+      </div>
+    </div>
+  </div>
+</div>
+
   <aside class="sidebar" id="sidebar">
     <button class="sidebar-collapse-btn" id="sidebarCollapseBtn" aria-label="Collapse docket" title="Collapse panel">&#10094;</button>
     <button class="sidebar-close-btn" id="sidebarCloseBtn" aria-label="Close docket" title="Close panel">&#10005;</button>
@@ -2783,6 +3041,7 @@ pre code {
       <button class="view-tab" id="tabNotes" data-view="notes">Notes</button>
       <button class="view-tab" id="tabDatabase" data-view="database">Database</button>
       <button class="view-tab" id="tabEmail" data-view="email">Email</button>
+      <button class="view-tab" id="tabCalendar" data-view="calendar">Calendar</button>
       <button class="view-tab" id="tabAgent" data-view="agent">Agent</button>
       <button class="settings-gear-btn" id="accountBtn" aria-label="Account" title="Sign in to save your notes and chat history">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -3092,6 +3351,56 @@ pre code {
       </div>
     </div>
 
+    <div class="calendar-view" id="calendarView" style="display:none;">
+      <div class="calendar-wrap">
+        <div class="calendar-head">
+          <div>
+            <div class="documents-title">Calendar</div>
+            <div class="documents-subtitle">Dates and events pulled automatically from synced email -- click "Sync now" on the Email tab to refresh.</div>
+          </div>
+          <div class="calendar-nav">
+            <button type="button" class="doc-refresh-btn" id="calendarTodayBtn">Today</button>
+            <button type="button" class="doc-refresh-btn" id="calendarPrevBtn" title="Previous week">&#8592;</button>
+            <button type="button" class="doc-refresh-btn" id="calendarNextBtn" title="Next week">&#8594;</button>
+            <div class="calendar-week-label" id="calendarWeekLabel"></div>
+            <button type="button" class="doc-refresh-btn" id="calendarNewEventBtn">+ Add event</button>
+            <button type="button" class="doc-refresh-btn" id="calendarBackfillBtn" title="One-time: sync every already-synced email (not just new ones) for events">Sync all email for events</button>
+            <button type="button" class="doc-refresh-btn" id="calendarRecheckBtn" title="Wipes all calendar events and re-extracts every synced email from scratch (e.g. after a fix to event extraction)">Force recheck all email</button>
+          </div>
+        </div>
+        <div class="calendar-backfill-status" id="calendarBackfillStatus"></div>
+        <div class="calendar-backfill-session" id="calendarBackfillSession"></div>
+
+        <div class="calendar-sticky-top">
+          <div class="calendar-week-header" id="calendarWeekHeader"></div>
+          <div class="calendar-allday-row" id="calendarAlldayRow"></div>
+        </div>
+        <div class="calendar-week-body" id="calendarWeekBody">
+          <div class="calendar-hours-col" id="calendarHoursCol"></div>
+          <div class="calendar-week-columns" id="calendarWeekColumns"></div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="modal-overlay" id="calendarEventOverlay" style="display:none;">
+      <div class="modal">
+        <h2>Event</h2>
+        <div id="calendarEventModalBody"></div>
+        <div class="settings-actions" id="calendarEventModalActions"></div>
+      </div>
+    </div>
+
+    <div class="modal-overlay" id="calendarMoreEventsOverlay" style="display:none;">
+      <div class="modal">
+        <h2>More events at this time</h2>
+        <div class="calendar-more-events-list" id="calendarMoreEventsBody"></div>
+        <div class="settings-actions" style="margin-top:14px;">
+          <button type="button" class="btn-secondary" id="calendarMoreEventsCloseBtn">Close</button>
+        </div>
+      </div>
+    </div>
+
     <div class="agent-view" id="agentView" style="display:none;">
       <aside class="notes-sidebar" id="agentSidebar">
         <div class="notes-sidebar-label">Agent runs</div>
@@ -3113,7 +3422,10 @@ pre code {
             <pre class="agent-terminal" id="agentTerminalOutput"></pre>
           </div>
           <div class="agent-panel" id="agentOutputPanel">
-            <div class="agent-panel-label">Output</div>
+            <div class="agent-panel-label-row">
+              <div class="agent-panel-label">Output</div>
+              <button type="button" class="notes-head-btn" id="agentSendToEditorBtn" title="Send this run's output to the Draft &amp; Compile editor">Send to Editor</button>
+            </div>
             <div class="notes-report-body agent-output-body" id="agentOutputBody"></div>
           </div>
         </div>
@@ -3629,6 +3941,11 @@ function updateAccountUI(){
   // than showing a button that will just 403.
   const docImportCard = document.getElementById("docImportCard");
   if (docImportCard) docImportCard.style.display = isAdminUser ? "" : "none";
+  // Same reasoning -- Force recheck is admin-only server-side too (requireDbAdmin
+  // on /api/calendar/recheck), since it wipes and rebuilds an account's whole
+  // calendar from scratch.
+  const calendarRecheckBtn = document.getElementById("calendarRecheckBtn");
+  if (calendarRecheckBtn) calendarRecheckBtn.style.display = isAdminUser ? "" : "none";
 }
 
 // Called on page load. If a session cookie from a previous visit is still
@@ -4624,6 +4941,7 @@ function setView(view){
   const scheduleView = document.getElementById("scheduleView");
   const documentsView = document.getElementById("documentsView");
   const emailView = document.getElementById("emailView");
+  const calendarView = document.getElementById("calendarView");
   const agentView = document.getElementById("agentView");
   const notesView = document.getElementById("notesView");
   const databaseView = document.getElementById("databaseView");
@@ -4632,6 +4950,7 @@ function setView(view){
   const tabSchedule = document.getElementById("tabSchedule");
   const tabDocuments = document.getElementById("tabDocuments");
   const tabEmail = document.getElementById("tabEmail");
+  const tabCalendar = document.getElementById("tabCalendar");
   const tabAgent = document.getElementById("tabAgent");
   const tabNotes = document.getElementById("tabNotes");
   const tabDatabase = document.getElementById("tabDatabase");
@@ -4641,6 +4960,7 @@ function setView(view){
   scheduleView.style.display = "none";
   documentsView.style.display = "none";
   emailView.style.display = "none";
+  calendarView.style.display = "none";
   agentView.style.display = "none";
   notesView.style.display = "none";
   databaseView.style.display = "none";
@@ -4649,6 +4969,7 @@ function setView(view){
   tabSchedule.classList.remove("active");
   tabDocuments.classList.remove("active");
   tabEmail.classList.remove("active");
+  tabCalendar.classList.remove("active");
   tabAgent.classList.remove("active");
   tabNotes.classList.remove("active");
   tabDatabase.classList.remove("active");
@@ -4677,6 +4998,10 @@ function setView(view){
     emailView.style.display = "block";
     tabEmail.classList.add("active");
     refreshEmailMessages();
+  } else if (view === "calendar"){
+    calendarView.style.display = "block";
+    tabCalendar.classList.add("active");
+    refreshCalendarEvents();
   } else if (view === "agent"){
     agentView.style.display = "flex";
     tabAgent.classList.add("active");
@@ -4700,6 +5025,7 @@ document.getElementById("tabEditor").addEventListener("click", () => setView("ed
 document.getElementById("tabSchedule").addEventListener("click", () => setView("schedule"));
 document.getElementById("tabDocuments").addEventListener("click", () => setView("documents"));
 document.getElementById("tabEmail").addEventListener("click", () => setView("email"));
+document.getElementById("tabCalendar").addEventListener("click", () => setView("calendar"));
 document.getElementById("tabAgent").addEventListener("click", () => setView("agent"));
 document.getElementById("tabNotes").addEventListener("click", () => setView("notes"));
 document.getElementById("tabDatabase").addEventListener("click", () => setView("database"));
@@ -6121,6 +6447,20 @@ document.getElementById("notesReportOpenEditorBtn").addEventListener("click", ()
   setView("editor");
 });
 
+// Sends an agent run's final deliverable into the Draft & Compile editor --
+// same pattern as notesReportOpenEditorBtn above, just off run.result
+// (already-compiled plain text) instead of a report's HTML/markdown-lite text.
+document.getElementById("agentSendToEditorBtn").addEventListener("click", () => {
+  if (!currentAgentRun || !currentAgentRun.result || !currentAgentRun.result.trim()) return;
+  loadFormattedTextIntoEditor(currentAgentRun.result);
+  document.getElementById("docTitle").value = currentAgentRun.title || "Untitled Document";
+  savedFileHandle = null;
+  savedFileLang = null;
+  savedFileExt = null;
+  syncToolbarState();
+  setView("editor");
+});
+
 document.getElementById("notesReportSaveBtn").addEventListener("click", () => {
   if (!currentReport || currentReport.id || currentReport.loading) return;
   reportCounter++;
@@ -6742,6 +7082,12 @@ function renderEmailList(){
 // Shows the full synced email (subject/from/date and the complete body
 // text stored at sync time -- see MAX_BODY_CHARS in email-routes.js) in a
 // popup, since the card itself only shows a short flagged-sentence snippet.
+// True only while the email view was opened from the calendar event popup's
+// "View email" button (see openCalendarEventSource below) rather than from
+// the Email tab's own list -- tells closeEmailView() whether to bring that
+// popup back afterward.
+let emailViewOpenedFromCalendarEvent = false;
+
 function openEmailView(msg){
   const dateLabel = msg.date ? new Date(msg.date).toLocaleString() : "";
   document.getElementById("emailViewSubject").textContent = msg.subject || "(no subject)";
@@ -6752,6 +7098,14 @@ function openEmailView(msg){
 }
 function closeEmailView(){
   document.getElementById("emailViewOverlay").style.display = "none";
+  // If this email view was opened from the calendar event popup's "View
+  // email" button (see openCalendarEventSource), swapping it back in on
+  // close -- rather than leaving both closed -- is what makes that feel like
+  // navigating within one flow instead of losing the event details.
+  if (emailViewOpenedFromCalendarEvent){
+    emailViewOpenedFromCalendarEvent = false;
+    if (calendarSelectedEventId) openCalendarEvent(calendarSelectedEventId);
+  }
 }
 document.getElementById("emailViewCloseBtn").addEventListener("click", closeEmailView);
 document.getElementById("emailViewOverlay").addEventListener("click", (e) => {
@@ -6891,6 +7245,10 @@ async function runEmailAgent(id, planText, btn){
 // polling pattern already used for the email-setup device-code flow.
 let agentRunsCache = [];
 let activeAgentRunId = null;
+// The last run rendered by renderAgentRun() -- used by the "Send to Editor"
+// button, same currentReport pattern the Notes tab uses for its own
+// Open-in-Editor button.
+let currentAgentRun = null;
 let agentPollTimer = null;
 // Drives the Terminal/Output panel split (see the state-running/collapsed/
 // expanded CSS on #agentPanels) -- reset per run open, and forced back to
@@ -6998,6 +7356,8 @@ async function deleteAgentRun(id){
       document.getElementById("agentOutputBody").innerHTML = "";
       document.getElementById("agentFollowupRow").style.display = "none";
       document.getElementById("agentFollowupInput").value = "";
+      currentAgentRun = null;
+      document.getElementById("agentSendToEditorBtn").disabled = true;
       activeAgentRunStatus = null;
       agentTerminalExpanded = false;
       applyAgentPanelLayout(null);
@@ -7038,6 +7398,8 @@ async function openAgentRun(id){
   bodyEl.innerHTML = "";
   document.getElementById("agentFollowupRow").style.display = "none";
   document.getElementById("agentFollowupInput").value = "";
+  currentAgentRun = null;
+  document.getElementById("agentSendToEditorBtn").disabled = true;
 
   try{
     const res = await fetch(PROXY_ORIGIN + "/api/agent/runs/" + encodeURIComponent(id));
@@ -7059,6 +7421,8 @@ async function openAgentRun(id){
 // characters.
 function renderAgentRun(run){
   if (String(run.id) !== String(activeAgentRunId)) return; // user switched runs mid-poll
+  currentAgentRun = run;
+  document.getElementById("agentSendToEditorBtn").disabled = !(run.result && run.result.trim());
   const titleEl = document.getElementById("agentRunTitle");
   const statusEl = document.getElementById("agentRunStatus");
   const resumeEl = document.getElementById("agentResumeHint");
@@ -7246,7 +7610,10 @@ document.getElementById("emailSyncBtn").addEventListener("click", async () => {
     statusEl.textContent =
       `Synced: ${data.added} new email${data.added === 1 ? "" : "s"}, ` +
       `${data.assignmentsFound} assignment${data.assignmentsFound === 1 ? "" : "s"}, ` +
-      `${data.documentsDownloaded} document${data.documentsDownloaded === 1 ? "" : "s"} downloaded.`;
+      `${data.documentsDownloaded} document${data.documentsDownloaded === 1 ? "" : "s"} downloaded, ` +
+      `${data.eventsFound || 0} calendar event${data.eventsFound === 1 ? "" : "s"} found` +
+      (data.reclassified ? `, ${data.reclassified} email${data.reclassified === 1 ? "" : "s"} recategorized` : "") +
+      ".";
     statusEl.className = "email-status ok";
 
     emailMessagesCache = data.messages || [];
@@ -7258,6 +7625,634 @@ document.getElementById("emailSyncBtn").addEventListener("click", async () => {
   } finally {
     btn.disabled = false;
   }
+});
+
+
+// ====== CALENDAR: dates/events extracted automatically from synced email ======
+// Populated by email-routes.js's calendar-extract.js (a Claude Code CLI call
+// per email, not a local date-pattern parser -- see that file for why).
+// "Sync now" only ever runs it on newly-fetched messages; calendarBackfillBtn
+// below is the separate, explicit one-time catch-up over everything synced
+// before that (see calendar-backfill.js). Week view, Google-Calendar-style:
+// an all-day row for date-only events, an hourly grid for timed ones.
+let calendarEventsCache = [];
+let calendarWeekStart = startOfCalendarWeek(new Date()); // Sunday 00:00 of the displayed week
+let calendarSelectedEventId = null;
+let calendarBackfillPollTimer = null;
+
+const CALENDAR_HOUR_START = 7;   // 7 AM
+const CALENDAR_HOUR_END = 21;    // 9 PM (inclusive)
+const CALENDAR_HOUR_HEIGHT = 48; // px per hour row
+const CALENDAR_DEFAULT_EVENT_MINUTES = 45; // no duration data, so every timed block gets a fixed visual height
+
+function startOfCalendarWeek(date){
+  const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  d.setDate(d.getDate() - d.getDay());
+  return d;
+}
+
+// For an actual JS Date object (day headers, "today") -- formats its local
+// Y-M-D directly, no ISO/UTC round trip.
+function localDateKey(d){
+  return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+}
+
+// For an event's stored `date` field -- a plain "YYYY-MM-DD" string (or, for
+// events stored before the timezone fix, a full ISO datetime whose leading
+// "YYYY-MM-DDT..." still matches). Deliberately not routed through
+// `new Date(...)`: parsing a date-only string as UTC midnight and reading it
+// back in the browser's local timezone can shift it onto the wrong day --
+// this was part of the original "everything lands around the same wrong
+// hour" bug.
+function calendarDayKey(dateStr){
+  const match = /^(\d{4}-\d{2}-\d{2})/.exec(dateStr || "");
+  return match ? match[1] : "";
+}
+
+// 24h "HH:MM" -> "H:MM AM/PM". Used for both new-format events (ev.time) and
+// as part of the legacy fallback below.
+function formatEventTime(hour, minute){
+  const period = hour < 12 ? "AM" : "PM";
+  const h12 = (hour % 12) || 12;
+  return h12 + ":" + String(minute).padStart(2, "0") + " " + period;
+}
+
+// New-format events carry ev.time ("HH:MM", timezone-free) directly. Events
+// stored before the timezone fix have no ev.time -- only a server-local-
+// then-UTC ev.date -- so the best available fallback is the old (browser-TZ)
+// interpretation, which may still be off by the original server/browser
+// offset. Returns { hour, minute } in 24h form.
+function eventTimeParts(ev){
+  if (ev.time && /^\d{1,2}:\d{2}$/.test(ev.time)) {
+    const [h, m] = ev.time.split(":").map(Number);
+    return { hour: h, minute: m };
+  }
+  const legacy = new Date(ev.date);
+  return { hour: legacy.getHours(), minute: legacy.getMinutes() };
+}
+
+async function refreshCalendarEvents(){
+  const columns = document.getElementById("calendarWeekColumns");
+  columns.innerHTML = `<div class="calendar-empty" style="padding:12px;">Loading events…</div>`;
+  try{
+    const res = await fetch(PROXY_ORIGIN + "/api/calendar/events");
+    if (!res.ok) throw new Error("Server returned " + res.status);
+    const data = await res.json();
+    calendarEventsCache = data.events || [];
+    renderCalendarWeek();
+  } catch(e){
+    columns.innerHTML = `<div class="calendar-empty" style="padding:12px;">Couldn't load calendar events: ${escapeHtml(e.message)}</div>`;
+  }
+  pollBackfillStatusOnce();
+}
+
+// Same fetch as refreshCalendarEvents but without the "Loading…" flash --
+// used right after a backfill finishes, so newly-found events just appear.
+async function refreshCalendarEventsQuiet(){
+  try{
+    const res = await fetch(PROXY_ORIGIN + "/api/calendar/events");
+    if (!res.ok) return;
+    const data = await res.json();
+    calendarEventsCache = data.events || [];
+    renderCalendarWeek();
+  } catch(e){ /* keep showing whatever was already rendered */ }
+}
+
+function renderCalendarWeek(){
+  const header = document.getElementById("calendarWeekHeader");
+  const alldayRow = document.getElementById("calendarAlldayRow");
+  const hoursCol = document.getElementById("calendarHoursCol");
+  const columns = document.getElementById("calendarWeekColumns");
+  const label = document.getElementById("calendarWeekLabel");
+
+  const days = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(calendarWeekStart);
+    d.setDate(d.getDate() + i);
+    return d;
+  });
+  const todayKey = localDateKey(new Date());
+
+  label.textContent =
+    days[0].toLocaleDateString(undefined, { month: "short", day: "numeric" }) + " – " +
+    days[6].toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
+
+  const eventsByDay = {};
+  calendarEventsCache.forEach(ev => {
+    const key = calendarDayKey(ev.date);
+    (eventsByDay[key] = eventsByDay[key] || []).push(ev);
+  });
+
+  // Header row: weekday + date number, today highlighted.
+  header.innerHTML = "";
+  header.appendChild(document.createElement("div"));
+  days.forEach(d => {
+    const key = localDateKey(d);
+    const cell = document.createElement("div");
+    if (key === todayKey) cell.classList.add("calendar-header-today");
+    const wk = document.createElement("div");
+    wk.className = "calendar-weekday";
+    wk.textContent = d.toLocaleDateString(undefined, { weekday: "short" });
+    const num = document.createElement("div");
+    num.className = "calendar-date-num";
+    num.textContent = String(d.getDate());
+    cell.appendChild(wk);
+    cell.appendChild(num);
+    header.appendChild(cell);
+  });
+
+  // All-day row: date-only events as small pills, one per day column.
+  alldayRow.innerHTML = "";
+  const alldayCorner = document.createElement("div");
+  alldayCorner.style.cssText = "font-size:9px;color:var(--text-muted);text-align:center;padding-top:3px;";
+  alldayCorner.textContent = "All day";
+  alldayRow.appendChild(alldayCorner);
+  days.forEach(d => {
+    const key = localDateKey(d);
+    const cell = document.createElement("div");
+    (eventsByDay[key] || []).filter(ev => !ev.hasTime).forEach(ev => {
+      const pill = document.createElement("div");
+      pill.className = "calendar-allday-pill";
+      pill.textContent = ev.title || "(untitled event)";
+      pill.title = ev.title || "";
+      pill.addEventListener("click", () => openCalendarEvent(ev.id));
+      cell.appendChild(pill);
+    });
+    alldayRow.appendChild(cell);
+  });
+
+  // Hourly grid: hour labels on the left, timed events absolutely positioned
+  // within their day column by time-of-day (no duration data, so every block
+  // gets a fixed visual height).
+  const totalHeight = (CALENDAR_HOUR_END - CALENDAR_HOUR_START + 1) * CALENDAR_HOUR_HEIGHT;
+
+  hoursCol.innerHTML = "";
+  hoursCol.style.setProperty("--hour-height", CALENDAR_HOUR_HEIGHT + "px");
+  hoursCol.style.height = totalHeight + "px";
+  for (let h = CALENDAR_HOUR_START; h <= CALENDAR_HOUR_END; h++){
+    const hourLabel = document.createElement("div");
+    hourLabel.className = "calendar-hour-label";
+    hourLabel.style.top = ((h - CALENDAR_HOUR_START) * CALENDAR_HOUR_HEIGHT) + "px";
+    hourLabel.textContent = ((h % 12) || 12) + (h < 12 ? " AM" : " PM");
+    hoursCol.appendChild(hourLabel);
+  }
+
+  columns.innerHTML = "";
+  columns.style.setProperty("--hour-height", CALENDAR_HOUR_HEIGHT + "px");
+  columns.style.height = totalHeight + "px";
+  days.forEach(d => {
+    const key = localDateKey(d);
+    const col = document.createElement("div");
+    col.className = "calendar-day-column" + (key === todayKey ? " calendar-header-today" : "");
+    col.style.height = totalHeight + "px";
+
+    // Grouped by exact clock time rather than rendered one-by-one -- several
+    // unrelated events can legitimately share a time slot (e.g. a handful of
+    // separate "12:00 PM" announcements extracted from different emails the
+    // same day), and every block here is absolutely positioned purely by
+    // time-of-day with a fixed visual height, so without this they'd all
+    // land on the exact same rectangle -- only the last one painted would
+    // ever be visible or clickable, silently hiding the rest. Only the first
+    // event in each group gets its own block; the rest surface through a
+    // "+N more" pill beneath it that opens a picker (see
+    // openCalendarMoreEvents).
+    const timedByTime = {};
+    (eventsByDay[key] || []).filter(ev => ev.hasTime).forEach(ev => {
+      (timedByTime[ev.time] = timedByTime[ev.time] || []).push(ev);
+    });
+
+    Object.values(timedByTime).forEach(group => {
+      const primary = group[0];
+      const { hour, minute } = eventTimeParts(primary);
+      const rawMinutes = (hour - CALENDAR_HOUR_START) * 60 + minute;
+      const maxMinutes = (CALENDAR_HOUR_END - CALENDAR_HOUR_START + 1) * 60 - CALENDAR_DEFAULT_EVENT_MINUTES;
+      const minutesFromStart = Math.max(0, Math.min(rawMinutes, maxMinutes));
+      const top = (minutesFromStart / 60) * CALENDAR_HOUR_HEIGHT;
+      const height = Math.max((CALENDAR_DEFAULT_EVENT_MINUTES / 60) * CALENDAR_HOUR_HEIGHT, 18);
+
+      const block = document.createElement("div");
+      block.className = "calendar-event-block";
+      block.style.top = top + "px";
+      block.style.height = height + "px";
+      block.innerHTML = `<span class="calendar-event-block-time">${escapeHtml(formatEventTime(hour, minute))}</span> ${escapeHtml(primary.title || "(untitled event)")}`;
+      block.addEventListener("click", () => openCalendarEvent(primary.id));
+      col.appendChild(block);
+
+      if (group.length > 1){
+        const more = document.createElement("div");
+        more.className = "calendar-event-more-pill";
+        more.style.top = (top + height + 2) + "px";
+        more.textContent = `+${group.length - 1} more`;
+        more.addEventListener("click", (e) => {
+          e.stopPropagation();
+          openCalendarMoreEvents(group.slice(1));
+        });
+        col.appendChild(more);
+      }
+    });
+
+    columns.appendChild(col);
+  });
+
+  if (calendarSelectedEventId) renderCalendarEventModal();
+}
+
+// Clicking any tile -- an all-day pill or a timed block -- opens this same
+// single-event detail popup (a modal, like every other detail view in this
+// app -- see emailViewOverlay) with the title (editable in place, since the
+// model's title guess isn't always exactly right), location, description,
+// and the View email / Delete actions the user asked for.
+function openCalendarEvent(id){
+  calendarSelectedEventId = id;
+  document.getElementById("calendarEventOverlay").style.display = "flex";
+  renderCalendarEventModal();
+}
+
+function closeCalendarEventPanel(){
+  calendarSelectedEventId = null;
+  document.getElementById("calendarEventOverlay").style.display = "none";
+}
+
+// The "+N more" pill's picker -- lists the other events sharing a time slot
+// (see the grouping in renderCalendarWeek) so they're each still reachable,
+// not just whichever one happened to be rendered as the slot's main block.
+function openCalendarMoreEvents(events){
+  const body = document.getElementById("calendarMoreEventsBody");
+  body.innerHTML = "";
+  events.forEach(ev => {
+    const { hour, minute } = eventTimeParts(ev);
+    const row = document.createElement("div");
+    row.className = "calendar-more-events-row";
+    const time = document.createElement("div");
+    time.className = "calendar-more-events-row-time";
+    time.textContent = formatEventTime(hour, minute);
+    const title = document.createElement("div");
+    title.className = "calendar-more-events-row-title";
+    title.textContent = ev.title || "(untitled event)";
+    row.appendChild(time);
+    row.appendChild(title);
+    row.addEventListener("click", () => {
+      closeCalendarMoreEvents();
+      openCalendarEvent(ev.id);
+    });
+    body.appendChild(row);
+  });
+  document.getElementById("calendarMoreEventsOverlay").style.display = "flex";
+}
+
+function closeCalendarMoreEvents(){
+  document.getElementById("calendarMoreEventsOverlay").style.display = "none";
+}
+
+document.getElementById("calendarMoreEventsCloseBtn").addEventListener("click", closeCalendarMoreEvents);
+document.getElementById("calendarMoreEventsOverlay").addEventListener("click", (e) => {
+  if (e.target === document.getElementById("calendarMoreEventsOverlay")) closeCalendarMoreEvents();
+});
+
+function renderCalendarEventModal(){
+  const body = document.getElementById("calendarEventModalBody");
+  const actions = document.getElementById("calendarEventModalActions");
+  const ev = calendarEventsCache.find(e => String(e.id) === String(calendarSelectedEventId));
+  if (!ev){
+    closeCalendarEventPanel();
+    return;
+  }
+
+  body.innerHTML = "";
+  actions.innerHTML = "";
+
+  // Built from the plain "YYYY-MM-DD" day key's own components (not parsed
+  // as an ISO string) so the displayed weekday/month/day can't shift a day
+  // depending on the browser's timezone offset.
+  const dayKey = calendarDayKey(ev.date);
+  const [dy, dm, dd] = dayKey.split("-").map(Number);
+  const evDateLocal = dayKey ? new Date(dy, dm - 1, dd) : new Date(ev.date);
+  const dateLine = document.createElement("div");
+  dateLine.className = "calendar-event-time";
+  dateLine.textContent = evDateLocal.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" }) +
+    (ev.hasTime ? " · " + formatEventTime(eventTimeParts(ev).hour, eventTimeParts(ev).minute) : " · Date only");
+  body.appendChild(dateLine);
+
+  const title = document.createElement("div");
+  title.className = "calendar-event-title";
+  title.contentEditable = "true";
+  title.spellcheck = false;
+  title.textContent = ev.title || "(untitled event)";
+  title.addEventListener("blur", () => {
+    const trimmed = title.textContent.trim();
+    if (trimmed && trimmed !== ev.title) saveCalendarEventEdit(ev.id, { title: trimmed });
+  });
+  body.appendChild(title);
+
+  const locationEl = document.createElement("div");
+  locationEl.className = "calendar-event-location";
+  locationEl.contentEditable = "true";
+  locationEl.spellcheck = false;
+  locationEl.textContent = ev.location || "";
+  locationEl.addEventListener("blur", () => {
+    const trimmed = locationEl.textContent.trim();
+    if (trimmed !== (ev.location || "")) saveCalendarEventEdit(ev.id, { location: trimmed });
+  });
+  body.appendChild(locationEl);
+
+  if (ev.description){
+    const desc = document.createElement("div");
+    desc.className = "calendar-event-desc";
+    desc.textContent = ev.description;
+    body.appendChild(desc);
+  }
+
+  if (ev.sourceSubject){
+    const source = document.createElement("div");
+    source.className = "calendar-event-source";
+    source.textContent = "From: " + ev.sourceSubject;
+    body.appendChild(source);
+  }
+
+  if (ev.sourceMessageId){
+    const viewBtn = document.createElement("button");
+    viewBtn.type = "button";
+    viewBtn.className = "btn-secondary";
+    viewBtn.textContent = "View email";
+    viewBtn.addEventListener("click", () => openCalendarEventSource(ev.sourceMessageId));
+    actions.appendChild(viewBtn);
+  }
+
+  const delBtn = document.createElement("button");
+  delBtn.type = "button";
+  delBtn.className = "btn-secondary";
+  delBtn.textContent = "Delete";
+  delBtn.addEventListener("click", () => deleteCalendarEvent(ev.id));
+  actions.appendChild(delBtn);
+
+  const closeBtn = document.createElement("button");
+  closeBtn.type = "button";
+  closeBtn.textContent = "Close";
+  closeBtn.addEventListener("click", closeCalendarEventPanel);
+  actions.appendChild(closeBtn);
+}
+
+async function saveCalendarEventEdit(id, patch){
+  try{
+    const res = await fetch(PROXY_ORIGIN + "/api/calendar/events/" + encodeURIComponent(id), {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(patch)
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error((data && data.error && data.error.message) || "Couldn't save that change.");
+    const idx = calendarEventsCache.findIndex(e => String(e.id) === String(id));
+    if (idx !== -1) calendarEventsCache[idx] = { ...calendarEventsCache[idx], ...data };
+    renderCalendarWeek();
+  } catch(e){
+    alert("Couldn't save that change: " + e.message);
+  }
+}
+
+async function deleteCalendarEvent(id){
+  if (!confirm("Remove this event from the calendar?")) return;
+  try{
+    const res = await fetch(PROXY_ORIGIN + "/api/calendar/events/" + encodeURIComponent(id), { method: "DELETE" });
+    if (!res.ok){
+      const data = await res.json().catch(() => null);
+      throw new Error((data && data.error && data.error.message) || "Delete failed.");
+    }
+    calendarEventsCache = calendarEventsCache.filter(e => String(e.id) !== String(id));
+    if (String(calendarSelectedEventId) === String(id)) closeCalendarEventPanel();
+    renderCalendarWeek();
+  } catch(e){
+    alert("Couldn't delete this event: " + e.message);
+  }
+}
+
+// ---- Manually adding an event (as opposed to one extracted from email) ----
+function openCalendarNewEventModal(){
+  document.getElementById("calendarNewEventTitle").value = "";
+  document.getElementById("calendarNewEventDate").value = localDateKey(new Date());
+  document.getElementById("calendarNewEventTime").value = "";
+  document.getElementById("calendarNewEventLocation").value = "";
+  document.getElementById("calendarNewEventDescription").value = "";
+  const statusEl = document.getElementById("calendarNewEventStatus");
+  statusEl.textContent = "";
+  statusEl.className = "settings-status";
+  document.getElementById("calendarNewEventOverlay").style.display = "flex";
+  document.getElementById("calendarNewEventTitle").focus();
+}
+
+function closeCalendarNewEventModal(){
+  document.getElementById("calendarNewEventOverlay").style.display = "none";
+}
+
+async function saveCalendarNewEvent(){
+  const title = document.getElementById("calendarNewEventTitle").value.trim();
+  const date = document.getElementById("calendarNewEventDate").value;
+  const time = document.getElementById("calendarNewEventTime").value;
+  const location = document.getElementById("calendarNewEventLocation").value.trim();
+  const description = document.getElementById("calendarNewEventDescription").value.trim();
+  const statusEl = document.getElementById("calendarNewEventStatus");
+
+  if (!title){
+    statusEl.textContent = "Title is required.";
+    statusEl.className = "settings-status err";
+    return;
+  }
+  if (!date){
+    statusEl.textContent = "Date is required.";
+    statusEl.className = "settings-status err";
+    return;
+  }
+
+  statusEl.textContent = "Saving…";
+  statusEl.className = "settings-status";
+  try{
+    const res = await fetch(PROXY_ORIGIN + "/api/calendar/events", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ title, date, time, hasTime: Boolean(time), location, description })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error((data && data.error && data.error.message) || "Couldn't add that event.");
+    calendarEventsCache.push(data);
+    closeCalendarNewEventModal();
+    calendarWeekStart = startOfCalendarWeek(new Date(date + "T00:00:00"));
+    renderCalendarWeek();
+  } catch(e){
+    statusEl.textContent = e.message;
+    statusEl.className = "settings-status err";
+  }
+}
+
+document.getElementById("calendarNewEventBtn").addEventListener("click", openCalendarNewEventModal);
+document.getElementById("calendarNewEventCloseBtn").addEventListener("click", closeCalendarNewEventModal);
+document.getElementById("calendarNewEventSaveBtn").addEventListener("click", saveCalendarNewEvent);
+document.getElementById("calendarNewEventOverlay").addEventListener("click", (e) => {
+  if (e.target === document.getElementById("calendarNewEventOverlay")) closeCalendarNewEventModal();
+});
+
+// Reuses the Email tab's own modal (openEmailView) rather than building a
+// second one -- fetches the message list first if the Email tab hasn't been
+// opened yet this session, since emailMessagesCache would otherwise be empty.
+async function openCalendarEventSource(id){
+  if (!id) return;
+  let msg = emailMessagesCache.find(m => String(m.id) === String(id));
+  if (!msg){
+    try{
+      const res = await fetch(PROXY_ORIGIN + "/api/email/messages");
+      const data = await res.json();
+      emailMessagesCache = data.messages || [];
+      msg = emailMessagesCache.find(m => String(m.id) === String(id));
+    } catch(e){ /* fall through to the not-found alert below */ }
+  }
+  if (!msg){
+    alert("Couldn't find the source email -- it may have been deleted.");
+    return;
+  }
+  // Hide (not close) the calendar event popup first -- closeCalendarEventPanel()
+  // isn't used here since it clears calendarSelectedEventId, and
+  // closeEmailView() needs that still set to bring this same event's popup
+  // back once the email view is closed. Without this, both popups stacked
+  // (same z-index, calendarEventOverlay later in the DOM painted on top),
+  // making it look like nothing happened when "View email" was clicked.
+  document.getElementById("calendarEventOverlay").style.display = "none";
+  emailViewOpenedFromCalendarEvent = true;
+  openEmailView(msg);
+}
+
+// ---- One-time retroactive backfill, and force-recheck (calendar-backfill.js) ----
+// Both run as a background job server-side (one per account, shared job
+// registry -- see calendar-backfill.js) so this just starts one and polls its
+// status rather than waiting on one long request, since a mailbox with a lot
+// of mail can take minutes (one Claude Code CLI call per email). job.type
+// ("backfill" or "recheck") distinguishes which is running so the status
+// text/buttons line up correctly regardless of which one was clicked.
+function renderBackfillStatus(job){
+  const statusEl = document.getElementById("calendarBackfillStatus");
+  const sessionEl = document.getElementById("calendarBackfillSession");
+  const backfillBtn = document.getElementById("calendarBackfillBtn");
+  const recheckBtn = document.getElementById("calendarRecheckBtn");
+  const isRecheck = job && job.type === "recheck";
+  // The Claude Code session behind the most recently finished email's
+  // extraction (see calendar-extract.js) -- `claude --resume <uuid>` reopens
+  // that exact one-shot call's transcript, useful for checking why a
+  // particular event came out wrong (or didn't come out at all).
+  sessionEl.textContent = (job && job.lastSessionId) ? `claude --resume ${job.lastSessionId}` : "";
+  if (!job || job.status === "idle"){
+    statusEl.textContent = "";
+    statusEl.className = "calendar-backfill-status";
+    backfillBtn.disabled = false;
+    recheckBtn.disabled = false;
+    return;
+  }
+  if (job.status === "running"){
+    statusEl.textContent = (isRecheck ? "Rechecking every synced email from scratch: " : "Syncing already-synced email for events: ") +
+      `${job.processed}/${job.total}` +
+      (job.eventsFound ? `, ${job.eventsFound} event${job.eventsFound === 1 ? "" : "s"} found so far…` : "…");
+    statusEl.className = "calendar-backfill-status";
+    backfillBtn.disabled = true;
+    recheckBtn.disabled = true;
+  } else if (job.status === "done"){
+    statusEl.textContent = `Done: checked ${job.total} email${job.total === 1 ? "" : "s"}, found ${job.eventsFound} event${job.eventsFound === 1 ? "" : "s"}` +
+      (job.failed ? ` (${job.failed} couldn't be checked -- click again to retry those)` : "") + ".";
+    statusEl.className = "calendar-backfill-status ok";
+    backfillBtn.disabled = false;
+    recheckBtn.disabled = false;
+  } else if (job.status === "error"){
+    statusEl.textContent = (isRecheck ? "Force recheck failed: " : "Backfill failed: ") + (job.error || "unknown error");
+    statusEl.className = "calendar-backfill-status err";
+    backfillBtn.disabled = false;
+    recheckBtn.disabled = false;
+  }
+}
+
+async function pollCalendarBackfill(){
+  if (calendarBackfillPollTimer) clearTimeout(calendarBackfillPollTimer);
+  try{
+    const res = await fetch(PROXY_ORIGIN + "/api/calendar/backfill/status");
+    const data = await res.json();
+    renderBackfillStatus(data);
+    if (data && data.status === "running"){
+      calendarBackfillPollTimer = setTimeout(pollCalendarBackfill, 2000);
+    } else if (data && data.status === "done"){
+      calendarBackfillPollTimer = null;
+      await refreshCalendarEventsQuiet();
+    } else {
+      calendarBackfillPollTimer = null;
+    }
+  } catch(e){
+    calendarBackfillPollTimer = setTimeout(pollCalendarBackfill, 4000);
+  }
+}
+
+// Checked once whenever the Calendar tab is opened, in case a backfill was
+// left running (or just finished) from earlier -- so progress isn't lost by
+// navigating away and back.
+async function pollBackfillStatusOnce(){
+  try{
+    const res = await fetch(PROXY_ORIGIN + "/api/calendar/backfill/status");
+    const data = await res.json();
+    renderBackfillStatus(data);
+    if (data && data.status === "running" && !calendarBackfillPollTimer){
+      pollCalendarBackfill();
+    }
+  } catch(e){ /* leave status blank */ }
+}
+
+document.getElementById("calendarBackfillBtn").addEventListener("click", async () => {
+  const btn = document.getElementById("calendarBackfillBtn");
+  const statusEl = document.getElementById("calendarBackfillStatus");
+  btn.disabled = true;
+  statusEl.textContent = "Starting…";
+  statusEl.className = "calendar-backfill-status";
+  try{
+    const res = await fetch(PROXY_ORIGIN + "/api/calendar/backfill", { method: "POST" });
+    const data = await res.json();
+    if (!res.ok) throw new Error((data && data.error && data.error.message) || "Couldn't start.");
+    renderBackfillStatus(data);
+    pollCalendarBackfill();
+  } catch(e){
+    statusEl.textContent = "Couldn't start: " + e.message;
+    statusEl.className = "calendar-backfill-status err";
+    btn.disabled = false;
+  }
+});
+
+// Force recheck wipes every stored calendar event (including any manually
+// edited) and re-extracts from every synced email regardless of
+// calendarChecked -- meant for after a fix to extraction/date handling, not
+// routine use, so this confirms before doing anything.
+document.getElementById("calendarRecheckBtn").addEventListener("click", async () => {
+  if (!confirm("This deletes ALL current calendar events (including any you edited) and re-checks every synced email from scratch. This can take a while for a large mailbox. Continue?")) return;
+  const btn = document.getElementById("calendarRecheckBtn");
+  const statusEl = document.getElementById("calendarBackfillStatus");
+  btn.disabled = true;
+  statusEl.textContent = "Starting…";
+  statusEl.className = "calendar-backfill-status";
+  try{
+    const res = await fetch(PROXY_ORIGIN + "/api/calendar/recheck", { method: "POST" });
+    const data = await res.json();
+    if (!res.ok) throw new Error((data && data.error && data.error.message) || "Couldn't start.");
+    renderBackfillStatus(data);
+    pollCalendarBackfill();
+  } catch(e){
+    statusEl.textContent = "Couldn't start: " + e.message;
+    statusEl.className = "calendar-backfill-status err";
+    btn.disabled = false;
+  }
+});
+
+document.getElementById("calendarPrevBtn").addEventListener("click", () => {
+  calendarWeekStart.setDate(calendarWeekStart.getDate() - 7);
+  renderCalendarWeek();
+});
+document.getElementById("calendarNextBtn").addEventListener("click", () => {
+  calendarWeekStart.setDate(calendarWeekStart.getDate() + 7);
+  renderCalendarWeek();
+});
+document.getElementById("calendarTodayBtn").addEventListener("click", () => {
+  calendarWeekStart = startOfCalendarWeek(new Date());
+  renderCalendarWeek();
+});
+document.getElementById("calendarEventOverlay").addEventListener("click", (e) => {
+  if (e.target === document.getElementById("calendarEventOverlay")) closeCalendarEventPanel();
 });
 
 
