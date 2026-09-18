@@ -23,15 +23,42 @@ router.get("/events", async (req, res) => {
   res.json({ events: await calendarStore.getAll(req.session.userId) });
 });
 
-// Lets the user fix a title/date/time the parser guessed wrong, without
-// waiting on a re-sync.
+// Lets the user add an event by hand (as opposed to one extracted from a
+// synced email) -- e.g. something they heard about in person, or an
+// extraction the model missed.
+router.post("/events", async (req, res) => {
+  const { title, date, time, hasTime, description, location } = req.body || {};
+  if (typeof title !== "string" || !title.trim()) {
+    return res.status(400).json({ error: { message: "Title is required." } });
+  }
+  if (typeof date !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    return res.status(400).json({ error: { message: "A valid date (YYYY-MM-DD) is required." } });
+  }
+  const useTime = Boolean(hasTime) && typeof time === "string" && /^\d{1,2}:\d{2}$/.test(time);
+
+  const created = await calendarStore.createEvent(req.session.userId, {
+    title: title.trim(),
+    date,
+    hasTime: useTime,
+    time: useTime ? time : null,
+    description: typeof description === "string" ? description.trim() : "",
+    location: typeof location === "string" ? location.trim() : ""
+  });
+  res.status(201).json(created);
+});
+
+// Lets the user fix a title/date/time/location/description the parser
+// guessed wrong (or fill in one it didn't extract), without waiting on a
+// re-sync.
 router.put("/events/:id", async (req, res) => {
-  const { title, date, hasTime, description } = req.body || {};
+  const { title, date, time, hasTime, description, location } = req.body || {};
   const patch = {};
   if (typeof title === "string") patch.title = title;
   if (typeof date === "string") patch.date = date;
   if (typeof hasTime === "boolean") patch.hasTime = hasTime;
+  if (typeof time === "string" || time === null) patch.time = time;
   if (typeof description === "string") patch.description = description;
+  if (typeof location === "string") patch.location = location;
 
   const updated = await calendarStore.updateEvent(req.session.userId, req.params.id, patch);
   if (!updated) return res.status(404).json({ error: { message: "No calendar event with that id." } });

@@ -11,6 +11,8 @@
 //
 //   ALTER TABLE users ADD COLUMN IF NOT EXISTS calendar_events JSONB NOT NULL DEFAULT '[]'::jsonb;
 
+const crypto = require("crypto");
+
 const SUPABASE_APP_DB_URL = process.env.SUPABASE_APP_DB_URL || "";
 let appPool = null;
 if (SUPABASE_APP_DB_URL) {
@@ -99,6 +101,31 @@ async function addEvents(userId, newEvents) {
   return events;
 }
 
+// Manually added by the user from the Calendar tab (as opposed to extracted
+// from a synced email) -- no sourceMessageId/sourceSubject, and deliberately
+// skips the addEvents() duplicate check above, since a user explicitly
+// adding an event should never be silently dropped for looking similar to
+// something already on the calendar.
+async function createEvent(userId, data) {
+  const events = await load(userId);
+  const event = {
+    id: crypto.randomUUID(),
+    title: (data.title || "").trim() || "(untitled event)",
+    date: data.date,
+    time: data.hasTime ? data.time : null,
+    hasTime: Boolean(data.hasTime),
+    description: data.description || "",
+    location: data.location || "",
+    sourceMessageId: null,
+    sourceSubject: null,
+    courseFolder: "uncategorized",
+    createdAt: new Date().toISOString()
+  };
+  events.push(event);
+  await save(userId, events);
+  return event;
+}
+
 async function updateEvent(userId, id, patch) {
   const events = await load(userId);
   const event = events.find(e => String(e.id) === String(id));
@@ -124,4 +151,4 @@ async function clearAll(userId) {
   await save(userId, []);
 }
 
-module.exports = { getAll, addEvents, updateEvent, deleteEvent, clearAll };
+module.exports = { getAll, addEvents, createEvent, updateEvent, deleteEvent, clearAll };

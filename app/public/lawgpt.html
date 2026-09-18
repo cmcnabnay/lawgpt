@@ -477,7 +477,9 @@
     margin:0 0 6px;
   }
   .settings-form input[type="password"],
-  .settings-form input[type="text"]{
+  .settings-form input[type="text"],
+  .settings-form input[type="date"],
+  .settings-form input[type="time"]{
     width:100%;
     background:var(--ink);
     border:1px solid var(--hairline);
@@ -1920,6 +1922,9 @@ pre code {
   margin-bottom:4px;
 }
 .calendar-event-title[contenteditable="true"]{ outline:none; border-bottom:1px dashed var(--hairline); }
+.calendar-event-location{ font-size:12px; color:var(--brass-dim); margin-bottom:6px; }
+.calendar-event-location[contenteditable="true"]{ outline:none; border-bottom:1px dashed var(--hairline); }
+.calendar-event-location:empty::before{ content:"+ Add location"; color:var(--text-muted); opacity:0.7; }
 .calendar-event-desc{ font-size:12px; color:var(--text-muted); line-height:1.5; }
 .calendar-event-source{ font-size:11px; color:var(--text-muted); margin-top:6px; }
 .calendar-event-actions{ display:flex; gap:8px; margin-top:8px; }
@@ -2919,6 +2924,29 @@ pre code {
   </div>
 </div>
 
+<div class="modal-overlay" id="calendarNewEventOverlay" style="display:none;">
+  <div class="modal">
+    <h2>Add event</h2>
+    <div class="settings-form">
+      <label for="calendarNewEventTitle">Title</label>
+      <input type="text" id="calendarNewEventTitle" placeholder="Event title" autocomplete="off">
+      <label for="calendarNewEventDate">Date</label>
+      <input type="date" id="calendarNewEventDate" autocomplete="off">
+      <label for="calendarNewEventTime">Time (leave blank for an all-day event)</label>
+      <input type="time" id="calendarNewEventTime" autocomplete="off">
+      <label for="calendarNewEventLocation">Location</label>
+      <input type="text" id="calendarNewEventLocation" placeholder="Room, building, Zoom, etc." autocomplete="off">
+      <label for="calendarNewEventDescription">Description</label>
+      <textarea class="settings-prompt-textarea context-prompt-textarea" id="calendarNewEventDescription" placeholder="Any extra detail…" spellcheck="true"></textarea>
+      <div class="settings-actions">
+        <button type="button" id="calendarNewEventSaveBtn">Add event</button>
+        <button type="button" class="btn-secondary" id="calendarNewEventCloseBtn">Cancel</button>
+        <span class="settings-status" id="calendarNewEventStatus"></span>
+      </div>
+    </div>
+  </div>
+</div>
+
   <aside class="sidebar" id="sidebar">
     <button class="sidebar-collapse-btn" id="sidebarCollapseBtn" aria-label="Collapse docket" title="Collapse panel">&#10094;</button>
     <button class="sidebar-close-btn" id="sidebarCloseBtn" aria-label="Close docket" title="Close panel">&#10005;</button>
@@ -3332,6 +3360,7 @@ pre code {
             <button type="button" class="doc-refresh-btn" id="calendarPrevBtn" title="Previous week">&#8592;</button>
             <button type="button" class="doc-refresh-btn" id="calendarNextBtn" title="Next week">&#8594;</button>
             <div class="calendar-week-label" id="calendarWeekLabel"></div>
+            <button type="button" class="doc-refresh-btn" id="calendarNewEventBtn">+ Add event</button>
             <button type="button" class="doc-refresh-btn" id="calendarBackfillBtn" title="One-time: sync every already-synced email (not just new ones) for events">Sync all email for events</button>
             <button type="button" class="doc-refresh-btn" id="calendarRecheckBtn" title="Wipes all calendar events and re-extracts every synced email from scratch (e.g. after a fix to event extraction)">Force recheck all email</button>
           </div>
@@ -7816,6 +7845,17 @@ function renderCalendarEventPanel(){
   });
   card.appendChild(title);
 
+  const locationEl = document.createElement("div");
+  locationEl.className = "calendar-event-location";
+  locationEl.contentEditable = "true";
+  locationEl.spellcheck = false;
+  locationEl.textContent = ev.location || "";
+  locationEl.addEventListener("blur", () => {
+    const trimmed = locationEl.textContent.trim();
+    if (trimmed !== (ev.location || "")) saveCalendarEventEdit(ev.id, { location: trimmed });
+  });
+  card.appendChild(locationEl);
+
   if (ev.description){
     const desc = document.createElement("div");
     desc.className = "calendar-event-desc";
@@ -7833,11 +7873,13 @@ function renderCalendarEventPanel(){
   const actions = document.createElement("div");
   actions.className = "calendar-event-actions";
 
-  const viewBtn = document.createElement("button");
-  viewBtn.type = "button";
-  viewBtn.textContent = "View email";
-  viewBtn.addEventListener("click", () => openCalendarEventSource(ev.sourceMessageId));
-  actions.appendChild(viewBtn);
+  if (ev.sourceMessageId){
+    const viewBtn = document.createElement("button");
+    viewBtn.type = "button";
+    viewBtn.textContent = "View email";
+    viewBtn.addEventListener("click", () => openCalendarEventSource(ev.sourceMessageId));
+    actions.appendChild(viewBtn);
+  }
 
   const delBtn = document.createElement("button");
   delBtn.type = "button";
@@ -7881,6 +7923,70 @@ async function deleteCalendarEvent(id){
     alert("Couldn't delete this event: " + e.message);
   }
 }
+
+// ---- Manually adding an event (as opposed to one extracted from email) ----
+function openCalendarNewEventModal(){
+  document.getElementById("calendarNewEventTitle").value = "";
+  document.getElementById("calendarNewEventDate").value = localDateKey(new Date());
+  document.getElementById("calendarNewEventTime").value = "";
+  document.getElementById("calendarNewEventLocation").value = "";
+  document.getElementById("calendarNewEventDescription").value = "";
+  const statusEl = document.getElementById("calendarNewEventStatus");
+  statusEl.textContent = "";
+  statusEl.className = "settings-status";
+  document.getElementById("calendarNewEventOverlay").style.display = "flex";
+  document.getElementById("calendarNewEventTitle").focus();
+}
+
+function closeCalendarNewEventModal(){
+  document.getElementById("calendarNewEventOverlay").style.display = "none";
+}
+
+async function saveCalendarNewEvent(){
+  const title = document.getElementById("calendarNewEventTitle").value.trim();
+  const date = document.getElementById("calendarNewEventDate").value;
+  const time = document.getElementById("calendarNewEventTime").value;
+  const location = document.getElementById("calendarNewEventLocation").value.trim();
+  const description = document.getElementById("calendarNewEventDescription").value.trim();
+  const statusEl = document.getElementById("calendarNewEventStatus");
+
+  if (!title){
+    statusEl.textContent = "Title is required.";
+    statusEl.className = "settings-status err";
+    return;
+  }
+  if (!date){
+    statusEl.textContent = "Date is required.";
+    statusEl.className = "settings-status err";
+    return;
+  }
+
+  statusEl.textContent = "Saving…";
+  statusEl.className = "settings-status";
+  try{
+    const res = await fetch(PROXY_ORIGIN + "/api/calendar/events", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ title, date, time, hasTime: Boolean(time), location, description })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error((data && data.error && data.error.message) || "Couldn't add that event.");
+    calendarEventsCache.push(data);
+    closeCalendarNewEventModal();
+    calendarWeekStart = startOfCalendarWeek(new Date(date + "T00:00:00"));
+    renderCalendarWeek();
+  } catch(e){
+    statusEl.textContent = e.message;
+    statusEl.className = "settings-status err";
+  }
+}
+
+document.getElementById("calendarNewEventBtn").addEventListener("click", openCalendarNewEventModal);
+document.getElementById("calendarNewEventCloseBtn").addEventListener("click", closeCalendarNewEventModal);
+document.getElementById("calendarNewEventSaveBtn").addEventListener("click", saveCalendarNewEvent);
+document.getElementById("calendarNewEventOverlay").addEventListener("click", (e) => {
+  if (e.target === document.getElementById("calendarNewEventOverlay")) closeCalendarNewEventModal();
+});
 
 // Reuses the Email tab's own modal (openEmailView) rather than building a
 // second one -- fetches the message list first if the Email tab hasn't been

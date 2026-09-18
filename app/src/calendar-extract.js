@@ -49,6 +49,7 @@ For each real event found, output an object with:
 - "title": short (under 15 words), describing what the event actually is
 - "date": the event's date as YYYY-MM-DD
 - "time": 24-hour "HH:MM" if a specific time is stated, otherwise null
+- "location": the event's location if the email states one -- a room/building, address, or video-call platform ("Zoom", "the class Teams link") -- otherwise null. Never guess a location that isn't actually stated.
 - "description": one sentence, quoting or paraphrasing the relevant part of the email
 
 Respond with ONLY a JSON array of these objects -- no markdown code fences, no prose before or after. If there are no real calendar-worthy events in this email, respond with exactly: []`;
@@ -192,6 +193,7 @@ async function extractCalendarEventsForMessage(message) {
       date: resolved.date,
       time: resolved.time,
       hasTime: resolved.hasTime,
+      location: (typeof item.location === "string" ? item.location.trim() : "").slice(0, 140),
       description: (typeof item.description === "string" ? item.description : "").slice(0, 300),
       sourceMessageId: message.id,
       sourceSubject: subject,
