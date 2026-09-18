@@ -232,6 +232,14 @@ app.use("/api/email", emailRoutes);
 // Same reasoning as above -- the Agent tab's routes all require req.session too.
 app.use("/api/agent", agentRoutes);
 // Same reasoning as above -- the Calendar tab's routes all require req.session too.
+// Force recheck (calendar-routes.js's /recheck) wipes and rebuilds an
+// account's entire calendar from scratch -- a slow bulk operation (one
+// Claude Code CLI call per synced email) that also throws away any events
+// the user manually edited -- so, like the Canvas bulk-import routes above,
+// it's restricted to admin accounts (requireDbAdmin, defined below --
+// hoisted, so available here despite the textual order) rather than left
+// open to every signed-in user to trigger on themselves by accident.
+app.use("/api/calendar/recheck", requireDbAdmin);
 app.use("/api/calendar", calendarRoutes);
 
 function requireAppDb(req, res, next) {

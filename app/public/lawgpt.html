@@ -1887,57 +1887,27 @@ pre code {
 }
 .calendar-event-block:hover{ filter:brightness(1.1); }
 .calendar-event-block-time{ font-weight:600; }
-.calendar-event-panel{
-  width:340px;
-  flex:0 0 auto;
-  border-left:1px solid var(--hairline);
-  padding:20px;
-  overflow-y:auto;
-}
-.calendar-day-panel-head{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:8px;
-  margin-bottom:14px;
-}
-.calendar-day-events{ display:flex; flex-direction:column; gap:12px; }
-.calendar-event-card{
-  background:var(--ink-2);
-  border:1px solid var(--hairline);
-  border-radius:var(--radius);
-  padding:12px 14px;
-}
 .calendar-event-time{
   font-family:'IBM Plex Mono',monospace;
-  font-size:10.5px;
+  font-size:11px;
   text-transform:uppercase;
   letter-spacing:0.04em;
   color:var(--brass-dim);
-  margin-bottom:4px;
+  margin-bottom:6px;
 }
 .calendar-event-title{
-  font-size:13px;
-  color:var(--text-light);
-  margin-bottom:4px;
+  font-family:'Fraunces',serif;
+  font-size:18px;
+  color:var(--parchment);
+  margin-bottom:6px;
 }
 .calendar-event-title[contenteditable="true"]{ outline:none; border-bottom:1px dashed var(--hairline); }
-.calendar-event-location{ font-size:12px; color:var(--brass-dim); margin-bottom:6px; }
+.calendar-event-location{ font-size:13px; color:var(--brass-dim); margin-bottom:10px; }
 .calendar-event-location[contenteditable="true"]{ outline:none; border-bottom:1px dashed var(--hairline); }
 .calendar-event-location:empty::before{ content:"+ Add location"; color:var(--text-muted); opacity:0.7; }
-.calendar-event-desc{ font-size:12px; color:var(--text-muted); line-height:1.5; }
-.calendar-event-source{ font-size:11px; color:var(--text-muted); margin-top:6px; }
-.calendar-event-actions{ display:flex; gap:8px; margin-top:8px; }
-.calendar-event-actions button{
-  background:transparent;
-  border:1px solid var(--hairline);
-  color:var(--text-muted);
-  border-radius:var(--radius);
-  padding:4px 10px;
-  font-size:11px;
-  cursor:pointer;
-}
-.calendar-event-actions button:hover{ border-color:var(--brass-dim); color:var(--brass); }
+.calendar-event-desc{ font-size:13px; color:var(--text-muted); line-height:1.6; margin-bottom:10px; }
+.calendar-event-source{ font-size:11px; color:var(--text-muted); }
+#calendarEventModalActions{ margin-top:18px; }
 .calendar-empty{ color:var(--text-muted); font-size:12px; }
 .agent-view{ flex:1; min-height:0; display:flex; }
 .agent-main{
@@ -3378,12 +3348,13 @@ pre code {
         </div>
       </div>
 
-      <div class="calendar-event-panel" id="calendarEventPanel" style="display:none;">
-        <div class="calendar-day-panel-head">
-          <div class="documents-title">Event</div>
-          <button type="button" class="notes-right-close-btn" id="calendarEventPanelCloseBtn" aria-label="Close" title="Close">&#10005;</button>
-        </div>
-        <div class="calendar-day-events" id="calendarEventPanelBody"></div>
+    </div>
+
+    <div class="modal-overlay" id="calendarEventOverlay" style="display:none;">
+      <div class="modal">
+        <h2>Event</h2>
+        <div id="calendarEventModalBody"></div>
+        <div class="settings-actions" id="calendarEventModalActions"></div>
       </div>
     </div>
 
@@ -3927,6 +3898,11 @@ function updateAccountUI(){
   // than showing a button that will just 403.
   const docImportCard = document.getElementById("docImportCard");
   if (docImportCard) docImportCard.style.display = isAdminUser ? "" : "none";
+  // Same reasoning -- Force recheck is admin-only server-side too (requireDbAdmin
+  // on /api/calendar/recheck), since it wipes and rebuilds an account's whole
+  // calendar from scratch.
+  const calendarRecheckBtn = document.getElementById("calendarRecheckBtn");
+  if (calendarRecheckBtn) calendarRecheckBtn.style.display = isAdminUser ? "" : "none";
 }
 
 // Called on page load. If a session cookie from a previous visit is still
@@ -7063,6 +7039,12 @@ function renderEmailList(){
 // Shows the full synced email (subject/from/date and the complete body
 // text stored at sync time -- see MAX_BODY_CHARS in email-routes.js) in a
 // popup, since the card itself only shows a short flagged-sentence snippet.
+// True only while the email view was opened from the calendar event popup's
+// "View email" button (see openCalendarEventSource below) rather than from
+// the Email tab's own list -- tells closeEmailView() whether to bring that
+// popup back afterward.
+let emailViewOpenedFromCalendarEvent = false;
+
 function openEmailView(msg){
   const dateLabel = msg.date ? new Date(msg.date).toLocaleString() : "";
   document.getElementById("emailViewSubject").textContent = msg.subject || "(no subject)";
@@ -7073,6 +7055,14 @@ function openEmailView(msg){
 }
 function closeEmailView(){
   document.getElementById("emailViewOverlay").style.display = "none";
+  // If this email view was opened from the calendar event popup's "View
+  // email" button (see openCalendarEventSource), swapping it back in on
+  // close -- rather than leaving both closed -- is what makes that feel like
+  // navigating within one flow instead of losing the event details.
+  if (emailViewOpenedFromCalendarEvent){
+    emailViewOpenedFromCalendarEvent = false;
+    if (calendarSelectedEventId) openCalendarEvent(calendarSelectedEventId);
+  }
 }
 document.getElementById("emailViewCloseBtn").addEventListener("click", closeEmailView);
 document.getElementById("emailViewOverlay").addEventListener("click", (e) => {
@@ -7792,26 +7782,28 @@ function renderCalendarWeek(){
     columns.appendChild(col);
   });
 
-  if (calendarSelectedEventId) renderCalendarEventPanel();
+  if (calendarSelectedEventId) renderCalendarEventModal();
 }
 
 // Clicking any tile -- an all-day pill or a timed block -- opens this same
-// single-event detail panel with the title (editable in place, since the
-// model's title guess isn't always exactly right), description, and the
-// View email / Delete actions the user asked for.
+// single-event detail popup (a modal, like every other detail view in this
+// app -- see emailViewOverlay) with the title (editable in place, since the
+// model's title guess isn't always exactly right), location, description,
+// and the View email / Delete actions the user asked for.
 function openCalendarEvent(id){
   calendarSelectedEventId = id;
-  document.getElementById("calendarEventPanel").style.display = "flex";
-  renderCalendarEventPanel();
+  document.getElementById("calendarEventOverlay").style.display = "flex";
+  renderCalendarEventModal();
 }
 
 function closeCalendarEventPanel(){
   calendarSelectedEventId = null;
-  document.getElementById("calendarEventPanel").style.display = "none";
+  document.getElementById("calendarEventOverlay").style.display = "none";
 }
 
-function renderCalendarEventPanel(){
-  const body = document.getElementById("calendarEventPanelBody");
+function renderCalendarEventModal(){
+  const body = document.getElementById("calendarEventModalBody");
+  const actions = document.getElementById("calendarEventModalActions");
   const ev = calendarEventsCache.find(e => String(e.id) === String(calendarSelectedEventId));
   if (!ev){
     closeCalendarEventPanel();
@@ -7819,8 +7811,7 @@ function renderCalendarEventPanel(){
   }
 
   body.innerHTML = "";
-  const card = document.createElement("div");
-  card.className = "calendar-event-card";
+  actions.innerHTML = "";
 
   // Built from the plain "YYYY-MM-DD" day key's own components (not parsed
   // as an ISO string) so the displayed weekday/month/day can't shift a day
@@ -7832,7 +7823,7 @@ function renderCalendarEventPanel(){
   dateLine.className = "calendar-event-time";
   dateLine.textContent = evDateLocal.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" }) +
     (ev.hasTime ? " · " + formatEventTime(eventTimeParts(ev).hour, eventTimeParts(ev).minute) : " · Date only");
-  card.appendChild(dateLine);
+  body.appendChild(dateLine);
 
   const title = document.createElement("div");
   title.className = "calendar-event-title";
@@ -7843,7 +7834,7 @@ function renderCalendarEventPanel(){
     const trimmed = title.textContent.trim();
     if (trimmed && trimmed !== ev.title) saveCalendarEventEdit(ev.id, { title: trimmed });
   });
-  card.appendChild(title);
+  body.appendChild(title);
 
   const locationEl = document.createElement("div");
   locationEl.className = "calendar-event-location";
@@ -7854,28 +7845,26 @@ function renderCalendarEventPanel(){
     const trimmed = locationEl.textContent.trim();
     if (trimmed !== (ev.location || "")) saveCalendarEventEdit(ev.id, { location: trimmed });
   });
-  card.appendChild(locationEl);
+  body.appendChild(locationEl);
 
   if (ev.description){
     const desc = document.createElement("div");
     desc.className = "calendar-event-desc";
     desc.textContent = ev.description;
-    card.appendChild(desc);
+    body.appendChild(desc);
   }
 
   if (ev.sourceSubject){
     const source = document.createElement("div");
     source.className = "calendar-event-source";
     source.textContent = "From: " + ev.sourceSubject;
-    card.appendChild(source);
+    body.appendChild(source);
   }
-
-  const actions = document.createElement("div");
-  actions.className = "calendar-event-actions";
 
   if (ev.sourceMessageId){
     const viewBtn = document.createElement("button");
     viewBtn.type = "button";
+    viewBtn.className = "btn-secondary";
     viewBtn.textContent = "View email";
     viewBtn.addEventListener("click", () => openCalendarEventSource(ev.sourceMessageId));
     actions.appendChild(viewBtn);
@@ -7883,12 +7872,16 @@ function renderCalendarEventPanel(){
 
   const delBtn = document.createElement("button");
   delBtn.type = "button";
+  delBtn.className = "btn-secondary";
   delBtn.textContent = "Delete";
   delBtn.addEventListener("click", () => deleteCalendarEvent(ev.id));
   actions.appendChild(delBtn);
 
-  card.appendChild(actions);
-  body.appendChild(card);
+  const closeBtn = document.createElement("button");
+  closeBtn.type = "button";
+  closeBtn.textContent = "Close";
+  closeBtn.addEventListener("click", closeCalendarEventPanel);
+  actions.appendChild(closeBtn);
 }
 
 async function saveCalendarEventEdit(id, patch){
@@ -8002,8 +7995,19 @@ async function openCalendarEventSource(id){
       msg = emailMessagesCache.find(m => String(m.id) === String(id));
     } catch(e){ /* fall through to the not-found alert below */ }
   }
-  if (msg) openEmailView(msg);
-  else alert("Couldn't find the source email -- it may have been deleted.");
+  if (!msg){
+    alert("Couldn't find the source email -- it may have been deleted.");
+    return;
+  }
+  // Hide (not close) the calendar event popup first -- closeCalendarEventPanel()
+  // isn't used here since it clears calendarSelectedEventId, and
+  // closeEmailView() needs that still set to bring this same event's popup
+  // back once the email view is closed. Without this, both popups stacked
+  // (same z-index, calendarEventOverlay later in the DOM painted on top),
+  // making it look like nothing happened when "View email" was clicked.
+  document.getElementById("calendarEventOverlay").style.display = "none";
+  emailViewOpenedFromCalendarEvent = true;
+  openEmailView(msg);
 }
 
 // ---- One-time retroactive backfill, and force-recheck (calendar-backfill.js) ----
@@ -8140,7 +8144,9 @@ document.getElementById("calendarTodayBtn").addEventListener("click", () => {
   calendarWeekStart = startOfCalendarWeek(new Date());
   renderCalendarWeek();
 });
-document.getElementById("calendarEventPanelCloseBtn").addEventListener("click", closeCalendarEventPanel);
+document.getElementById("calendarEventOverlay").addEventListener("click", (e) => {
+  if (e.target === document.getElementById("calendarEventOverlay")) closeCalendarEventPanel();
+});
 
 
 // ====== SCHEDULE: reading schedules for Civil Procedure and LSS ======
