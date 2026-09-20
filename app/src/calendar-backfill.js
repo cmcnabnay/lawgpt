@@ -123,6 +123,7 @@ async function runJob(userId, messages, job) {
       try {
         const { events, sessionId } = await extractCalendarEventsForMessage(message);
         if (sessionId) job.lastSessionId = sessionId;
+        events.forEach(ev => { ev.sessionId = sessionId; });
         await serializeWrite(async () => {
           if (events.length) {
             await calendarStore.addEvents(userId, events);

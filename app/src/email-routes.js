@@ -437,6 +437,7 @@ router.post("/sync", async (req, res) => {
 
     const newMessages = [];
     const newCalendarEvents = [];
+    const newDocuments = [];
     let assignmentsFound = 0;
     let documentsDownloaded = 0;
 
@@ -508,6 +509,7 @@ router.post("/sync", async (req, res) => {
 
           documentIds.push(document.id);
           documentsDownloaded++;
+          newDocuments.push({ id: document.id, title: document.title, fileName: document.fileName, courseFolder });
         }
       }
 
@@ -522,7 +524,13 @@ router.post("/sync", async (req, res) => {
       const messageForEvents = { id: msg.id, subject, body: bodyText, date: msg.receivedDateTime || null, courseFolder };
       let calendarChecked = false;
       try {
-        const { events } = await extractCalendarEventsForMessage(messageForEvents);
+        const { events, sessionId } = await extractCalendarEventsForMessage(messageForEvents);
+        // Stamped onto each event so the Email tab's "calendar event found"
+        // sync-result popup can show, per event, the exact Claude Code
+        // session that extracted it (`claude --resume <sessionId>`) --
+        // persisted alongside the event itself (see calendarStore.addEvents)
+        // so it's still there on a later page load, not just this response.
+        events.forEach(ev => { ev.sessionId = sessionId; });
         newCalendarEvents.push(...events);
         calendarChecked = true;
       } catch (err) {
@@ -570,7 +578,14 @@ router.post("/sync", async (req, res) => {
       documentsDownloaded,
       eventsFound: newCalendarEvents.length,
       reclassified,
-      messages: await emailStore.getAll(userId)
+      messages: await emailStore.getAll(userId),
+      // Full records behind each count above, so the Email tab's sync-result
+      // popups ("3 new emails", "1 assignment", "0 documents downloaded", "1
+      // calendar event found") have something to actually list when clicked,
+      // instead of just the bare number.
+      newMessages,
+      newDocuments,
+      newCalendarEvents
     });
   } catch (err) {
     console.error("Email sync failed:", err);

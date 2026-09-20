@@ -1613,6 +1613,52 @@ pre code {
 }
 .email-status.ok{ color:#8fbf8f; }
 .email-status.err{ color:#d98b8b; }
+/* Individual clickable counts within the "Synced: ..." status line (see
+   renderEmailSyncStatus) -- each opens emailSyncResultOverlay listing exactly
+   what that count refers to. A zero count gets .disabled instead (no
+   listener, no pointer cursor) since there's nothing to show for it. */
+.sync-stat{
+  text-decoration:underline;
+  text-decoration-style:dotted;
+  cursor:pointer;
+}
+.sync-stat:hover{ color:var(--brass); }
+.sync-stat.disabled{
+  text-decoration:none;
+  cursor:default;
+  color:inherit;
+}
+.sync-result-list{ display:flex; flex-direction:column; gap:10px; max-height:60vh; overflow-y:auto; }
+.sync-result-empty{ color:var(--text-muted); font-size:13px; }
+.sync-result-row{
+  background:var(--ink-2);
+  border:1px solid var(--hairline);
+  border-radius:var(--radius);
+  padding:10px 12px;
+  cursor:pointer;
+}
+.sync-result-row:hover{ border-color:var(--brass-dim); }
+.sync-result-row-title{ font-size:13.5px; color:var(--text-light); }
+.sync-result-row-meta{
+  font-size:11px;
+  color:var(--text-muted);
+  margin-top:3px;
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
+.sync-result-row-snippet{
+  font-size:12px;
+  color:var(--text-muted);
+  margin-top:6px;
+}
+.sync-result-row-session{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:10.5px;
+  color:var(--brass-dim);
+  margin-top:6px;
+}
+.sync-result-row-session:hover{ color:var(--brass); text-decoration:underline; }
 .email-list{ display:flex; flex-direction:column; gap:10px; }
 .email-course-badge{
   display:inline-block;
@@ -1768,6 +1814,48 @@ pre code {
   margin-bottom:10px;
   user-select:all;
 }
+
+/* Popup showing a Claude Code session's UUID (+ copy button) -- opened from
+   the Notes tab's "Attached to Claude Code" label and from the Email tab's
+   "calendar event found" sync-result popup, both pointing at the exact
+   headless `claude -p` session that produced that report/event, so it can be
+   replayed with `claude --resume <id>` for debugging. */
+.claude-session-context{
+  font-size:13px;
+  color:var(--text-muted);
+  margin:0 0 12px;
+}
+.claude-session-box{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  background:var(--ink-2);
+  border:1px solid var(--hairline);
+  border-radius:var(--radius);
+  padding:10px 12px;
+}
+.claude-session-id{
+  flex:1;
+  font-family:'IBM Plex Mono',monospace;
+  font-size:13px;
+  color:var(--text-light);
+  user-select:all;
+  word-break:break-all;
+}
+.claude-session-copy-btn{ flex:0 0 auto; }
+.claude-session-copy-btn.copied{ color:#8fbf8f; border-color:#8fbf8f; }
+.claude-session-hint{
+  font-size:11.5px;
+  color:var(--text-muted);
+  margin:10px 0 0;
+}
+.claude-session-hint code{
+  font-family:'IBM Plex Mono',monospace;
+  color:var(--text-light);
+  user-select:all;
+}
+.notes-report-source.clickable{ cursor:pointer; }
+.notes-report-source.clickable:hover{ text-decoration:underline; }
 
 /* Pinned to the top of .calendar-wrap's own scroll while the hour grid
    below scrolls underneath it -- needs an opaque background (matching the
@@ -3351,6 +3439,16 @@ pre code {
       </div>
     </div>
 
+    <div class="modal-overlay" id="emailSyncResultOverlay" style="display:none;">
+      <div class="modal modal-wide">
+        <h2 id="emailSyncResultTitle"></h2>
+        <div class="sync-result-list" id="emailSyncResultBody"></div>
+        <div class="settings-actions">
+          <button type="button" id="emailSyncResultCloseBtn">Close</button>
+        </div>
+      </div>
+    </div>
+
     <div class="calendar-view" id="calendarView" style="display:none;">
       <div class="calendar-wrap">
         <div class="calendar-head">
@@ -3364,7 +3462,7 @@ pre code {
             <button type="button" class="doc-refresh-btn" id="calendarNextBtn" title="Next week">&#8594;</button>
             <div class="calendar-week-label" id="calendarWeekLabel"></div>
             <button type="button" class="doc-refresh-btn" id="calendarNewEventBtn">+ Add event</button>
-            <button type="button" class="doc-refresh-btn" id="calendarBackfillBtn" title="One-time: sync every already-synced email (not just new ones) for events">Sync all email for events</button>
+            <button type="button" class="doc-refresh-btn" id="calendarBackfillBtn" title="Checks any already-synced email that hasn't been checked for events yet -- skips ones already checked, so it's always safe to click again">Check email for events</button>
             <button type="button" class="doc-refresh-btn" id="calendarRecheckBtn" title="Wipes all calendar events and re-extracts every synced email from scratch (e.g. after a fix to event extraction)">Force recheck all email</button>
           </div>
         </div>
@@ -3397,6 +3495,21 @@ pre code {
         <div class="calendar-more-events-list" id="calendarMoreEventsBody"></div>
         <div class="settings-actions" style="margin-top:14px;">
           <button type="button" class="btn-secondary" id="calendarMoreEventsCloseBtn">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-overlay" id="claudeSessionOverlay" style="display:none;">
+      <div class="modal">
+        <h2>Claude Code session</h2>
+        <p class="claude-session-context" id="claudeSessionContext"></p>
+        <div class="claude-session-box">
+          <div class="claude-session-id" id="claudeSessionIdText"></div>
+          <button type="button" class="btn-secondary claude-session-copy-btn" id="claudeSessionCopyBtn">Copy</button>
+        </div>
+        <p class="claude-session-hint">Resume it from SSH: <code id="claudeSessionResumeCmd"></code></p>
+        <div class="settings-actions">
+          <button type="button" id="claudeSessionCloseBtn">Close</button>
         </div>
       </div>
     </div>
@@ -5025,7 +5138,15 @@ function setView(view){
     tabEmail.classList.add("active");
     refreshEmailMessages();
   } else if (view === "calendar"){
-    calendarView.style.display = "block";
+    // "flex", not "block" -- .calendar-view's CSS (flex:1;min-height:0;
+    // display:flex) only actually establishes a flex context when its own
+    // display is flex. With "block" here, .calendar-wrap's flex:1/min-height:0
+    // (which is what makes IT the bounded, scrolling container for the hour
+    // grid) had nothing to attach to and just grew to its content's full
+    // height instead -- the whole reason the grid was cutting off around 7pm
+    // with no way to scroll to the evening hours: nothing above it could
+    // scroll either (.app/main are overflow:hidden/height:100vh).
+    calendarView.style.display = "flex";
     tabCalendar.classList.add("active");
     refreshCalendarEvents();
   } else if (view === "agent"){
@@ -6004,6 +6125,39 @@ function describeAgentDocumentSource(documentIds){
   return { matched: true, label: "Sent to the agent: " + titles.join(", ") };
 }
 
+// Popup showing a Claude Code session's UUID + a `claude --resume` line, with
+// a copy button -- opened from the Notes tab's "Attached to Claude Code"
+// label (see renderReportPanel below) and reused by the Email tab's sync-
+// result popup for a calendar event's source session (see
+// renderEmailSyncResultPopup). contextText is one short sentence explaining
+// what this particular session produced.
+function showClaudeSessionPopup(sessionId, contextText){
+  if (!sessionId) return;
+  document.getElementById("claudeSessionContext").textContent = contextText || "";
+  document.getElementById("claudeSessionIdText").textContent = sessionId;
+  document.getElementById("claudeSessionResumeCmd").textContent = `claude --resume ${sessionId}`;
+  const copyBtn = document.getElementById("claudeSessionCopyBtn");
+  copyBtn.textContent = "Copy";
+  copyBtn.classList.remove("copied");
+  document.getElementById("claudeSessionOverlay").style.display = "flex";
+}
+document.getElementById("claudeSessionCloseBtn").addEventListener("click", () => {
+  document.getElementById("claudeSessionOverlay").style.display = "none";
+});
+document.getElementById("claudeSessionCopyBtn").addEventListener("click", async () => {
+  const text = document.getElementById("claudeSessionIdText").textContent;
+  const btn = document.getElementById("claudeSessionCopyBtn");
+  try{
+    await navigator.clipboard.writeText(text);
+    btn.textContent = "Copied";
+    btn.classList.add("copied");
+  } catch(e){
+    // Clipboard API can be unavailable (no HTTPS/localhost, permissions) --
+    // the id text itself is user-select:all, so falling back to "select it
+    // by hand" still works even if this silently does nothing.
+  }
+});
+
 // Same Notes-tab rendering pipeline as generateReadingReport (currentReport,
 // loading state, re-enabling the triggering button) but instead of one
 // /api/chat call, hands the prompt to a real headless Claude Code run (see
@@ -6122,7 +6276,7 @@ async function generateReadingReport({ course, classLabel, title, prompt, docume
       const errMsg = (data && data.error && data.error.message) ? data.error.message : "Request failed.";
       throw new Error(errMsg);
     }
-    currentReport = { id: null, course, classLabel, title, source, documentIds: documentIds || [], content: extractText(data), cost: costFromUsage(data.usage, model), createdAt: new Date().toISOString(), notes: currentReport.notes || "", chat: [] };
+    currentReport = { id: null, course, classLabel, title, source, documentIds: documentIds || [], content: extractText(data), cost: costFromUsage(data.usage, model), claudeSessionId: data.claudeSessionId || null, createdAt: new Date().toISOString(), notes: currentReport.notes || "", chat: [] };
   } catch(err){
     currentReport = {
       id: null, course, classLabel, title, source,
@@ -6192,9 +6346,18 @@ function renderReportPanel(){
   const sourceEl = document.getElementById("notesReportSource");
   if (sourceEl){
     const source = currentReport.source;
+    const claudeSessionId = currentReport.claudeSessionId || null;
     sourceEl.textContent = source ? source.label : "";
-    sourceEl.className = "notes-report-source" + (source && source.matched ? " matched" : source ? " missing" : "");
+    sourceEl.className = "notes-report-source" +
+      (source && source.matched ? " matched" : source ? " missing" : "") +
+      (claudeSessionId ? " clickable" : "");
     sourceEl.style.display = source ? "block" : "none";
+    sourceEl.title = claudeSessionId ? "Click to see the Claude Code session id" : "";
+    // Assigned as a property (not addEventListener) so re-renders replace
+    // the handler instead of stacking a new one on top each time.
+    sourceEl.onclick = claudeSessionId
+      ? () => showClaudeSessionPopup(claudeSessionId, "This report was generated by this Claude Code session.")
+      : null;
   }
 
   const costEl = document.getElementById("notesReportCost");
@@ -7620,6 +7783,123 @@ async function markEmailDone(id, done){
   }
 }
 
+// The last "Sync now" response in full (newMessages/newDocuments/
+// newCalendarEvents, not just the counts) -- kept around so the status
+// line's clickable counts (see renderEmailSyncStatus) have something to
+// list when clicked, without re-fetching anything.
+let lastEmailSyncResult = null;
+
+// Builds the "Synced: N new emails, N assignments, ..." status line as
+// individual clickable spans instead of one plain-text string -- each count
+// above zero opens emailSyncResultOverlay listing exactly what it refers to
+// (see openEmailSyncResultPopup); a zero count gets .disabled instead (no
+// listener, nothing to show).
+function renderEmailSyncStatus(data){
+  const statusEl = document.getElementById("emailStatus");
+  lastEmailSyncResult = data;
+
+  function stat(kind, count, singular, plural){
+    const label = `${count} ${count === 1 ? singular : (plural || singular + "s")}`;
+    const cls = "sync-stat" + (count > 0 ? "" : " disabled");
+    return `<span class="${cls}" data-sync-kind="${kind}">${label}</span>`;
+  }
+
+  statusEl.innerHTML =
+    `Synced: ${stat("emails", data.added, "new email")}, ` +
+    `${stat("assignments", data.assignmentsFound, "assignment")}, ` +
+    `${stat("documents", data.documentsDownloaded, "document downloaded", "documents downloaded")}, ` +
+    `${stat("events", data.eventsFound || 0, "calendar event found", "calendar events found")}` +
+    (data.reclassified ? `, ${data.reclassified} email${data.reclassified === 1 ? "" : "s"} recategorized` : "") +
+    ".";
+  statusEl.className = "email-status ok";
+
+  statusEl.querySelectorAll(".sync-stat:not(.disabled)").forEach(el => {
+    el.addEventListener("click", () => openEmailSyncResultPopup(el.getAttribute("data-sync-kind")));
+  });
+}
+
+// Renders emailSyncResultOverlay for one of the four clickable counts above,
+// reading from lastEmailSyncResult (never re-fetches -- the same sync
+// response that produced the count on screen is exactly what gets listed).
+function openEmailSyncResultPopup(kind){
+  const data = lastEmailSyncResult;
+  if (!data) return;
+  const title = document.getElementById("emailSyncResultTitle");
+  const body = document.getElementById("emailSyncResultBody");
+  body.innerHTML = "";
+
+  function emptyRow(text){
+    const div = document.createElement("div");
+    div.className = "sync-result-empty";
+    div.textContent = text;
+    body.appendChild(div);
+  }
+
+  if (kind === "emails" || kind === "assignments"){
+    const messages = kind === "assignments"
+      ? (data.newMessages || []).filter(m => m.isAssignment)
+      : (data.newMessages || []);
+    title.textContent = kind === "assignments" ? "New assignments" : "New emails";
+    if (!messages.length){ emptyRow("Nothing new this sync."); }
+    messages.forEach(msg => {
+      const row = document.createElement("div");
+      row.className = "sync-result-row";
+      const dateLabel = msg.date ? new Date(msg.date).toLocaleString() : "";
+      row.innerHTML =
+        `<div class="sync-result-row-title">${escapeHtml(msg.subject || "(no subject)")}</div>` +
+        `<div class="sync-result-row-meta"><span>${escapeHtml(msg.from || "")}</span>${dateLabel ? `<span>${escapeHtml(dateLabel)}</span>` : ""}</div>` +
+        (msg.assignmentSnippet ? `<div class="sync-result-row-snippet">${escapeHtml(msg.assignmentSnippet)}</div>` : "");
+      row.addEventListener("click", () => { closeEmailSyncResultPopup(); openEmailView(msg); });
+      body.appendChild(row);
+    });
+  } else if (kind === "documents"){
+    const docs = data.newDocuments || [];
+    title.textContent = "Documents downloaded";
+    if (!docs.length){ emptyRow("Nothing new this sync."); }
+    docs.forEach(doc => {
+      const row = document.createElement("div");
+      row.className = "sync-result-row";
+      row.style.cursor = "default";
+      row.innerHTML =
+        `<div class="sync-result-row-title">${escapeHtml(doc.fileName || doc.title || "(untitled)")}</div>` +
+        `<div class="sync-result-row-meta"><span>${escapeHtml(emailCourseLabel(doc.courseFolder))}</span></div>`;
+      body.appendChild(row);
+    });
+  } else if (kind === "events"){
+    const events = data.newCalendarEvents || [];
+    title.textContent = "Calendar events found";
+    if (!events.length){ emptyRow("Nothing new this sync."); }
+    events.forEach(ev => {
+      const row = document.createElement("div");
+      row.className = "sync-result-row";
+      row.style.cursor = "default";
+      const { hour, minute } = eventTimeParts(ev);
+      const whenLabel = ev.date + (ev.hasTime ? " · " + formatEventTime(hour, minute) : "");
+      row.innerHTML =
+        `<div class="sync-result-row-title">${escapeHtml(ev.title || "(untitled event)")}</div>` +
+        `<div class="sync-result-row-meta"><span>${escapeHtml(whenLabel)}</span>${ev.location ? `<span>${escapeHtml(ev.location)}</span>` : ""}</div>` +
+        (ev.sessionId ? `<div class="sync-result-row-session" data-session-id="${escapeHtml(ev.sessionId)}">Claude Code session: ${escapeHtml(ev.sessionId)}</div>` : "");
+      const sessionEl = row.querySelector(".sync-result-row-session");
+      if (sessionEl){
+        sessionEl.addEventListener("click", (e) => {
+          e.stopPropagation();
+          showClaudeSessionPopup(ev.sessionId, `This event was extracted from "${ev.sourceSubject || ev.title || "an email"}" by this Claude Code session.`);
+        });
+      }
+      body.appendChild(row);
+    });
+  }
+
+  document.getElementById("emailSyncResultOverlay").style.display = "flex";
+}
+function closeEmailSyncResultPopup(){
+  document.getElementById("emailSyncResultOverlay").style.display = "none";
+}
+document.getElementById("emailSyncResultCloseBtn").addEventListener("click", closeEmailSyncResultPopup);
+document.getElementById("emailSyncResultOverlay").addEventListener("click", (e) => {
+  if (e.target === document.getElementById("emailSyncResultOverlay")) closeEmailSyncResultPopup();
+});
+
 document.getElementById("emailSyncBtn").addEventListener("click", async () => {
   const statusEl = document.getElementById("emailStatus");
   const btn = document.getElementById("emailSyncBtn");
@@ -7633,14 +7913,7 @@ document.getElementById("emailSyncBtn").addEventListener("click", async () => {
     const data = await res.json();
     if (!res.ok) throw new Error((data && data.error && data.error.message) || "Sync failed.");
 
-    statusEl.textContent =
-      `Synced: ${data.added} new email${data.added === 1 ? "" : "s"}, ` +
-      `${data.assignmentsFound} assignment${data.assignmentsFound === 1 ? "" : "s"}, ` +
-      `${data.documentsDownloaded} document${data.documentsDownloaded === 1 ? "" : "s"} downloaded, ` +
-      `${data.eventsFound || 0} calendar event${data.eventsFound === 1 ? "" : "s"} found` +
-      (data.reclassified ? `, ${data.reclassified} email${data.reclassified === 1 ? "" : "s"} recategorized` : "") +
-      ".";
-    statusEl.className = "email-status ok";
+    renderEmailSyncStatus(data);
 
     emailMessagesCache = data.messages || [];
     renderEmailList();

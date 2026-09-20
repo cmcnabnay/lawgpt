@@ -198,7 +198,7 @@ function runClaudeCode({ systemPrompt, userPrompt }) {
         timeout: CLAUDE_CODE_TIMEOUT_MS
       });
     } catch (err) {
-      resolve({ ok: false, message: `Failed to start Claude Code: ${err.message}` });
+      resolve({ ok: false, sessionId, message: `Failed to start Claude Code: ${err.message}` });
       return;
     }
 
@@ -208,7 +208,7 @@ function runClaudeCode({ systemPrompt, userPrompt }) {
     child.stderr.on("data", chunk => { stderr += chunk.toString(); });
 
     child.on("error", (err) => {
-      resolve({ ok: false, message: `Failed to start Claude Code: ${err.message}` });
+      resolve({ ok: false, sessionId, message: `Failed to start Claude Code: ${err.message}` });
     });
 
     child.on("close", (code) => {
@@ -218,29 +218,30 @@ function runClaudeCode({ systemPrompt, userPrompt }) {
       // of surfacing a bare exit code that means nothing to whoever reads it.
       if (code === 143) {
         console.log(`[claude-code] session ${sessionId} timed out after ${CLAUDE_CODE_TIMEOUT_MS / 60000}m`);
-        resolve({ ok: false, message: `Claude Code timed out after ${CLAUDE_CODE_TIMEOUT_MS / 60000} minutes. ${resumeHint}` });
+        resolve({ ok: false, sessionId, message: `Claude Code timed out after ${CLAUDE_CODE_TIMEOUT_MS / 60000} minutes. ${resumeHint}` });
         return;
       }
       if (!stdout.trim()) {
         console.log(`[claude-code] session ${sessionId} failed, exit code ${code}`);
-        resolve({ ok: false, message: (stderr.trim() || `Claude Code exited with code ${code}.`) + ` ${resumeHint}` });
+        resolve({ ok: false, sessionId, message: (stderr.trim() || `Claude Code exited with code ${code}.`) + ` ${resumeHint}` });
         return;
       }
       let data;
       try {
         data = JSON.parse(stdout);
       } catch (err) {
-        resolve({ ok: false, message: `Couldn't parse Claude Code's response. ${resumeHint}` });
+        resolve({ ok: false, sessionId, message: `Couldn't parse Claude Code's response. ${resumeHint}` });
         return;
       }
       if (data.is_error) {
         const reason = (typeof data.result === "string" && data.result) || "Claude Code returned an error.";
-        resolve({ ok: false, message: `${reason} ${resumeHint}` });
+        resolve({ ok: false, sessionId, message: `${reason} ${resumeHint}` });
         return;
       }
       console.log(`[claude-code] session ${sessionId} done`);
       resolve({
         ok: true,
+        sessionId,
         text: typeof data.result === "string" ? data.result : "",
         usage: data.usage ? {
           input_tokens: data.usage.input_tokens,
@@ -258,12 +259,16 @@ function runClaudeCode({ systemPrompt, userPrompt }) {
 // Shapes a runClaudeCode() result to look like an OpenAI Responses API reply
 // (output_text [+ usage], or {error:{message}}) so the frontend's existing
 // extractText()/costFromUsage() need no Claude-Code-specific branch -- same
-// reasoning as callOpenrouter() above.
+// reasoning as callOpenrouter() above. claudeSessionId rides along on both
+// the success and error shape (an extra field neither extractText() nor the
+// OpenAI/OpenRouter branches produce, so it's harmless to them) -- the Notes
+// tab surfaces it so a generated report can be traced back to the exact
+// Claude Code session that produced it, e.g. for `claude --resume` from SSH.
 function sendClaudeCodeResult(res, result) {
   if (!result.ok) {
-    return res.status(502).json({ error: { message: result.message || "Claude Code request failed." } });
+    return res.status(502).json({ error: { message: result.message || "Claude Code request failed." }, claudeSessionId: result.sessionId });
   }
-  return res.status(200).json({ output_text: result.text || "", usage: result.usage });
+  return res.status(200).json({ output_text: result.text || "", usage: result.usage, claudeSessionId: result.sessionId });
 }
 
 // Turns the Chat tab's plain conversation array ({role, content}[]) into a
