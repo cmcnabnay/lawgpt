@@ -3796,12 +3796,23 @@ function providerDisplayName(){
   // Reflects whichever model is actually selected right now, not just the
   // server's default -- once OpenRouter users can pick among several
   // models, the default alone would misdescribe what's about to be sent.
+  if (modelSelect.value === CLAUDE_CODE_MODEL_ID) return "Claude Code";
   return chatProvider.provider === "openrouter"
     ? `${modelSelect.value || chatProvider.openrouterModel} (via OpenRouter)`
     : "OpenAI";
 }
 
+// Claude Code runs locally via the CLI on the proxy server itself (see
+// runClaudeCode() in server.js) -- it needs no OpenAI or OpenRouter key from
+// either the server or the signed-in account, so unlike every other option
+// here it isn't gated behind chatProvider at all: it's appended to whichever
+// list applyChatProviderToModelSelect() builds below, every time. Picking it
+// routes Notes generation, the Notes follow-up chat, and the Chat tab all
+// through the same /api/chat model check server-side.
+const CLAUDE_CODE_MODEL_ID = "claude-code";
+
 function applyChatProviderToModelSelect(){
+  const previousValue = modelSelect.value;
   if (chatProvider.provider === "openrouter"){
     modelSelect.innerHTML = "";
     const models = chatProvider.openrouterModels && chatProvider.openrouterModels.length
@@ -3816,6 +3827,21 @@ function applyChatProviderToModelSelect(){
     });
   } else {
     modelSelect.innerHTML = DEFAULT_MODEL_SELECT_HTML;
+  }
+
+  const claudeGroup = document.createElement("optgroup");
+  claudeGroup.label = "Claude Code";
+  const claudeOpt = document.createElement("option");
+  claudeOpt.value = CLAUDE_CODE_MODEL_ID;
+  claudeOpt.textContent = "Claude Code (agent)";
+  claudeGroup.appendChild(claudeOpt);
+  modelSelect.appendChild(claudeGroup);
+
+  // Rebuilding the option list above resets the browser's own selection to
+  // whatever option ends up first -- restore what was picked before this
+  // refresh (e.g. Claude Code) if it's still one of the options.
+  if (previousValue && Array.from(modelSelect.options).some(o => o.value === previousValue)) {
+    modelSelect.value = previousValue;
   }
 }
 

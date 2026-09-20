@@ -12,7 +12,7 @@ const fs = require("fs");
 const os = require("os");
 const path = require("path");
 const crypto = require("crypto");
-const { execFile } = require("child_process");
+const { execFile, spawn } = require("child_process");
 
 // Loads code from canvas-routes.js
 const canvasRoutes = require("./canvas-routes");
@@ -129,6 +129,137 @@ async function callOpenrouter(model, input) {
   const data = await res.json();
   const ok = res.ok && !(data && data.status === "failed");
   return { ok, status: res.status, data };
+}
+
+// Model id the frontend's #modelSelect "Claude Code" option sends. Picking
+// it routes the request through the local `claude` CLI (the same binary
+// agent-runtime.js already spawns for the Agent tab) instead of OpenAI or
+// OpenRouter -- no API key needed on either the server or the signed-in
+// account, since it authenticates as whatever account this machine's CLI is
+// logged into. Notes generation, the Notes follow-up chat, and the Chat tab
+// all share the one /api/chat route below, so wiring it in there is enough
+// to light it up in all three places at once.
+const CLAUDE_CODE_MODEL_ID = "claude-code";
+
+// Runs one stateless turn through the Claude Code CLI and resolves to
+// { ok: true, text, usage } or { ok: false, message }.
+//
+// --tools "" strips every built-in tool (Bash, Read, Write, WebFetch, ...)
+// so a chat message -- which is untrusted user input -- can never make the
+// CLI touch this server's filesystem or run commands; this is meant to be a
+// plain chatbot backend, not another agent run. Verified experimentally: with
+// --tools "" the model will still narrate "I'll run that command now" for a
+// prompt that asks it to, but nothing actually executes (no tool_use, no
+// permission_denials entry -- it just has no tool to call).
+//
+// --no-session-persistence keeps each call independent, since every caller
+// below already resends the full conversation history itself on every
+// request (same statelessness the OpenAI/OpenRouter branches assume) -- nothing
+// here ever needs `claude --resume`.
+//
+// The prompt is written to stdin rather than passed as a CLI argument
+// because attached-document context can be large enough to risk the OS's
+// argv size limit; --system-prompt (the fixed LawGPT instructions/developer
+// text, never document content) is small and safe as an argument.
+function runClaudeCode({ systemPrompt, userPrompt }) {
+  return new Promise((resolve) => {
+    const args = [
+      "-p",
+      "--output-format", "json",
+      "--tools", "",
+      "--no-session-persistence",
+      "--permission-prompts", "none"
+    ];
+    if (systemPrompt) args.push("--system-prompt", systemPrompt);
+
+    let child;
+    try {
+      child = spawn("claude", args, {
+        cwd: path.join(__dirname, ".."),
+        env: process.env,
+        stdio: ["pipe", "pipe", "pipe"],
+        timeout: 5 * 60 * 1000
+      });
+    } catch (err) {
+      resolve({ ok: false, message: `Failed to start Claude Code: ${err.message}` });
+      return;
+    }
+
+    let stdout = "";
+    let stderr = "";
+    child.stdout.on("data", chunk => { stdout += chunk.toString(); });
+    child.stderr.on("data", chunk => { stderr += chunk.toString(); });
+
+    child.on("error", (err) => {
+      resolve({ ok: false, message: `Failed to start Claude Code: ${err.message}` });
+    });
+
+    child.on("close", (code) => {
+      if (!stdout.trim()) {
+        resolve({ ok: false, message: stderr.trim() || `Claude Code exited with code ${code}.` });
+        return;
+      }
+      let data;
+      try {
+        data = JSON.parse(stdout);
+      } catch (err) {
+        resolve({ ok: false, message: "Couldn't parse Claude Code's response." });
+        return;
+      }
+      if (data.is_error) {
+        resolve({ ok: false, message: (typeof data.result === "string" && data.result) || "Claude Code returned an error." });
+        return;
+      }
+      resolve({
+        ok: true,
+        text: typeof data.result === "string" ? data.result : "",
+        usage: data.usage ? {
+          input_tokens: data.usage.input_tokens,
+          output_tokens: data.usage.output_tokens,
+          input_tokens_details: { cached_tokens: data.usage.cache_read_input_tokens || 0 }
+        } : undefined
+      });
+    });
+
+    child.stdin.write(userPrompt || "");
+    child.stdin.end();
+  });
+}
+
+// Shapes a runClaudeCode() result to look like an OpenAI Responses API reply
+// (output_text [+ usage], or {error:{message}}) so the frontend's existing
+// extractText()/costFromUsage() need no Claude-Code-specific branch -- same
+// reasoning as callOpenrouter() above.
+function sendClaudeCodeResult(res, result) {
+  if (!result.ok) {
+    return res.status(502).json({ error: { message: result.message || "Claude Code request failed." } });
+  }
+  return res.status(200).json({ output_text: result.text || "", usage: result.usage });
+}
+
+// Turns the Chat tab's plain conversation array ({role, content}[]) into a
+// single stdin prompt for the Claude Code CLI, which only ever answers one
+// turn at a time -- system/developer messages are pulled out into
+// --system-prompt instead of interleaved, everything else becomes a Q/A
+// transcript ending on the newest user message, which is what gets answered.
+function flattenMessagesToPrompt(messages) {
+  let systemText = "";
+  const lines = [];
+  for (const m of (messages || [])) {
+    if (!m) continue;
+    const content = typeof m.content === "string"
+      ? m.content
+      : Array.isArray(m.content)
+        ? m.content.map(c => (c && typeof c.text === "string") ? c.text : "").join("\n")
+        : "";
+    if (!content) continue;
+    if (m.role === "system" || m.role === "developer") {
+      systemText += (systemText ? "\n\n" : "") + content;
+    } else {
+      lines.push(`${m.role === "assistant" ? "Assistant" : "User"}: ${content}`);
+    }
+  }
+  return { systemText, transcript: lines.join("\n\n") };
 }
 
 // The Notes tab's row editor and the Database tab both read/write tables in
@@ -801,20 +932,6 @@ function fixDocumentFieldsInResponse(data, realNames) {
 
 app.post("/api/chat", async (req, res) => {
   try {
-    // OpenAI is used only if the signed-in account has saved its own key
-    // (see requireLogin-gated /api/key above) -- not signed in, or signed
-    // in with no key saved, always falls back to OpenRouter, regardless of
-    // where the request is coming from.
-    const personalApiKey = await getPersonalApiKey(req);
-    const useOpenai = Boolean(personalApiKey);
-
-    if (!useOpenai && !OPENROUTER_API_KEY) {
-      const message = req.session && req.session.userId
-        ? "No OpenAI key saved to your account yet. Open Settings and add one, or set OPENROUTER_API_KEY (and OPENROUTER_MODEL) on the server."
-        : "Sign in to use your own OpenAI key, or set OPENROUTER_API_KEY (and OPENROUTER_MODEL) on the server so signed-out visitors have a model to use.";
-      return res.status(400).json({ error: { message } });
-    }
-
     const { model, input, documentIds, allowGeneralKnowledge, passthrough } = req.body || {};
 
     if (!model || !input) {
@@ -823,6 +940,25 @@ app.post("/api/chat", async (req, res) => {
           message: "Missing 'model' or 'input' in request body."
         }
       });
+    }
+
+    // Claude Code runs locally via the CLI (see runClaudeCode above) and
+    // needs no OpenAI or OpenRouter key at all, so it skips the
+    // key-configured check below entirely.
+    const useClaudeCode = model === CLAUDE_CODE_MODEL_ID;
+
+    // OpenAI is used only if the signed-in account has saved its own key
+    // (see requireLogin-gated /api/key above) -- not signed in, or signed
+    // in with no key saved, always falls back to OpenRouter, regardless of
+    // where the request is coming from.
+    const personalApiKey = useClaudeCode ? null : await getPersonalApiKey(req);
+    const useOpenai = Boolean(personalApiKey);
+
+    if (!useClaudeCode && !useOpenai && !OPENROUTER_API_KEY) {
+      const message = req.session && req.session.userId
+        ? "No OpenAI key saved to your account yet. Open Settings and add one, or set OPENROUTER_API_KEY (and OPENROUTER_MODEL) on the server."
+        : "Sign in to use your own OpenAI key, or set OPENROUTER_API_KEY (and OPENROUTER_MODEL) on the server so signed-out visitors have a model to use.";
+      return res.status(400).json({ error: { message } });
     }
 
     // Convert the user's input into text that can be searched
@@ -857,6 +993,12 @@ app.post("/api/chat", async (req, res) => {
     // plain meta-questions instead of just answering them.
     if (passthrough) {
       const passthroughInput = Array.isArray(input) ? input : [{ role: "user", content: question }];
+
+      if (useClaudeCode) {
+        const { systemText, transcript } = flattenMessagesToPrompt(passthroughInput);
+        const result = await runClaudeCode({ systemPrompt: systemText, userPrompt: transcript });
+        return sendClaudeCodeResult(res, result);
+      }
 
       if (useOpenai) {
         const openaiRes = await fetch(OPENAI_URL, {
@@ -897,6 +1039,24 @@ app.post("/api/chat", async (req, res) => {
         "Some source material may be attached below as full PDF files rather than pasted text — treat those as the complete, authoritative version of that document, not an excerpt. " +
         "Do not open your response with introductory filler (\"Sure!\", \"Here are your notes\", \"Certainly!\", etc.) — begin directly with the substantive content. " +
         "Do not refer to yourself as an AI, a language model, or an assistant anywhere in the response.";
+
+    if (useClaudeCode) {
+      // Claude Code is text-only via the CLI -- no native-PDF path like the
+      // OpenAI branch below, so every attached document goes in as its
+      // already-extracted text, same as the OpenRouter branch further down.
+      const context = attachedDocuments
+        .map(doc => `SOURCE: ${doc.fileName || doc.title}\n\n${doc.text || ""}`)
+        .join("\n\n---\n\n");
+      const userPrompt =
+        `Canvas course materials:\n\n${context || "(No relevant Canvas documents found.)"}\n\n` +
+        `User question:\n${question}`;
+      const result = await runClaudeCode({ systemPrompt: developerText, userPrompt });
+      if (result.ok) {
+        const realDocNames = attachedDocuments.map(doc => doc.fileName || doc.title).filter(Boolean);
+        result.text = fixDocumentFieldsInText(result.text, realDocNames);
+      }
+      return sendClaudeCodeResult(res, result);
+    }
 
     if (useOpenai) {
       // Attached documents that still have their raw PDF bytes (see
