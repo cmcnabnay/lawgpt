@@ -989,6 +989,17 @@ app.post("/api/chat", async (req, res) => {
     // key-configured check below entirely.
     const useClaudeCode = model === CLAUDE_CODE_MODEL_ID;
 
+    // Claude Code (agent) is admin-only -- it runs the real Claude Code CLI
+    // on this server with no per-user API key of its own, so any signed-in
+    // user could otherwise run arbitrary-cost sessions on the admin's own
+    // Claude account. The frontend only shows the option in #modelSelect to
+    // isAdminUser (see applyChatProviderToModelSelect in lawgpt.html), but
+    // that's cosmetic -- this is the enforcement, same isLocalhostRequest-or-
+    // admin-role check requireDbAdmin uses for the other admin-only routes.
+    if (useClaudeCode && !(isLocalhostRequest(req) || (req.session && req.session.role === "admin"))) {
+      return res.status(403).json({ error: { message: "Claude Code (agent) is admin-only." } });
+    }
+
     // OpenAI is used only if the signed-in account has saved its own key
     // (see requireLogin-gated /api/key above) -- not signed in, or signed
     // in with no key saved, always falls back to OpenRouter, regardless of

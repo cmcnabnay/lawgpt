@@ -3919,9 +3919,10 @@ function providerDisplayName(){
 // runClaudeCode() in server.js) -- it needs no OpenAI or OpenRouter key from
 // either the server or the signed-in account, so unlike every other option
 // here it isn't gated behind chatProvider at all: it's appended to whichever
-// list applyChatProviderToModelSelect() builds below, every time. Picking it
-// routes Notes generation, the Notes follow-up chat, and the Chat tab all
-// through the same /api/chat model check server-side.
+// list applyChatProviderToModelSelect() builds below, every time (admin-only,
+// see isAdminUser below). Picking it routes Notes generation, the Notes
+// follow-up chat, and the Chat tab all through the same /api/chat model
+// check server-side.
 const CLAUDE_CODE_MODEL_ID = "claude-code";
 
 function applyChatProviderToModelSelect(){
@@ -3942,17 +3943,29 @@ function applyChatProviderToModelSelect(){
     modelSelect.innerHTML = DEFAULT_MODEL_SELECT_HTML;
   }
 
-  const claudeGroup = document.createElement("optgroup");
-  claudeGroup.label = "Claude Code";
-  const claudeOpt = document.createElement("option");
-  claudeOpt.value = CLAUDE_CODE_MODEL_ID;
-  claudeOpt.textContent = "Claude Code (agent)";
-  claudeGroup.appendChild(claudeOpt);
-  modelSelect.appendChild(claudeGroup);
+  // Admin-only (see requireDbAdmin's matching check server-side in
+  // /api/chat) -- it runs the real Claude Code CLI on this server with no
+  // per-user key of its own, so it isn't something every signed-in user
+  // should be able to trigger. isAdminUser is set by refreshAuthStatus/
+  // login/logout, all of which call refreshChatProvider() -> this function
+  // afterward, so the option list stays in sync with whoever's signed in.
+  if (isAdminUser){
+    const claudeGroup = document.createElement("optgroup");
+    claudeGroup.label = "Claude Code";
+    const claudeOpt = document.createElement("option");
+    claudeOpt.value = CLAUDE_CODE_MODEL_ID;
+    claudeOpt.textContent = "Claude Code (agent)";
+    claudeGroup.appendChild(claudeOpt);
+    modelSelect.appendChild(claudeGroup);
+  }
 
   // Rebuilding the option list above resets the browser's own selection to
   // whatever option ends up first -- restore what was picked before this
-  // refresh (e.g. Claude Code) if it's still one of the options.
+  // refresh (e.g. Claude Code) if it's still one of the options. If it isn't
+  // (e.g. Claude Code was selected and the account lost admin, or an
+  // admin's saved matter picked it and a non-admin later opens the same
+  // account), this falls through and the browser defaults to the first
+  // option instead.
   if (previousValue && Array.from(modelSelect.options).some(o => o.value === previousValue)) {
     modelSelect.value = previousValue;
   }

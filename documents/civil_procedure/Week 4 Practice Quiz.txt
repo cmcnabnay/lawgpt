@@ -1,0 +1,74 @@
+Week 4 Practice Quiz — content scraped from Canvas New Quizzes on 9/20/2026, 2:05:54 PM.
+An attempt was started in Canvas to read this content, then left open/unsubmitted -- no answers were recorded or submitted.
+NOTE: New Quizzes renders via JavaScript, so this is the quiz player's visible page text rather than cleanly separated question/answer-choice fields the way a classic quiz's scrape is -- it may include some extra UI text (timer, navigation labels, etc.) alongside the actual questions and choices.
+NOTE: this quiz shows one question at a time -- paged through "Next" (without selecting any answer) to read all 6 screens below, each separated by a "----- next question -----" marker; some navigation chrome repeats on every screen.
+
+Flag question: Question 1
+Question 1
+1 pts
+P sues D. The case enters the discovery phase. P sends 50 interrogatories to D. Assuming that the information referenced by the interrogatories is relevant to the case and is not privileged, must D answer all of the interrogatories?
+Group of answer choices
+Yes.
+No.
+Next
+
+----- next question -----
+
+Flag question: Question 2
+Question 2
+1 pts
+P and D get into a car crash. P sues D, alleging that D was negligent. In the discovery phase, P seeks to determine the size of D's bank account, to determine whether D can actually pay the damages. Can P discover this?
+Group of answer choices
+Probably yes.
+Probably not.
+ Previous
+Next
+
+----- next question -----
+
+Flag question: Question 3
+Question 3
+1 pts
+Employee sues Employer for wrongful termination, alleging that the Employer had an unlawful motive for firing the Employee. You represent Employee. The case reaches the discovery phase. You first serve an interrogatory on Employer asking them to identify everyone with knowledge of the decision to fire Employee. Employer responds, listing persons A, B, and C. In one or two sentences, explain what you should do next.
+ Previous
+Next
+
+----- next question -----
+
+Flag question: Question 4
+Question 4
+1 pts
+Plaintiff requests documents during discovery. Defendant refuses. Plaintiff seeks, and the Court grants, an order to compel discovery. Defendant fails to comply with that order. What do you recommend Plaintiff should do?
+Group of answer choices
+File a motion for a temporary restraining order.
+File a motion for discovery sanctions.
+Raise an objection, then wait for the trial to argue the objection.
+File a motion for sanctions under Rule 11.
+ Previous
+Next
+
+----- next question -----
+
+Flag question: Question 5
+Question 5
+1 pts
+
+P sues D. You represent D. The case reaches the Discovery phase. A Rule 26(f) conference takes place on June 1, 2028. You know that P's lawyer is likely to call Witness 1 to testify against your client. If that happens, you would plan to call Witness 2 to impeach Witness 1's credibility. Do you need to automatically disclose Witness 2's information to the other side, and if so, when?
+
+Group of answer choices
+Yes, Witness 2's information must be disclosed, within 21 days.
+Yes, Witness 2's information must be disclosed, within 14 days.
+No, Witness 2's information does not need to be disclosed at this time.
+Witness 2's information must be disclosed, unless the court agrees that initial disclosures are not appropriate in this case.
+ Previous
+Next
+
+----- next question -----
+
+Flag question: Question 6
+Question 6
+1 pts
+
+Remind yourself of the facts of the In re Text Messaging Antitrust Litigation case (it begins on page 224 in the casebook). Assume that you represent the plaintiffs in the case, and the case has now reached the discovery phase. Please suggest 5-10 discovery requests that you would make (e.g., interrogatories; document requests; requests for admission; depositions and what you'd ask).
+
+ Previous
