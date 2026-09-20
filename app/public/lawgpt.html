@@ -6683,7 +6683,28 @@ document.getElementById("notesReportCloseBtn").addEventListener("click", () => {
 // it round-trips through Save/persistState like the rest of the report, and
 // resets automatically whenever currentReport is swapped for a different
 // (or no) report.
-function buildNotesChatInput(report, question, historyLimit, allowGeneralKnowledge){
+// resuming is true once this report has a claudeSessionId (see
+// sendNotesChatMessage) -- the follow-up then lands in the exact same
+// Claude Code conversation that generated the notes, so that conversation
+// already has the notes, the attached documents, and every earlier Q/A turn
+// in it. Re-sending all of that here on top would just double the context
+// on every single turn for no benefit, so a resuming call sends only the
+// new question. The non-resuming path below (no session yet -- e.g. notes
+// generated with a non-Claude-Code model, or the fallback after a context
+// overflow) is unchanged: it still builds the full notes + history + question
+// blob, since there's no server-side conversation to fall back on.
+function buildNotesChatInput(report, question, historyLimit, allowGeneralKnowledge, resuming){
+  if (resuming){
+    const instruction = allowGeneralKnowledge
+      ? "You are continuing the earlier conversation where you generated a set of law-school reading notes from the attached document(s), and are now answering a follow-up question about them. " +
+        "Treat the attached document(s) as your source of truth for anything they cover. " +
+        "If the question goes beyond what's in the attached material, answer it anyway using your own general legal knowledge rather than refusing or saying it isn't addressed -- just make clear when you're drawing on outside knowledge rather than the attached material, so the two don't get confused."
+      : "You are continuing the earlier conversation where you generated a set of law-school reading notes from the attached document(s), and are now answering a follow-up question about them. " +
+        "Base your answer strictly and only on the attached document(s) and the notes you already produced -- do not introduce outside knowledge. " +
+        "If the attached material doesn't cover what's being asked, say plainly that it doesn't cover it rather than filling the gap yourself.";
+    return [instruction, "", "## New Question", question].filter(Boolean).join("\n");
+  }
+
   let chatHistory = (report.chat || []).filter(m => !m.failed);
   // historyLimit caps how many past turns are included, keeping the most
   // recent ones -- used to retry with less context when the full history
@@ -6777,7 +6798,12 @@ async function sendNotesChatMessage(){
   // happens, retry once with the history dropped entirely (keeping only the
   // attached notes/documents and the current question, which are never
   // trimmed) so the question still gets answered.
-  async function attemptSend(historyLimit){
+  //
+  // When resuming is true, claudeSessionId rides along so the server resumes
+  // this report's own Claude Code session (see /api/chat's Notes branch)
+  // instead of starting a stateless one-off -- the question then lands in
+  // the exact same conversation the notes were generated in.
+  async function attemptSend(historyLimit, resuming){
     // Per-report, user-controlled (see the "Allow general knowledge"
     // toggle in the chat panel head) -- off by default, same strict
     // document-only behavior as generating the notes themselves. Overrides
@@ -6789,9 +6815,10 @@ async function sendNotesChatMessage(){
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         model,
-        input: buildNotesChatInput(currentReport, question, historyLimit, allowGeneralKnowledge),
+        input: buildNotesChatInput(currentReport, question, historyLimit, allowGeneralKnowledge, resuming),
         documentIds: currentReport.documentIds || [],
-        allowGeneralKnowledge
+        allowGeneralKnowledge,
+        claudeSessionId: resuming ? currentReport.claudeSessionId : null
       })
     });
     const data = await res.json();
@@ -6806,15 +6833,25 @@ async function sendNotesChatMessage(){
 
   const model = document.getElementById("modelSelect").value;
   try{
+    // Resume this report's own session whenever it has one (set by an
+    // earlier generation or follow-up -- see below). Reports with no session
+    // yet (e.g. notes generated with a non-Claude-Code model) fall back to
+    // the original full-history-in-the-prompt behavior, and pick up a
+    // session from here on once the response returns one.
+    const hasSession = Boolean(currentReport.claudeSessionId);
     let data;
     try{
-      data = await attemptSend();
+      data = await attemptSend(undefined, hasSession);
     } catch(err){
       const isContextOverflow = /context.length|context_length_exceeded|maximum context|too (long|many tokens)/i
         .test(String(err.code || "") + " " + err.message);
       if (!isContextOverflow) throw err;
-      data = await attemptSend(0);
+      // The resumed session's accumulated context (or, without a session,
+      // the freshly built history) is too big -- fall back to a brand-new,
+      // context-free session seeded with just the notes and this question.
+      data = await attemptSend(0, false);
     }
+    if (data.claudeSessionId) currentReport.claudeSessionId = data.claudeSessionId;
     currentReport.chat.push({ role: "assistant", content: extractText(data), cost: costFromUsage(data.usage, model) });
   } catch(err){
     currentReport.chat.push({ role: "assistant", content: "Couldn't get an answer: " + err.message, failed: true });

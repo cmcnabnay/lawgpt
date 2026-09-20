@@ -153,14 +153,22 @@ const CLAUDE_CODE_MODEL_ID = "claude-code";
 // permission_denials entry -- it just has no tool to call).
 //
 // Every call still gets a real, persisted session (--session-id, no
-// --no-session-persistence) even though nothing here ever resumes one -- every
-// caller below already resends the full conversation history itself on every
-// request, so statelessness doesn't require throwing the session away. Kept
-// on disk instead so a hung or failed request can actually be inspected from
-// SSH afterward: `cd <REPO_ROOT> && claude --resume <session-id>` (same
-// project-directory scoping agent-runtime.js's own sessions use), or
-// `claude --resume` there for the interactive picker. The session id is
-// logged and threaded into every error message below for exactly that.
+// --no-session-persistence) so a hung or failed request can actually be
+// inspected from SSH afterward: `cd <REPO_ROOT> && claude --resume
+// <session-id>` (same project-directory scoping agent-runtime.js's own
+// sessions use), or `claude --resume` there for the interactive picker. The
+// session id is logged and threaded into every error message below for
+// exactly that.
+//
+// Passing resumeSessionId picks that same session back up (--resume) instead
+// of starting a new one (--session-id) -- used by the Notes follow-up chat so
+// a question about a generated report lands in the same conversation that
+// generated it, instead of a context-free new one each time (see
+// sendNotesChatMessage in lawgpt.html and the claudeSessionId handling in
+// /api/chat below). --system-prompt is still passed on a resumed call, but
+// CLI's default --system-prompt-snapshot=on means it's ignored in favor of
+// whatever was recorded on the conversation's first turn, so this is
+// harmless rather than redundant.
 //
 // The prompt is written to stdin rather than passed as a CLI argument
 // because attached-document context can be large enough to risk the OS's
@@ -174,20 +182,20 @@ const CLAUDE_CODE_MODEL_ID = "claude-code";
 const CLAUDE_CODE_REPO_ROOT = path.join(__dirname, "..", "..");
 const CLAUDE_CODE_TIMEOUT_MS = 15 * 60 * 1000;
 
-function runClaudeCode({ systemPrompt, userPrompt }) {
+function runClaudeCode({ systemPrompt, userPrompt, resumeSessionId }) {
   return new Promise((resolve) => {
-    const sessionId = crypto.randomUUID();
+    const sessionId = resumeSessionId || crypto.randomUUID();
     const resumeHint = `Resume it from SSH: cd ${CLAUDE_CODE_REPO_ROOT} && claude --resume ${sessionId}`;
     const args = [
       "-p",
       "--output-format", "json",
       "--tools", "",
-      "--session-id", sessionId,
+      resumeSessionId ? "--resume" : "--session-id", sessionId,
       "--permission-prompts", "none"
     ];
     if (systemPrompt) args.push("--system-prompt", systemPrompt);
 
-    console.log(`[claude-code] starting session ${sessionId}`);
+    console.log(`[claude-code] ${resumeSessionId ? "resuming" : "starting"} session ${sessionId}`);
 
     let child;
     try {
@@ -966,7 +974,7 @@ function fixDocumentFieldsInResponse(data, realNames) {
 
 app.post("/api/chat", async (req, res) => {
   try {
-    const { model, input, documentIds, allowGeneralKnowledge, passthrough } = req.body || {};
+    const { model, input, documentIds, allowGeneralKnowledge, passthrough, claudeSessionId } = req.body || {};
 
     if (!model || !input) {
       return res.status(400).json({
@@ -1084,7 +1092,11 @@ app.post("/api/chat", async (req, res) => {
       const userPrompt =
         `Canvas course materials:\n\n${context || "(No relevant Canvas documents found.)"}\n\n` +
         `User question:\n${question}`;
-      const result = await runClaudeCode({ systemPrompt: developerText, userPrompt });
+      // claudeSessionId only ever arrives here from the Notes follow-up chat
+      // (see sendNotesChatMessage in lawgpt.html) -- Notes generation itself
+      // never sends one, so that first call always starts a fresh session,
+      // same as before.
+      const result = await runClaudeCode({ systemPrompt: developerText, userPrompt, resumeSessionId: claudeSessionId || undefined });
       if (result.ok) {
         const realDocNames = attachedDocuments.map(doc => doc.fileName || doc.title).filter(Boolean);
         result.text = fixDocumentFieldsInText(result.text, realDocNames);
