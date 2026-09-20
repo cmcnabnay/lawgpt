@@ -152,33 +152,50 @@ const CLAUDE_CODE_MODEL_ID = "claude-code";
 // prompt that asks it to, but nothing actually executes (no tool_use, no
 // permission_denials entry -- it just has no tool to call).
 //
-// --no-session-persistence keeps each call independent, since every caller
-// below already resends the full conversation history itself on every
-// request (same statelessness the OpenAI/OpenRouter branches assume) -- nothing
-// here ever needs `claude --resume`.
+// Every call still gets a real, persisted session (--session-id, no
+// --no-session-persistence) even though nothing here ever resumes one -- every
+// caller below already resends the full conversation history itself on every
+// request, so statelessness doesn't require throwing the session away. Kept
+// on disk instead so a hung or failed request can actually be inspected from
+// SSH afterward: `cd <REPO_ROOT> && claude --resume <session-id>` (same
+// project-directory scoping agent-runtime.js's own sessions use), or
+// `claude --resume` there for the interactive picker. The session id is
+// logged and threaded into every error message below for exactly that.
 //
 // The prompt is written to stdin rather than passed as a CLI argument
 // because attached-document context can be large enough to risk the OS's
 // argv size limit; --system-prompt (the fixed LawGPT instructions/developer
 // text, never document content) is small and safe as an argument.
+//
+// CLAUDE_CODE_TIMEOUT_MS is generous (15 min) because Notes generation can
+// hand it a full chapter of attached text plus extended thinking -- the
+// first cut of this used 5 min and a real request got SIGTERM'd (exit code
+// 143, the "I caught a signal" convention) well before it was done.
+const CLAUDE_CODE_REPO_ROOT = path.join(__dirname, "..", "..");
+const CLAUDE_CODE_TIMEOUT_MS = 15 * 60 * 1000;
+
 function runClaudeCode({ systemPrompt, userPrompt }) {
   return new Promise((resolve) => {
+    const sessionId = crypto.randomUUID();
+    const resumeHint = `Resume it from SSH: cd ${CLAUDE_CODE_REPO_ROOT} && claude --resume ${sessionId}`;
     const args = [
       "-p",
       "--output-format", "json",
       "--tools", "",
-      "--no-session-persistence",
+      "--session-id", sessionId,
       "--permission-prompts", "none"
     ];
     if (systemPrompt) args.push("--system-prompt", systemPrompt);
 
+    console.log(`[claude-code] starting session ${sessionId}`);
+
     let child;
     try {
       child = spawn("claude", args, {
-        cwd: path.join(__dirname, ".."),
+        cwd: CLAUDE_CODE_REPO_ROOT,
         env: process.env,
         stdio: ["pipe", "pipe", "pipe"],
-        timeout: 5 * 60 * 1000
+        timeout: CLAUDE_CODE_TIMEOUT_MS
       });
     } catch (err) {
       resolve({ ok: false, message: `Failed to start Claude Code: ${err.message}` });
@@ -195,21 +212,33 @@ function runClaudeCode({ systemPrompt, userPrompt }) {
     });
 
     child.on("close", (code) => {
+      // 143 = 128+SIGTERM -- how a process that caught and exited on a
+      // signal conventionally reports it, which is what happens when the
+      // spawn() `timeout` option above fires. Called out explicitly instead
+      // of surfacing a bare exit code that means nothing to whoever reads it.
+      if (code === 143) {
+        console.log(`[claude-code] session ${sessionId} timed out after ${CLAUDE_CODE_TIMEOUT_MS / 60000}m`);
+        resolve({ ok: false, message: `Claude Code timed out after ${CLAUDE_CODE_TIMEOUT_MS / 60000} minutes. ${resumeHint}` });
+        return;
+      }
       if (!stdout.trim()) {
-        resolve({ ok: false, message: stderr.trim() || `Claude Code exited with code ${code}.` });
+        console.log(`[claude-code] session ${sessionId} failed, exit code ${code}`);
+        resolve({ ok: false, message: (stderr.trim() || `Claude Code exited with code ${code}.`) + ` ${resumeHint}` });
         return;
       }
       let data;
       try {
         data = JSON.parse(stdout);
       } catch (err) {
-        resolve({ ok: false, message: "Couldn't parse Claude Code's response." });
+        resolve({ ok: false, message: `Couldn't parse Claude Code's response. ${resumeHint}` });
         return;
       }
       if (data.is_error) {
-        resolve({ ok: false, message: (typeof data.result === "string" && data.result) || "Claude Code returned an error." });
+        const reason = (typeof data.result === "string" && data.result) || "Claude Code returned an error.";
+        resolve({ ok: false, message: `${reason} ${resumeHint}` });
         return;
       }
+      console.log(`[claude-code] session ${sessionId} done`);
       resolve({
         ok: true,
         text: typeof data.result === "string" ? data.result : "",
