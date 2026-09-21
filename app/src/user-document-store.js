@@ -56,6 +56,10 @@ function rowToDocument(row) {
     fileName: row.file_name,
     text: row.text,
     fileBuffer: row.file_bytes || null,
+    // has_file_bytes is only present on the list query below, which omits the
+    // actual bytes for payload size but still needs to know whether one
+    // exists, so the Documents tab can show Open/Download buttons.
+    hasOriginalFile: row.file_bytes != null || Boolean(row.has_file_bytes),
     filePath: null,
     mine: true,
     addedAt: row.added_at ? new Date(row.added_at).toISOString() : new Date().toISOString()
@@ -65,13 +69,13 @@ function rowToDocument(row) {
 async function getAllForUser(userId) {
   if (!appPool || !userId) return [];
   const result = await appPool.query(
-    "SELECT id, user_id, title, content_type, course_id, course_name, file_name, text, added_at FROM user_documents WHERE user_id = $1 ORDER BY added_at DESC",
+    "SELECT id, user_id, title, content_type, course_id, course_name, file_name, text, added_at, (file_bytes IS NOT NULL) AS has_file_bytes FROM user_documents WHERE user_id = $1 ORDER BY added_at DESC",
     [userId]
   );
-  // file_bytes deliberately left out of the list query -- same reasoning as
-  // document-store.js's /api/documents list endpoint stripping fileBuffer,
-  // this is for a document-card list, not the byte content.
-  return result.rows.map(row => ({ ...rowToDocument(row), fileBuffer: null, hasOriginalFile: false }));
+  // file_bytes itself deliberately left out of the list query -- same
+  // reasoning as document-store.js's /api/documents list endpoint stripping
+  // fileBuffer, this is for a document-card list, not the byte content.
+  return result.rows.map(row => ({ ...rowToDocument(row), fileBuffer: null }));
 }
 
 // Scoped to the owning user -- a caller must already know both the document
