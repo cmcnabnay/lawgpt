@@ -7266,6 +7266,11 @@ function wireDocMenu(card, doc, category, hasFile){
   menu.addEventListener("click", (e) => {
     const btn = e.target.closest("button[data-action]");
     if (!btn) return;
+    // Swapping menu.innerHTML below (for "move"/"back") detaches the
+    // clicked button from the DOM, which would make the document-level
+    // outside-click listener think the click landed outside the menu and
+    // close it right back up in the same bubble phase -- stop that here.
+    e.stopPropagation();
     const action = btn.dataset.action;
 
     if (action === "move"){ menu.innerHTML = docMenuCoursePickerHtml(doc); return; }
