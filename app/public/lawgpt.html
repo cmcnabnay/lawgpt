@@ -1561,22 +1561,51 @@ pre code {
 }
 .doc-card-actions{
   flex:0 0 auto;
-  display:flex;
-  flex-direction:column;
-  gap:6px;
+  position:relative;
 }
-.doc-card-actions button{
-  font-size:11.5px;
+.doc-menu-btn{
+  font-size:15px;
   font-weight:600;
-  padding:6px 12px;
+  padding:5px 10px;
   border-radius:var(--radius);
   cursor:pointer;
   white-space:nowrap;
   border:1px solid var(--hairline);
   background:none;
   color:var(--text-light);
+  line-height:1;
 }
-.doc-card-actions button:hover{ border-color:var(--brass-dim); color:var(--brass); }
+.doc-menu-btn:hover{ border-color:var(--brass-dim); color:var(--brass); }
+.doc-menu{
+  display:none;
+  flex-direction:column;
+  position:absolute;
+  top:100%;
+  right:0;
+  margin-top:4px;
+  min-width:170px;
+  background:var(--ink-2);
+  border:1px solid var(--hairline);
+  border-radius:var(--radius);
+  box-shadow:0 8px 20px rgba(0,0,0,0.4);
+  padding:4px;
+  z-index:30;
+}
+.doc-menu.open{ display:flex; }
+.doc-menu button{
+  font-size:12.5px;
+  font-weight:500;
+  text-align:left;
+  padding:7px 10px;
+  border-radius:6px;
+  cursor:pointer;
+  white-space:nowrap;
+  border:none;
+  background:none;
+  color:var(--text-light);
+}
+.doc-menu button:hover{ background:rgba(255,255,255,0.06); color:var(--brass); }
+.doc-menu-divider{ height:1px; background:var(--hairline); margin:4px 2px; }
 .doc-group-label{
   font-family:'IBM Plex Mono',monospace;
   font-size:11px;
@@ -7161,20 +7190,137 @@ function renderDocumentsList(){
               </div>
             </div>
             <div class="doc-card-actions">
-              ${category === "pdf" ? `<button type="button" class="doc-open-btn">Open</button>` : ""}
-              ${category === "editor" ? `<button type="button" class="doc-editor-btn">Open in Editor</button>` : ""}
-              ${hasFile ? `<button type="button" class="doc-download-btn">Download</button>` : ""}
+              ${hasMenu(doc, category, hasFile) ? `<button type="button" class="doc-menu-btn">⋯</button><div class="doc-menu"></div>` : ""}
             </div>`;
 
-          if (category === "pdf") card.querySelector(".doc-open-btn").addEventListener("click", () => openDocumentNative(doc));
-          if (category === "editor") card.querySelector(".doc-editor-btn").addEventListener("click", () => openDocumentInEditor(doc));
-          if (hasFile) card.querySelector(".doc-download-btn").addEventListener("click", () => downloadNativeDocument(doc));
+          if (hasMenu(doc, category, hasFile)) wireDocMenu(card, doc, category, hasFile);
 
           body.appendChild(card);
         });
 
       list.appendChild(body);
     });
+}
+
+// Whether a document card gets a "..." menu at all -- a doc with no file and
+// no Move/View Email options (a stub with just extracted text, no original
+// file) gets no menu button rather than an empty one.
+function hasMenu(doc, category, hasFile){
+  return category === "pdf" || category === "editor" || hasFile || doc.mine;
+}
+
+// Only one document dropdown open at a time -- clicking elsewhere closes it
+// (see the document-level click listener below) and resets it back to its
+// default action list, so reopening it never shows a stale Move sub-view.
+let openDocMenuEl = null;
+function closeDocMenu(){
+  if (!openDocMenuEl) return;
+  openDocMenuEl.classList.remove("open");
+  if (openDocMenuEl._resetContent) openDocMenuEl._resetContent();
+  openDocMenuEl = null;
+}
+document.addEventListener("click", (e) => {
+  if (openDocMenuEl && !openDocMenuEl.contains(e.target)) closeDocMenu();
+});
+
+function docMenuDefaultHtml(doc, category, hasFile){
+  const items = [];
+  if (category === "pdf") items.push(`<button type="button" data-action="open">Open</button>`);
+  if (category === "editor") items.push(`<button type="button" data-action="open-editor">Open in Editor</button>`);
+  if (hasFile) items.push(`<button type="button" data-action="download">Download</button>`);
+  if (doc.mine){
+    // Move/View Email only apply to a signed-in user's own email-synced
+    // document (userDocumentStore) -- a Canvas/disk document's course is
+    // where its file lives on disk, and it was never downloaded from mail.
+    if (items.length) items.push(`<div class="doc-menu-divider"></div>`);
+    items.push(`<button type="button" data-action="move">Move…</button>`);
+    items.push(`<button type="button" data-action="view-email">View Email</button>`);
+  }
+  return items.join("");
+}
+
+function docMenuCoursePickerHtml(doc){
+  const options = Object.entries(EMAIL_COURSE_LABELS)
+    .filter(([courseId]) => courseId !== doc.courseId)
+    .map(([courseId, label]) => `<button type="button" data-action="move-to" data-course-id="${escapeHtml(courseId)}">${escapeHtml(label)}</button>`)
+    .join("");
+  return `<button type="button" data-action="back">← Back</button><div class="doc-menu-divider"></div>${options}`;
+}
+
+function wireDocMenu(card, doc, category, hasFile){
+  const menuBtn = card.querySelector(".doc-menu-btn");
+  const menu = card.querySelector(".doc-menu");
+  menu._resetContent = () => { menu.innerHTML = docMenuDefaultHtml(doc, category, hasFile); };
+  menu._resetContent();
+
+  menuBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const willOpen = !menu.classList.contains("open");
+    closeDocMenu();
+    if (willOpen){
+      menu.classList.add("open");
+      openDocMenuEl = menu;
+    }
+  });
+
+  menu.addEventListener("click", (e) => {
+    const btn = e.target.closest("button[data-action]");
+    if (!btn) return;
+    const action = btn.dataset.action;
+
+    if (action === "move"){ menu.innerHTML = docMenuCoursePickerHtml(doc); return; }
+    if (action === "back"){ menu._resetContent(); return; }
+    if (action === "move-to"){
+      closeDocMenu();
+      moveDocumentToCourse(doc, btn.dataset.courseId);
+      return;
+    }
+
+    closeDocMenu();
+    if (action === "open") openDocumentNative(doc);
+    else if (action === "open-editor") openDocumentInEditor(doc);
+    else if (action === "download") downloadNativeDocument(doc);
+    else if (action === "view-email") viewDocumentSourceEmail(doc);
+  });
+}
+
+// Re-files a signed-in user's own email-synced document under a different
+// course (see POST /api/documents/:id/move in server.js -- rejects anything
+// that isn't the requester's own userDocumentStore row).
+async function moveDocumentToCourse(doc, courseId){
+  try{
+    const res = await fetch(PROXY_ORIGIN + "/api/documents/" + encodeURIComponent(doc.id) + "/move", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ courseId })
+    });
+    const data = await res.json().catch(() => null);
+    if (!res.ok) throw new Error((data && data.error && data.error.message) || ("Server returned " + res.status));
+    await refreshDocumentsList();
+  } catch(e){
+    alert("Couldn't move this document: " + e.message);
+  }
+}
+
+// Finds the synced email message a document was downloaded from (matched by
+// documentIds, see email-routes.js's /sync) and opens it in the Email tab's
+// existing message-detail modal -- same lookup-then-openEmailView pattern
+// openCalendarEventSource uses to jump to a message from elsewhere in the app.
+async function viewDocumentSourceEmail(doc){
+  let msg = emailMessagesCache.find(m => (m.documentIds || []).includes(doc.id));
+  if (!msg){
+    try{
+      const res = await fetch(PROXY_ORIGIN + "/api/email/messages");
+      const data = await res.json();
+      emailMessagesCache = data.messages || [];
+      msg = emailMessagesCache.find(m => (m.documentIds || []).includes(doc.id));
+    } catch(e){ /* fall through to the not-found alert below */ }
+  }
+  if (!msg){
+    alert("Couldn't find the source email for this document — it may have been deleted.");
+    return;
+  }
+  openEmailView(msg);
 }
 
 document.getElementById("docRefreshBtn").addEventListener("click", refreshDocumentsList);

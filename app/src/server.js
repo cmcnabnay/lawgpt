@@ -1365,6 +1365,43 @@ app.get("/api/documents/:id/file", async (req, res) => {
   res.send(userDocument.fileBuffer);
 });
 
+// The course slugs a document can be filed under -- same slug space as
+// COURSE_FOLDER_ALIASES in canvas-routes.js (which classifies Canvas course
+// names and email subjects/bodies into one of these) plus the "uncategorized"
+// fallback. Kept here as an allowlist for the move route below rather than
+// trusting an arbitrary client-supplied courseId.
+const MOVABLE_COURSE_IDS = new Set([
+  "civil_procedure",
+  "contracts",
+  "torts",
+  "lawyering_skills_and_strategies",
+  "uncategorized"
+]);
+
+// Re-files a document under a different course -- only ever a signed-in
+// user's own email-synced document (userDocumentStore), never the shared,
+// disk-based documentStore: a Canvas import's course is a fact about where
+// the file lives on disk, not metadata this endpoint should rewrite. Looking
+// the document up scoped to req.session.userId (like GET /api/documents/:id/file
+// above) both finds it and proves the requester owns it.
+app.post("/api/documents/:id/move", requireAppDb, requireLogin, async (req, res) => {
+  const { courseId } = req.body || {};
+  if (!courseId || !MOVABLE_COURSE_IDS.has(courseId)) {
+    return res.status(400).json({ error: { message: "courseId must be one of: " + Array.from(MOVABLE_COURSE_IDS).join(", ") } });
+  }
+
+  const existing = await userDocumentStore.getDocument(req.session.userId, req.params.id);
+  if (!existing) {
+    return res.status(404).json({ error: { message: "Document not found, or it isn't a movable document." } });
+  }
+
+  const updated = await userDocumentStore.updateDocument(req.session.userId, req.params.id, {
+    courseId,
+    courseName: courseId
+  });
+  res.json(toDocumentSummary(updated, true));
+});
+
 // Generic text extraction for files that aren't from Canvas (e.g. a PDF
 // opened directly in the Draft & Compile editor via the Open button, or a
 // document opened from the Documents tab). Reuses the same extractor

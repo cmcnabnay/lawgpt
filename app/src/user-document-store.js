@@ -125,10 +125,25 @@ async function addDocument(userId, document) {
   return rowToDocument(result.rows[0]);
 }
 
+// Re-files a document under a different course (see server.js's
+// /api/documents/:id/move) -- scoped to userId the same way getDocument is,
+// so this also doubles as the ownership check.
+async function updateDocument(userId, id, patch) {
+  if (!appPool || !userId || !id) return null;
+  const result = await appPool.query(
+    `UPDATE user_documents SET course_id = $1, course_name = $2
+     WHERE id = $3 AND user_id = $4
+     RETURNING id, user_id, title, content_type, course_id, course_name, file_name, text, added_at, (file_bytes IS NOT NULL) AS has_file_bytes`,
+    [patch.courseId, patch.courseName, id, userId]
+  );
+  if (!result.rows[0]) return null;
+  return { ...rowToDocument(result.rows[0]), fileBuffer: null };
+}
+
 async function removeDocument(userId, id) {
   if (!appPool || !userId || !id) return false;
   const result = await appPool.query("DELETE FROM user_documents WHERE id = $1 AND user_id = $2", [id, userId]);
   return result.rowCount > 0;
 }
 
-module.exports = { getAllForUser, getDocument, getDocumentByFileName, addDocument, removeDocument };
+module.exports = { getAllForUser, getDocument, getDocumentByFileName, addDocument, updateDocument, removeDocument };
