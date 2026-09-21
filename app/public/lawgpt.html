@@ -1584,8 +1584,33 @@ pre code {
   text-transform:uppercase;
   color:var(--brass-dim);
   margin:22px 0 8px;
+  display:flex;
+  align-items:center;
+  gap:7px;
+  cursor:pointer;
+  user-select:none;
 }
+.doc-group-label:hover{ color:var(--brass); }
 .doc-group-label:first-child{ margin-top:0; }
+.doc-group-chevron{
+  display:inline-block;
+  font-size:9px;
+  transition:transform 0.15s ease;
+  transform:rotate(90deg);
+}
+.doc-group-label.collapsed .doc-group-chevron{ transform:rotate(0deg); }
+.doc-group-count{
+  color:var(--text-muted);
+  font-weight:400;
+  text-transform:none;
+  letter-spacing:normal;
+}
+.doc-group-body{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+.doc-group-body.collapsed{ display:none; }
 
 /* ---------- EMAIL ---------- */
 .email-view{
@@ -6942,6 +6967,32 @@ function getDocFileExt(doc){
   return m ? m[1].toLowerCase() : "";
 }
 
+// A document's underlying file may live on local disk (documentStore --
+// Canvas imports, files dropped in documents/<course>/) or in this account's
+// own Supabase row (userDocumentStore -- email attachments); either way
+// GET /api/documents/:id/file streams it back identically, so both count as
+// "has a file" for button purposes. See toDocumentSummary in server.js.
+function docHasFile(doc){
+  return Boolean(doc.hasNativeFile || doc.hasOriginalFile);
+}
+
+// Which action buttons a document card gets, by file type:
+//  - "pdf"    -> Open (browser's own PDF viewer) + Download
+//  - "editor" -> Open in Editor + Download
+//  - "other"  -> Download only (e.g. a .pptx or image the editor can't render)
+function getDocCategory(doc){
+  const ext = getDocFileExt(doc);
+  if (ext === "pdf" || doc.contentType === "application/pdf") return "pdf";
+  if (EDITOR_OPENABLE_EXTS.has(ext) || (!ext && doc.contentType === "text/plain")) return "editor";
+  return "other";
+}
+
+// Which course groups are expanded in the Documents tab -- keyed the same
+// way renderDocumentsList groups documents. Starts empty (everything
+// collapsed) and persists across re-renders (Refresh, tab switches) so
+// toggling a group open doesn't get undone by the next refresh.
+const expandedCourseGroups = new Set();
+
 // Fetches this document's native file from the proxy and runs it through
 // the same import pipeline as the editor's own Open button (openDocumentFile),
 // so a Canvas-imported .docx/.pdf/etc. opens exactly the way opening it from
@@ -7067,13 +7118,27 @@ function renderDocumentsList(){
   });
 
   list.innerHTML = "";
-  Array.from(groups.values())
-    .sort((a, b) => a.label.localeCompare(b.label))
-    .forEach(group => {
+  Array.from(groups.entries())
+    .sort((a, b) => a[1].label.localeCompare(b[1].label))
+    .forEach(([key, group]) => {
+      const isExpanded = expandedCourseGroups.has(key);
+
       const heading = document.createElement("div");
-      heading.className = "doc-group-label";
-      heading.textContent = group.label;
+      heading.className = "doc-group-label" + (isExpanded ? "" : " collapsed");
+      heading.innerHTML = `<span class="doc-group-chevron">▸</span>` +
+        `<span>${escapeHtml(group.label)}</span>` +
+        `<span class="doc-group-count">(${group.docs.length})</span>`;
       list.appendChild(heading);
+
+      const body = document.createElement("div");
+      body.className = "doc-group-body" + (isExpanded ? "" : " collapsed");
+
+      heading.addEventListener("click", () => {
+        const nowExpanded = body.classList.toggle("collapsed") === false;
+        heading.classList.toggle("collapsed", !nowExpanded);
+        if (nowExpanded) expandedCourseGroups.add(key);
+        else expandedCourseGroups.delete(key);
+      });
 
       group.docs
         .slice()
@@ -7083,14 +7148,8 @@ function renderDocumentsList(){
           card.className = "doc-card";
 
           const addedLabel = doc.addedAt ? new Date(doc.addedAt).toLocaleString() : "";
-          // Some hand-saved casebook excerpts sit on disk with no extension
-          // at all (e.g. "104-05") -- getDocFileExt returns "" for those, so
-          // fall back to contentType: a plain-text file opens in the editor
-          // fine (openDocumentFile round-trips an unrecognized extension as
-          // plain text) regardless of what its filename looks like.
-          const docExt = getDocFileExt(doc);
-          const canOpenInEditor = doc.hasNativeFile &&
-            (EDITOR_OPENABLE_EXTS.has(docExt) || (!docExt && doc.contentType === "text/plain"));
+          const hasFile = docHasFile(doc);
+          const category = hasFile ? getDocCategory(doc) : null;
 
           card.innerHTML = `
             <div class="doc-card-main">
@@ -7102,17 +7161,19 @@ function renderDocumentsList(){
               </div>
             </div>
             <div class="doc-card-actions">
-              ${doc.hasNativeFile ? `<button type="button" class="doc-open-btn">Open</button>` : ""}
-              ${canOpenInEditor ? `<button type="button" class="doc-editor-btn">Open in Editor</button>` : ""}
-              ${doc.hasNativeFile ? `<button type="button" class="doc-download-btn">Download</button>` : ""}
+              ${category === "pdf" ? `<button type="button" class="doc-open-btn">Open</button>` : ""}
+              ${category === "editor" ? `<button type="button" class="doc-editor-btn">Open in Editor</button>` : ""}
+              ${hasFile ? `<button type="button" class="doc-download-btn">Download</button>` : ""}
             </div>`;
 
-          if (doc.hasNativeFile) card.querySelector(".doc-open-btn").addEventListener("click", () => openDocumentNative(doc));
-          if (canOpenInEditor) card.querySelector(".doc-editor-btn").addEventListener("click", () => openDocumentInEditor(doc));
-          if (doc.hasNativeFile) card.querySelector(".doc-download-btn").addEventListener("click", () => downloadNativeDocument(doc));
+          if (category === "pdf") card.querySelector(".doc-open-btn").addEventListener("click", () => openDocumentNative(doc));
+          if (category === "editor") card.querySelector(".doc-editor-btn").addEventListener("click", () => openDocumentInEditor(doc));
+          if (hasFile) card.querySelector(".doc-download-btn").addEventListener("click", () => downloadNativeDocument(doc));
 
-          list.appendChild(card);
+          body.appendChild(card);
         });
+
+      list.appendChild(body);
     });
 }
 
