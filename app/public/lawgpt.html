@@ -1701,11 +1701,6 @@ pre code {
   gap:10px;
   flex-wrap:wrap;
 }
-.sync-result-row-snippet{
-  font-size:12px;
-  color:var(--text-muted);
-  margin-top:6px;
-}
 .sync-result-row-session{
   font-family:'IBM Plex Mono',monospace;
   font-size:10.5px;
@@ -2224,12 +2219,6 @@ pre code {
   content:"(no output yet)";
   color:var(--text-muted);
   font-size:12.5px;
-}
-.email-snippet{
-  font-size:12.5px;
-  line-height:1.6;
-  color:var(--text-muted);
-  margin-top:6px;
 }
 .email-done-btn{
   font-size:11.5px;
@@ -3563,6 +3552,7 @@ pre code {
         </div>
         <p class="claude-session-hint">Resume it from SSH: <code id="claudeSessionResumeCmd"></code></p>
         <div class="settings-actions">
+          <button type="button" class="btn-secondary" id="claudeSessionOpenAgentBtn">Open in agent tab</button>
           <button type="button" id="claudeSessionCloseBtn">Close</button>
         </div>
       </div>
@@ -6198,8 +6188,10 @@ function describeAgentDocumentSource(documentIds){
 // result popup for a calendar event's source session (see
 // renderEmailSyncResultPopup). contextText is one short sentence explaining
 // what this particular session produced.
+let claudeSessionPopupId = null;
 function showClaudeSessionPopup(sessionId, contextText){
   if (!sessionId) return;
+  claudeSessionPopupId = sessionId;
   document.getElementById("claudeSessionContext").textContent = contextText || "";
   document.getElementById("claudeSessionIdText").textContent = sessionId;
   document.getElementById("claudeSessionResumeCmd").textContent = `claude --resume ${sessionId}`;
@@ -6211,18 +6203,57 @@ function showClaudeSessionPopup(sessionId, contextText){
 document.getElementById("claudeSessionCloseBtn").addEventListener("click", () => {
   document.getElementById("claudeSessionOverlay").style.display = "none";
 });
+// Copies the full `claude --resume <uuid>` command (not just the bare id) --
+// that's what's actually useful pasted into a terminal. Falls back to a
+// hidden textarea + execCommand("copy") when the async Clipboard API is
+// unavailable (it silently no-ops outside a secure context -- e.g. the app
+// opened over a plain http:// LAN address instead of localhost/https --
+// which is what made this button look broken).
 document.getElementById("claudeSessionCopyBtn").addEventListener("click", async () => {
-  const text = document.getElementById("claudeSessionIdText").textContent;
+  const text = document.getElementById("claudeSessionResumeCmd").textContent;
   const btn = document.getElementById("claudeSessionCopyBtn");
+  let copied = false;
   try{
     await navigator.clipboard.writeText(text);
+    copied = true;
+  } catch(e){ /* fall through to the execCommand fallback below */ }
+  if (!copied){
+    const scratch = document.createElement("textarea");
+    scratch.value = text;
+    scratch.style.position = "fixed";
+    scratch.style.opacity = "0";
+    document.body.appendChild(scratch);
+    scratch.focus();
+    scratch.select();
+    try{ copied = document.execCommand("copy"); } catch(e){ copied = false; }
+    document.body.removeChild(scratch);
+  }
+  if (copied){
     btn.textContent = "Copied";
     btn.classList.add("copied");
-  } catch(e){
-    // Clipboard API can be unavailable (no HTTPS/localhost, permissions) --
-    // the id text itself is user-select:all, so falling back to "select it
-    // by hand" still works even if this silently does nothing.
+  } else {
+    // Both copy paths failed -- the resume command text itself is
+    // user-select:all, so selecting it by hand still works.
+    btn.textContent = "Couldn't copy — select it";
   }
+});
+// Opens the Agent tab and loads this exact Claude Code session into it, the
+// same terminal/output/chat view a "Send to agent" run gets -- equivalent to
+// running `claude --resume <uuid>` yourself. Works even for a session that
+// was never a tracked agent run (e.g. one calendar-extract.js or a Notes
+// report spawned): GET /api/agent/runs/:id (see agent-routes.js) falls back
+// to reading that session's transcript straight off disk the first time
+// it's opened this way.
+document.getElementById("claudeSessionOpenAgentBtn").addEventListener("click", async () => {
+  if (!claudeSessionPopupId) return;
+  document.getElementById("claudeSessionOverlay").style.display = "none";
+  setView("agent");
+  await openAgentRun(claudeSessionPopupId);
+  // openAgentRun's own fetch is what actually adopts a not-yet-tracked
+  // session into agent-store (see GET /runs/:id) -- refresh the sidebar list
+  // again afterward so the newly-adopted entry shows up there too, instead
+  // of only in the open panel until the next unrelated refresh.
+  refreshAgentRuns();
 });
 
 // Same Notes-tab rendering pipeline as generateReadingReport (currentReport,
@@ -6627,26 +6658,155 @@ function findNotesLine(node, root){
   }
   return null;
 }
-document.getElementById("notesReportBody").addEventListener("keydown", (e) => {
-  if (e.key !== "Tab") return;
-  e.preventDefault();
-  if (!currentReport || currentReport.loading || currentReport.failed) return;
-  const sel = window.getSelection();
-  if (!sel || !sel.rangeCount) return;
-  const bodyEl = e.currentTarget;
-  const line = findNotesLine(sel.getRangeAt(0).startContainer, bodyEl);
-  if (!line) return;
 
-  const current = parseInt(line.style.marginLeft || "0", 10) || 0;
-  const next = e.shiftKey ? Math.max(0, current - NOTES_INDENT_STEP) : current + NOTES_INDENT_STEP;
-  line.style.marginLeft = next ? next + "px" : "";
-
+// Same contentHtml/edited/persistState bookkeeping the "input" listener does
+// automatically for a native DOM edit -- needed here too since every
+// programmatic DOM change below (Tab's indent, Backspace's un-bullet, "-"'s
+// bulleting) doesn't fire a real "input" event on its own.
+function markNotesEdited(bodyEl){
   currentReport.contentHtml = bodyEl.innerHTML;
   currentReport.edited = true;
   clearTimeout(notesReportEditDebounce);
   notesReportEditDebounce = setTimeout(() => {
     if (currentReport && currentReport.id) persistState();
   }, 500);
+}
+
+// Un-bullets a list item: caret at the very start of an <li>'s own text (not
+// nested inside a sub-block within it) turns that item back into a plain
+// paragraph instead of deleting the previous character, same as Backspace
+// there in Notion/Docs-style editors. Any nested <ul>/<ol> the item had
+// (its own sub-items) is lifted out to sit right after the new paragraph,
+// at the same level, rather than silently vanishing into the paragraph's
+// text. Splits the original list in two around the removed item when it's
+// neither the first nor the last <li>, so the items before and after it
+// stay in their own list rather than merging across the gap.
+function unbulletListItem(liEl){
+  const listEl = liEl.parentElement;
+  const p = document.createElement("p");
+  const subLists = [];
+  Array.from(liEl.childNodes).forEach(child => {
+    if (child.nodeType === Node.ELEMENT_NODE && (child.tagName === "UL" || child.tagName === "OL")){
+      subLists.push(child);
+    } else {
+      p.appendChild(child);
+    }
+  });
+
+  const prevItems = [], nextItems = [];
+  let seenLi = false;
+  Array.from(listEl.children).forEach(child => {
+    if (child === liEl){ seenLi = true; return; }
+    (seenLi ? nextItems : prevItems).push(child);
+  });
+
+  function listWith(items){
+    if (!items.length) return null;
+    const l = document.createElement(listEl.tagName);
+    items.forEach(it => l.appendChild(it));
+    return l;
+  }
+  const beforeList = listWith(prevItems);
+  const afterList = listWith(nextItems);
+
+  const frag = document.createDocumentFragment();
+  if (beforeList) frag.appendChild(beforeList);
+  frag.appendChild(p);
+  subLists.forEach(sl => frag.appendChild(sl));
+  if (afterList) frag.appendChild(afterList);
+
+  listEl.parentElement.replaceChild(frag, listEl);
+  return p;
+}
+
+// Turns the current (non-list) line into a new bulleted item when its text
+// is exactly "-" and the user then types a space -- the familiar
+// Notion/Docs-style "- " markdown shortcut. Reuses an immediately preceding
+// <ul> if there is one instead of starting a second, adjacent one-item list.
+function bulletifyLine(lineEl){
+  const li = document.createElement("li");
+  li.appendChild(document.createElement("br")); // keeps it a real, clickable empty line
+  const prev = lineEl.previousElementSibling;
+  if (prev && prev.tagName === "UL"){
+    prev.appendChild(li);
+    lineEl.remove();
+  } else {
+    const ul = document.createElement("ul");
+    ul.appendChild(li);
+    lineEl.replaceWith(ul);
+  }
+  return li;
+}
+
+function placeCaretAtStart(el){
+  const range = document.createRange();
+  range.setStart(el, 0);
+  range.collapse(true);
+  const sel = window.getSelection();
+  sel.removeAllRanges();
+  sel.addRange(range);
+}
+
+document.getElementById("notesReportBody").addEventListener("keydown", (e) => {
+  if (!currentReport || currentReport.loading || currentReport.failed) return;
+  const bodyEl = e.currentTarget;
+
+  if (e.key === "Tab"){
+    e.preventDefault();
+    const sel = window.getSelection();
+    if (!sel || !sel.rangeCount) return;
+    const line = findNotesLine(sel.getRangeAt(0).startContainer, bodyEl);
+    if (!line) return;
+
+    const current = parseInt(line.style.marginLeft || "0", 10) || 0;
+    const next = e.shiftKey ? Math.max(0, current - NOTES_INDENT_STEP) : current + NOTES_INDENT_STEP;
+    line.style.marginLeft = next ? next + "px" : "";
+    markNotesEdited(bodyEl);
+    return;
+  }
+
+  if (e.key === "Backspace" && !e.shiftKey && !e.ctrlKey && !e.altKey && !e.metaKey){
+    const sel = window.getSelection();
+    if (!sel || !sel.rangeCount || !sel.isCollapsed) return;
+    const range = sel.getRangeAt(0);
+    const startNode = range.startContainer;
+    const liEl = (startNode.nodeType === Node.TEXT_NODE ? startNode.parentElement : startNode).closest("li");
+    if (!liEl || !bodyEl.contains(liEl)) return;
+
+    // Only when the caret is at the very start of the item's own text --
+    // right after the bullet -- not merely somewhere inside the item (e.g.
+    // past a nested sub-list, where ordinary Backspace should still just
+    // delete a character).
+    const startRange = document.createRange();
+    startRange.setStart(liEl, 0);
+    startRange.setEnd(startNode, range.startOffset);
+    if (startRange.toString().length !== 0) return;
+
+    e.preventDefault();
+    const p = unbulletListItem(liEl);
+    placeCaretAtStart(p);
+    markNotesEdited(bodyEl);
+    return;
+  }
+
+  if (e.key === " " && !e.shiftKey && !e.ctrlKey && !e.altKey && !e.metaKey){
+    const sel = window.getSelection();
+    if (!sel || !sel.rangeCount || !sel.isCollapsed) return;
+    const range = sel.getRangeAt(0);
+    const line = findNotesLine(range.startContainer, bodyEl);
+    if (!line || line.tagName === "LI") return; // already a bullet -- a plain space there is just a space
+
+    const preRange = document.createRange();
+    preRange.setStart(line, 0);
+    preRange.setEnd(range.startContainer, range.startOffset);
+    if (preRange.toString() !== "-" || line.textContent !== "-") return;
+
+    e.preventDefault();
+    const li = bulletifyLine(line);
+    placeCaretAtStart(li);
+    markNotesEdited(bodyEl);
+    return;
+  }
 });
 
 // Renaming a report: the title span (the part after the course/class
@@ -7510,7 +7670,6 @@ function renderEmailList(){
             ${dateLabel ? `<span>${escapeHtml(dateLabel)}</span>` : ""}
             ${msg.done ? `<span>Done</span>` : ""}
           </div>
-          ${msg.assignmentSnippet ? `<div class="email-snippet">${escapeHtml(msg.assignmentSnippet)}</div>` : ""}
         </div>
         <div class="doc-card-actions">
           ${emailDocumentButtonsHtml(msg.documentIds)}
@@ -8051,10 +8210,10 @@ async function markEmailDone(id, done){
 // list when clicked, without re-fetching anything.
 let lastEmailSyncResult = null;
 
-// Builds the "Synced: N new emails, N assignments, ..." status line as
-// individual clickable spans instead of one plain-text string -- each count
-// above zero opens emailSyncResultOverlay listing exactly what it refers to
-// (see openEmailSyncResultPopup); a zero count gets .disabled instead (no
+// Builds the "Synced: N new emails, ..." status line as individual clickable
+// spans instead of one plain-text string -- each count above zero opens
+// emailSyncResultOverlay listing exactly what it refers to (see
+// openEmailSyncResultPopup); a zero count gets .disabled instead (no
 // listener, nothing to show).
 function renderEmailSyncStatus(data){
   const statusEl = document.getElementById("emailStatus");
@@ -8068,7 +8227,6 @@ function renderEmailSyncStatus(data){
 
   statusEl.innerHTML =
     `Synced: ${stat("emails", data.added, "new email")}, ` +
-    `${stat("assignments", data.assignmentsFound, "assignment")}, ` +
     `${stat("documents", data.documentsDownloaded, "document downloaded", "documents downloaded")}, ` +
     `${stat("events", data.eventsFound || 0, "calendar event found", "calendar events found")}` +
     (data.reclassified ? `, ${data.reclassified} email${data.reclassified === 1 ? "" : "s"} recategorized` : "") +
@@ -8097,11 +8255,9 @@ function openEmailSyncResultPopup(kind){
     body.appendChild(div);
   }
 
-  if (kind === "emails" || kind === "assignments"){
-    const messages = kind === "assignments"
-      ? (data.newMessages || []).filter(m => m.isAssignment)
-      : (data.newMessages || []);
-    title.textContent = kind === "assignments" ? "New assignments" : "New emails";
+  if (kind === "emails"){
+    const messages = data.newMessages || [];
+    title.textContent = "New emails";
     if (!messages.length){ emptyRow("Nothing new this sync."); }
     messages.forEach(msg => {
       const row = document.createElement("div");
@@ -8109,8 +8265,7 @@ function openEmailSyncResultPopup(kind){
       const dateLabel = msg.date ? new Date(msg.date).toLocaleString() : "";
       row.innerHTML =
         `<div class="sync-result-row-title">${escapeHtml(msg.subject || "(no subject)")}</div>` +
-        `<div class="sync-result-row-meta"><span>${escapeHtml(msg.from || "")}</span>${dateLabel ? `<span>${escapeHtml(dateLabel)}</span>` : ""}</div>` +
-        (msg.assignmentSnippet ? `<div class="sync-result-row-snippet">${escapeHtml(msg.assignmentSnippet)}</div>` : "");
+        `<div class="sync-result-row-meta"><span>${escapeHtml(msg.from || "")}</span>${dateLabel ? `<span>${escapeHtml(dateLabel)}</span>` : ""}</div>`;
       row.addEventListener("click", () => { closeEmailSyncResultPopup(); openEmailView(msg); });
       body.appendChild(row);
     });

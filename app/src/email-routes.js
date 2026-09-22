@@ -2,10 +2,9 @@
 //
 // Syncs a configurable folder (see EMAIL_FOLDER / Settings) of a personal
 // mailbox that the user has set up to auto-forward their school email into,
-// downloads any course document
+// and downloads any course document
 // attachments into documents/<course>/ (reusing the exact same
-// save/extract/index pipeline canvas-routes.js uses for Canvas imports), and
-// flags messages that look like they describe an assignment.
+// save/extract/index pipeline canvas-routes.js uses for Canvas imports).
 //
 // Talks to Microsoft Graph's REST API rather than IMAP -- IMAP with a plain
 // app password turned out to be rejected outright by this account
@@ -154,7 +153,6 @@ async function buildPlanContext(message, userId){
     `Subject: ${message.subject}`,
     `From: ${message.from}`,
     message.date ? `Received: ${message.date}` : "",
-    message.assignmentSnippet ? `Flagged sentence: "${message.assignmentSnippet}"` : "",
     `Full email body:\n${message.body || ""}`,
     attachmentText ? `Downloaded attachment text:\n\n${attachmentText}` : "(No attachments were downloaded from this email.)"
   ].filter(Boolean).join("\n\n");
@@ -211,14 +209,6 @@ async function generateAndStorePlan(userId, id){
 // terminal window -- see agent-runtime.js/agent-store.js for the run
 // lifecycle and agent-routes.js for how the Agent tab polls it.
 
-// Keyword heuristics for "this email describes something to do", in the
-// same spirit as the classifyCivProReading/classifyLssAssignment functions
-// in lawgpt.html -- fast, free, no per-email API call. Checked against
-// subject+body together; the snippet returned is the first sentence that
-// actually matched, so the UI can show *why* something was flagged instead
-// of just a bare yes/no.
-const ASSIGNMENT_KEYWORDS = /\b(due|assignment|practice problem|distributed|submit|homework|deadline|exercise)\b/i;
-
 // Outlook's junk-mail filtering runs before inbox rules do, so a message
 // that should have been moved into the Forwarded folder by the user's rule
 // can get diverted into Junk Email first and never reach that rule at all
@@ -262,22 +252,6 @@ function matchCourseFolderFromRecipients(toRecipients){
     if (match.test(addresses)) return folder;
   }
   return null;
-}
-
-function classifyEmailAssignment(subject, text){
-  const combined = `${subject || ""}\n${text || ""}`;
-  if (!ASSIGNMENT_KEYWORDS.test(combined)) {
-    return { isAssignment: false, snippet: null };
-  }
-
-  // Best-effort: split on sentence-ish boundaries and surface the first one
-  // that actually contains a matched keyword, so the card shows relevant
-  // context rather than the whole email body.
-  const sentences = combined.split(/(?<=[.!?])\s+|\n+/).map(s => s.trim()).filter(Boolean);
-  const hit = sentences.find(s => ASSIGNMENT_KEYWORDS.test(s));
-  const snippet = (hit || subject || "").slice(0, 300);
-
-  return { isAssignment: true, snippet };
 }
 
 async function graphGet(accessToken, url, extraHeaders){
@@ -438,7 +412,6 @@ router.post("/sync", async (req, res) => {
     const newMessages = [];
     const newCalendarEvents = [];
     const newDocuments = [];
-    let assignmentsFound = 0;
     let documentsDownloaded = 0;
 
     for (const msg of rawMessages) {
@@ -447,8 +420,6 @@ router.post("/sync", async (req, res) => {
       const combinedText = `${subject}\n${bodyText}`;
 
       const courseFolder = matchCourseFolderFromRecipients(msg.toRecipients) || matchCourseFolder(combinedText) || "uncategorized";
-      const { isAssignment, snippet: assignmentSnippet } = classifyEmailAssignment(subject, bodyText);
-      if (isAssignment) assignmentsFound++;
 
       const documentIds = [];
       if (msg.hasAttachments) {
@@ -546,8 +517,6 @@ router.post("/sync", async (req, res) => {
         date: msg.receivedDateTime || null,
         body: bodyText.slice(0, MAX_BODY_CHARS),
         courseFolder,
-        isAssignment,
-        assignmentSnippet,
         documentIds,
         calendarChecked,
         done: false,
@@ -566,23 +535,20 @@ router.post("/sync", async (req, res) => {
 
     // Plans are only drafted when the user actually asks for one -- via the
     // Email tab's "Generate plan" button (POST /messages/:id/plan below) --
-    // not automatically for every assignment-flagged email a sync turns up.
-    // A keyword match alone (see classifyEmailAssignment) is a loose enough
-    // signal that plenty of flagged emails aren't real assignments at all;
-    // generating a plan for all of them unasked meant OpenAI calls (and a
-    // plausible-looking but sometimes fabricated plan) for emails the user
-    // never intended to act on.
+    // never automatically at sync time. Generating a plan for every synced
+    // email unasked meant OpenAI calls (and a plausible-looking but
+    // sometimes fabricated plan) for emails the user never intended to act
+    // on.
     res.json({
       added: newMessages.length,
-      assignmentsFound,
       documentsDownloaded,
       eventsFound: newCalendarEvents.length,
       reclassified,
       messages: await emailStore.getAll(userId),
       // Full records behind each count above, so the Email tab's sync-result
-      // popups ("3 new emails", "1 assignment", "0 documents downloaded", "1
-      // calendar event found") have something to actually list when clicked,
-      // instead of just the bare number.
+      // popups ("3 new emails", "0 documents downloaded", "1 calendar event
+      // found") have something to actually list when clicked, instead of
+      // just the bare number.
       newMessages,
       newDocuments,
       newCalendarEvents
@@ -703,7 +669,6 @@ router.post("/messages/:id/agent/run", async (req, res) => {
 });
 
 module.exports = router;
-// Attached so these can be unit-tested directly without a live Graph
+// Attached so this can be unit-tested directly without a live Graph
 // connection.
-module.exports.classifyEmailAssignment = classifyEmailAssignment;
 module.exports.matchCourseFolderFromRecipients = matchCourseFolderFromRecipients;

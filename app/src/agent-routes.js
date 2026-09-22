@@ -79,7 +79,36 @@ router.get("/runs/:id", async (req, res) => {
       result: live.result
     });
   }
-  const run = await agentStore.getRun(userId, req.params.id);
+  let run = await agentStore.getRun(userId, req.params.id);
+  if (!run) {
+    // Not a run this app ever tracked -- but it might still be a real
+    // Claude Code session id that some other part of the app (calendar
+    // extraction, a Notes report, ...) spawned with its own --session-id
+    // and never registered here (see agent-runtime.js's loadExternalSession
+    // for why those still have a real transcript on disk). The "Open in
+    // agent tab" button on the Claude session popup (see lawgpt.html's
+    // showClaudeSessionPopup) relies on exactly this fallback to make any
+    // session id openable, not just ones started from the Agent tab itself.
+    // Adopting it into agent-store here (rather than just returning it
+    // ad-hoc) means it behaves like any other run from now on -- reopening
+    // it is an ordinary getRun, and a follow-up message is an ordinary
+    // continueRun.
+    const external = await agentRuntime.loadExternalSession(req.params.id);
+    if (external) {
+      run = await agentStore.createRun(userId, {
+        id: req.params.id,
+        title: external.title || "Claude Code session",
+        prompt: "",
+        source: "external"
+      });
+      run = await agentStore.updateRun(userId, req.params.id, {
+        output: external.output,
+        result: external.result,
+        status: "done",
+        cwd: external.cwd || null
+      });
+    }
+  }
   if (!run) return res.status(404).json({ error: { message: "Run not found." } });
   res.json(run);
 });
@@ -112,7 +141,11 @@ router.post("/runs/:id/message", async (req, res) => {
   if (live && live.status === "running") {
     return res.status(409).json({ error: { message: "This run is still working on the previous message -- wait for it to finish first." } });
   }
-  agentRuntime.continueRun(userId, req.params.id, String(message).trim(), REPO_ROOT);
+  // An adopted external session (see GET /runs/:id above) was spawned from
+  // whatever cwd it originally ran in, not necessarily REPO_ROOT -- Claude
+  // Code scopes --resume by project directory, so resuming from the wrong
+  // one would fail to find it.
+  agentRuntime.continueRun(userId, req.params.id, String(message).trim(), run.cwd || REPO_ROOT);
   res.json({ ok: true });
 });
 
@@ -135,10 +168,10 @@ function commandExists(cmd){
 // requireLocalhost below, sidesteps that: it only ever runs when the
 // request came from the same machine the server itself is on, which is
 // exactly the case where a terminal window can actually appear.
-function buildResumeScript(runId){
+function buildResumeScript(runId, cwd){
   if (process.platform === "win32") {
     const scriptPath = path.join(os.tmpdir(), `lawgpt-agent-resume-${Date.now()}.ps1`);
-    const escapedRepo = REPO_ROOT.replace(/'/g, "''");
+    const escapedRepo = cwd.replace(/'/g, "''");
     fs.writeFileSync(scriptPath,
       `Set-Location -LiteralPath '${escapedRepo}'\n` +
       `claude --resume ${runId}\n`
@@ -148,7 +181,7 @@ function buildResumeScript(runId){
   const scriptPath = path.join(os.tmpdir(), `lawgpt-agent-resume-${Date.now()}-${Math.random().toString(36).slice(2)}.sh`);
   fs.writeFileSync(scriptPath,
     `#!/bin/sh\n` +
-    `cd "${REPO_ROOT}"\n` +
+    `cd "${cwd}"\n` +
     `claude --resume ${runId}\n` +
     `echo\n` +
     `echo "[session closed -- press Enter to close this window]"\n` +
@@ -161,7 +194,7 @@ function buildResumeScript(runId){
 // Picks the first available terminal emulator for this OS -- same fallback
 // chain the old pre-EC2 design used (Tilix first on Linux, since that's what
 // a desktop dev box around here actually has installed).
-function pickTerminalLauncher(scriptPath){
+function pickTerminalLauncher(scriptPath, cwd){
   if (process.platform === "darwin") {
     const appleScript = `tell application "Terminal" to do script "${scriptPath.replace(/"/g, '\\"')}"`;
     return { cmd: "osascript", args: ["-e", appleScript] };
@@ -171,10 +204,10 @@ function pickTerminalLauncher(scriptPath){
     return { cmd: "powershell.exe", args: ["-NoExit", "-File", scriptPath] };
   }
   const linuxCandidates = [
-    { cmd: "tilix", args: ["-w", REPO_ROOT, "-e", scriptPath] },
-    { cmd: "gnome-terminal", args: ["--working-directory=" + REPO_ROOT, "--", scriptPath] },
-    { cmd: "konsole", args: ["--workdir", REPO_ROOT, "-e", scriptPath] },
-    { cmd: "xfce4-terminal", args: ["--working-directory=" + REPO_ROOT, "-e", scriptPath] },
+    { cmd: "tilix", args: ["-w", cwd, "-e", scriptPath] },
+    { cmd: "gnome-terminal", args: ["--working-directory=" + cwd, "--", scriptPath] },
+    { cmd: "konsole", args: ["--workdir", cwd, "-e", scriptPath] },
+    { cmd: "xfce4-terminal", args: ["--working-directory=" + cwd, "-e", scriptPath] },
     { cmd: "x-terminal-emulator", args: ["-e", scriptPath] },
     { cmd: "xterm", args: ["-e", scriptPath] }
   ];
@@ -186,15 +219,19 @@ router.post("/runs/:id/open-terminal", requireLocalhost, async (req, res) => {
   const run = await agentStore.getRun(userId, req.params.id);
   if (!run) return res.status(404).json({ error: { message: "Run not found." } });
 
-  const scriptPath = buildResumeScript(run.id);
-  const terminal = pickTerminalLauncher(scriptPath);
+  // An adopted external session (see GET /runs/:id) carries the cwd it was
+  // actually spawned from -- resuming from REPO_ROOT would silently fail to
+  // find a session that was never created there.
+  const cwd = run.cwd || REPO_ROOT;
+  const scriptPath = buildResumeScript(run.id, cwd);
+  const terminal = pickTerminalLauncher(scriptPath, cwd);
   if (!terminal) {
     return res.status(500).json({
       error: { message: "No terminal emulator found on this system (tried tilix, gnome-terminal, konsole, xfce4-terminal, x-terminal-emulator, xterm)." }
     });
   }
   try {
-    const child = spawn(terminal.cmd, terminal.args, { cwd: REPO_ROOT, detached: true, stdio: "ignore" });
+    const child = spawn(terminal.cmd, terminal.args, { cwd, detached: true, stdio: "ignore" });
     child.unref();
   } catch (err) {
     return res.status(500).json({ error: { message: `Couldn't open a terminal (${terminal.cmd}): ${err.message}` } });

@@ -23,6 +23,9 @@
 // up again next time the account signs in, same as email/notes state.
 
 const { spawn } = require("child_process");
+const fs = require("fs");
+const os = require("os");
+const path = require("path");
 const agentStore = require("./agent-store");
 
 const liveRuns = new Map(); // runId -> { userId, output, result, status, child }
@@ -102,6 +105,99 @@ function handleStreamEvent(entry, evt){
     // in the terminal panel too rather than leaving it blank.
     if (!entry.output.trim() && entry.result) entry.output = entry.result;
   }
+}
+
+// Finds the on-disk transcript for a Claude Code session id that this app
+// never itself tracked as an agent run -- e.g. one calendar-extract.js or
+// the Notes tab's /api/chat spawned with its own --session-id, outside
+// agent-runtime.js entirely (see those callers' own comments on why: each
+// is a one-shot `claude -p` call, not a long-lived Agent-tab-style run).
+// Those still write a normal, real session transcript to disk -- Claude
+// Code itself does that regardless of who spawned it -- just under
+// ~/.claude/projects/<encoded-cwd>/<session-id>.jsonl, keyed by whatever cwd
+// that particular spawn() call used. Rather than assume any one cwd (this
+// app spawns Claude from more than one: see REPO_ROOT in agent-routes.js vs
+// the server process's own cwd in calendar-extract.js), this just checks
+// every project directory for a file with this session's name.
+function findSessionTranscriptPath(sessionId){
+  const projectsDir = path.join(os.homedir(), ".claude", "projects");
+  let dirs;
+  try { dirs = fs.readdirSync(projectsDir); } catch (err) { return null; }
+  for (const dir of dirs) {
+    const candidate = path.join(projectsDir, dir, `${sessionId}.jsonl`);
+    if (fs.existsSync(candidate)) return candidate;
+  }
+  return null;
+}
+
+// A project directory's name is just its real absolute path with every "/"
+// swapped for "-" (see findSessionTranscriptPath) -- reversing that swap
+// recovers the cwd a session was originally spawned from, which a follow-up
+// `claude --resume` needs to pass as its own cwd (sessions are scoped per
+// project directory; resuming from the wrong one fails to find it). Falls
+// back to null (letting the caller default to REPO_ROOT) if the reversed
+// path doesn't actually exist, rather than trusting a guess blindly.
+function cwdFromProjectDirName(dirName){
+  const guess = dirName.replace(/-/g, "/");
+  try { return fs.statSync(guess).isDirectory() ? guess : null; } catch (err) { return null; }
+}
+
+// Reads a session transcript file (JSON Lines, one persisted message per
+// line -- the same shape stream-json events have, since both come from the
+// same underlying Agent SDK) and reduces it to the same {output, result}
+// shape handleStreamEvent builds live, so an adopted session renders in the
+// Agent tab's terminal/output panels exactly like a run this app started
+// itself. Returns null if no transcript for this session id exists on disk
+// at all (a session id that was never real, or whose transcript has since
+// been pruned).
+async function loadExternalSession(sessionId){
+  const transcriptPath = findSessionTranscriptPath(sessionId);
+  if (!transcriptPath) return null;
+
+  const raw = fs.readFileSync(transcriptPath, "utf8");
+  let output = "", result = "", title = null;
+
+  for (const line of raw.split("\n")) {
+    if (!line.trim()) continue;
+    let evt;
+    try { evt = JSON.parse(line); } catch (err) { continue; }
+    if (!evt || typeof evt !== "object") continue;
+
+    if (evt.type === "ai-title" && evt.aiTitle && !title) {
+      title = evt.aiTitle;
+    } else if (evt.type === "user" && evt.message) {
+      const content = evt.message.content;
+      if (typeof content === "string") {
+        output += `> ${content}\n\n`;
+      } else if (Array.isArray(content)) {
+        for (const block of content) {
+          if (block && block.type === "tool_result") {
+            const text = toolResultText(block.content);
+            if (text) output += indentBlock(text) + "\n";
+          }
+        }
+      }
+    } else if (evt.type === "assistant" && evt.message && Array.isArray(evt.message.content)) {
+      let msgText = "";
+      for (const block of evt.message.content) {
+        if (!block) continue;
+        if (block.type === "text" && block.text) {
+          output += block.text;
+          msgText += block.text;
+        } else if (block.type === "tool_use") {
+          output += `\n\n$ ${block.name || "tool"}${formatToolInput(block.input)}\n`;
+        }
+      }
+      if (msgText.trim()) result = msgText;
+    }
+  }
+
+  return {
+    output,
+    result,
+    title,
+    cwd: cwdFromProjectDirName(path.basename(path.dirname(transcriptPath)))
+  };
 }
 
 // Shared by startRun and continueRun below -- everything from spawning the
@@ -254,4 +350,4 @@ function killRun(runId){
   liveRuns.delete(runId);
 }
 
-module.exports = { startRun, continueRun, getLiveRun, killRun };
+module.exports = { startRun, continueRun, getLiveRun, killRun, loadExternalSession };
