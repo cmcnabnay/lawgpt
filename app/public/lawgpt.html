@@ -2122,6 +2122,34 @@ pre code {
   cursor:pointer;
 }
 .agent-resume-terminal-btn:hover{ border-color:var(--brass-dim); color:var(--brass); }
+.agent-sidebar-head{
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  padding-right:12px;
+}
+.agent-new-chat-btn{
+  flex:0 0 auto;
+  margin-bottom:6px;
+  font-size:11px;
+  padding:3px 9px;
+  background:none;
+  border:1px solid var(--hairline);
+  border-radius:var(--radius);
+  color:var(--text-muted);
+  cursor:pointer;
+}
+.agent-new-chat-btn:hover{ border-color:var(--brass-dim); color:var(--brass); }
+.agent-new-chat-intro{
+  flex:1;
+  min-height:0;
+  overflow-y:auto;
+  max-width:620px;
+  font-size:13px;
+  line-height:1.65;
+  color:var(--text-muted);
+}
+.agent-new-chat-intro p{ margin:0 0 10px; }
 .agent-followup-row{
   flex:0 0 auto;
   margin-top:12px;
@@ -3560,16 +3588,23 @@ pre code {
 
     <div class="agent-view" id="agentView" style="display:none;">
       <aside class="notes-sidebar" id="agentSidebar">
-        <div class="notes-sidebar-label">Agent runs</div>
-        <div class="notes-sidebar-empty" id="agentSidebarEmpty">No runs yet. Use "Send to agent" on an email plan in the Email tab.</div>
+        <div class="agent-sidebar-head">
+          <div class="notes-sidebar-label">Agent runs</div>
+          <button type="button" class="agent-new-chat-btn" id="agentNewChatBtn" title="Start a new conversation with the agent">+ New chat</button>
+        </div>
+        <div class="notes-sidebar-empty" id="agentSidebarEmpty">No runs yet. Start a chat on the right, or use "Send to agent" on an email plan in the Email tab.</div>
         <div class="notes-sidebar-list" id="agentSidebarList"></div>
       </aside>
       <div class="agent-main">
-        <div class="documents-title" id="agentRunTitle">Select a run</div>
+        <div class="documents-title" id="agentRunTitle">New chat</div>
         <div class="agent-run-status" id="agentRunStatus"></div>
         <div class="agent-resume-row" id="agentResumeHint" style="display:none;">
           <span class="agent-resume-hint" id="agentResumeHintText"></span>
           <button type="button" class="agent-resume-terminal-btn" id="agentOpenTerminalBtn" title="Resume this session in a terminal window on this machine (only works when lawgpt is running on your own computer)">Resume in Terminal</button>
+        </div>
+        <div class="agent-new-chat-intro" id="agentNewChatIntro" style="display:none;">
+          <p>Ask the agent anything. It runs as a Claude Code session in this repository, so it can read your course documents and notes, search, and write files.</p>
+          <p>Each chat is saved in the sidebar, and you can keep the conversation going with follow-up messages once it answers.</p>
         </div>
         <div class="agent-panels" id="agentPanels">
           <div class="agent-panel" id="agentTerminalPanel">
@@ -5209,6 +5244,7 @@ function setView(view){
   } else if (view === "agent"){
     agentView.style.display = "flex";
     tabAgent.classList.add("active");
+    if (!activeAgentRunId) showAgentNewChat();
     refreshAgentRuns();
   } else if (view === "notes"){
     notesView.style.display = "flex";
@@ -7955,28 +7991,50 @@ async function deleteAgentRun(id){
     const data = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error((data && data.error && data.error.message) || "Delete failed.");
     agentRunsCache = agentRunsCache.filter(r => String(r.id) !== String(id));
-    if (String(activeAgentRunId) === String(id)) {
-      activeAgentRunId = null;
-      if (agentPollTimer) { clearTimeout(agentPollTimer); agentPollTimer = null; }
-      document.getElementById("agentRunTitle").textContent = "Select a run";
-      document.getElementById("agentRunStatus").textContent = "";
-      document.getElementById("agentRunStatus").className = "agent-run-status";
-      document.getElementById("agentResumeHint").style.display = "none";
-      document.getElementById("agentTerminalOutput").textContent = "";
-      document.getElementById("agentOutputBody").innerHTML = "";
-      document.getElementById("agentFollowupRow").style.display = "none";
-      document.getElementById("agentFollowupInput").value = "";
-      currentAgentRun = null;
-      document.getElementById("agentSendToEditorBtn").disabled = true;
-      activeAgentRunStatus = null;
-      agentTerminalExpanded = false;
-      applyAgentPanelLayout(null);
-    }
+    if (String(activeAgentRunId) === String(id)) showAgentNewChat();
     renderAgentSidebar();
   } catch(e){
     alert("Couldn't delete this agent run: " + e.message);
   }
 }
+
+// The Agent tab's default state (nothing selected in the sidebar): hides
+// the terminal/output panels and shows the chatbox on its own, so a message
+// typed there starts a brand-new run (POST /api/agent/run) rather than
+// continuing one -- see sendAgentFollowup. Also what deleting the open run
+// or clicking "+ New chat" falls back to.
+function showAgentNewChat(){
+  activeAgentRunId = null;
+  if (agentPollTimer) { clearTimeout(agentPollTimer); agentPollTimer = null; }
+  document.getElementById("agentRunTitle").textContent = "New chat";
+  document.getElementById("agentRunStatus").textContent = "";
+  document.getElementById("agentRunStatus").className = "agent-run-status";
+  document.getElementById("agentResumeHint").style.display = "none";
+  document.getElementById("agentTerminalOutput").textContent = "";
+  document.getElementById("agentOutputBody").innerHTML = "";
+  document.getElementById("agentPanels").style.display = "none";
+  document.getElementById("agentNewChatIntro").style.display = "block";
+  const input = document.getElementById("agentFollowupInput");
+  const sendBtn = document.getElementById("agentFollowupSendBtn");
+  document.getElementById("agentFollowupRow").style.display = "flex";
+  input.value = "";
+  autoGrow(input);
+  input.disabled = false;
+  input.placeholder = "Message the agent to start a new session…";
+  sendBtn.disabled = false;
+  sendBtn.textContent = "Send";
+  currentAgentRun = null;
+  document.getElementById("agentSendToEditorBtn").disabled = true;
+  activeAgentRunStatus = null;
+  agentTerminalExpanded = false;
+  applyAgentPanelLayout(null);
+  renderAgentSidebar();
+}
+
+document.getElementById("agentNewChatBtn").addEventListener("click", () => {
+  showAgentNewChat();
+  document.getElementById("agentFollowupInput").focus();
+});
 
 function agentStatusLabel(status){
   if (status === "running") return "Running";
@@ -8008,6 +8066,9 @@ async function openAgentRun(id){
   bodyEl.innerHTML = "";
   document.getElementById("agentFollowupRow").style.display = "none";
   document.getElementById("agentFollowupInput").value = "";
+  document.getElementById("agentFollowupInput").placeholder = "Send a follow-up message to this agent session…";
+  document.getElementById("agentNewChatIntro").style.display = "none";
+  document.getElementById("agentPanels").style.display = "";
   currentAgentRun = null;
   document.getElementById("agentSendToEditorBtn").disabled = true;
 
@@ -8119,7 +8180,7 @@ function pollAgentRun(id){
 // backend rejects an overlapping send with a 409.
 async function sendAgentFollowup(){
   const id = activeAgentRunId;
-  if (!id) return;
+  if (!id) return startAgentChat();
   const input = document.getElementById("agentFollowupInput");
   const sendBtn = document.getElementById("agentFollowupSendBtn");
   const message = input.value.trim();
@@ -8159,6 +8220,41 @@ async function sendAgentFollowup(){
     applyAgentPanelLayout("done");
     statusEl.textContent = agentStatusLabel("done");
     statusEl.className = "agent-run-status done";
+  }
+}
+
+// New-chat counterpart to the follow-up path above: the chatbox's first
+// message when no run is open starts a fresh session via POST
+// /api/agent/run, then hands off to openAgentRun so it gets the same
+// terminal/output view and polling as any other run.
+async function startAgentChat(){
+  const input = document.getElementById("agentFollowupInput");
+  const sendBtn = document.getElementById("agentFollowupSendBtn");
+  const message = input.value.trim();
+  if (!message || input.disabled) return;
+
+  input.disabled = true;
+  sendBtn.disabled = true;
+  sendBtn.textContent = "Starting…";
+  const title = message.length > 60 ? message.slice(0, 57).trimEnd() + "…" : message;
+
+  try{
+    const res = await fetch(PROXY_ORIGIN + "/api/agent/run", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ prompt: message, title, source: "chat" })
+    });
+    const run = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error((run && run.error && run.error.message) || "Couldn't start the agent.");
+    input.value = "";
+    autoGrow(input);
+    await openAgentRun(run.id);
+    refreshAgentRuns();
+  } catch(e){
+    alert("Couldn't start the agent: " + e.message);
+    input.disabled = false;
+    sendBtn.disabled = false;
+    sendBtn.textContent = "Send";
   }
 }
 
