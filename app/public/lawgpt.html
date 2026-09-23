@@ -1893,16 +1893,6 @@ pre code {
 }
 .claude-session-copy-btn{ flex:0 0 auto; }
 .claude-session-copy-btn.copied{ color:#8fbf8f; border-color:#8fbf8f; }
-.claude-session-hint{
-  font-size:11.5px;
-  color:var(--text-muted);
-  margin:10px 0 0;
-}
-.claude-session-hint code{
-  font-family:'IBM Plex Mono',monospace;
-  color:var(--text-light);
-  user-select:all;
-}
 .notes-report-source.clickable{ cursor:pointer; }
 .notes-report-source.clickable:hover{ text-decoration:underline; }
 
@@ -2182,6 +2172,10 @@ pre code {
 #agentOutputPanel{ flex:1 1 50%; }
 .agent-panels.state-running #agentTerminalPanel{ flex:1 1 100%; }
 .agent-panels.state-running #agentOutputPanel{ display:none; }
+/* A follow-up in flight still shows the earlier conversation below the
+   live terminal rather than hiding it. */
+.agent-panels.state-running.has-history #agentTerminalPanel{ flex:1 1 40%; }
+.agent-panels.state-running.has-history #agentOutputPanel{ display:flex; flex:1 1 60%; }
 .agent-panels.state-collapsed #agentTerminalPanel{ flex:0 0 auto; }
 .agent-panels.state-collapsed #agentTerminalOutput{ display:none; }
 .agent-panels.state-collapsed #agentOutputPanel{ flex:1 1 100%; }
@@ -2243,6 +2237,24 @@ pre code {
   padding:14px 16px;
   overflow-y:auto;
 }
+.agent-turn-user{
+  margin:0 0 12px auto;
+  max-width:80%;
+  width:fit-content;
+  max-height:220px;
+  overflow-y:auto;
+  background:var(--ink);
+  border:1px solid var(--hairline);
+  border-radius:var(--radius);
+  padding:8px 12px;
+  font-size:13px;
+  white-space:pre-wrap;
+  word-break:break-word;
+  color:var(--text-light);
+}
+.agent-turn-reply{ margin:0 0 20px; }
+.agent-turn-reply:last-child{ margin-bottom:0; }
+.agent-turn-pending{ color:var(--text-muted); }
 .agent-output-body:empty::before{
   content:"(no output yet)";
   color:var(--text-muted);
@@ -3575,10 +3587,9 @@ pre code {
         <h2>Claude Code session</h2>
         <p class="claude-session-context" id="claudeSessionContext"></p>
         <div class="claude-session-box">
-          <div class="claude-session-id" id="claudeSessionIdText"></div>
+          <div class="claude-session-id" id="claudeSessionResumeCmd"></div>
           <button type="button" class="btn-secondary claude-session-copy-btn" id="claudeSessionCopyBtn">Copy</button>
         </div>
-        <p class="claude-session-hint">Resume it from SSH: <code id="claudeSessionResumeCmd"></code></p>
         <div class="settings-actions">
           <button type="button" class="btn-secondary" id="claudeSessionOpenAgentBtn">Open in agent tab</button>
           <button type="button" id="claudeSessionCloseBtn">Close</button>
@@ -4045,10 +4056,18 @@ function applyChatProviderToModelSelect(){
   // admin's saved matter picked it and a non-admin later opens the same
   // account), this falls through and the browser defaults to the first
   // option instead.
-  if (previousValue && Array.from(modelSelect.options).some(o => o.value === previousValue)) {
+  //
+  // Admins default to Claude Code until they pick something else by hand
+  // (modelPickedByUser, set by the "change" listener below), so signing in
+  // as admin selects it without overriding a deliberate choice.
+  if (isAdminUser && !modelPickedByUser) {
+    modelSelect.value = CLAUDE_CODE_MODEL_ID;
+  } else if (previousValue && Array.from(modelSelect.options).some(o => o.value === previousValue)) {
     modelSelect.value = previousValue;
   }
 }
+let modelPickedByUser = false;
+modelSelect.addEventListener("change", () => { modelPickedByUser = true; });
 
 async function refreshChatProvider(){
   try{
@@ -6218,18 +6237,21 @@ function describeAgentDocumentSource(documentIds){
   return { matched: true, label: "Sent to the agent: " + titles.join(", ") };
 }
 
-// Popup showing a Claude Code session's UUID + a `claude --resume` line, with
+// Popup showing a Claude Code session's `claude --resume <uuid>` line, with
 // a copy button -- opened from the Notes tab's "Attached to Claude Code"
 // label (see renderReportPanel below) and reused by the Email tab's sync-
 // result popup for a calendar event's source session (see
 // renderEmailSyncResultPopup). contextText is one short sentence explaining
-// what this particular session produced.
+// what this particular session produced. agentTitle is what the session is
+// named in the Agent tab if "Open in agent tab" is clicked (e.g. "Celotex
+// Corp. v. Catrett - Claude Code").
 let claudeSessionPopupId = null;
-function showClaudeSessionPopup(sessionId, contextText){
+let claudeSessionPopupTitle = null;
+function showClaudeSessionPopup(sessionId, contextText, agentTitle){
   if (!sessionId) return;
   claudeSessionPopupId = sessionId;
+  claudeSessionPopupTitle = agentTitle || null;
   document.getElementById("claudeSessionContext").textContent = contextText || "";
-  document.getElementById("claudeSessionIdText").textContent = sessionId;
   document.getElementById("claudeSessionResumeCmd").textContent = `claude --resume ${sessionId}`;
   const copyBtn = document.getElementById("claudeSessionCopyBtn");
   copyBtn.textContent = "Copy";
@@ -6268,7 +6290,7 @@ document.getElementById("claudeSessionCopyBtn").addEventListener("click", async 
     btn.textContent = "Copied";
     btn.classList.add("copied");
   } else {
-    // Both copy paths failed -- the resume command text itself is
+    // Both copy paths failed -- the resume command box itself is
     // user-select:all, so selecting it by hand still works.
     btn.textContent = "Couldn't copy — select it";
   }
@@ -6282,9 +6304,25 @@ document.getElementById("claudeSessionCopyBtn").addEventListener("click", async 
 // it's opened this way.
 document.getElementById("claudeSessionOpenAgentBtn").addEventListener("click", async () => {
   if (!claudeSessionPopupId) return;
+  const id = claudeSessionPopupId;
   document.getElementById("claudeSessionOverlay").style.display = "none";
+  // The Email tab opens this popup on top of its sync-result list -- close
+  // that too so the Agent tab isn't left covered by it.
+  closeEmailSyncResultPopup();
   setView("agent");
-  await openAgentRun(claudeSessionPopupId);
+  // Adopts the session if it isn't a tracked run yet, and names it after
+  // whatever opened it (see agent-routes.js's PATCH /runs/:id) -- done
+  // before openAgentRun so the title is right on first render.
+  if (claudeSessionPopupTitle){
+    try{
+      await fetch(PROXY_ORIGIN + "/api/agent/runs/" + encodeURIComponent(id), {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: claudeSessionPopupTitle })
+      });
+    } catch(e){ /* keep going with whatever title it already has */ }
+  }
+  await openAgentRun(id);
   // openAgentRun's own fetch is what actually adopts a not-yet-tracked
   // session into agent-store (see GET /runs/:id) -- refresh the sidebar list
   // again afterward so the newly-adopted entry shows up there too, instead
@@ -6490,7 +6528,7 @@ function renderReportPanel(){
     // Assigned as a property (not addEventListener) so re-renders replace
     // the handler instead of stacking a new one on top each time.
     sourceEl.onclick = claudeSessionId
-      ? () => showClaudeSessionPopup(claudeSessionId, "This report was generated by this Claude Code session.")
+      ? () => showClaudeSessionPopup(claudeSessionId, "This report was generated by this Claude Code session.", (currentReport.title || "Notes") + " - Claude Code")
       : null;
   }
 
@@ -6759,12 +6797,34 @@ function unbulletListItem(liEl){
 // is exactly "-" and the user then types a space -- the familiar
 // Notion/Docs-style "- " markdown shortcut. Reuses an immediately preceding
 // <ul> if there is one instead of starting a second, adjacent one-item list.
+//
+// Also backs the "-" key pressed at the very start of a line (see the
+// keydown handler below): the line keeps its existing text and becomes a
+// bullet at the same level as any list right next to it -- e.g. "-" before
+// "Document: CB pp 335-370" drops it into the "Course"/"Facts" list below as
+// its first item, rather than starting a separate one-item list. When lists
+// sit on both sides, they're merged into one around the new item.
 function bulletifyLine(lineEl){
   const li = document.createElement("li");
-  li.appendChild(document.createElement("br")); // keeps it a real, clickable empty line
+  const hasContent = lineEl.textContent.replace(/\u200b/g, "") !== "-" && lineEl.textContent.trim() !== "";
+  if (hasContent){
+    while (lineEl.firstChild) li.appendChild(lineEl.firstChild);
+  } else {
+    li.appendChild(document.createElement("br")); // keeps it a real, clickable empty line
+  }
   const prev = lineEl.previousElementSibling;
-  if (prev && prev.tagName === "UL"){
-    prev.appendChild(li);
+  const next = lineEl.nextElementSibling;
+  const prevList = prev && prev.tagName === "UL" ? prev : null;
+  const nextList = next && next.tagName === "UL" ? next : null;
+  if (prevList){
+    prevList.appendChild(li);
+    if (nextList){
+      while (nextList.firstChild) prevList.appendChild(nextList.firstChild);
+      nextList.remove();
+    }
+    lineEl.remove();
+  } else if (nextList){
+    nextList.insertBefore(li, nextList.firstChild);
     lineEl.remove();
   } else {
     const ul = document.createElement("ul");
@@ -6821,6 +6881,28 @@ document.getElementById("notesReportBody").addEventListener("keydown", (e) => {
     e.preventDefault();
     const p = unbulletListItem(liEl);
     placeCaretAtStart(p);
+    markNotesEdited(bodyEl);
+    return;
+  }
+
+  // "-" with the caret at the very start of a non-list line bullets that
+  // line in place (see bulletifyLine) instead of typing a dash.
+  if (e.key === "-" && !e.ctrlKey && !e.altKey && !e.metaKey){
+    const sel = window.getSelection();
+    if (!sel || !sel.rangeCount || !sel.isCollapsed) return;
+    const range = sel.getRangeAt(0);
+    const line = findNotesLine(range.startContainer, bodyEl);
+    if (!line || line.tagName === "LI" || line.closest("li, td, th")) return;
+    if (!/^(P|DIV|H[1-6])$/.test(line.tagName)) return;
+
+    const preRange = document.createRange();
+    preRange.setStart(line, 0);
+    preRange.setEnd(range.startContainer, range.startOffset);
+    if (preRange.toString().length !== 0) return;
+
+    e.preventDefault();
+    const li = bulletifyLine(line);
+    placeCaretAtStart(li);
     markNotesEdited(bodyEl);
     return;
   }
@@ -8129,13 +8211,24 @@ function renderAgentRun(run){
   outputEl.textContent = run.output || "(no output yet)";
   if (wasScrolledToBottom) outputEl.scrollTop = outputEl.scrollHeight;
 
-  if (run.result && run.result.trim()) {
-    bodyEl.innerHTML = formatContent(run.result);
-  } else if (run.status === "running") {
-    bodyEl.innerHTML = `<p style="color:var(--text-muted);">Still running -- the deliverable will appear here once the run finishes.</p>`;
-  } else {
-    bodyEl.innerHTML = "";
-  }
+  // The Output panel is the conversation: every message sent into this
+  // session and the agent's final reply to it (agent-runtime.js records
+  // these as run.turns), so earlier answers stay visible while chatting.
+  const turns = agentRunTurns(run);
+  const bodyWasAtBottom = bodyEl.scrollTop + bodyEl.clientHeight >= bodyEl.scrollHeight - 4;
+  bodyEl.innerHTML = turns.map((t, i) => {
+    const isLast = i === turns.length - 1;
+    const reply = t.result && t.result.trim()
+      ? formatContent(t.result)
+      : (isLast && run.status === "running")
+        ? `<p class="agent-turn-pending">Working… the reply will appear here when it's done.</p>`
+        : `<p class="agent-turn-pending">(no reply)</p>`;
+    return (t.prompt ? `<div class="agent-turn-user">${escapeHtml(t.prompt)}</div>` : "") +
+      `<div class="agent-turn-reply">${reply}</div>`;
+  }).join("");
+  if (bodyWasAtBottom || !agentOutputRenderedFor || agentOutputRenderedFor !== run.id) bodyEl.scrollTop = bodyEl.scrollHeight;
+  agentOutputRenderedFor = run.id;
+  document.getElementById("agentPanels").classList.toggle("has-history", turns.length > 1);
 
   // The follow-up box only ever sends into a run that's actually settled --
   // sending a second message while one is still running would race it (see
@@ -8148,6 +8241,15 @@ function renderAgentRun(run){
   followupSendBtn.disabled = busy;
   followupSendBtn.textContent = busy ? "Working…" : "Send";
 }
+
+// Runs saved before agent-runtime.js tracked turns only have one prompt and
+// one result -- treat that as a single exchange.
+function agentRunTurns(run){
+  if (Array.isArray(run.turns) && run.turns.length) return run.turns;
+  if (run.prompt || run.result) return [{ prompt: run.prompt || "", result: run.result || "" }];
+  return [];
+}
+let agentOutputRenderedFor = null;
 
 function pollAgentRun(id){
   if (agentPollTimer) clearTimeout(agentPollTimer);
@@ -8396,7 +8498,7 @@ function openEmailSyncResultPopup(kind){
       if (sessionEl){
         sessionEl.addEventListener("click", (e) => {
           e.stopPropagation();
-          showClaudeSessionPopup(ev.sessionId, `This event was extracted from "${ev.sourceSubject || ev.title || "an email"}" by this Claude Code session.`);
+          showClaudeSessionPopup(ev.sessionId, `This event was extracted from "${ev.sourceSubject || ev.title || "an email"}" by this Claude Code session.`, `${ev.sourceSubject || ev.title || "Email"} - Claude Code`);
         });
       }
       body.appendChild(row);
@@ -9755,7 +9857,7 @@ If the actual quiz questions are NOT attached, or the attached text is too incom
 
 Do not open the response with introductory filler ("Sure!", "Here are your answers", etc.) — start directly with the content. Do not refer to yourself as an AI, a language model, or an assistant.`;
 
-const CIVPRO_SCHEDULE = [{"classLabel": "Class 1", "date": "8/25", "extra": "", "topic": "What Is Civil Procedure?", "readings": [{"text": "Anonymous Physician v. Wininger (please read carefully, take notes, and come to class prepared to discuss the case)", "pages": "Canvas (3 pages)"}, {"text": "Hubbard casebook introduction to the courts and civil procedure (there is no need to memorize this material, the goal of these pages is simply to begin introducing the issues we will cover this semester)", "pages": "3–6; 45–54"}]}, {"classLabel": "Class 2", "date": "8/26", "extra": "", "topic": "Preliminary Relief; Notice", "readings": [{"text": "Winter v. NRDC", "pages": "29–44"}, {"text": "Rule 65", "pages": "104–05"}, {"text": "U.S. Const., Amend. V; Amend. XIV, § 1", "pages": "79"}, {"text": "Mullane v. Central Hanover Bank", "pages": "119–28"}]}, {"classLabel": "Class 3", "date": "8/27", "extra": "", "topic": "Notice", "readings": [{"text": "Greene v. Lindsey", "pages": "130–35"}, {"text": "Jones v. Flowers", "pages": "136–45"}, {"text": "Rule 4", "pages": "154–55"}]}, {"classLabel": "Class 4", "date": "9/1", "extra": "", "topic": "Opportunity to Be Heard", "readings": [{"text": "Fuentes v. Shevin", "pages": "82–95"}, {"text": "Connecticut v. Doehr", "pages": "96–101"}]}, {"classLabel": "Class 5", "date": "9/2", "extra": "", "topic": "Early Pleading Regimes—i.e., How to Begin a Lawsuit", "readings": [{"text": "Noll, A Reader’s Guide to Pre-Modern Procedure (read Noll for background)", "pages": "162–70"}, {"text": "Note on Code Pleading", "pages": "173–74"}, {"text": "Rules 2, 3, 7, and 8", "pages": "175–77"}, {"text": "Dioguardi v. Durning", "pages": "182–84"}, {"text": "Conley v. Gibson", "pages": "186–90"}]}, {"classLabel": "Class 6", "date": "9/3", "extra": "", "topic": "The Twombly and Iqbal Standard", "readings": [{"text": "Bell Atlantic Corp. v. Twombly", "pages": "192–205"}, {"text": "Ashcroft v. Iqbal", "pages": "207–19"}]}, {"classLabel": "Class 7", "date": "9/8", "extra": "", "topic": "Pleading after Twombly and Iqbal", "readings": [{"text": "Johnson v. City of Shelby", "pages": "221–22"}, {"text": "In re Text Messaging Antitrust Litigation", "pages": "224–27"}, {"text": "Swanson v. Citibank", "pages": "228–38"}]}, {"classLabel": "Class 8", "date": "9/9", "extra": "", "topic": "Pleading in the Alternative; Rule 11 Sanctions", "readings": [{"text": "Beyond Plausibility", "pages": "251"}, {"text": "Rule 8(d)", "pages": "252–53"}, {"text": "McCormick v. Kopmann", "pages": "254–58"}, {"text": "Rule 11", "pages": "259–61"}, {"text": "Brown v. Ameriprise Financial Servs., Inc.", "pages": "262–70"}, {"text": "Introductory Note on Heightened Pleading", "pages": "271–72"}, {"text": "Practice Problem 1 will be distributed", "pages": "Canvas/email"}]}, {"classLabel": "Class 9", "date": "9/10", "extra": "", "topic": "Responding to the Complaint; Amendment", "readings": [{"text": "Answer", "pages": "280–81"}, {"text": "Rule 8", "pages": "281–82"}, {"text": "Rule 12", "pages": "283–86"}, {"text": "Bowers v. Mortgage Elec. Registration Systems", "pages": "288–91"}, {"text": "Perez v. Gordon & Wong Law Group", "pages": "292–95"}, {"text": "Rule 15", "pages": "297–98"}, {"text": "Global Tech. & Trading v. Tech Mahindra", "pages": "299–302"}, {"text": "Beeck v. Aquaslide’N’Dive Corp.", "pages": "302–06"}]}, {"classLabel": "Class 10", "date": "9/15", "extra": "", "topic": "The Rules Framework for Discovery", "readings": [{"text": "Rules 26, 30, and 33–37 (read only the Rules)", "pages": "319–46"}, {"text": "Mancia v. Mayflower Textile Servs. Co.", "pages": "348–60"}]}, {"classLabel": "Class 11", "date": "9/16", "extra": "", "topic": "Privilege & Work Product", "readings": [{"text": "SodexoMagic, LLC v. Drexel University", "pages": "385–89"}, {"text": "Uphjohn Co. v. United States", "pages": "390–96"}, {"text": "Hickman v. Taylor", "pages": "398–409"}]}, {"classLabel": "", "date": "9/17", "extra": "", "topic": "No class, but Practice Problem 1 due", "readings": [{"text": "No class on 9/17", "pages": "Submit on Canvas"}, {"text": "Practice Problem 1 is due on Canvas by 9:00pm on 9/17", "pages": ""}]}, {"classLabel": "Class 12", "date": "9/22", "extra": "", "topic": "Privilege & Work Product", "readings": [{"text": "Rule 26(b)", "pages": "411–12"}, {"text": "Rule of Evidence 502", "pages": "431–32"}, {"text": "In re Abilify Products Liability Litig.", "pages": "419–29"}, {"text": "Note on Privilege Logs, Redaction, and the Crime-Fraud Exception", "pages": "433–36"}]}, {"classLabel": "Class 13", "date": "9/23", "extra": "", "topic": "Summary Judgment", "readings": [{"text": "Summary Judgement note and Rule 56", "pages": "563–64"}, {"text": "Introductory Note on the Celotex Trilogy", "pages": "578–81"}, {"text": "Introductory Note to Celotex v. Catrett", "pages": "582–83"}, {"text": "Celotex Corp. v. Catrett", "pages": "584–90"}]}, {"classLabel": "Class 14", "date": "9/24", "extra": "", "topic": "Summary Judgment; Other Pre-Trial Dispositions", "readings": [{"text": "Scott v. Harris", "pages": "613–21"}, {"text": "Tolan v. Cotton", "pages": "Canvas"}, {"text": "Introductory Note on Default Judgment; Rules 41, 54(c), 55, and 60", "pages": "309–13"}, {"text": "Practice Problem 2 will be distributed", "pages": "Canvas/email"}]}, {"classLabel": "Class 15", "date": "9/29", "extra": "", "topic": "Trial by Jury", "readings": [{"text": "U.S. Constitution Amend. VII; Rules 38 and 39", "pages": "474–77"}, {"text": "Curtis v. Loether", "pages": "480–84"}, {"text": "Chauffeurs, Teamsters, and Helpers v. Terry", "pages": "484–91"}, {"text": "Colgrove v. Battin", "pages": "511–18"}, {"text": "Rule 48", "pages": "521–22"}, {"text": "Rule 47 and 28 U.S.C. § 1870", "pages": "536–37"}]}, {"classLabel": "Class 16", "date": "9/30", "extra": "Part 1", "topic": "Taking the Case from the Jury", "readings": [{"text": "Rule 50", "pages": "627–28"}, {"text": "Rule 59", "pages": "630"}, {"text": "Rule 61", "pages": "634"}, {"text": "Neely v. Martin K. Eby Constr. Co.", "pages": "637–42"}]}, {"classLabel": "Class 16", "date": "9/30", "extra": "Part 2", "topic": "Finality", "readings": [{"text": "28 U.S.C. § 1291", "pages": "669"}, {"text": "Rule 54(b)", "pages": "676"}, {"text": "28 U.S.C. § 1292(a)–(b)", "pages": "677"}, {"text": "Liberty Mut. Ins. Co. v. Wetzel", "pages": "678–82"}]}, {"classLabel": "Class 17", "date": "10/1", "extra": "", "topic": "Collateral Order Doctrine", "readings": [{"text": "Cohen v. Beneficial Indus. Loan Corp.", "pages": "685–87"}, {"text": "Mohawk Industries v. Carpenter", "pages": "688–98"}, {"text": "Microsoft I and Microsoft II", "pages": "701–04"}]}, {"classLabel": "", "date": "10/2", "extra": "", "topic": "7:00pm", "readings": [{"text": "Practice Problem 2 due", "pages": "Canvas"}]}, {"classLabel": "Class 18", "date": "10/6", "extra": "", "topic": "Preclusion", "readings": [{"text": "Res Judicata", "pages": "735–38"}, {"text": "Rose v. Board of Election Commissioners", "pages": "738–42"}, {"text": "Rush v. City of Maple Heights", "pages": "744–51"}, {"text": "Cromwell v. County of Sac", "pages": "754–57"}]}, {"classLabel": "Class 19", "date": "10/7", "extra": "", "topic": "Preclusion; Joinder", "readings": [{"text": "Bernhard v. Bank of America", "pages": "759–63"}, {"text": "Parklane Hosiery Co. v. Shore", "pages": "768–73"}, {"text": "introductory notes on Joinder, Rules 13, 14, 18, 19, 20, 21, and 24", "pages": "712–21"}, {"text": "Breaking Glass Pictures v. Does 1–188", "pages": "729–32"}]}, {"classLabel": "Class 20", "date": "10/8", "extra": "", "topic": "Preclusion & Representation", "readings": [{"text": "Preclusion and Representation", "pages": "775"}, {"text": "Taylor v. Sturgell", "pages": "776–87"}, {"text": "Hansberry v. Lee", "pages": "789–94"}]}, {"classLabel": "Class 21", "date": "10/13", "extra": "", "topic": "Midterm Exam", "readings": [{"text": "The Midterm Exam will cover all material through 10/8. It will contain a mix of multiple choice and essay questions.", "pages": "1:00–2:00pm, in-class"}]}, {"classLabel": "Class 22", "date": "10/14", "extra": "", "topic": "Settlement & ADR", "readings": [{"text": "Settlement and ADR (this is lighter reading, but please do read)", "pages": "1307–20"}, {"text": "Rule 23 (we will begin going over Rule 23 in this class, and continue in the following class)", "pages": "802–10"}]}, {"classLabel": "Class 23", "date": "10/15", "extra": "", "topic": "Class Actions", "readings": [{"text": "In re Whirlpool Corp.", "pages": "812–24"}, {"text": "Wal-Mart Stores v. Dukes", "pages": "830–50"}]}, {"classLabel": "Class 24", "date": "10/20", "extra": "", "topic": "Introduction to Subject Matter Jurisdiction; Diversity Jurisdiction", "readings": [{"text": "U.S. Constitution Article III", "pages": "860–63"}, {"text": "28 U.S.C. §§ 1331, 1332", "pages": "863–64"}, {"text": "Strawbridge v. Curtiss", "pages": "872"}, {"text": "ConnectU LLC v. Zuckerberg", "pages": "877–83"}, {"text": "Ceglia v. Zuckerberg", "pages": "885–89"}]}, {"classLabel": "Class 25", "date": "10/21", "extra": "", "topic": "Diversity Jurisdiction", "readings": [{"text": "Hertz Corp. v. Friend", "pages": "892–900"}, {"text": "Lincoln Benefit Life Co. v. AEI Life, LLC", "pages": "902–10"}, {"text": "A.F.A. Tours v. Whitchurch", "pages": "912–18"}, {"text": "Freeland v. Liberty Mutual Fire Ins. Co.", "pages": "919–22"}]}, {"classLabel": "Class 26", "date": "10/22", "extra": "", "topic": "Federal Question Jurisdiction", "readings": [{"text": "Introductory Note to Osborn, plus all of Osborn v. Bank of the United States", "pages": "925–32"}, {"text": "Lousville & Nashville Railroad Co. v. Mottley", "pages": "934–36"}, {"text": "Gunn v. Minton", "pages": "947–55"}]}, {"classLabel": "Class 27", "date": "10/27", "extra": "", "topic": "Supplemental Jurisdiction", "readings": [{"text": "28 U.S.C. § 1367", "pages": "956–57"}, {"text": "Exxon Mobil v. Allapattah Services", "pages": "962–80"}]}, {"classLabel": "Class 28", "date": "10/28", "extra": "", "topic": "Removal", "readings": [{"text": "28 U.S.C. §§ 1441, 1446, 1447", "pages": "984–90"}, {"text": "St. Paul Mercury Indemnity v. Red Cab Co.", "pages": "992–97"}]}, {"classLabel": "Class 29", "date": "10/29", "extra": "", "topic": "Removal", "readings": [{"text": "Caterpillar Inc. v. Lewis", "pages": "998–1004"}, {"text": "Grupo Dataflux v. Atlas Global Group", "pages": "1005–13"}]}, {"classLabel": "Class 30", "date": "11/3", "extra": "", "topic": "Historical Development of the Doctrine", "readings": [{"text": "Introduction to Personal Jurisdiction", "pages": "1017–19"}, {"text": "Pennoyer v. Neff", "pages": "1019–26"}, {"text": "Hess v. Pawloski", "pages": "1029–31"}, {"text": "International Shoe Co. v. Washington", "pages": "1034–39"}]}, {"classLabel": "Class 31", "date": "11/4", "extra": "", "topic": "Specific Jurisdiction", "readings": [{"text": "Note on Long-Arm Statutes", "pages": "1041–42"}, {"text": "World-Wide Volkswagen Corp. v. Woodson", "pages": "1043–54"}, {"text": "J. McIntyre Machinery, Ltd. V. Nicastro", "pages": "1059–73"}]}, {"classLabel": "Class 32", "date": "11/5", "extra": "", "topic": "Specific & General Jurisdiction", "readings": [{"text": "Walden v. Fiore", "pages": "1082–89"}, {"text": "General Jurisdiction", "pages": "1091–92"}, {"text": "Burnham v. Superior Court of California", "pages": "1092–1104"}, {"text": "Goodyear Dunlop Tires Operations v. Brown", "pages": "1107–12"}]}, {"classLabel": "Class 33", "date": "11/10", "extra": "", "topic": "Specific & General Jurisdiction", "readings": [{"text": "Daimler AG v. Bauman", "pages": "1114–22"}, {"text": "be2 LLC v. Ivanov", "pages": "1123–27"}, {"text": "Mallory v. Norfolk Southern", "pages": "Canvas"}, {"text": "Practice Problem 3 will be distributed", "pages": "Canvas/email"}]}, {"classLabel": "Class 34", "date": "11/11", "extra": "", "topic": "Venue; Transfer", "readings": [{"text": "Venue and Transfer; 28 U.S.C. §§ 1390, 1391", "pages": "1167–69"}, {"text": "Gulf Oil Corp. v. Gilbert", "pages": "1171–77"}, {"text": "28 U.S.C. §§ 1404, 1406", "pages": "1177–78"}, {"text": "Piper Aircraft Co. v. Reyno", "pages": "1180–90"}]}, {"classLabel": "", "date": "", "extra": "", "topic": "", "readings": [{"text": "No class on 11/12", "pages": ""}]}, {"classLabel": "", "date": "11/16", "extra": "", "topic": "7:00pm", "readings": [{"text": "Practice Problem 3 due", "pages": "Canvas"}]}, {"classLabel": "Class 35", "date": "11/17", "extra": "", "topic": "The Erie Problem", "readings": [{"text": "Introductory notes on The Erie Problem; A Brooding Omnipresence", "pages": "1205–09"}, {"text": "Swift v. Tyson", "pages": "1209–13"}, {"text": "Erie Railroad Co. v. Tompkins", "pages": "1214–24"}]}, {"classLabel": "Class 36", "date": "11/18", "extra": "", "topic": "Erie’s Progeny", "readings": [{"text": "An Irrepressible Myth", "pages": "1232–34"}, {"text": "Ruhlin v. New York Life Insurance", "pages": "1235–36"}, {"text": "Sibbach v. Wilson & Co.", "pages": "1248–53"}, {"text": "Rules Enabling Act (28 U.S.C. 2072)", "pages": "1253–54"}, {"text": "Cohen v. Beneficial Indus. Loan Corp.", "pages": "1256–63"}]}, {"classLabel": "Class 37", "date": "11/19", "extra": "", "topic": "Erie’s Progeny", "readings": [{"text": "Hanna v. Plumer", "pages": "1264–73"}, {"text": "Berk v. Choy", "pages": "Canvas"}, {"text": "Postscript on Erie and Horizontal Choice of Law", "pages": "1301–03"}]}, {"classLabel": "Class 38", "date": "11/23", "extra": "", "topic": "Review Session", "readings": [{"text": "Format to be announced in advance", "pages": "No reading for review session"}]}, {"classLabel": "", "date": "11/24", "extra": "", "topic": "", "readings": []}]
+const CIVPRO_SCHEDULE = [{"classLabel": "Class 1", "date": "8/25", "extra": "", "topic": "What Is Civil Procedure?", "readings": [{"text": "Anonymous Physician v. Wininger (please read carefully, take notes, and come to class prepared to discuss the case)", "pages": "Canvas (3 pages)"}, {"text": "Hubbard casebook introduction to the courts and civil procedure (there is no need to memorize this material, the goal of these pages is simply to begin introducing the issues we will cover this semester)", "pages": "3–6; 45–54"}]}, {"classLabel": "Class 2", "date": "8/26", "extra": "", "topic": "Preliminary Relief; Notice", "readings": [{"text": "Winter v. NRDC", "pages": "29–44"}, {"text": "Rule 65", "pages": "104–05"}, {"text": "U.S. Const., Amend. V; Amend. XIV, § 1", "pages": "79"}, {"text": "Mullane v. Central Hanover Bank", "pages": "119–28"}]}, {"classLabel": "Class 3", "date": "8/27", "extra": "", "topic": "Notice", "readings": [{"text": "Greene v. Lindsey", "pages": "130–35"}, {"text": "Jones v. Flowers", "pages": "136–45"}, {"text": "Rule 4", "pages": "154–55"}]}, {"classLabel": "Class 4", "date": "9/1", "extra": "", "topic": "Opportunity to Be Heard", "readings": [{"text": "Fuentes v. Shevin", "pages": "82–95"}, {"text": "Connecticut v. Doehr", "pages": "96–101"}]}, {"classLabel": "Class 5", "date": "9/2", "extra": "", "topic": "Early Pleading Regimes—i.e., How to Begin a Lawsuit", "readings": [{"text": "Noll, A Reader’s Guide to Pre-Modern Procedure (read Noll for background)", "pages": "162–70"}, {"text": "Note on Code Pleading", "pages": "173–74"}, {"text": "Rules 2, 3, 7, and 8", "pages": "175–77"}, {"text": "Dioguardi v. Durning", "pages": "182–84"}, {"text": "Conley v. Gibson", "pages": "186–90"}]}, {"classLabel": "Class 6", "date": "9/3", "extra": "", "topic": "The Twombly and Iqbal Standard", "readings": [{"text": "Bell Atlantic Corp. v. Twombly", "pages": "192–205"}, {"text": "Ashcroft v. Iqbal", "pages": "207–19"}]}, {"classLabel": "Class 7", "date": "9/8", "extra": "", "topic": "Pleading after Twombly and Iqbal", "readings": [{"text": "Johnson v. City of Shelby", "pages": "221–22"}, {"text": "In re Text Messaging Antitrust Litigation", "pages": "224–27"}, {"text": "Swanson v. Citibank", "pages": "228–38"}]}, {"classLabel": "Class 8", "date": "9/9", "extra": "", "topic": "Pleading in the Alternative; Rule 11 Sanctions", "readings": [{"text": "Beyond Plausibility", "pages": "251"}, {"text": "Rule 8(d)", "pages": "252–53"}, {"text": "McCormick v. Kopmann", "pages": "254–58"}, {"text": "Rule 11", "pages": "259–61"}, {"text": "Brown v. Ameriprise Financial Servs., Inc.", "pages": "262–70"}, {"text": "Introductory Note on Heightened Pleading", "pages": "271–72"}, {"text": "Practice Problem 1 will be distributed", "pages": "Canvas/email"}]}, {"classLabel": "Class 9", "date": "9/10", "extra": "", "topic": "Responding to the Complaint; Amendment", "readings": [{"text": "Answer", "pages": "280–81"}, {"text": "Rule 8", "pages": "281–82"}, {"text": "Rule 12", "pages": "283–86"}, {"text": "Bowers v. Mortgage Elec. Registration Systems", "pages": "288–91"}, {"text": "Perez v. Gordon & Wong Law Group", "pages": "292–95"}, {"text": "Rule 15", "pages": "297–98"}, {"text": "Global Tech. & Trading v. Tech Mahindra", "pages": "299–302"}, {"text": "Beeck v. Aquaslide’N’Dive Corp.", "pages": "302–06"}]}, {"classLabel": "Class 10", "date": "9/15", "extra": "", "topic": "The Rules Framework for Discovery", "readings": [{"text": "Rules 26, 30, and 33–37 (read only the Rules)", "pages": "319–46"}, {"text": "Mancia v. Mayflower Textile Servs. Co.", "pages": "348–60"}]}, {"classLabel": "Class 11", "date": "9/16", "extra": "", "topic": "Privilege & Work Product", "readings": [{"text": "SodexoMagic, LLC v. Drexel University", "pages": "385–89"}, {"text": "Uphjohn Co. v. United States", "pages": "390–96"}, {"text": "Hickman v. Taylor", "pages": "398–409"}]}, {"classLabel": "", "date": "9/17", "extra": "", "topic": "No class, but Practice Problem 1 due", "readings": [{"text": "No class on 9/17", "pages": "Submit on Canvas"}, {"text": "Practice Problem 1 is due on Canvas by 9:00pm on 9/17", "pages": ""}]}, {"classLabel": "Class 12", "date": "9/22", "extra": "", "topic": "Privilege & Work Product", "readings": [{"text": "Rule 26(b)", "pages": "411–12"}, {"text": "Rule of Evidence 502", "pages": "431–32"}, {"text": "In re Abilify Products Liability Litig.", "pages": "419–29"}, {"text": "Note on Privilege Logs, Redaction, and the Crime-Fraud Exception", "pages": "433–36"}]}, {"classLabel": "Class 13", "date": "9/23", "extra": "", "topic": "Summary Judgment", "readings": [{"text": "Summary Judgement note and Rule 56", "pages": "563–64"}, {"text": "Introductory Note on the Celotex Trilogy", "pages": "578–81"}, {"text": "Introductory Note to Celotex v. Catrett", "pages": "582–83"}, {"text": "Celotex Corp. v. Catrett", "pages": "584–90"}]}, {"classLabel": "Class 14", "date": "9/24", "extra": "", "topic": "Summary Judgment; Other Pre-Trial Dispositions", "readings": [{"text": "Scott v. Harris", "pages": "613–21"}, {"text": "Tolan v. Cotton", "pages": "Canvas"}, {"text": "Introductory Note on Default Judgment; Rules 41, 54(c), 55, and 60", "pages": "309–13"}, {"text": "Practice Problem 2 will be distributed", "pages": "Canvas/email"}]}, {"classLabel": "Class 15", "date": "9/29", "extra": "", "topic": "Trial by Jury", "readings": [{"text": "U.S. Constitution Amend. VII; Rules 38 and 39", "pages": "474–77"}, {"text": "Curtis v. Loether", "pages": "480–84"}, {"text": "Chauffeurs, Teamsters, and Helpers v. Terry", "pages": "484–91"}, {"text": "Colgrove v. Battin", "pages": "511–18"}, {"text": "Rule 48", "pages": "521–22"}, {"text": "Rule 47 and 28 U.S.C. § 1870", "pages": "536–37"}]}, {"classLabel": "Class 16", "date": "9/30", "extra": "Part 1", "topic": "Taking the Case from the Jury", "readings": [{"text": "Rule 50", "pages": "627–28"}, {"text": "Rule 59", "pages": "630"}, {"text": "Rule 61", "pages": "634"}, {"text": "Neely v. Martin K. Eby Constr. Co.", "pages": "637–42"}]}, {"classLabel": "Class 16", "date": "9/30", "extra": "Part 2", "topic": "Finality", "readings": [{"text": "28 U.S.C. § 1291", "pages": "669"}, {"text": "Rule 54(b)", "pages": "676"}, {"text": "28 U.S.C. § 1292(a)–(b)", "pages": "677"}, {"text": "Liberty Mut. Ins. Co. v. Wetzel", "pages": "678–82"}]}, {"classLabel": "Class 17", "date": "10/1", "extra": "", "topic": "Collateral Order Doctrine", "readings": [{"text": "Cohen v. Beneficial Indus. Loan Corp.", "pages": "685–87"}, {"text": "Mohawk Industries v. Carpenter", "pages": "688–98"}, {"text": "Microsoft I and Microsoft II", "pages": "701–04"}]}, {"classLabel": "", "date": "10/2", "extra": "", "topic": "7:00pm", "readings": [{"text": "Practice Problem 2 due", "pages": "Canvas"}]}, {"classLabel": "Class 18", "date": "10/6", "extra": "", "topic": "Preclusion", "readings": [{"text": "Res Judicata", "pages": "735–38"}, {"text": "Rose v. Board of Election Commissioners", "pages": "738–42"}, {"text": "Rush v. City of Maple Heights", "pages": "744–51"}, {"text": "Cromwell v. County of Sac", "pages": "754–57"}]}, {"classLabel": "Class 19", "date": "10/7", "extra": "", "topic": "Preclusion; Joinder", "readings": [{"text": "Bernhard v. Bank of America", "pages": "759–63"}, {"text": "Parklane Hosiery Co. v. Shore", "pages": "768–73"}, {"text": "introductory notes on Joinder, Rules 13, 14, 18, 19, 20, 21, and 24", "pages": "712–21"}, {"text": "Breaking Glass Pictures v. Does 1–188", "pages": "729–32"}]}, {"classLabel": "Class 20", "date": "10/8", "extra": "", "topic": "Preclusion & Representation", "readings": [{"text": "Preclusion and Representation", "pages": "775"}, {"text": "Taylor v. Sturgell", "pages": "776–87"}, {"text": "Hansberry v. Lee", "pages": "789–94"}]}, {"classLabel": "Class 21", "date": "10/13", "extra": "", "topic": "Midterm Exam", "readings": [{"text": "The Midterm Exam will cover all material through 10/8. It will contain a mix of multiple choice and essay questions.", "pages": "1:00–2:00pm, in-class"}]}, {"classLabel": "Class 22", "date": "10/14", "extra": "", "topic": "Settlement & ADR", "readings": [{"text": "Settlement and ADR (this is lighter reading, but please do read)", "pages": "1307–20"}, {"text": "Rule 23 (we will begin going over Rule 23 in this class, and continue in the following class)", "pages": "802–10"}]}, {"classLabel": "Class 23", "date": "10/15", "extra": "", "topic": "Class Actions", "readings": [{"text": "In re Whirlpool Corp.", "pages": "812–24"}, {"text": "Wal-Mart Stores v. Dukes", "pages": "830–50"}]}, {"classLabel": "Class 24", "date": "10/20", "extra": "", "topic": "Introduction to Subject Matter Jurisdiction; Diversity Jurisdiction", "readings": [{"text": "U.S. Constitution Article III", "pages": "860–63"}, {"text": "28 U.S.C. §§ 1331, 1332", "pages": "863–64"}, {"text": "Strawbridge v. Curtiss", "pages": "872"}, {"text": "ConnectU LLC v. Zuckerberg", "pages": "877–83"}, {"text": "Ceglia v. Zuckerberg", "pages": "885–89"}]}, {"classLabel": "Class 25", "date": "10/21", "extra": "", "topic": "Diversity Jurisdiction", "readings": [{"text": "Hertz Corp. v. Friend", "pages": "892–900"}, {"text": "Lincoln Benefit Life Co. v. AEI Life, LLC", "pages": "902–10"}, {"text": "A.F.A. Tours v. Whitchurch", "pages": "912–18"}, {"text": "Freeland v. Liberty Mutual Fire Ins. Co.", "pages": "919–22"}]}, {"classLabel": "Class 26", "date": "10/22", "extra": "", "topic": "Federal Question Jurisdiction", "readings": [{"text": "Introductory Note to Osborn, plus all of Osborn v. Bank of the United States", "pages": "925–32"}, {"text": "Lousville & Nashville Railroad Co. v. Mottley", "pages": "934–36"}, {"text": "Gunn v. Minton", "pages": "947–55"}]}, {"classLabel": "Class 27", "date": "10/27", "extra": "", "topic": "Supplemental Jurisdiction", "readings": [{"text": "28 U.S.C. § 1367", "pages": "956–57"}, {"text": "Exxon Mobil v. Allapattah Services", "pages": "962–80"}]}, {"classLabel": "Class 28", "date": "10/28", "extra": "", "topic": "Removal", "readings": [{"text": "28 U.S.C. §§ 1441, 1446, 1447", "pages": "984–90"}, {"text": "St. Paul Mercury Indemnity v. Red Cab Co.", "pages": "992–97"}]}, {"classLabel": "Class 29", "date": "10/29", "extra": "", "topic": "Removal", "readings": [{"text": "Caterpillar Inc. v. Lewis", "pages": "998–1004"}, {"text": "Grupo Dataflux v. Atlas Global Group", "pages": "1005–13"}]}, {"classLabel": "Class 30", "date": "11/3", "extra": "", "topic": "Historical Development of the Doctrine", "readings": [{"text": "Introduction to Personal Jurisdiction", "pages": "1017–19"}, {"text": "Pennoyer v. Neff", "pages": "1019–26"}, {"text": "Hess v. Pawloski", "pages": "1029–31"}, {"text": "International Shoe Co. v. Washington", "pages": "1034–39"}]}, {"classLabel": "Class 31", "date": "11/4", "extra": "", "topic": "Specific Jurisdiction", "readings": [{"text": "Note on Long-Arm Statutes", "pages": "1041–42"}, {"text": "World-Wide Volkswagen Corp. v. Woodson", "pages": "1043–54"}, {"text": "J. McIntyre Machinery, Ltd. V. Nicastro", "pages": "1059–73"}]}, {"classLabel": "Class 32", "date": "11/5", "extra": "", "topic": "Specific & General Jurisdiction", "readings": [{"text": "Walden v. Fiore", "pages": "1082–89"}, {"text": "General Jurisdiction", "pages": "1091–92"}, {"text": "Burnham v. Superior Court of California", "pages": "1092–1104"}, {"text": "Goodyear Dunlop Tires Operations v. Brown", "pages": "1107–12"}]}, {"classLabel": "Class 33", "date": "11/10", "extra": "", "topic": "Specific & General Jurisdiction", "readings": [{"text": "Daimler AG v. Bauman", "pages": "1114–22"}, {"text": "be2 LLC v. Ivanov", "pages": "1123–27"}, {"text": "Mallory v. Norfolk Southern", "pages": "Canvas"}, {"text": "Practice Problem 3 will be distributed", "pages": "Canvas/email"}]}, {"classLabel": "Class 34", "date": "11/11", "extra": "", "topic": "Venue; Transfer", "readings": [{"text": "Venue and Transfer; 28 U.S.C. §§ 1390, 1391", "pages": "1167–69"}, {"text": "Gulf Oil Corp. v. Gilbert", "pages": "1171–77"}, {"text": "28 U.S.C. §§ 1404, 1406", "pages": "1177–78"}, {"text": "Piper Aircraft Co. v. Reyno", "pages": "1180–90"}]}, {"classLabel": "", "date": "11/12", "extra": "", "topic": "", "readings": [{"text": "No Class", "pages": ""}]}, {"classLabel": "", "date": "11/16", "extra": "", "topic": "7:00pm", "readings": [{"text": "Practice Problem 3 due", "pages": "Canvas"}]}, {"classLabel": "Class 35", "date": "11/17", "extra": "", "topic": "The Erie Problem", "readings": [{"text": "Introductory notes on The Erie Problem; A Brooding Omnipresence", "pages": "1205–09"}, {"text": "Swift v. Tyson", "pages": "1209–13"}, {"text": "Erie Railroad Co. v. Tompkins", "pages": "1214–24"}]}, {"classLabel": "Class 36", "date": "11/18", "extra": "", "topic": "Erie’s Progeny", "readings": [{"text": "An Irrepressible Myth", "pages": "1232–34"}, {"text": "Ruhlin v. New York Life Insurance", "pages": "1235–36"}, {"text": "Sibbach v. Wilson & Co.", "pages": "1248–53"}, {"text": "Rules Enabling Act (28 U.S.C. 2072)", "pages": "1253–54"}, {"text": "Cohen v. Beneficial Indus. Loan Corp.", "pages": "1256–63"}]}, {"classLabel": "Class 37", "date": "11/19", "extra": "", "topic": "Erie’s Progeny", "readings": [{"text": "Hanna v. Plumer", "pages": "1264–73"}, {"text": "Berk v. Choy", "pages": "Canvas"}, {"text": "Postscript on Erie and Horizontal Choice of Law", "pages": "1301–03"}]}, {"classLabel": "Class 38", "date": "11/23", "extra": "", "topic": "Review Session", "readings": [{"text": "Format to be announced in advance", "pages": "No reading for review session"}]}, {"classLabel": "", "date": "11/24", "extra": "", "topic": "", "readings": []}]
 ;
 
 // Practice quizzes on Canvas -- separate from CIVPRO_SCHEDULE because they
@@ -9872,10 +9974,15 @@ function getNotesPrompt(kind){
 // turn in — a practice problem being distributed or due, even though the
 // pages cell happens to say "Canvas"), or "none" (an admin note with
 // nothing to attach: exam time, "no reading", etc.). Only "textbook" and
-// "case" get a Notes button.
+// "case" get a Notes button. Announcements ("Practice Problem N will be
+// distributed", "No class on ...", the midterm's coverage note) come back
+// as "info" -- rendered as plain text with no badge, pill, or button, since
+// there's nothing to read or complete yet.
 function classifyCivProReading(text, pagesRaw){
   const t = (text || "").trim();
   const pages = (pagesRaw || "").trim();
+
+  if (/will be distributed|^no class\b|^the midterm exam will cover/i.test(t)) return "info";
 
   if (/\bdue\b|will be distributed|\bsubmit\b/i.test(t) || /\bdue\b|\bsubmit\b/i.test(pages)){
     return "assignment";

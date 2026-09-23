@@ -28,7 +28,7 @@ const os = require("os");
 const path = require("path");
 const agentStore = require("./agent-store");
 
-const liveRuns = new Map(); // runId -> { userId, output, result, status, child }
+const liveRuns = new Map(); // runId -> { userId, output, result, turns, status, child }
 const flushTimers = new Map();
 const FLUSH_INTERVAL_MS = 1500;
 const MAX_TOOL_RESULT_CHARS = 4000;
@@ -39,7 +39,7 @@ function scheduleFlush(userId, runId){
     flushTimers.delete(runId);
     const entry = liveRuns.get(runId);
     if (!entry) return;
-    await agentStore.updateRun(userId, runId, { output: entry.output, result: entry.result, status: entry.status });
+    await agentStore.updateRun(userId, runId, { output: entry.output, result: entry.result, turns: entry.turns, status: entry.status });
   }, FLUSH_INTERVAL_MS));
 }
 
@@ -100,6 +100,9 @@ function handleStreamEvent(entry, evt){
     }
   } else if (evt.type === "result") {
     entry.result = typeof evt.result === "string" ? evt.result : (entry.result || "");
+    // The newest turn is the one this process is answering (see startRun/
+    // continueRun) -- its reply is what the Agent tab's chat history shows.
+    if (entry.turns && entry.turns.length) entry.turns[entry.turns.length - 1].result = entry.result;
     // If nothing rendered as running commentary (e.g. the agent answered in
     // one shot with no tool calls), fall back to showing the final result
     // in the terminal panel too rather than leaving it blank.
@@ -156,6 +159,10 @@ async function loadExternalSession(sessionId){
 
   const raw = fs.readFileSync(transcriptPath, "utf8");
   let output = "", result = "", title = null;
+  // One {prompt, result} per typed user message, result being the last
+  // assistant text before the next one -- same shape startRun/continueRun
+  // record live, so the Agent tab's chat history works for these too.
+  const turns = [];
 
   for (const line of raw.split("\n")) {
     if (!line.trim()) continue;
@@ -169,6 +176,7 @@ async function loadExternalSession(sessionId){
       const content = evt.message.content;
       if (typeof content === "string") {
         output += `> ${content}\n\n`;
+        turns.push({ prompt: content, result: "" });
       } else if (Array.isArray(content)) {
         for (const block of content) {
           if (block && block.type === "tool_result") {
@@ -188,13 +196,17 @@ async function loadExternalSession(sessionId){
           output += `\n\n$ ${block.name || "tool"}${formatToolInput(block.input)}\n`;
         }
       }
-      if (msgText.trim()) result = msgText;
+      if (msgText.trim()) {
+        result = msgText;
+        if (turns.length) turns[turns.length - 1].result = msgText;
+      }
     }
   }
 
   return {
     output,
     result,
+    turns,
     title,
     cwd: cwdFromProjectDirName(path.basename(path.dirname(transcriptPath)))
   };
@@ -222,7 +234,7 @@ function spawnClaude(entry, userId, runId, args, cwd){
   } catch (err) {
     entry.status = "error";
     entry.output += `Failed to start Claude Code: ${err.message}`;
-    agentStore.updateRun(userId, runId, { status: "error", output: entry.output, result: entry.result });
+    agentStore.updateRun(userId, runId, { status: "error", output: entry.output, result: entry.result, turns: entry.turns });
     liveRuns.delete(runId);
     return;
   }
@@ -262,7 +274,7 @@ function spawnClaude(entry, userId, runId, args, cwd){
   child.on("error", (err) => {
     entry.status = "error";
     entry.output += `\n[failed to start: ${err.message}]`;
-    agentStore.updateRun(userId, runId, { status: "error", output: entry.output, result: entry.result });
+    agentStore.updateRun(userId, runId, { status: "error", output: entry.output, result: entry.result, turns: entry.turns });
     liveRuns.delete(runId);
   });
 
@@ -275,7 +287,7 @@ function spawnClaude(entry, userId, runId, args, cwd){
       }
     }
     entry.status = code === 0 ? "done" : "error";
-    agentStore.updateRun(userId, runId, { status: entry.status, output: entry.output, result: entry.result });
+    agentStore.updateRun(userId, runId, { status: entry.status, output: entry.output, result: entry.result, turns: entry.turns });
     liveRuns.delete(runId);
   });
 }
@@ -293,7 +305,7 @@ function spawnClaude(entry, userId, runId, args, cwd){
 // `claude --resume` for the interactive picker, which will list it among
 // recent sessions since it's a real persisted session like any other.
 function startRun(userId, runId, prompt, cwd){
-  const entry = { userId, output: "", result: "", status: "running", child: null };
+  const entry = { userId, output: "", result: "", turns: [{ prompt, result: "" }], status: "running", child: null };
   liveRuns.set(runId, entry);
   spawnClaude(entry, userId, runId, [
     "-p", prompt,
@@ -317,10 +329,16 @@ function startRun(userId, runId, prompt, cwd){
 async function continueRun(userId, runId, followupPrompt, cwd){
   const stored = await agentStore.getRun(userId, runId);
   const priorOutput = (stored && stored.output) || "";
+  // Runs saved before turns existed only have their first prompt/result --
+  // seed the history from those so the earlier exchange isn't lost.
+  const priorTurns = (stored && Array.isArray(stored.turns) && stored.turns.length)
+    ? stored.turns
+    : (stored && (stored.prompt || stored.result) ? [{ prompt: stored.prompt || "", result: stored.result || "" }] : []);
   const entry = {
     userId,
     output: priorOutput + (priorOutput ? "\n\n" : "") + `> ${followupPrompt}\n`,
     result: (stored && stored.result) || "",
+    turns: priorTurns.concat([{ prompt: followupPrompt, result: "" }]),
     status: "running",
     child: null
   };

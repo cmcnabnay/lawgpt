@@ -144,13 +144,17 @@ const CLAUDE_CODE_MODEL_ID = "claude-code";
 // Runs one stateless turn through the Claude Code CLI and resolves to
 // { ok: true, text, usage } or { ok: false, message }.
 //
-// --tools "" strips every built-in tool (Bash, Read, Write, WebFetch, ...)
-// so a chat message -- which is untrusted user input -- can never make the
-// CLI touch this server's filesystem or run commands; this is meant to be a
-// plain chatbot backend, not another agent run. Verified experimentally: with
-// --tools "" the model will still narrate "I'll run that command now" for a
-// prompt that asks it to, but nothing actually executes (no tool_use, no
-// permission_denials entry -- it just has no tool to call).
+// --tools limits the CLI to read-only lookups (Read, Grep, Glob) over this
+// repo -- enough to answer "examine my torts notes..." from notes/ and
+// documents/, but nothing that writes files or runs commands, since a chat
+// message is still user input rather than an Agent-tab run. It used to be
+// --tools "" (no tools at all), which made the model, asked to look at the
+// notes, write out a fake "Tool: bash / Input: {...}" call as its reply
+// text instead of an answer. --allowedTools pre-approves those three so
+// --permission-prompts none never has anything to refuse, except .env files,
+// which stay denied so a chat can't read this server's secrets. Only the
+// final assistant message comes back (--output-format json's "result"), so
+// the chat shows the answer, not the lookups behind it.
 //
 // Every call still gets a real, persisted session (--session-id, no
 // --no-session-persistence) so a hung or failed request can actually be
@@ -181,6 +185,13 @@ const CLAUDE_CODE_MODEL_ID = "claude-code";
 // 143, the "I caught a signal" convention) well before it was done.
 const CLAUDE_CODE_REPO_ROOT = path.join(__dirname, "..", "..");
 const CLAUDE_CODE_TIMEOUT_MS = 15 * 60 * 1000;
+const CLAUDE_CODE_CHAT_TOOLS = "Read,Grep,Glob";
+const CLAUDE_CODE_CHAT_TOOLS_NOTE =
+  "You can look things up in the user's files with the Read, Grep and Glob tools: " +
+  "their class notes are under notes/<course>/ and course readings under documents/<course>/ " +
+  "(courses: civil_procedure, contracts, torts, lawyering_skills_and_strategies). " +
+  "Use them whenever the question refers to the user's notes or readings. " +
+  "Reply with only your final answer -- never write out tool calls or commands as text.";
 
 function runClaudeCode({ systemPrompt, userPrompt, resumeSessionId }) {
   return new Promise((resolve) => {
@@ -189,11 +200,13 @@ function runClaudeCode({ systemPrompt, userPrompt, resumeSessionId }) {
     const args = [
       "-p",
       "--output-format", "json",
-      "--tools", "",
+      "--tools", CLAUDE_CODE_CHAT_TOOLS,
+      "--allowedTools", CLAUDE_CODE_CHAT_TOOLS,
+      "--disallowedTools", "Read(**/.env*)",
       resumeSessionId ? "--resume" : "--session-id", sessionId,
       "--permission-prompts", "none"
     ];
-    if (systemPrompt) args.push("--system-prompt", systemPrompt);
+    args.push("--system-prompt", (systemPrompt ? systemPrompt + "\n\n" : "") + CLAUDE_CODE_CHAT_TOOLS_NOTE);
 
     console.log(`[claude-code] ${resumeSessionId ? "resuming" : "starting"} session ${sessionId}`);
 

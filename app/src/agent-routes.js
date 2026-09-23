@@ -76,10 +76,32 @@ router.get("/runs/:id", async (req, res) => {
       title: (stored && stored.title) || "Agent run",
       status: live.status,
       output: live.output,
-      result: live.result
+      result: live.result,
+      turns: live.turns
     });
   }
-  let run = await agentStore.getRun(userId, req.params.id);
+  const run = await getOrAdoptRun(userId, req.params.id);
+  if (!run) return res.status(404).json({ error: { message: "Run not found." } });
+  res.json(run);
+});
+
+// Renames a run -- used by the Claude Code session popup's "Open in agent
+// tab" so a session opened from a Notes report or an email shows up as
+// "<report or email title> - Claude Code" rather than the generic
+// "Claude Code session". Goes through getOrAdoptRun so it works on a
+// session that isn't a tracked run yet (the popup calls this before its
+// first GET).
+router.patch("/runs/:id", async (req, res) => {
+  const userId = req.session.userId;
+  const title = req.body && typeof req.body.title === "string" ? req.body.title.trim() : "";
+  if (!title) return res.status(400).json({ error: { message: "title is required." } });
+  const run = await getOrAdoptRun(userId, req.params.id);
+  if (!run) return res.status(404).json({ error: { message: "Run not found." } });
+  res.json(await agentStore.updateRun(userId, req.params.id, { title }));
+});
+
+async function getOrAdoptRun(userId, id){
+  let run = await agentStore.getRun(userId, id);
   if (!run) {
     // Not a run this app ever tracked -- but it might still be a real
     // Claude Code session id that some other part of the app (calendar
@@ -93,25 +115,25 @@ router.get("/runs/:id", async (req, res) => {
     // ad-hoc) means it behaves like any other run from now on -- reopening
     // it is an ordinary getRun, and a follow-up message is an ordinary
     // continueRun.
-    const external = await agentRuntime.loadExternalSession(req.params.id);
+    const external = await agentRuntime.loadExternalSession(id);
     if (external) {
       run = await agentStore.createRun(userId, {
-        id: req.params.id,
+        id,
         title: external.title || "Claude Code session",
         prompt: "",
         source: "external"
       });
-      run = await agentStore.updateRun(userId, req.params.id, {
+      run = await agentStore.updateRun(userId, id, {
         output: external.output,
         result: external.result,
+        turns: external.turns,
         status: "done",
         cwd: external.cwd || null
       });
     }
   }
-  if (!run) return res.status(404).json({ error: { message: "Run not found." } });
-  res.json(run);
-});
+  return run;
+}
 
 router.post("/run", async (req, res) => {
   const { prompt, title, source } = req.body || {};
