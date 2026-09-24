@@ -11,6 +11,27 @@ import { Subscript } from "@tiptap/extension-subscript";
 import { Superscript } from "@tiptap/extension-superscript";
 import { TableKit } from "@tiptap/extension-table";
 import { Placeholder } from "@tiptap/extension-placeholder";
+import { Highlight } from "@tiptap/extension-highlight";
+
+// Inline styles that pasted content (from the chat pane, web pages, Word,
+// etc.) carries along and that TextStyleKit would otherwise faithfully keep
+// -- a foreign font, size, text color and background "highlight". Pasted
+// text should take on the document's own default look instead; the user
+// re-applies any of these deliberately via the toolbar.
+const PASTE_STRIPPED_STYLES = ["font-family", "font-size", "color", "background", "background-color", "line-height"];
+function stripPastedStyles(html){
+  // Copy/paste within a ProseMirror editor (data-pm-slice) is the user's own
+  // formatting -- keep it.
+  if (html.includes("data-pm-slice")) return html;
+  const doc = new DOMParser().parseFromString(html, "text/html");
+  doc.body.querySelectorAll("[style]").forEach(el => {
+    PASTE_STRIPPED_STYLES.forEach(prop => el.style.removeProperty(prop));
+    if (!el.getAttribute("style").trim()) el.removeAttribute("style");
+  });
+  doc.body.querySelectorAll("[bgcolor]").forEach(el => el.removeAttribute("bgcolor"));
+  doc.body.querySelectorAll("font").forEach(el => el.replaceWith(...el.childNodes));
+  return doc.body.innerHTML;
+}
 
 // A manually-inserted, atomic page-break marker. Replaces the old hand-built
 // live pagination/reflow engine: instead of the editor auto-flowing content
@@ -65,11 +86,13 @@ export function createEditor(mountEl, options){
       Subscript,
       Superscript,
       TableKit.configure({ table: { resizable: false } }),
+      Highlight,
       Placeholder.configure({ placeholder: options.placeholder || "" }),
       PageBreak,
     ],
     content: options.content || "<p></p>",
     autofocus: false,
+    editorProps: { transformPastedHTML: stripPastedStyles },
     editable: options.editable !== false,
     // TipTap's Editor constructor unconditionally does
     // `this.on("transaction", this.options.onTransaction)` (and the same for

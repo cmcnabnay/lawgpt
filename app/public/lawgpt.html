@@ -1110,6 +1110,8 @@
     position:relative;
   }
   #docEditorMount, #docEditorMount .ProseMirror{ outline:none; min-height:1.75em; }
+  #docEditorMount mark{ background:#fde68a; color:inherit; padding:0 1px; border-radius:2px; }
+  .glyph-highlight{ background:#fde68a; color:#2a2418; padding:0 3px; border-radius:2px; font-weight:600; }
   /* Manually-inserted page-break marker (see the PageBreak node in
      editor-src/editor-entry.js) -- a visual divider on screen, and a real
      page break in the compiled/exported output (see compileToSource's
@@ -3292,6 +3294,8 @@ pre code {
           <span class="swatch" id="fontColorSwatch"></span>
           <input type="color" id="fontColorInput" value="#7a2331">
         </div>
+
+        <button class="rt-btn" id="btnHighlight" data-cmd="highlight" title="Highlight / remove highlight (Ctrl+Shift+H)"><span class="glyph-highlight">ab</span></button>
 
         <div class="rt-divider"></div>
 
@@ -13532,7 +13536,15 @@ const TOOLBAR_COMMANDS = {
   indent: e => e.chain().focus().sinkListItem("listItem").run(),
   superscript: e => e.chain().focus().unsetSubscript().toggleSuperscript().run(),
   subscript: e => e.chain().focus().unsetSuperscript().toggleSubscript().run(),
+  // Also clears a leftover inline background-color (e.g. from text pasted
+  // before paste-sanitizing existed) so "unhighlight" removes any shading.
+  highlight: e => isHighlighted(e)
+    ? e.chain().focus().unsetHighlight().unsetBackgroundColor().run()
+    : e.chain().focus().setHighlight().run(),
 };
+function isHighlighted(e){
+  return e.isActive("highlight") || !!e.getAttributes("textStyle").backgroundColor;
+}
 document.querySelectorAll(".rt-btn[data-cmd]").forEach(btn => {
   btn.addEventListener("mousedown", (e) => e.preventDefault()); // keep selection focused
   btn.addEventListener("click", () => {
@@ -13621,6 +13633,7 @@ function syncToolbarState(){
   document.getElementById("btnAlignJustify").classList.toggle("active", docEditor.isActive({ textAlign: "justify" }));
   document.getElementById("btnSuperscript").classList.toggle("active", docEditor.isActive("superscript"));
   document.getElementById("btnSubscript").classList.toggle("active", docEditor.isActive("subscript"));
+  document.getElementById("btnHighlight").classList.toggle("active", isHighlighted(docEditor));
   document.getElementById("btnBulletList").classList.toggle("active", docEditor.isActive("bulletList"));
   document.getElementById("btnNumberList").classList.toggle("active", docEditor.isActive("orderedList"));
   const attrs = docEditor.getAttributes("textStyle");

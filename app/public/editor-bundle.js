@@ -2489,7 +2489,7 @@ var LawgptEditor = (() => {
   function isStyleRule(rule) {
     return rule.style != null;
   }
-  var DOMParser = class _DOMParser {
+  var DOMParser2 = class _DOMParser {
     /**
     Create a parser that targets the given schema, using the given
     parsing rules.
@@ -9400,7 +9400,7 @@ var LawgptEditor = (() => {
         dom = child;
       }
     if (!slice2) {
-      let parser = view.someProp("clipboardParser") || view.someProp("domParser") || DOMParser.fromSchema(view.state.schema);
+      let parser = view.someProp("clipboardParser") || view.someProp("domParser") || DOMParser2.fromSchema(view.state.schema);
       slice2 = parser.parseSlice(dom, {
         preserveWhitespace: !!(asText || sliceData),
         context: $context,
@@ -11343,7 +11343,7 @@ var LawgptEditor = (() => {
       }
     }
     let startDoc = view.state.doc;
-    let parser = view.someProp("domParser") || DOMParser.fromSchema(view.state.schema);
+    let parser = view.someProp("domParser") || DOMParser2.fromSchema(view.state.schema);
     let $from = startDoc.resolve(from2);
     let sel = null, doc3 = parser.parse(parent, {
       topNode: $from.parent,
@@ -12802,11 +12802,11 @@ var LawgptEditor = (() => {
             }]
           } })
         });
-        if (options.slice) DOMParser.fromSchema(contentCheckSchema).parseSlice(elementFromString(content), options.parseOptions);
-        else DOMParser.fromSchema(contentCheckSchema).parse(elementFromString(content), options.parseOptions);
+        if (options.slice) DOMParser2.fromSchema(contentCheckSchema).parseSlice(elementFromString(content), options.parseOptions);
+        else DOMParser2.fromSchema(contentCheckSchema).parse(elementFromString(content), options.parseOptions);
         if (options.errorOnInvalidContent && hasInvalidContent) throw new Error("[tiptap error]: Invalid HTML content", { cause: /* @__PURE__ */ new Error(`Invalid element found: ${invalidContent}`) });
       }
-      const parser = DOMParser.fromSchema(schema);
+      const parser = DOMParser2.fromSchema(schema);
       if (options.slice) return parser.parseSlice(elementFromString(content), options.parseOptions).content;
       return parser.parse(elementFromString(content), options.parseOptions);
     }
@@ -25069,7 +25069,108 @@ ${prefix}
     }
   });
 
+  // node_modules/@tiptap/extension-highlight/dist/index.js
+  var inputRegex4 = /(?:^|\s)(==(?!\s+==)((?:[^=]+))==(?!\s+==))$/;
+  var pasteRegex2 = /(?:^|\s)(==(?!\s+==)((?:[^=]+))==(?!\s+==))/g;
+  var Highlight = Mark2.create({
+    name: "highlight",
+    addOptions() {
+      return {
+        multicolor: false,
+        HTMLAttributes: {}
+      };
+    },
+    addAttributes() {
+      if (!this.options.multicolor) return {};
+      return { color: {
+        default: null,
+        parseHTML: (element) => element.getAttribute("data-color") || getStyleProperty(element, "background-color") || element.style.backgroundColor,
+        renderHTML: (attributes) => {
+          if (!attributes.color) return {};
+          return {
+            "data-color": attributes.color,
+            style: `background-color: ${attributes.color}; color: inherit`
+          };
+        }
+      } };
+    },
+    parseHTML() {
+      return [{ tag: "mark" }];
+    },
+    renderHTML({ HTMLAttributes }) {
+      return [
+        "mark",
+        mergeAttributes(this.options.HTMLAttributes, HTMLAttributes),
+        0
+      ];
+    },
+    renderMarkdown: (node, h2) => {
+      return `==${h2.renderChildren(node)}==`;
+    },
+    parseMarkdown: (token, h2) => {
+      return h2.applyMark("highlight", h2.parseInline(token.tokens || []));
+    },
+    markdownTokenizer: {
+      name: "highlight",
+      level: "inline",
+      start: (src) => src.indexOf("=="),
+      tokenize(src, _, h2) {
+        const match = /^(==)([^=]+)(==)/.exec(src);
+        if (match) {
+          const innerContent = match[2].trim();
+          const children = h2.inlineTokens(innerContent);
+          return {
+            type: "highlight",
+            raw: match[0],
+            text: innerContent,
+            tokens: children
+          };
+        }
+      }
+    },
+    addCommands() {
+      return {
+        setHighlight: (attributes) => ({ commands }) => {
+          return commands.setMark(this.name, attributes);
+        },
+        toggleHighlight: (attributes) => ({ commands }) => {
+          return commands.toggleMark(this.name, attributes);
+        },
+        unsetHighlight: () => ({ commands }) => {
+          return commands.unsetMark(this.name);
+        }
+      };
+    },
+    addKeyboardShortcuts() {
+      return { "Mod-Shift-h": () => this.editor.commands.toggleHighlight() };
+    },
+    addInputRules() {
+      return [markInputRule({
+        find: inputRegex4,
+        type: this.type
+      })];
+    },
+    addPasteRules() {
+      return [markPasteRule({
+        find: pasteRegex2,
+        type: this.type
+      })];
+    }
+  });
+
   // editor-src/editor-entry.js
+  var PASTE_STRIPPED_STYLES = ["font-family", "font-size", "color", "background", "background-color", "line-height"];
+  function stripPastedStyles(html) {
+    if (html.includes("data-pm-slice")) return html;
+    const doc3 = new DOMParser().parseFromString(html, "text/html");
+    doc3.body.querySelectorAll("[style]").forEach((el) => {
+      PASTE_STRIPPED_STYLES.forEach((prop) => el.style.removeProperty(prop));
+      if (!el.getAttribute("style").trim()) el.removeAttribute("style");
+    });
+    doc3.body.querySelectorAll("[bgcolor]").forEach((el) => el.removeAttribute("bgcolor"));
+    doc3.body.querySelectorAll("font").forEach((el) => el.replaceWith(...el.childNodes));
+    return doc3.body.innerHTML;
+  }
   var PageBreak = Node2.create({
     name: "pageBreak",
     group: "block",
@@ -25113,11 +25214,13 @@ ${prefix}
         Subscript,
         Superscript,
         TableKit.configure({ table: { resizable: false } }),
+        Highlight,
         Placeholder.configure({ placeholder: options.placeholder || "" }),
         PageBreak
       ],
       content: options.content || "<p></p>",
       autofocus: false,
+      editorProps: { transformPastedHTML: stripPastedStyles },
       editable: options.editable !== false,
       // TipTap's Editor constructor unconditionally does
       // `this.on("transaction", this.options.onTransaction)` (and the same for
