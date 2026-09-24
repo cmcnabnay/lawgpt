@@ -13859,7 +13859,7 @@ function compileToSource(lang, opts){
   // see the PageBreak node in editor-src/editor-entry.js); every other
   // language runs the draft through the (needlessly elaborate) compiler pipeline.
   if (lang === "html"){
-    const bodyHtml = docEditor.getHTML();
+    const bodyHtml = prettyPrintHtml(docEditor.getHTML(), "    ");
     const source = buildDocumentHtml(titleRaw, bodyHtml);
     const filename = (titleRaw.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "document") + ".html";
     return { source, filename, ext: "html", lang };
@@ -13934,6 +13934,64 @@ document.getElementById("previewFilenameInput").addEventListener("input", (e) =>
   const compiled = compileToSource(lang, { filenameBase: stem });
   document.getElementById("sourcePreviewCode").textContent = compiled.source;
 });
+
+// Re-indents the editor's single-line HTML so each block element (paragraph,
+// list item, table row, ...) sits on its own line. Only whitespace *between*
+// block tags is added, so the rendered page -- and re-opening the file in the
+// editor -- is unchanged. Inline content (text, <strong>, <em>, ...) inside a
+// block stays on that block's line, and <pre> is left verbatim.
+const PRETTY_BLOCK_TAGS = new Set([
+  "p", "h1", "h2", "h3", "h4", "h5", "h6", "ul", "ol", "li", "table", "thead",
+  "tbody", "tfoot", "tr", "td", "th", "colgroup", "col", "blockquote", "div", "hr",
+  "pre", "figure", "figcaption", "section", "article"
+]);
+const PRETTY_VOID_TAGS = new Set(["hr", "col", "br", "img"]);
+
+function prettyPrintHtml(html, baseIndent){
+  const root = document.createElement("div");
+  root.innerHTML = html;
+  const isBlock = (n) => n.nodeType === 1 && PRETTY_BLOCK_TAGS.has(n.tagName.toLowerCase());
+  const serializeInline = (nodes) => {
+    const tmp = document.createElement("div");
+    nodes.forEach(n => tmp.appendChild(n.cloneNode(true)));
+    return tmp.innerHTML;
+  };
+  const openTag = (el) => {
+    let s = "<" + el.tagName.toLowerCase();
+    for (const a of el.attributes){
+      s += ` ${a.name}="${a.value.replace(/&/g, "&amp;").replace(/"/g, "&quot;")}"`;
+    }
+    return s + ">";
+  };
+  const lines = [];
+  const emitChildren = (parent, indent) => {
+    let run = [];
+    const flush = () => {
+      const text = serializeInline(run).trim();
+      if (text) lines.push(indent + text);
+      run = [];
+    };
+    for (const child of parent.childNodes){
+      if (isBlock(child)){ flush(); emitBlock(child, indent); }
+      else run.push(child);
+    }
+    flush();
+  };
+  const emitBlock = (el, indent) => {
+    const tag = el.tagName.toLowerCase();
+    if (PRETTY_VOID_TAGS.has(tag)){ lines.push(indent + openTag(el)); return; }
+    const hasBlockChild = Array.from(el.childNodes).some(isBlock);
+    if (tag === "pre" || !hasBlockChild){
+      lines.push(indent + el.outerHTML);
+      return;
+    }
+    lines.push(indent + openTag(el));
+    emitChildren(el, indent + "  ");
+    lines.push(indent + `</${tag}>`);
+  };
+  emitChildren(root, baseIndent);
+  return "\n" + lines.join("\n") + "\n" + baseIndent.slice(2);
+}
 
 // ---- Download the document itself (formatted, standalone HTML file) ----
 function buildDocumentHtml(title, bodyHtml){
