@@ -1415,6 +1415,17 @@ app.post("/api/documents/:id/move", requireAppDb, requireLogin, async (req, res)
   res.json(toDocumentSummary(updated, true));
 });
 
+// Permanently deletes a signed-in user's own email-synced document from
+// Supabase -- scoped to req.session.userId like /move, so a Canvas/disk
+// document (or anyone else's row) can't be deleted through this route.
+app.delete("/api/documents/:id", requireAppDb, requireLogin, async (req, res) => {
+  const removed = await userDocumentStore.removeDocument(req.session.userId, req.params.id);
+  if (!removed) {
+    return res.status(404).json({ error: { message: "Document not found, or it isn't a deletable document." } });
+  }
+  res.json({ ok: true });
+});
+
 // Generic text extraction for files that aren't from Canvas (e.g. a PDF
 // opened directly in the Draft & Compile editor via the Open button, or a
 // document opened from the Documents tab). Reuses the same extractor

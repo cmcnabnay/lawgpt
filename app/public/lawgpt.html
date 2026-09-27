@@ -7523,6 +7523,8 @@ function docMenuDefaultHtml(doc, category, hasFile){
     if (items.length) items.push(`<div class="doc-menu-divider"></div>`);
     items.push(`<button type="button" data-action="move">Move…</button>`);
     items.push(`<button type="button" data-action="view-email">View Email</button>`);
+    items.push(`<div class="doc-menu-divider"></div>`);
+    items.push(`<button type="button" data-action="delete">Delete</button>`);
   }
   return items.join("");
 }
@@ -7574,6 +7576,7 @@ function wireDocMenu(card, doc, category, hasFile){
     else if (action === "open-editor") openDocumentInEditor(doc);
     else if (action === "download") downloadNativeDocument(doc);
     else if (action === "view-email") viewDocumentSourceEmail(doc);
+    else if (action === "delete") deleteDocument(doc);
   });
 }
 
@@ -7592,6 +7595,20 @@ async function moveDocumentToCourse(doc, courseId){
     await refreshDocumentsList();
   } catch(e){
     alert("Couldn't move this document: " + e.message);
+  }
+}
+
+// Permanently deletes a signed-in user's own email-synced document from
+// Supabase (see DELETE /api/documents/:id in server.js).
+async function deleteDocument(doc){
+  if (!confirm(`Delete "${doc.title}"? This permanently removes it from the database and can't be undone.`)) return;
+  try{
+    const res = await fetch(PROXY_ORIGIN + "/api/documents/" + encodeURIComponent(doc.id), { method: "DELETE" });
+    const data = await res.json().catch(() => null);
+    if (!res.ok) throw new Error((data && data.error && data.error.message) || ("Server returned " + res.status));
+    await refreshDocumentsList();
+  } catch(e){
+    alert("Couldn't delete this document: " + e.message);
   }
 }
 
