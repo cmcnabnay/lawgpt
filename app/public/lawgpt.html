@@ -5348,7 +5348,10 @@ const TABLE_FIELD_CONFIG = {
     order: ["rule_name", "course", "source", "document", "statement", "legal_question", "requirements", "application", "exceptions"]
   },
   definitions: {
-    order: ["term", "course", "document", "definition", "significance", "distinction"]
+    order: ["term", "course", "document", "definition", "significance", "distinction"],
+    // Label rows in the "load an existing row" dropdown as "Term — Course"
+    // rather than the first column after the key (the full definition).
+    preview: ["course"]
   }
 };
 
@@ -5482,7 +5485,10 @@ async function loadDbRows(tableInfo){
   const select = document.getElementById("dbRowSelect");
   if (!select) return;
   const pk = tableInfo.primaryKey[0];
-  const previewCols = tableInfo.columns.filter(c => c.name !== pk).slice(0, 1).map(c => c.name);
+  const previewConfig = TABLE_FIELD_CONFIG[tableInfo.name]?.preview;
+  const previewCols = previewConfig
+    ? previewConfig.filter(name => tableInfo.columns.some(c => c.name === name))
+    : tableInfo.columns.filter(c => c.name !== pk).slice(0, 1).map(c => c.name);
   select.innerHTML = '<option value="">+ New row</option>';
   dbRowsCache.forEach(row => {
     const opt = document.createElement("option");
