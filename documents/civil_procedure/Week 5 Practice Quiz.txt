@@ -1,0 +1,105 @@
+Week 5 Practice Quiz — content scraped from Canvas New Quizzes on 9/27/2026, 3:28:31 PM.
+An attempt was started in Canvas to read this content, then left open/unsubmitted -- no answers were recorded or submitted.
+NOTE: New Quizzes renders via JavaScript, so this is the quiz player's visible page text rather than cleanly separated question/answer-choice fields the way a classic quiz's scrape is -- it may include some extra UI text (timer, navigation labels, etc.) alongside the actual questions and choices.
+NOTE: this quiz shows one question at a time -- paged through "Next" (without selecting any answer) to read all 6 screens below, each separated by a "----- next question -----" marker; some navigation chrome repeats on every screen.
+
+Flag question: Question 1
+Question 1
+1 pts
+
+Venture Capitalist is working on a friendly deal with Startup Company. Negotiations proceed smoothly. While considering a draft contract, Venture Capitalist makes confidential statements about the draft, which reflect her understanding of the meaning of a key clause, to her Transactional Lawyer. The deal gets done. But a few years later, it goes sour.
+
+The Startup proceeds to sue Venture Capitalist. Venture Capitalist hires Trial Lawyer, and also hires Public Relations Firm to help Trial Lawyer craft an effective litigation strategy. Public Relations Firm prepares a litigation strategy memo for Trial Lawyer analyzing the most advisable legal approach to the case.
+
+During discovery, the Startup seeks evidence of what Venture Capitalist told Transactional Lawyer about the draft contract. Is the Venture Capitalist's statement to Transactional Lawyer discoverable?
+
+Group of answer choices
+Likely yes.
+Likely no.
+Next
+
+----- next question -----
+
+Flag question: Question 2
+Question 2
+1 pts
+
+Venture Capitalist is working on a friendly deal with Startup Company. Negotiations proceed smoothly. While considering a draft contract, Venture Capitalist makes confidential statements about the draft, which reflect her understanding of the meaning of a key clause, to her Transactional Lawyer. The deal gets done. But a few years later, it goes sour.
+
+The Startup proceeds to sue Venture Capitalist. Venture Capitalist hires Trial Lawyer, and also hires Public Relations Firm to help Trial Lawyer craft an effective litigation strategy. Public Relations Firm prepares a litigation strategy memo for Trial Lawyer analyzing the most advisable legal approach to the case.
+
+During discovery, the Startup seeks a copy of the Public Relations Firm's memo. Is the memo discoverable?
+
+Group of answer choices
+Likely yes.
+Likely no.
+ Previous
+Next
+
+----- next question -----
+
+Flag question: Question 3
+Question 3
+1 pts
+Generally, under the First Amendment, public high schools can only limit student speech if that student speech causes a “substantial disruption” to school activities. A.L. was in the parking lot of their public high school ten minutes before homeroom and sent a SnapChat to 10 friends on the soccer team criticizing the soccer coaches. The school suspended A.L. the next week. A.L. sued the school.
+
+During discovery, all 10 of A.L.'s friends who received the Snap stated in their depositions that they did not see the Snap until after school, and they never discussed it while at school. No other relevant information emerged during discovery.
+
+A.L. filed a motion for summary judgment. Should the court grant the motion?
+Group of answer choices
+Yes.
+No.
+ Previous
+Next
+
+----- next question -----
+
+Flag question: Question 4
+Question 4
+1 pts
+
+Generally, under the First Amendment, public high schools can only limit student speech if that student speech causes a “substantial disruption” to school activities. A.L. was in the parking lot of their public high school ten minutes before homeroom and sent a SnapChat to 10 friends on the soccer team criticizing the soccer coaches. The school suspended A.L. the next week. A.L. sued the school.
+
+During discovery, 8 of the friends stated in their depositions that they briefly and calmly discussed the Snap while in the hallway between classes, but did not otherwise discuss or react to the Snap while at school. No other relevant information emerged during discovery.
+
+Both parties moved for summary judgment. What should the court do?
+
+Group of answer choices
+Grant A.L.'s motion for summary judgment.
+Grant the school's motion for summary judgment.
+Deny both motions for summary judgment and send the case to trial.
+ Previous
+Next
+
+----- next question -----
+
+Flag question: Question 5
+Question 5
+1 pts
+Generally, under the First Amendment, public high schools can only limit student speech if that student speech causes a “substantial disruption” to school activities. A.L. was in the parking lot of their public high school ten minutes before homeroom and sent a SnapChat to 10 friends on the soccer team criticizing the soccer coaches. The school suspended A.L. the next week. A.L. sued the school.
+
+During discovery, all 10 of the friends stated in their depositions that they never discussed the Snap while at school. However, one teacher stated in a deposition that they overheard 6 of the friends calmly discussing the Snap in the hallway in between classes.
+
+Both parties moved for summary judgment. What should the court do?
+Group of answer choices
+Grant A.L.'s motion for summary judgment.
+Grant the school's motion for summary judgment.
+Deny both motions for summary judgment and send the case to trial.
+ Previous
+Next
+
+----- next question -----
+
+Flag question: Question 6
+Question 6
+1 pts
+Generally, under the First Amendment, public high schools can only limit student speech if that student speech causes a “substantial disruption” to school activities. A.L. was in the parking lot of their public high school ten minutes before homeroom and sent a SnapChat to 10 friends on the soccer team criticizing the soccer coaches. The school suspended A.L. the next week. A.L. sued the school.
+
+During discovery, the 10 friends stated in their depositions that they “briefly” discussed the Snap right before the beginning of algebra class, as they were filing into their seats, but did so “calmly.” The algebra teacher stated in a deposition that it was impossible to bring the class to attention for “most of the class period,” because there was “a heated argument” occurring about “a Snap.”
+
+Both parties moved for summary judgment. What should the court do?
+Group of answer choices
+Grant A.L.'s motion for summary judgment.
+Grant the school's motion for summary judgment.
+Deny both motions for summary judgment and send the case to trial.
+ Previous
