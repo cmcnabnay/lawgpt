@@ -1,0 +1,129 @@
+902
+Lincoln Benefit Life Company v. AEI Life, LLC
+_________________________
+
+800 F.3d 99 (3d Cir. 2015)
+
+Before AMBRO, FUENTES, and ROTH, CIRCUIT JUDGES.
+
+FUENTES, CIRCUIT JUDGE.
+
+A plaintiff who files suit in federal court may face significant difficulties when jurisdiction is premised on diversity and the defendant is an unincorporated association such as a partnership or limited liability company (“LLC”). The members of the association determine its citizenship, but these members may be unknown to the plaintiff even after a diligent pre-filing investigation. The plaintiff may tentatively assert that complete diversity exists, but whether this assertion survives a motion to dismiss depends entirely on the pleading standard that the court chooses to apply. We hold that a plaintiff need not affirmatively allege the citizenship of each member of an unincorporated association in order to get past the pleading stage. Instead, if the plaintiff is able to allege in good faith, after a reasonable attempt to determine the identities of the members of the association, that it is diverse from all of those members, its complaint will survive a facial challenge to subject-matter jurisdiction. If the defendant thereafter mounts a factual challenge, the plaintiff is entitled to limited discovery for the purpose of establishing that complete diversity exists.
+
+I. BACKGROUND
+
+Lincoln Benefit Life Company filed a federal complaint seeking a declaratory judgment voiding two $6.65 million life insurance policies. Lincoln Benefit alleges that these policies were procured by fraud and for the benefit of third-party investors who have no prior relationship to the individual whose life is the subject of the policies. According to the complaint, this sort of “stranger originated life insurance” or “STOLI” scheme generally violates state insurable-interest laws and the public policy against wagering on human life.
+
+The defendants identified in Lincoln Benefit’s complaint included a corporation named Innovative Brokers, which was involved in the procurement of the policies, and two LLCs that were the record owners and beneficiaries of the policies: AEI Life, LLC and ALS Capital Ventures, LLC.
+
+Federal subject-matter jurisdiction was premised on diversity of citizenship. Accordingly, Lincoln Benefit included the following allegations in its complaint:
+
+903
+7. Plaintiff Lincoln Benefit is a citizen of the State of Nebraska. Lincoln Benefit is a life insurance company organized and existing under the laws of Nebraska, with its principal place of business at 2940 South 84th Street, Lincoln, NE 68506.
+
+8. Upon information and belief, Defendant AEI Life, LLC is a citizen of and is domiciled in New York, and Defendant AEI Life, LLC maintains its principal address at 1428 36th Street, Ste. 219, Brooklyn, New York 11218. Defendant AEI Life, LLC is the record owner of Policy No. 01N1404934.
+
+9. Upon information and belief, Defendant ALS Capital Ventures, LLC is a citizen of and domiciled in the State of Delaware. Defendant ALS Capital Ventures is the record owner of Policy No. 01N1404844.
+
+The defendants filed motions to dismiss for, among other things, lack of subject-matter jurisdiction. Their primary argument was that Lincoln Benefit had failed to adequately plead diversity jurisdiction: an LLC’s citizenship is determined by the citizenship of its members, and Lincoln Benefit had not alleged the citizenship of the members of the LLC defendants.
+
+In response, Lincoln Benefit pointed out that none of the defendants had asserted that it was a citizen of Nebraska. It further argued that because “information concerning the citizenship of the members of the defendant-LLCs is not available to Lincoln Benefit,” it should not be required to plead that information with specificity. Lincoln Benefit’s counsel responded that it “was unable to discern the identity and/or citizenship of Defendant AEI Life, LLC and Defendant ALS Capital Ventures, LLC. Counsel for Lincoln Benefit searched public databases, civil dockets, and various business-related search engines, including the New York Secretary of State website.” Lincoln Benefit reiterated, however, that “based on publicly available information, none of the defendants is a citizen of Nebraska.”
+
+In support of this allegation, Lincoln Benefit provided the District Court with certain documents it had consulted. The New York Department of State record for AEI Life, LLC indicated that it was organized in New York, and the only addresses and business associates listed were located in New York. Similarly, the Delaware Secretary of State record for ALS Capital Ventures, LLC indicated connections only to Delaware. Lincoln Benefit explained that
+904
+because it “did not have first-hand knowledge of the information supporting the citizenship designations (i.e., its allegations were based on public records), Lincoln Benefit prefaced its allegations ‘upon information and belief.’ ” It contended that in light of the above, it had adequately pleaded diversity. In the alternative, it requested leave for limited jurisdictional discovery.
+
+The District Court granted the defendants’ motions in [relevant] part and dismissed the complaint * * * .
+
+On appeal, Lincoln Benefit maintains that its jurisdictional allegations were sufficient and that the District Court erroneously imposed a heightened pleading standard. Only Innovative Brokers filed a brief defending the District Court’s decision; neither the LLCs nor any other defendant has chosen to participate in this appeal.
+
+II. DISCUSSION
+
+A.   General Principles of Diversity Jurisdiction
+
+“The principal federal statute governing diversity jurisdiction, 28 U.S.C. § 1332, gives federal district courts original jurisdiction of all civil actions ‘between … citizens of different States’ where the amount in controversy exceeds $75,000.” For over two hundred years, the statute has been understood as requiring “complete diversity between all plaintiffs and all defendants,” even though only minimal diversity is constitutionally required. This means that, unless there is some other basis for jurisdiction, “no plaintiff [may] be a citizen of the same state as any defendant.”
+
+“Most rules of citizenship are well established. A natural person is deemed to be a citizen of the state where he is domiciled. A corporation is a citizen both of the state where it is incorporated and of the state where it has its principal place of business.” But unlike corporations, unincorporated associations such as partnerships “are not considered ‘citizens’ as that term is used in the diversity statute.” Instead, “the citizenship of partnerships and other unincorporated associations is determined by the citizenship of [their] partners or members.” The state of organization and the principal place of business of an unincorporated association are legally irrelevant. “Accordingly, the citizenship of an LLC is determined by the citizenship of its members.” For complete diversity to exist, all of the LLC’s members “must be diverse from all parties on the opposing side.”
+
+905
+B.   Challenges to Subject-Matter Jurisdiction
+
+The burden of establishing federal jurisdiction rests with the party asserting its existence. “Challenges to subject matter jurisdiction under Rule 12(b)(1) may be facial or factual.” A facial attack “concerns ‘an alleged pleading deficiency’ whereas a factual attack concerns ‘the actual failure of [a plaintiff’s] claims to comport [factually] with the jurisdictional prerequisites.’ ”
+
+“In reviewing a facial attack, the court must only consider the allegations of the complaint and documents referenced therein and attached thereto, in the light most favorable to the plaintiff.” By contrast, in reviewing a factual attack, “the court must permit the plaintiff to respond with rebuttal evidence in support of jurisdiction, and the court then decides the jurisdictional issue by weighing the evidence. If there is a dispute of a material fact, the court must conduct a plenary hearing on the contested issues prior to determining jurisdiction.”
+
+If the defendants here had challenged the factual existence of jurisdiction, Lincoln Benefit would have been required to prove by a preponderance of the evidence, after discovery, that it was diverse from every member of both defendant LLCs. Instead, however, the defendants mounted a facial challenge to the adequacy of the jurisdictional allegations in Lincoln Benefit’s complaint. We therefore turn to the pleading requirements for diversity jurisdiction.
+
+C.   Pleading Diversity Jurisdiction
+
+The District Court held that Lincoln Benefit was required to “plead the citizenship of each member of the defendant LLCs and allege that these citizenships differ from that of [Lincoln Benefit].” * * *
+
+The requirement that a plaintiff plead the basis for federal jurisdiction appears in Federal Rule of Civil Procedure 8(a)(1), which requires the complaint to provide “a short and plain statement of the grounds for the court’s jurisdiction.” Beyond stating that the jurisdictional allegations should be “short and plain,” the Rule does not specify the level of detail required to adequately plead the “grounds” for federal jurisdiction. * * *
+
+* * *
+
+* * * [R]ather than affirmatively alleging the citizenship of a defendant, a plaintiff may allege that the defendant is not a citizen of the plaintiff’s state of citizenship. Permitting this sort of negative allegation makes good sense. The
+906
+fact that the plaintiff and defendant do not share a state of citizenship usually establishes diversity.32 Consequently, it serves little purpose to require the plaintiff to allege the defendant’s precise state of citizenship, especially when this would entail a difficult factual investigation prior to filing.
+
+* * * A State X plaintiff may therefore survive a facial challenge by alleging that none of the defendant association’s members are citizens of State X. Significantly, however, the plaintiff is permitted to make such an allegation even if it is not certain of the association’s membership. In order to satisfy its obligations under Rule 11, a party must conduct a reasonable inquiry into the facts alleged in its pleadings. Thus, before alleging that none of an unincorporated association’s members are citizens of a particular state, a plaintiff should consult the sources at its disposal, including court filings and other public records. If, after this inquiry, the plaintiff has no reason to believe that any of the association’s members share its state of citizenship, it may allege complete diversity in good faith. The unincorporated association, which is in the best position to ascertain its own membership, may then mount a factual challenge by identifying any member who destroys diversity.36
+
+We believe that allowing this method of pleading strikes the appropriate balance between facilitating access to the courts and managing the burdens of discovery. District courts have the authority to allow discovery in order to determine whether subject-matter jurisdiction exists. Rule 8(a)(1), however, serves a screening function: only those plaintiffs who have provided some basis to believe jurisdiction exists are entitled to discovery on that issue. The corollary of this principle is that a plaintiff need not allege an airtight case before obtaining discovery.
+
+Depriving a party of a federal forum simply because it cannot identify all of the members of an unincorporated association is not a rational screening mechanism. The membership of an LLC is often not a matter of public record. Thus, a rule requiring the citizenship of each member of each LLC to be alleged affirmatively before jurisdictional discovery would effectively shield many LLCs from being sued in federal court without their consent. This is surely not what the drafters of the Federal Rules intended.
+
+907
+Moreover, the benefits of such a stringent rule would be modest. Jurisdictional discovery will usually be less burdensome than merits discovery, given the more limited scope of jurisdictional inquiries. It seems to us that in determining the membership of an LLC or other unincorporated association, a few responses to interrogatories will often suffice. So long as discovery is narrowly tailored to the issue of diversity jurisdiction and parties are sanctioned for making truly frivolous allegations of diversity, the costs of this system will be manageable.
+
+We are not the only Court of Appeals to take this position. * * *
+
+* * *
+
+D.   The Sufficiency of Lincoln Benefit’s Allegations of Diversity
+
+Lincoln Benefit’s allegations satisfy this standard. Taken together, the complaint and opposition to the motions to dismiss indicate that Lincoln Benefit has a good-faith basis for alleging that the LLC defendants’ members are not citizens of Nebraska.
+
+* * *
+
+Lincoln Benefit has alleged complete diversity in good faith, and this is enough to survive a facial attack. If defendants mount a factual challenge to jurisdiction on remand, however, the District Court must permit jurisdictional discovery in order to ascertain whether complete diversity exists.
+
+III. Conclusion
+
+For the foregoing reasons, we will vacate the District Court’s order dismissing the complaint and remand for further proceedings.
+
+AMBRO, CIRCUIT JUDGE, with whom FUENTES and ROTH, CIRCUIT JUDGE join, concurring.
+
+As we are unanimous in the Court’s opinion, we are as well in this concurrence urging the Supreme Court, when defining the citizenship of limited liability companies (LLCs), to return to the path it started to mark for unincorporated business organizations in Puerto Rico v. Russell & Co., 288 U.S. 476, 480 (1933). In its more recent punt to Congress of all questions relating to the citizenship of business associations, the Court recognized that it laid down a rule “unresponsive to policy considerations raised by the changing realities of business organization.” Carden v. Arkoma Associates, 494 U.S. 185, 196 (1990).
+908
+As Congress has not accepted the invitation of the Court to craft a workable law of business citizenship, the latter should step into the breach.
+
+There is no good reason to treat LLCs differently from corporations for diversity-of-citizenship purposes. A corporation is an entity that exists in law for the benefit of its owners—shareholders. Principal features of corporations include limited liability, access to equity markets, and the directors’ fiduciary obligations of care and loyalty to stockholders.
+
+An LLC—an entity owned by members often referred to as unitholders—is in most respects similar to a corporation. Among the primary differences are that there are far fewer statutory default rules for LLCs * * * and an LLC can elect to be taxed as a partnership or a corporation.
+
+What do these differences have to do with diversity of citizenship? Nothing. The kinds of business activities that can be carried on by LLCs are identical to those in which corporations may engage. And by picking corporate-style default rules in a membership agreement, an LLC could function in exactly the same way as a corporation for all purposes except diversity of citizenship.
+
+Just as treating LLCs as citizens of every state of which its members are citizens defies logic, it also takes the wrong lesson from our experience of assigning citizenship to business organizations. Under Bank of United States v. Deveaux, 9 U.S. (5 Cranch) 61, 86, 91–92 (1809), corporations were citizens of each state where each stockholder was a citizen. By 1844, the Supreme Court recognized the impracticality of that rule and held that a corporation is a citizen of the state in which it is incorporated. Louisville, C. & C.R. Co. v. Letson, 43 U.S. (2 How.) 497, 558 (1844). That rule remained unchanged until 1958 when Congress added in 28 U.S.C. § 1332(c) that corporations are also citizens of their principal places of business.
+
+Carden, where the Supreme Court held that unincorporated associations are citizens of the states where their members are citizens, came down in 1990, when LLCs, then a creature of only some states’ laws, languished in “near obscurity.” * * * [I]t was not until 1996 that every state had an LLC law. Just as when Deveaux was decided in 1809, the Court in 1990 could not have predicted the unwieldiness of its rule. But since the turn of the millennium, LLCs have become the dominant vehicle for doing business in the United States, and LLC formation outpaces corporation formation by a wide margin. We need a Letson for the LLC era, and we urge the Supreme Court to write it.
+
+909
+To see why it is impractical to require investigation into the citizenship of every member of any LLC, consider trying to sue Linn Energy, LLC, in federal court for a state-law violation. As of the last available information we reviewed, Linn is traded on the NASDAQ exchange, has a market capitalization of $902 million, and has 355.2 million outstanding units. The LLC is 40% owned by insiders; the remaining membership is dispersed. Approximately 240 institutional unitholders combine to own a mere 10% of the company. To identify Linn’s citizenship, we need to know the citizenship of all those unitholders, many of which are undoubtedly LLCs themselves with their own unwieldy structure—and we still have 50% of the units to account for. Would it not make more sense simply to ask where Linn was formed (Delaware) and where its principal place of business is located (Texas)?
+
+The Court opened the door to a sensible understanding of corporate citizenship, one that would not require discovery and time-consuming inquiries into corporate structure, in Russell, when it analyzed the sociedad en comandita, an unincorporated business association formed under the laws of Puerto Rico. * * * [The Court] took a functional approach to deciding whether a business form was a juridical person and thus had citizenship in the place it was formed (as opposed to borrowing its citizenship(s) from its members). * * *
+
+The law of citizenship for unincorporated associations receives frequent criticism. [Citing sources.] We add that the criticism is apt: there is no reason to treat LLCs differently from corporations merely because their organic statutes have some distinctions and they are subject to different tax regimes. Despite some cracks in Carden’s wall—circuit courts are divided over how to determine the citizenship of [investment] trusts,* and some circuits treat professional corporations, which function much like LLCs, as traditional corporations—it remains a formidable bulwark against a coherent policy with respect to the citizenship of LLCs. We thus urge the Supreme Court to bring back Russell’s approach.
+
+910
+
+
+•An unincorporated association is a citizen of every state of which one of its members is a citizen
+
+•A complaint need not allege the citizenship of another party but may allege that the parties are not citizens of the same state, so long as the allegation is based upon a good faith, reasonable investigation
+
+Go online for bullet points on the background and holding of Lincoln Benefit Life v. AEI Life.
+
+NOTES AND QUESTIONS ON LINCOLN BENEFIT LIFE V. AEI LIFE
+Judge Ambro’s concurring opinion (joined by the other two judges on the panel) pleaded with the Supreme Court to apply a functional approach to the citizenship of unincorporated associations. In closing, it noted that there were “some cracks in Carden’s wall—circuit courts are divided over how to determine the citizenship of [investment] trusts.” The best-known form of investment trust is the real estate investment trust or REIT. An investor can purchase and sell ownership shares in a REIT, which generates income through investments in real property. Investors in REITs may be called “members” or “shareholders.”
+
+In Americold Realty Trust v. ConAgra Foods, Inc., 577 U.S. ___, 136 S. Ct. 1012 (2016), the Supreme Court faced the question of whether a REIT should be treated as a corporation for diversity jurisdiction purposes. The Supreme Court held in a unanimous opinion that a REIT is a citizen of every state in which its members, including shareholders, are citizens. What considerations might lead some judges to embrace the current rule for citizenship of unincorporated associations, notwithstanding the criticism the rule receives? One factor might be the effect of the rule on the caseload of the federal courts. What effect would the adoption of Judge Ambro’s concurrence have on the federal courts’ docket?

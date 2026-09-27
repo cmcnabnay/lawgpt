@@ -1,0 +1,115 @@
+984
+Removal
+The jurisdictional statutes that we have studied so far in this chapter allow plaintiffs to file civil actions in federal court when federal subject matter jurisdiction exists for the plaintiffs’ claims. The removal statute allows defendants in state court to move a case from state court to federal court when there is federal subject matter jurisdiction over the case, so long as the requirements of the removal statute are also satisfied. As we noted at the outset of this chapter, this process of moving a case from state court to federal court is called removal.
+
+Removal plays an important role in litigation strategy. As a general matter, plaintiffs choose the forum for dispute resolution. A plaintiff chooses to sue or not sue; to sue in this state or that state; and to sue in state court or in federal court. Of course, the options available to a plaintiff are not limitless, as this chapter has shown. But by choosing wisely among the options available, a plaintiff can ensure that her claims are heard in the most convenient or sympathetic forum possible. Removal is a procedural tool for defendants seeking to counterbalance the strategic advantage that plaintiffs may gain from choosing the forum. By itself, it only allows the defendant to obtain a federal forum over a state forum, and only in certain cases. Soon, however, we will study personal jurisdiction, transfer, and forum non conveniens rules, and we will see that in combination with these other rules, removal can be a powerful tool with which defendants can obtain the benefit of a favorable forum—or at least counterbalance the benefits a plaintiff can obtain from prudent choice of where to file in the first place!
+
+We begin our study of removal with the removal statute. Section 1441 provides the basic rules for which cases a defendant can remove a case from state court to federal court.
+
+28 U.S.C. § 1441
+Removal of civil actions
+
+(a) Generally. Except as otherwise expressly provided by Act of Congress, any civil action brought in a State court of which the district courts of the United States have original jurisdiction, may be removed by the defendant or the defendants, to the district court of
+985
+the United States for the district and division embracing the place where such action is pending.
+
+(b) Removal based on diversity of citizenship.
+
+* * *
+
+(2) A civil action otherwise removable solely on the basis of the jurisdiction under section 1332(a) of this title may not be removed if any of the parties in interest properly joined and served as defendants is a citizen of the State in which such action is brought.
+
+* * *
+
+(f) Derivative removal jurisdiction. The court to which a civil action is removed under this section is not precluded from hearing and determining any claim in such civil action because the State court from which such civil action is removed did not have jurisdiction over that claim.
+
+
+
+•If conditions for removal are met, a defendant may remove a case from state court to the federal district court whose district embraces the place where the case is pending
+
+•The core requirement for a case to be removable is that the district court must have original jurisdiction
+
+NOTES AND QUESTIONS ON 28 U.S.C. § 1441
+1. Note that the removal statute is specific about where a removed case is removed to. A case is removed not to any federal court but to the specific federal courthouse whose district and division includes the state courthouse in which the case was first filed. (A division is the part of a federal district served by a single courthouse. Thus, a district with two courthouses will be divided into two divisions.) In this way, the removal statute allows a defendant’s preference for federal court to trump a plaintiff’s preference for state court, but it does not allow the defendant to alter the plaintiff’s preference for the place to commence the suit.
+
+986
+The removal statute is also specific about who can remove the case. Section 1441(a) refers to “defendants” not “parties,” and courts enforce that language as written. In Shamrock Oil & Gas Corp. v. Sheets, 313 U.S. 100 (1941), the plaintiff in state court removed the case when the defendant counterclaimed for an amount greater than the amount in controversy requirement (the parties had diverse citizenship). The Court held that the case must be remanded for the simple reason that the removing party was not the “defendant.”
+
+2. As mentioned in the previous note, the removal statute allows a defendant’s preference for federal court to trump a plaintiff’s preference for state court. This might seem to create an asymmetry favoring defendants, but does it? A plaintiff’s preference for federal court also trumps a defendant’s preference for state court. If a plaintiff files suit in federal court, the defendant cannot remove the case to state court.
+
+3. The ability of plaintiffs and defendants to opt for federal court is not perfectly symmetrical, though. As Section 1441(b)(2) states, defendants cannot remove a case to federal court if any defendant is a citizen of the forum state when the basis for removal would be diversity jurisdiction. Thus, even when a federal district court has original jurisdiction over a case, the removal statute may prohibit defendants from removing the case. As you read the following sections of the removal statute, take note of other ways in which removal procedure prevents the removal of cases even when federal subject matter jurisdiction exists.
+
+INTRODUCTORY NOTE TO 28 U.S.C. § 1446
+While Section 1441 provides the basic rules for which cases can be removed, Section 1446 fleshes out how removal happens. The key step is that the defendant or defendants in a civil case in state court must file a notice of removal. Despite its humble-sounding name, the notice of removal is an unusual and powerful document. Unusual, because even though it is filed by parties who are defendants in a civil action in state court, it is not filed in state court—it is filed in federal court, not in state court. And powerful, because the notice of removal is not a request for the case to be removed—the notice of removal removes the case. No ifs, ands, or buts!
+
+987
+28 U.S.C. § 1446
+Procedure for removal of civil actions
+
+(a) Generally. A defendant or defendants desiring to remove any civil action from a State court shall file in the district court of the United States for the district and division within which such action is pending a notice of removal signed pursuant to Rule 11 of the Federal Rules of Civil Procedure and containing a short and plain statement of the grounds for removal, together with a copy of all process, pleadings, and orders served upon such defendant or defendants in such action.
+
+(b) Requirements; generally.
+
+(1) The notice of removal of a civil action or proceeding shall be filed within 30 days after the receipt by the defendant, through service or otherwise, of a copy of the initial pleading setting forth the claim for relief upon which such action or proceeding is based, or within 30 days after the service of summons upon the defendant if such initial pleading has then been filed in court and is not required to be served on the defendant, whichever period is shorter.
+
+(2)
+
+(A) When a civil action is removed solely under section 1441(a), all defendants who have been properly joined and served must join in or consent to the removal of the action.
+
+* * *
+
+(3) Except as provided in subsection (c), if the case stated by the initial pleading is not removable, a notice of removal may be filed within 30 days after receipt by the defendant, through service or otherwise, of a copy of an amended pleading, motion, order or other paper from which it may first be ascertained that the case is one which is or has become removable.
+
+(c) Requirements; removal based on diversity of citizenship.
+
+(1) A case may not be removed under subsection (b)(3) on the basis of jurisdiction conferred by section 1332 more than 1 year after commencement of the action, unless the district court finds that the plaintiff has acted in bad faith in order to prevent a defendant from removing the action.
+
+988
+(2) If removal of a civil action is sought on the basis of the jurisdiction conferred by section 1332(a), the sum demanded in good faith in the initial pleading shall be deemed to be the amount in controversy, except that—
+
+(A) the notice of removal may assert the amount in controversy if the initial pleading seeks—
+
+(i) nonmonetary relief; or
+
+(ii) a money judgment, but the State practice either does not permit demand for a specific sum or permits recovery of damages in excess of the amount demanded; and
+
+(B) removal of the action is proper on the basis of an amount in controversy asserted under subparagraph (A) if the district court finds, by the preponderance of the evidence, that the amount in controversy exceeds the amount specified in section 1332(a).
+
+(3)
+
+(A) If the case stated by the initial pleading is not removable solely because the amount in controversy does not exceed the amount specified in section 1332(a), information relating to the amount in controversy in the record of the State proceeding, or in responses to discovery, shall be treated as an ‘other paper’ under subsection (b)(3).
+
+(B) If the notice of removal is filed more than 1 year after commencement of the action and the district court finds that the plaintiff deliberately failed to disclose the actual amount in controversy to prevent removal, that finding shall be deemed bad faith under paragraph (1).
+
+(d) Notice to adverse parties and State court. Promptly after the filing of such notice of removal of a civil action the defendant or defendants shall give written notice thereof to all adverse parties and shall file a copy of the notice with the clerk of such State court, which shall effect the removal and the State court shall proceed no further unless and until the case is remanded.
+
+* * *
+
+989
+
+
+•Removal is accomplished by the filing of notice of removal in federal court
+
+•Removal requires consent of all defendants • Removal must occur within 30 days of defendants’ receipt of a pleading or other paper showing that case is removable • Removal on basis of diversity jurisdiction under Section 1332(a) cannot occur more than 1 year after filing of an action in state court, even if case is otherwise removable
+
+NOTES AND QUESTIONS ON 28 U.S.C. § 1446
+1. Removal requires the consent of all defendants. In other words, if the defendants cannot agree among themselves that they prefer federal court, then the plaintiff’s choice of state court prevails.
+
+2. Section 1446(b) requires defendants to act promptly to remove a case once they have a basis to do so. Defendants have 30 days to file a notice of removal after receiving a complaint from which the defendants can ascertain that federal courts would have jurisdiction. For example, the complaint could allege a cause of action created by federal law, or it could seek more than $75,000 in damages in a case where the parties are diverse. And if this is not clear from the complaint but becomes clear from a later “pleading, motion, order, or other paper” (such as an interrogatory answer in discovery) that the case is removable, the defendants have 30 days from receipt of that paper to remove. Why might the removal statute require defendants to remove right away, or not at all?
+
+3. As we already saw in Section 1441, the removal statute places special hurdles in the way of removal when the basis for original jurisdiction is diversity of citizenship under Section 1332(a). Section 1446(c)(1) forbids removal on the basis of diversity jurisdiction more than 1 year after commencement of the action in state court. In most cases, this extra limitation on removal will be irrelevant. If an action is filed in state court, and the complaint shows that the parties are diverse and the amount in controversy is greater than $75,000, then the defendants have 30 days to remove. Thus, the defendants’ chance to remove will expire long before the 1-year limit in Section 1446(c)(1). When might the 1-year limit in Section 1446(c)(1) matter?
+
+990
+INTRODUCTORY NOTE TO 28 U.S.C. § 1447
+Filing a notice of removal accomplishes removal: the case is now in federal court. It might not remain there, though. Once a case has been removed to federal court, a plaintiff who believes that the removal was not permitted by the removal statute may then argue to the federal court that the case should be remanded to state court.
+
+28 U.S.C. § 1447
+Procedure after removal generally
+
+* * *
+
+(c) A motion to remand the case on the basis of any defect other than lack of subject matter jurisdiction must be made within 30 days after the filing of the notice of removal under section 1446(a). If at any time before final judgment it appears that the district court lacks subject matter jurisdiction, the case shall be remanded. An order remanding the case may require payment of just costs and any actual expenses, including attorney fees, incurred as a result of the removal. A certified copy of the order of remand shall be mailed by the clerk to the clerk of the State court. The State court may thereupon proceed with such case.
+
+(d) An order remanding a case to the State court from which it was removed is not reviewable on appeal or otherwise * * * .
+
+(e) If after removal the plaintiff seeks to join additional defendants whose joinder would destroy subject matter jurisdiction, the court may deny joinder, or permit joinder and remand the action to the State court.

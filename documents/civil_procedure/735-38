@@ -1,0 +1,57 @@
+735
+Res Judicata
+Res judicata is an ancient term that encompasses what today we call preclusion, or more precisely, what we call the doctrines of claim preclusion and issue preclusion. It means, roughly, “something already decided,” and refers to the basic idea (upon which we will shortly elaborate) that once you go to court with a claim and lose, you cannot simply go to court again with the same claim, hoping to win this time around.
+
+A moment’s reflection should reveal that res judicata is perhaps the most fundamentally necessary doctrine in all of procedure. If, as we noted at the outset of our march through the civil action in Part II, that the ultimate object of “the course of administering justice” in court is “to decide,” then the whole point of the enterprise is lost if the decision is not final and binding.
+
+The first and easiest application of res judicata is in the following scenario: A plaintiff brings a lawsuit seeking some relief (say, money damages for personal injury) based on some claim (say, negligent operation of a motor vehicle) and after a trial on the merits, the court enters judgment on a verdict for the defendant. Thereafter, the plaintiff brings a second lawsuit seeking the same relief based on the same claim. At this point, the defendant can raise the affirmative defense of res judicata in his answer (see Rule 8(c)(1)), and once the defense is established by plaintiff’s admissions or other proof, the court will dismiss the claim. Note that, as the Rules indicate, res judicata is a defense and will be waived if not timely raised.
+
+Beyond this, things get complicated quickly, and in this respect the modern terminology is helpful.
+
+Claim preclusion is the doctrine that a valid, final adjudication of a claim precludes any subsequent attempt to bring the same claim or any part of that claim, including anything that could have been raised in the first proceeding but was not. It prevents a losing plaintiff from getting a second shot at winning the claim, but it also prevents a losing defendant from raising new challenges to the plaintiff’s claim after the fact. A typical statement of the elements of claim preclusion is:
+
+(1) the parties are identical or in privity; (2) the judgment in the prior action was rendered by a court of competent jurisdiction; (3) the
+736
+prior action was concluded by a final judgment on the merits; and
+
+(4) the same claim or cause of action was involved in both actions.
+
+Petro-Hunt LLC v. United States, 365 F.3d 385, 395 (5th Cir. 2004). Some terminology here requires definition. A “final judgment on the merits” means that the court judgment declared a winner and a loser, and the dispute ended. Thus, a dismissal without prejudice is not a final judgment on the merits entitled to claim preclusive effect. Examples of final judgments on the merits include a court’s entry of judgment granting plaintiff’s requested relief after trial or a court’s entry of summary judgment for the defendant because the statute of limitations period expired before the plaintiff filed the action.
+
+And what does “privity” mean in this context? A person is in “privity” with a party to a case when that person holds an interest in the subject matter of the judgment in that case that the party held. For example, if person A sues to enforce a contract but then assigns their rights under the contract to person B, then person B is in privity with person A for purposes of a judgment on the contract claim. Privity is a confusing concept, which the Court in Taylor v. Sturgell, below, attempts to clarify.
+
+Indeed, confusing terminology has been a hallmark of the law of claim preclusion. Historically, claim preclusion has gone by various names, including “res judicata,” “true res judicata,” or “merger and bar.” But although the names have changed over time, the concept has remained quite stable over time.
+
+The one respect in which the scope of claim preclusion has varied over time and space is in the meaning of “claim.” By definition, claim preclusion bars only the same claim from being brought again. But what counts as a “claim”? Historically, this question boiled down to whether the new suit alleged the same cause of action as the earlier suit—recall that under the common law there was a strict, one-to-one mapping from sets of facts to forms of actions, such that a particular event giving rise to a legal dispute could fit into one and only one form of action. This made determining whether the claim was the same fairly easy. But there was still the question of whether, say, an earlier lawsuit for a series of payments due on bonds gives rise to claim preclusion with respect to a later lawsuit for a later series of payments due on the same bonds. Precisely this question arose in Cromwell v. County of Sac, below.
+
+In modern practice under the Federal Rules, of course, we face the added complication due to the Rules’ abolition of the forms of action (see Rule 2) and
+737
+its requirement, instead, to simply state “a claim for relief” (Rule 8(a)), which begs the question of what a “claim” is. As we have seen in our review of various pleadings, it is commonplace for complaints to list several distinct causes of action, all arising out of a set of related facts that gave rise to the dispute between the parties. What if all of the allegations of such a complaint are fully litigated to judgment, but then in a later case the plaintiff seeks relief based on different causes of action arising out of the same set of related facts? Has the plaintiff brought the same “claim”?
+
+The answer today is, more or less, “Yes.” The prevailing approach to defining a “claim” for purposes of claim preclusion is to include all demands for relief arising out of the same set of transactions or events that gave rise to the earlier judgment. “[T]he critical issue is whether the two actions under consideration are based on the same nucleus of operative facts.” Petro-Hunt LLC, 365 F.3d at 396. Our cases in this chapter begin with Rose v. Board of Election Commissioners for City of Chicago, which offers a straightforward application of this approach. Alternative approaches and the justifications for the modern rule are discussed in Rush v. City of Maple Heights, below.
+
+Issue preclusion is the doctrine that issues of fact or law decided against a party in an earlier case may not be relitigated by that party in a later case. Even if the subsequent case involves an entirely separate claim, if an issue is identical to the first case, issue preclusion may prevent relitigation of that that issue. A typical statement of the elements of issue preclusion is:
+
+(1) the precise issue must have been raised and actually litigated in the prior proceedings; (2) the determination of the issue must have been necessary to the outcome of the prior proceedings; (3) the prior proceedings must have resulted in a final judgment on the merits; and (4) the party against whom estoppel is sought must have had a full and fair opportunity to litigate the issue in the prior proceeding.
+
+Georgia-Pacific Consumer Products LP v. Four-U-Packaging, Inc., 701 F.3d 1093 (6th Cir. 2012). Note that the requirement of “a final judgment on the merits” refers to a final judgment on the merits of the issue that will have preclusive effect; thus, an earlier ruling on a jurisdictional or procedural matter, if identical to such a matter in the later case, can have preclusive effect on that issue. Note too that in its traditional form, issue preclusion, like claim preclusion, operated only between the parties to the earlier litigation (or their privies). Historically,
+738
+issue preclusion was called “collateral estoppel.” It was also sometimes confusingly referred to as “res judicata.”
+
+INTRODUCTORY NOTE TO ROSE V. BOARD OF ELECTION COMMISSIONERS
+We begin with Rose. This case explicitly applies claim preclusion (not issue preclusion) and addresses arguments that typically arise when when claim preclusion is at issue. Make sure you are clear on the concepts in Rose before moving on; the remaining readings are not so straightforward. Their procedural complexity is compounded by the opinions’ terminology, as the courts sometimes refer ambiguously to “res judicata” or otherwise elide the line between claim and issue preclusion.
+
+Rose v. Board of Election Commissioners for the City of Chicago
+_________________________
+
+815 F.3d 372 (7th Cir. 2016)
+
+Before WOOD, CHIEF JUDGE, and MANION and ROVNER, CIRCUIT JUDGES.
+
+MANION, CIRCUIT JUDGE.
+
+Vincent Rose sued the state of Illinois and the Chicago Board of Election Commissioners after the Board refused to put Rose’s name on the ballot for a local government election in 2015. The district court dismissed Rose’s amended complaint because an Illinois state court had already adjudicated an identical cause of action brought by Rose against the same defendants. Rose now appeals the district court’s dismissal of his federal action. We affirm.
+
+I. BACKGROUND
+
+In 2015 Rose submitted nomination petitions for the office of alderman in Chicago’s 7th Ward. Pursuant to Illinois statute, candidates for the 2015 alderman elections were required to obtain 473 valid signatures on their petitions for nomination in order to be placed on the ballot.1 Several individuals objected

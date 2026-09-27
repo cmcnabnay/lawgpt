@@ -1,0 +1,167 @@
+776
+Taylor v. Sturgell
+_________________________
+
+553 U.S. 880 (2008)
+
+JUSTICE GINSBURG delivered the opinion of the Court.
+
+“It is a principle of general application in Anglo-American jurisprudence that one is not bound by a judgment in personam in a litigation in which he is not designated as a party or to which he has not been made a party by service of process.” Hansberry v. Lee, 311 U.S. 32, 40 (1940). Several exceptions, recognized in this Court’s decisions, temper this basic rule. In a class action, for example, a person not named as a party may be bound by a judgment on the merits of the action, if she was adequately represented by a party who actively participated in the litigation. See id. at 41. In this case, we consider for the first time whether there is a “virtual representation” exception to the general rule against precluding nonparties. Adopted by a number of courts, including the courts below in the case now before us, the exception so styled is broader than any we have so far approved.
+
+The virtual representation question we examine in this opinion arises in the following context. Petitioner Brent Taylor filed a lawsuit under the Freedom of Information Act seeking certain documents from the Federal Aviation Administration. Greg Herrick, Taylor’s friend, had previously brought an unsuccessful suit seeking the same records. The two men have no legal relationship, and there is no evidence that Taylor controlled, financed, participated in, or even had notice of Herrick’s earlier suit. Nevertheless, the D.C. Circuit held Taylor’s suit precluded by the judgment against Herrick because, in that court’s assessment, Herrick qualified as Taylor’s “virtual representative.”
+
+We disapprove the doctrine of preclusion by “virtual representation,” and hold, based on the record as it now stands, that the judgment against Herrick does not bar Taylor from maintaining this suit.
+
+I
+
+The Freedom of Information Act (FOIA) accords “any person” a right to request any records held by a federal agency. 5 U.S.C. § 552(a)(3)(A). No reason need be given for a FOIA request, and unless the requested materials fall within one of the Act’s enumerated exemptions, the agency must “make the records promptly available” to the requester. If an agency refuses to furnish
+777
+the requested records, the requester may file suit in federal court and obtain an injunction “order[ing] the production of any agency records improperly withheld.” § 552(a)(4)(B).
+
+The courts below held the instant FOIA suit barred by the judgment in earlier litigation seeking the same records. Because the lower courts’ decisions turned on the connection between the two lawsuits, we begin with a full account of each action.
+
+A
+
+The first suit was filed by Greg Herrick, an antique aircraft enthusiast and the owner of an F-45 airplane, a vintage model manufactured by the Fairchild Engine and Airplane Corporation (FEAC) in the 1930s. In 1997, seeking information that would help him restore his plane to its original condition, Herrick filed a FOIA request asking the Federal Aviation Administration (FAA) for copies of any technical documents about the F-45 contained in the agency’s records.
+
+To gain a certificate authorizing the manufacture and sale of the F-45, FEAC had submitted to the FAA’s predecessor, the Civil Aeronautics Authority, detailed specifications and other technical data about the plane. Hundreds of pages of documents produced by FEAC in the certification process remain in the FAA’s records. The FAA denied Herrick’s request, however, upon finding that the documents he sought are subject to FOIA’s exemption for “trade secrets and commercial or financial information obtained from a person and privileged or confidential,” § 552(b)(4). In an administrative appeal, Herrick urged that FEAC and its successors had waived any trade-secret protection. The FAA thereupon contacted FEAC’s corporate successor, respondent Fairchild Corporation (Fairchild). Because Fairchild objected to release of the documents, the agency adhered to its original decision.
+
+Herrick then filed suit in the U.S. District Court for the District of Wyoming. Challenging the FAA’s invocation of the trade-secret exemption, Herrick placed heavy weight on a 1955 letter from FEAC to the Civil Aeronautics Authority. The letter authorized the agency to lend any documents in its files to the public “for use in making repairs or replacement parts for aircraft produced by Fairchild.” This broad authorization, Herrick maintained, showed that the F-45 certification records held by the FAA could not be regarded as “secre[t]” or “confidential” within the meaning of § 552(b)(4).
+
+778
+Rejecting Herrick’s argument, the District Court granted summary judgment to the FAA. The 1955 letter, the court reasoned, did not deprive the F-45 certification documents of trade-secret status, for those documents were never in fact released pursuant to the letter’s blanket authorization. The court also stated that even if the 1955 letter had waived trade-secret protection, Fairchild had successfully “reversed” the waiver by objecting to the FAA’s release of the records to Herrick.
+
+On appeal, the Tenth Circuit agreed with Herrick that the 1955 letter had stripped the requested documents of trade-secret protection. But the Court of Appeals upheld the District Court’s alternative determination—i.e., that Fairchild had restored trade-secret status by objecting to Herrick’s FOIA request. On that ground, the appeals court affirmed the entry of summary judgment for the FAA.
+
+In so ruling, the Tenth Circuit noted that Herrick had failed to challenge two suppositions underlying the District Court’s decision. First, the District Court assumed trade-secret status could be “restored” to documents that had lost protection. Second, the District Court also assumed that Fairchild had regained trade-secret status for the documents even though the company claimed that status only “after Herrick had initiated his request” for the F-45 records. The Court of Appeals expressed no opinion on the validity of these suppositions.
+
+B
+
+The Tenth Circuit’s decision issued on July 24, 2002. Less than a month later, on August 22, petitioner Brent Taylor—a friend of Herrick’s and an antique aircraft enthusiast in his own right—submitted a FOIA request seeking the same documents Herrick had unsuccessfully sued to obtain. When the FAA failed to respond, Taylor filed a complaint in the U.S. District Court for the District of Columbia. Like Herrick, Taylor argued that FEAC’s 1955 letter had stripped the records of their trade-secret status. But Taylor also sought to litigate the two issues concerning recapture of protected status that Herrick had failed to raise in his appeal to the Tenth Circuit.
+
+After Fairchild intervened as a defendant, the District Court in D.C. concluded that Taylor’s suit was barred by claim preclusion; accordingly, it granted summary judgment to Fairchild and the FAA. The court acknowledged that Taylor was not a party to Herrick’s suit. Relying on the Eighth Circuit’s decision in Tyus v. Schoemehl, 93 F.3d 449 (8th Cir. 1996), however, it held that
+779
+a nonparty may be bound by a judgment if she was “virtually represented” by a party.
+
+The Eighth Circuit’s seven-factor test for virtual representation, adopted by the District Court in Taylor’s case, requires an “identity of interests” between the person to be bound and a party to the judgment. Six additional factors counsel in favor of virtual representation under the Eighth Circuit’s test, but are not prerequisites: (1) a “close relationship” between the present party and a party to the judgment alleged to be preclusive; (2) “participation in the prior litigation” by the present party; (3) the present party’s “apparent acquiescence” to the preclusive effect of the judgment; (4) “deliberat[e] maneuver[ing]” to avoid the effect of the judgment; (5) adequate representation of the present party by a party to the prior adjudication; and (6) a suit raising a “public law” rather than a “private law” issue. These factors, the D.C. District Court observed, “constitute a fluid test with imprecise boundaries” and call for “a broad, case-by-case inquiry.”
+
+The record before the District Court in Taylor’s suit revealed the following facts about the relationship between Taylor and Herrick: Taylor is the president of the Antique Aircraft Association, an organization to which Herrick belongs; the two men are “close associate[s]”; Herrick asked Taylor to help restore Herrick’s F-45, though they had no contract or agreement for Taylor’s participation in the restoration; Taylor was represented by the lawyer who represented Herrick in the earlier litigation; and Herrick apparently gave Taylor documents that Herrick had obtained from the FAA during discovery in his suit.
+
+Fairchild and the FAA conceded that Taylor had not participated in Herrick’s suit. The D.C. District Court determined, however, that Herrick ranked as Taylor’s virtual representative because the facts fit each of the other six indicators on the Eighth Circuit’s list. Accordingly, the District Court held Taylor’s suit, seeking the same documents Herrick had requested, barred by the judgment against Herrick.
+
+The D.C. Circuit affirmed. * * *
+
+* * *
+
+We granted certiorari to resolve the disagreement among the Circuits over the permissibility and scope of preclusion based on “virtual representation.”
+
+780
+II
+
+The preclusive effect of a federal-court judgment is determined by federal common law. See Semtek Int’l Inc. v. Lockheed Martin Corp., 531 U.S. 497, 507–508 (2001). * * *
+
+Taylor’s case presents an issue of first impression in this sense: Until now, we have never addressed the doctrine of “virtual representation” adopted (in varying forms) by several Circuits and relied upon by the courts below. Our inquiry, however, is guided by well-established precedent regarding the propriety of nonparty preclusion. We review that precedent before taking up directly the issue of virtual representation.
+
+A
+
+The preclusive effect of a judgment is defined by claim preclusion and issue preclusion, which are collectively referred to as “res judicata.”5 Under the doctrine of claim preclusion, a final judgment forecloses “successive litigation of the very same claim, whether or not relitigation of the claim raises the same issues as the earlier suit.” Issue preclusion, in contrast, bars “successive litigation of an issue of fact or law actually litigated and resolved in a valid court determination essential to the prior judgment,” even if the issue recurs in the context of a different claim. By “preclud[ing] parties from contesting matters that they have had a full and fair opportunity to litigate,” these two doctrines protect against “the expense and vexation attending multiple lawsuits, conserv[e] judicial resources, and foste[r] reliance on judicial action by minimizing the possibility of inconsistent decisions.”
+
+A person who was not a party to a suit generally has not had a “full and fair opportunity to litigate” the claims and issues settled in that suit. The application of claim and issue preclusion to nonparties thus runs up against the “deep-rooted historic tradition that everyone should have his own day in court.” Indicating the strength of that tradition, we have often repeated the general rule that “one is not bound by a judgment in personam in a litigation in which he is not designated as a party or to which he has not been made a party by service of process.” Hansberry, 311 U.S. at 40.
+
+781
+B
+
+Though hardly in doubt, the rule against nonparty preclusion is subject to exceptions. For present purposes, the recognized exceptions can be grouped into six categories.6
+
+First, “[a] person who agrees to be bound by the determination of issues in an action between others is bound in accordance with the terms of his agreement.” 1 RESTATEMENT (SECOND) OF JUDGMENTS § 40, p. 390 (1980). For example, “if separate actions involving the same transaction are brought by different plaintiffs against the same defendant, all the parties to all the actions may agree that the question of the defendant’s liability will be definitely determined, one way or the other, in a ‘test case.’ ”
+
+Second, nonparty preclusion may be justified based on a variety of pre-existing “substantive legal relationship[s]” between the person to be bound and a party to the judgment. Qualifying relationships include, but are not limited to, preceding and succeeding owners of property, bailee and bailor, and assignee and assignor. These exceptions originated “as much from the needs of property law as from the values of preclusion by judgment.”8
+
+Third, we have confirmed that, “in certain limited circumstances,” a nonparty may be bound by a judgment because she was “adequately represented by someone with the same interests who [wa]s a party” to the suit. Representative suits with preclusive effect on nonparties include properly conducted class actions, and suits brought by trustees, guardians, and other fiduciaries.
+
+Fourth, a nonparty is bound by a judgment if she “assume[d] control” over the litigation in which that judgment was rendered. Because such a person has had “the opportunity to present proofs and argument,” he has already “had his day in court” even though he was not a formal party to the litigation.
+
+Fifth, a party bound by a judgment may not avoid its preclusive force by relitigating through a proxy. Preclusion is thus in order when a person who did not participate in a litigation later brings suit as the designated representative
+782
+of a person who was a party to the prior adjudication. And although our decisions have not addressed the issue directly, it also seems clear that preclusion is appropriate when a nonparty later brings suit as an agent for a party who is bound by a judgment.
+
+Sixth, in certain circumstances a special statutory scheme may “expressly foreclos[e] successive litigation by nonlitigants … if the scheme is otherwise consistent with due process.” Examples of such schemes include bankruptcy and probate proceedings, and quo warranto actions or other suits that, “under [the governing] law, [may] be brought only on behalf of the public at large.”
+
+III
+
+* * *
+
+Fairchild and the FAA do not argue that the D.C. Circuit’s virtual representation doctrine fits within any of the recognized grounds for nonparty preclusion. Rather, they ask us to abandon the attempt to delineate discrete grounds and clear rules altogether. Preclusion is in order, they contend, whenever “the relationship between a party and a non-party is ‘close enough’ to bring the second litigant within the judgment.” Courts should make the “close enough” determination, they urge, through a “heavily fact-driven” and “equitable” inquiry. Only this sort of diffuse balancing, Fairchild and the FAA argue, can account for all of the situations in which nonparty preclusion is appropriate.
+
+We reject this argument for three reasons. First, our decisions emphasize the fundamental nature of the general rule that a litigant is not bound by a judgment to which she was not a party. Accordingly, we have endeavored to delineate discrete exceptions that apply in “limited circumstances.” Respondents’ amorphous balancing test is at odds with the constrained approach to nonparty preclusion our decisions advance.
+
+* * *
+
+Our second reason for rejecting a broad doctrine of virtual representation rests on the limitations attending nonparty preclusion based on adequate representation. A party’s representation of a nonparty is “adequate” for preclusion purposes only if, at a minimum: (1) the interests of the nonparty and her representative are aligned, see Hansberry, 311 U.S. at 43; and (2) either the party understood herself to be acting in a representative capacity or the original court took care to protect the interests of the nonparty, see Richards v. Jefferson County,
+783
+517 U.S. 793, 801–802 (1996). In addition, adequate representation sometimes requires (3) notice of the original suit to the persons alleged to have been represented. In the class-action context, these limitations are implemented by the procedural safeguards contained in Federal Rule of Civil Procedure 23.
+
+An expansive doctrine of virtual representation, however, would “recogniz[e], in effect, a common-law kind of class action.” That is, virtual representation would authorize preclusion based on identity of interests and some kind of relationship between parties and nonparties, shorn of the procedural protections prescribed in Hansberry, Richards, and Rule 23. These protections, grounded in due process, could be circumvented were we to approve a virtual representation doctrine that allowed courts to “create de facto class actions at will.”
+
+Third, a diffuse balancing approach to nonparty preclusion would likely create more headaches than it relieves. Most obviously, it could significantly complicate the task of district courts faced in the first instance with preclusion questions. An all-things-considered balancing approach might spark wide-ranging, time-consuming, and expensive discovery tracking factors potentially relevant under seven- or five-prong tests. And after the relevant facts are established, district judges would be called upon to evaluate them under a standard that provides no firm guidance. Preclusion doctrine, it should be recalled, is intended to reduce the burden of litigation on courts and parties. “In this area of the law,” we agree, “crisp rules with sharp corners are preferable to a round-about doctrine of opaque standards.”
+
+C
+
+Finally, * * * the FAA maintains that nonparty preclusion should apply more broadly in “public law” litigation than in “private law” controversies. To support this position, the FAA offers two arguments. First, the FAA urges, our decision in Richards acknowledges that, in certain cases, the plaintiff has a reduced interest in controlling the litigation “because of the public nature of the right at issue.” * * *
+
+* * * The opening sentence of FOIA, it is true, states that agencies “shall make [information] available to the public.” 5 U.S.C. § 552(a). * * * The Act, however, instructs agencies receiving FOIA requests to make the information available not to the public at large, but rather to the “person” making the
+784
+request. § 552(a)(3)(A). Thus, * * * a successful FOIA action results in a grant of relief to the individual plaintiff, not a decree benefiting the public at large.
+
+Furthermore, we said in Richards only that, for the type of public-law claims there envisioned, States are free to adopt procedures limiting repetitive litigation. In this regard, we referred to instances in which the first judgment foreclosed successive litigation by other plaintiffs because, “under state law, [the suit] could be brought only on behalf of the public at large.”12 Richards spoke of state legislation, but it appears equally evident that Congress, in providing for actions vindicating a public interest, may “limit the number of judicial proceedings that may be entertained.” It hardly follows, however, that this Court should proscribe or confine successive FOIA suits by different requesters. Indeed, Congress’ provision for FOIA suits with no statutory constraint on successive actions counsels against judicial imposition of constraints through extraordinary application of the common law of preclusion.
+
+The FAA next argues that “the threat of vexatious litigation is heightened” in public-law cases because “the number of plaintiffs with standing is potentially limitless.” FOIA does allow “any person” whose request is denied to resort to federal court for review of the agency’s determination. 5 U.S.C. § 552(a)(3)(A), (4)(B). Thus it is theoretically possible that several persons could coordinate to mount a series of repetitive lawsuits.
+
+But we are not convinced that this risk justifies departure from the usual rules governing nonparty preclusion. First, stare decisis will allow courts swiftly to dispose of repetitive suits brought in the same circuit. Second, even when stare decisis is not dispositive, “the human tendency not to waste money will deter the bringing of suits based on claims or issues that have already been adversely determined against others.” This intuition seems to be borne out by experience: The FAA has not called our attention to any instances of abusive FOIA suits in the Circuits that reject the virtual representation theory respondents advocate here.
+
+IV
+
+For the foregoing reasons, we disapprove the theory of virtual representation on which the decision below rested. The preclusive effects of a judgment
+785
+in a federal-question case decided by a federal court should instead be determined according to the established grounds for nonparty preclusion described in this opinion.
+
+Although references to “virtual representation” have proliferated in the lower courts, our decision is unlikely to occasion any great shift in actual practice. Many opinions use the term “virtual representation” in reaching results at least arguably defensible on established grounds. In these cases, dropping the “virtual representation” label would lead to clearer analysis with little, if any, change in outcomes.
+
+In some cases, however, lower courts have relied on virtual representation to extend nonparty preclusion beyond the latter doctrine’s proper bounds. We now turn back to Taylor’s action to determine whether his suit is such a case, or whether the result reached by the courts below can be justified on one of the recognized grounds for nonparty preclusion.
+
+A
+
+It is uncontested that four of the six grounds for nonparty preclusion have no application here: There is no indication that Taylor agreed to be bound by Herrick’s litigation, that Taylor and Herrick have any legal relationship, that Taylor exercised any control over Herrick’s suit, or that this suit implicates any special statutory scheme limiting relitigation. Neither the FAA nor Fairchild contends otherwise.
+
+It is equally clear that preclusion cannot be justified on the theory that Taylor was adequately represented in Herrick’s suit. Nothing in the record indicates that Herrick understood himself to be suing on Taylor’s behalf, that Taylor even knew of Herrick’s suit, or that the Wyoming District Court took special care to protect Taylor’s interests. Under our pathmarking precedent, therefore, Herrick’s representation was not “adequate.” See Richards, 517 U.S. at 801–802.
+
+That leaves only the fifth category: preclusion because a nonparty to an earlier litigation has brought suit as a representative or agent of a party who is bound by the prior adjudication. Taylor is not Herrick’s legal representative and he has not purported to sue in a representative capacity. He concedes, however, that preclusion would be appropriate if respondents could demonstrate that he is acting as Herrick’s “undisclosed agen[t].”
+
+786
+Respondents argue here, as they did below, that Taylor’s suit is a collusive attempt to relitigate Herrick’s action. The D.C. Circuit considered a similar question in addressing the “tactical maneuvering” prong of its virtual representation test. The Court of Appeals did not, however, treat the issue as one of agency, and it expressly declined to reach any definitive conclusions due to “the ambiguity of the facts.” We therefore remand to give the courts below an opportunity to determine whether Taylor, in pursuing the instant FOIA suit, is acting as Herrick’s agent. Taylor concedes that such a remand is appropriate.
+
+We have never defined the showing required to establish that a nonparty to a prior adjudication has become a litigating agent for a party to the earlier case. Because the issue has not been briefed in any detail, we do not discuss the matter elaboratively here. We note, however, that courts should be cautious about finding preclusion on this basis. A mere whiff of “tactical maneuvering” will not suffice; instead, principles of agency law are suggestive. They indicate that preclusion is appropriate only if the putative agent’s conduct of the suit is subject to the control of the party who is bound by the prior adjudication.
+
+B
+
+On remand, Fairchild suggests, Taylor should bear the burden of proving he is not acting as Herrick’s agent. When a defendant points to evidence establishing a close relationship between successive litigants, Fairchild maintains, “the burden [should] shif[t] to the second litigant to submit evidence refuting the charge” of agency. Fairchild justifies this proposed burden-shift on the ground that “it is unlikely an opposing party will have access to direct evidence of collusion.”
+
+We reject Fairchild’s suggestion. Claim preclusion, like issue preclusion, is an affirmative defense. See Rule 8(c). Ordinarily, it is incumbent on the defendant to plead and prove such a defense, and we have never recognized claim preclusion as an exception to that general rule. We acknowledge that direct evidence justifying nonparty preclusion is often in the hands of plaintiffs rather than defendants. But “[v]ery often one must plead and prove matters as to which his adversary has superior access to the proof.” In these situations, targeted interrogatories or deposition questions can reduce the information disparity. We see no greater cause here than in other matters of affirmative defense to disturb the traditional allocation of the proof burden.
+
+* * *
+
+787
+For the reasons stated, the judgment of the United States Court of Appeals for the District of Columbia Circuit is vacated, and the case is remanded for further proceedings consistent with this opinion.
+
+It is so ordered.
+
+
+
+•The Court recognizes only six categories of exceptions to the general rule that preclusion operates only against a party to the earlier judgment
+
+•A party’s representation of a nonparty is “adequate” for preclusion purposes only if (1) the interests of the nonparty and her representative are aligned, and (2) either the party understood herself to be acting in a representative capacity or the court took care to protect the interests of the nonparty; further, notice of the suit to the persons represented is also sometimes required
+
+Go online for bullet points on the background and holding of Taylor v. Sturgell.
+
+NOTES AND QUESTIONS ON TAYLOR V. STURGELL
+1. Taylor v. Sturgell is a case whose outcome depends on the precise application of doctrine to a narrow set of facts. It is an exemplar of a case that carefully articulates and then applies long-standing doctrine to a peculiar—but not necessarily unusual—fact pattern. Also noteworthy about the case is its precise and plain-spoken treatment of conditions under which nonparties to a judgment are nonetheless bound by the judgment. In contrast to some of the 19th and 20th Century cases we’ve read so far, Justice Ginsburg’s opinion steers away from mystifying and ambiguous terms like “privity,” “estoppel,” and so on. The enumeration in Part II-B of the opinion of the six types of exceptions to the rule against nonparty preclusion may be the clearest statement of that doctrine you’ll find. Isn’t it refreshing when a court says exactly what it means?

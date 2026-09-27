@@ -1,0 +1,117 @@
+947
+under federal law. And in a case where “complete preemption” does not apply, this means that there is nothing improper about plaintiff choosing to plead a cause of action under state law rather than pleading a different cause of action under federal law. After all, as the Dillon court reminds us, the plaintiff is “master of the complaint.”
+
+INTRODUCTORY NOTE TO GUNN V. MINTON
+Dillon v. Medtronic thoroughly canvasses the law governing jurisdiction under Section 1331. It does not, however, venture far into the “maze” of doctrine that defines the slim set of complaints that do not allege federal causes of action but that nonetheless raise federal issues sufficient to establish jurisdiction under Section 1331. In Gunn v. Minton, cited in Dillon v. Medtronic, the Supreme Court provides guidance on when a complaint alleging only state-law causes of action arises under federal law.
+
+Gunn v. Minton
+_________________________
+
+568 U.S. 251 (2013)
+
+CHIEF JUSTICE ROBERTS delivered the opinion of the Court.
+
+Federal courts have exclusive jurisdiction over cases “arising under any Act of Congress relating to patents.” 28 U.S.C. § 1338(a). The question presented is whether a state law claim alleging legal malpractice in the handling of a patent case must be brought in federal court.
+
+I
+
+In the early 1990s, respondent Vernon Minton developed a computer program and telecommunications network designed to facilitate securities trading. In March 1995, he leased the system—known as the Texas Computer Exchange Network, or TEXCEN—to R.M. Stark & Co., a securities brokerage. A little over a year later, he applied for a patent for an interactive securities trading system that was based substantially on TEXCEN. The U.S. Patent and Trademark Office issued the patent in January 2000.
+
+948
+Patent in hand, Minton filed a patent infringement suit in Federal District Court against the National Association of Securities Dealers, Inc. (NASD) and the NASDAQ Stock Market, Inc. He was represented by Jerry Gunn and the other petitioners. NASD and NASDAQ moved for summary judgment on the ground that Minton’s patent was invalid under the “on sale” bar, 35 U.S.C. § 102(b). That provision specifies that an inventor is not entitled to a patent if “the invention was … on sale in [the United States], more than one year prior to the date of the application,” and Minton had leased TEXCEN to Stark more than one year prior to filing his patent application. Rejecting Minton’s argument that there were differences between TEXCEN and the patented system that precluded application of the on-sale bar, the District Court granted the summary judgment motion and declared Minton’s patent invalid.
+
+Minton then filed a motion for reconsideration in the District Court, arguing for the first time that the lease agreement with Stark was part of ongoing testing of TEXCEN and therefore fell within the “experimental use” exception to the on-sale bar. The District Court denied the motion.
+
+Minton appealed to the U.S. Court of Appeals for the Federal Circuit. That court affirmed, concluding that the District Court had appropriately held Minton’s experimental-use argument waived.
+
+Minton, convinced that his attorneys’ failure to raise the experimental-use argument earlier had cost him the lawsuit and led to invalidation of his patent, brought this malpractice action in Texas state court. His former lawyers defended on the ground that the lease to Stark was not, in fact, for an experimental use, and that therefore Minton’s patent infringement claims would have failed even if the experimental-use argument had been timely raised. The trial court agreed, holding that Minton had put forward “less than a scintilla of proof” that the lease had been for an experimental purpose. It accordingly granted summary judgment to Gunn and the other lawyer defendants.
+
+On appeal, Minton raised a new argument: Because his legal malpractice claim was based on an alleged error in a patent case, it “aris[es] under” federal patent law for purposes of 28 U.S.C. § 1338(a). And because, under § 1338(a), “[n]o State court shall have jurisdiction over any claim for relief arising under any Act of Congress relating to patents,” the Texas court—where Minton had originally brought his malpractice claim—lacked subject matter jurisdiction to decide the case. Accordingly, Minton argued, the trial court’s order should be
+949
+vacated and the case dismissed, leaving Minton free to start over in the Federal District Court.
+
+A divided panel of the Court of Appeals of Texas rejected Minton’s argument. Applying the test we articulated in Grable & Sons Metal Products, Inc. v. Darue Engineering & Mfg., 545 U.S. 308, 314 (2005), it held that the federal interests implicated by Minton’s state law claim were not sufficiently substantial to trigger § 1338 “arising under” jurisdiction. It also held that finding exclusive federal jurisdiction over state legal malpractice actions would, contrary to Grable’s commands, disturb the balance of federal and state judicial responsibilities. Proceeding to the merits of Minton’s malpractice claim, the Court of Appeals affirmed the trial court’s determination that Minton had failed to establish experimental use and that arguments on that ground therefore would not have saved his infringement suit.
+
+The Supreme Court of Texas reversed * * * . The Court concluded that Minton’s claim involved “a substantial federal issue” within the meaning of Grable “because the success of Minton’s malpractice claim is reliant upon the viability of the experimental use exception as a defense to the on-sale bar.” * * *
+
+* * *
+
+We granted certiorari.
+
+II
+
+“Federal courts are courts of limited jurisdiction,” possessing “only that power authorized by Constitution and statute.” There is no dispute that the Constitution permits Congress to extend federal court jurisdiction to a case such as this one, see Osborn v. Bank of United States, 22 U.S. (9 Wheat.) 738, 823–824 (1824); the question is whether Congress has done so.
+
+As relevant here, Congress has authorized the federal district courts to exercise original jurisdiction in “all civil actions arising under the Constitution, laws, or treaties of the United States,” 28 U.S.C. § 1331, and, more particularly, over “any civil action arising under any Act of Congress relating to patents,” § 1338(a). Adhering to the demands of “[l]inguistic consistency,” we have interpreted the phrase “arising under” in both sections identically, applying our § 1331 and § 1338(a) precedents interchangeably. For cases falling within the patent-specific arising under jurisdiction of § 1338(a), however, Congress has not only provided for federal jurisdiction but also eliminated state jurisdiction,
+950
+decreeing that “[n]o State court shall have jurisdiction over any claim for relief arising under any Act of Congress relating to patents.” § 1338(a). To determine whether jurisdiction was proper in the Texas courts, therefore, we must determine whether it would have been proper in a federal district court—whether, that is, the case “aris[es] under any Act of Congress relating to patents.”
+
+For statutory purposes, a case can “aris[e] under” federal law in two ways. Most directly, a case arises under federal law when federal law creates the cause of action asserted. See American Well Works Co. v. Layne & Bowler Co., 241 U.S. 257, 260 (1916) (“A suit arises under the law that creates the cause of action”). As a rule of inclusion, this “creation” test admits of only extremely rare exceptions, see, e.g., Shoshone Mining Co. v. Rutter, 177 U.S. 505 (1900), and accounts for the vast bulk of suits that arise under federal law. Minton’s original patent infringement suit against NASD and NASDAQ, for example, arose under federal law in this manner because it was authorized by 35 U.S.C. §§ 271, 281. [These are federal statutes creating a cause of action and remedies for patent infringement.—ed.]
+
+But even where a claim finds its origins in state rather than federal law—as Minton’s legal malpractice claim indisputably does—we have identified a “special and small category” of cases in which arising under jurisdiction still lies. Empire Healthchoice Assurance, Inc. v. McVeigh, 547 U.S. 677, 699 (2006). In outlining the contours of this slim category, we do not paint on a blank canvas. Unfortunately, the canvas looks like one that Jackson Pollock got to first.
+
+In an effort to bring some order to this unruly doctrine several Terms ago, we condensed our prior cases into the following inquiry: Does the “state-law claim necessarily raise a stated federal issue, actually disputed and substantial, which a federal forum may entertain without disturbing any congressionally approved balance of federal and state judicial responsibilities”? Grable, 545 U.S. at 314. That is, federal jurisdiction over a state law claim will lie if a federal issue is: (1) necessarily raised, (2) actually disputed, (3) substantial, and (4) capable of resolution in federal court without disrupting the federal-state balance approved by Congress. Where all four of these requirements are met, we held, jurisdiction is proper because there is a “serious federal interest in claiming the advantages thought to be inherent in a federal forum,” which can be vindicated without disrupting Congress’s intended division of labor between state and federal courts.
+
+951
+III
+
+Applying Grable’s inquiry here, it is clear that Minton’s legal malpractice claim does not arise under federal patent law. Indeed, for the reasons we discuss, we are comfortable concluding that state legal malpractice claims based on underlying patent matters will rarely, if ever, arise under federal patent law for purposes of § 1338(a). Although such cases may necessarily raise disputed questions of patent law, those cases are by their nature unlikely to have the sort of significance for the federal system necessary to establish jurisdiction.
+
+A
+
+To begin, we acknowledge that resolution of a federal patent question is “necessary” to Minton’s case. Under Texas law, a plaintiff alleging legal malpractice must establish four elements: (1) that the defendant attorney owed the plaintiff a duty; (2) that the attorney breached that duty; (3) that the breach was the proximate cause of the plaintiff’s injury; and (4) that damages occurred. In cases like this one, in which the attorney’s alleged error came in failing to make a particular argument, the causation element requires a “case within a case” analysis of whether, had the argument been made, the outcome of the earlier litigation would have been different. To prevail on his legal malpractice claim, therefore, Minton must show that he would have prevailed in his federal patent infringement case if only petitioners had timely made an experimental-use argument on his behalf. That will necessarily require application of patent law to the facts of Minton’s case.
+
+B
+
+The federal issue is also “actually disputed” here—indeed, on the merits, it is the central point of dispute. Minton argues that the experimental-use exception properly applied to his lease to Stark, saving his patent from the on-sale bar; petitioners argue that it did not. This is just the sort of “dispute … respecting the … effect of [federal] law” that Grable envisioned. 545 U.S. at 313.
+
+C
+
+Minton’s argument founders on Grable’s next requirement, however, for the federal issue in this case is not substantial in the relevant sense. In reaching the opposite conclusion, the Supreme Court of Texas focused on the importance of the issue to the plaintiff’s case and to the parties before it. As our past cases show, however, it is not enough that the federal issue be significant to the
+952
+particular parties in the immediate suit; that will always be true when the state claim “necessarily raise[s]” a disputed federal issue, as Grable separately requires. The substantiality inquiry under Grable looks instead to the importance of the issue to the federal system as a whole.
+
+In Grable itself, for example, the Internal Revenue Service had seized property from the plaintiff and sold it to satisfy the plaintiff’s federal tax delinquency. 545 U.S. at 310–311. Five years later, the plaintiff filed a state law quiet title action against the third party that had purchased the property, alleging that the IRS had failed to comply with certain federally imposed notice requirements, so that the seizure and sale were invalid. In holding that the case arose under federal law, we primarily focused not on the interests of the litigants themselves, but rather on the broader significance of the notice question for the Federal Government. We emphasized the Government’s “strong interest” in being able to recover delinquent taxes through seizure and sale of property, which in turn “require [d] clear terms of notice to allow buyers … to satisfy themselves that the Service has touched the bases necessary for good title.” The Government’s “direct interest in the availability of a federal forum to vindicate its own administrative action” made the question “an important issue of federal law that sensibly belong[ed] in a federal court.”
+
+* * *
+
+Here, the federal issue carries no such significance. Because of the backward-looking nature of a legal malpractice claim, the question is posed in a merely hypothetical sense: If Minton’s lawyers had raised a timely experimental-use argument, would the result in the patent infringement proceeding have been different? No matter how the state courts resolve that hypothetical “case within a case,” it will not change the real-world result of the prior federal patent litigation. Minton’s patent will remain invalid.
+
+Nor will allowing state courts to resolve these cases undermine “the development of a uniform body of [patent] law.” Congress ensured such uniformity by vesting exclusive jurisdiction over actual patent cases in the federal district courts and exclusive appellate jurisdiction in the Federal Circuit. See 28 U.S.C. §§ 1338(a), 1295(a)(1). In resolving the nonhypothetical patent questions those cases present, the federal courts are of course not bound by state court case-within-a-case patent rulings. In any event, the state court case-within-a-case inquiry asks what would have happened in the prior federal proceeding if a
+953
+particular argument had been made. In answering that question, state courts can be expected to hew closely to the pertinent federal precedents. It is those precedents, after all, that would have applied had the argument been made.
+
+As for more novel questions of patent law that may arise for the first time in a state court “case within a case,” they will at some point be decided by a federal court in the context of an actual patent case, with review in the Federal Circuit. If the question arises frequently, it will soon be resolved within the federal system, laying to rest any contrary state court precedent; if it does not arise frequently, it is unlikely to implicate substantial federal interests. The present case is “poles apart from Grable,” in which a state court’s resolution of the federal question “would be controlling in numerous other cases.” Empire Healthchoice Assurance, Inc., 547 U.S. at 700.
+
+Minton also suggests that state courts’ answers to hypothetical patent questions can sometimes have real-world effect on other patents through issue preclusion. Minton, for example, has filed what is known as a “continuation patent” application related to his original patent. He argues that, in evaluating this separate application, the patent examiner could be bound by the Texas trial court’s interpretation of the scope of Minton’s original patent. It is unclear whether this is true. The Patent and Trademark Office’s Manual of Patent Examining Procedure provides that res judicata is a proper ground for rejecting a patent “only when the earlier decision was a decision of the Board of Appeals” or certain federal reviewing courts, giving no indication that state court decisions would have preclusive effect. In fact, Minton has not identified any case finding such preclusive effect based on a state court decision. But even assuming that a state court’s case-within-a-case adjudication may be preclusive under some circumstances, the result would be limited to the parties and patents that had been before the state court. Such “fact-bound and situation-specific” effects are not sufficient to establish federal arising under jurisdiction.
+
+Nor can we accept the suggestion that the federal courts’ greater familiarity with patent law means that legal malpractice cases like this one belong in federal court. It is true that a similar interest was among those we considered in Grable. But the possibility that a state court will incorrectly resolve a state claim is not, by itself, enough to trigger the federal courts’ exclusive patent jurisdiction, even if the potential error finds its root in a misunderstanding of patent law.
+
+954
+There is no doubt that resolution of a patent issue in the context of a state legal malpractice action can be vitally important to the particular parties in that case. But something more, demonstrating that the question is significant to the federal system as a whole, is needed. That is missing here.
+
+D
+
+It follows from the foregoing that Grable’s fourth requirement is also not met. That requirement is concerned with the appropriate “balance of federal and state judicial responsibilities.” We have already explained the absence of a substantial federal issue within the meaning of Grable. The States, on the other hand, have “a special responsibility for maintaining standards among members of the licensed professions.” Their “interest … in regulating lawyers is especially great since lawyers are essential to the primary governmental function of administering justice, and have historically been officers of the courts.” We have no reason to suppose that Congress—in establishing exclusive federal jurisdiction over patent cases—meant to bar from state courts state legal malpractice claims simply because they require resolution of a hypothetical patent issue.
+
+* * *
+
+* * * In this case, although the state courts must answer a question of patent law to resolve Minton’s legal malpractice claim, their answer will have no broader effects. It will not stand as binding precedent for any future patent claim; it will not even affect the validity of Minton’s patent. Accordingly, there is no “serious federal interest in claiming the advantages thought to be inherent in a federal forum.” Section 1338(a) does not deprive the state courts of subject matter jurisdiction.
+
+The judgment of the Supreme Court of Texas is reversed, and the case is remanded for further proceedings not inconsistent with this opinion.
+
+It is so ordered.
+
+955
+
+
+•For a federal issue in a state law cause of action to be “substantial,” the resolution of the federal issue must important to the federal system as a whole
+
+•Striking a “federal-state balance” means weighing the federal interest in deciding the federal issue with the state interest in deciding state issues, in light of the overall division of labor between federal and state courts
+
+Go online for bullet points on the background and holding of Gunn v. Minton.
+
+NOTES AND QUESTIONS ON GUNN V. MINTON
+The Federal Food, Drug, and Cosmetic Act, 21 U.S.C. § 302 et seq. (FDCA), regulates (among other things) the labeling of pharmaceuticals but creates no private right of action for violations of the statute. Rather, the federal government itself enforces the FDCA. In Merrell Dow Pharmaceuticals Inc. v. Thompson, 478 U.S. 804 (1986), the plaintiffs brought a number of state-law causes of action in Ohio state court against Merrell Dow Pharmaceuticals for injuries related to their use of the drug Bendectin. One of the claims in the complaint alleged that Bendectin was “misbranded” in violation of the FDCA, and that this violation of the FDCA “constitutes a rebuttable presumption of negligence.” Thus, although the plaintiff alleged a claim for negligence under the Ohio common law of tort, this claim involved a question of whether the defendant violated a federal law. (Recall that there could be no separate claim under the FDCA, because there is no private right of action under that statute.) Does such a claim “arise under” federal law? The Supreme Court answered that question in the negative. Today, with the benefit of Gunn v. Minton, would the result be the same? Why or why not?
+
+The court in Dillon v. Medtronic faced a similar question under a related statute, the Medical Device Amendments to the FDCA. The analysis in Dillon, though, relied on the fact that the allegation of negligence based on a violation of federal law was just one of many theories raised in the case. What if it had been the only theory of liability?

@@ -1,0 +1,54 @@
+729
+Like required joinder, permissive joinder makes a person a party to an action and binds them to the judgment. Further, both required and permissive joinder of parties can reduce the cost of litigation relative to multiple individual suits and can increase the consistency in judgments rendered with respect to related claims. But unlike required joinder, which by definition involves a situation where non-joinder impairs the court’s ability to do justice to the disputants, permissive joinder may present a more complex set of tradeoffs for a court pursuing a fair result for all parties.
+
+These issues appear in the next case, Breaking Glass Pictures, where the court must consider whether break up a single action with 188 defendants by invoking its power to dismiss parties from a case for misjoinder under Rule 21. The plaintiff’s claims against each of the 188 defendants are closely related, but would it serve the interests of justice to join them all in one case? Difficult questions of the tradeoffs between the efficiencies of aggregating claims and the benefits of individualized litigation will also appear when we turn to a procedural device that allows aggregation at a scale beyond joinder—class actions.
+
+Breaking Glass Pictures, LLC v. Does 1–188
+_________________________
+
+2013 WL 4551773, 4:13–CV–00388 (E.D. Mo. Aug. 28, 2013)
+
+AUDREY G. FLEISSIG, DISTRICT JUDGE.
+
+This “BitTorrent swarm” copyright infringement suit is before the Court on its own motion. For the reasons set forth below, those Doe Defendants # 2 through # 188 who are still in the action shall be severed from Doe # 1 for misjoinder under Federal Rule of Civil Procedure 21.
+
+BACKGROUND
+
+Plaintiff Breaking Glass Pictures, LLC, filed this action against 188 Doe Defendants, claiming that they violated its copyright to a movie by uploading and downloading it using a peer-to-peer (“P2P”) file sharing client known as BitTorrent. According to the complaint, P2P networks are computer systems which allow users to make files stored on each user’s computer system available for copying by other users, or peers; search for files stored on other users’ computers; and transfer exact copies of files from one computer to the other via the internet. BitTorrent in particular allows users to share large files while
+730
+minimizing the strain on computer networks. It does this by breaking files into smaller parts, and then enabling the small parts to be downloaded from multiple other users, rather than downloading a single large file from one other user’s computer. BitTorrent coordinates the downloading of the large file between hundreds and thousands of computers, and as the original user (“peer”) downloads his or her copy it becomes available for other users to download. The collection of users who simultaneously share a file is known as a “swarm.”
+
+Plaintiff alleges that some of the Defendants are Missouri residents and were part of a swarm that allowed them and others to steal Plaintiff’s movie, “6 Degrees of Hell,” in violation of its copyright. An exhibit attached to the complaint suggests that this swarm lasted approximately nine weeks, from December 2, 2012, until January 30, 2013. Plaintiff seeks damages and injunctive relief against Defendants.
+
+Plaintiff was only able to identify Defendants by their Internet Protocol (“IP”) address and Internet Service Providers (“ISPs”). By Order dated May 1, 2013, the Court granted Plaintiff’s request to take pre-service discovery to ascertain Defendants’ identities and contact information by serving subpoenas, within 30 days of the date of the Order, upon the ISPs for this information.
+
+The ISPs were directed to serve, within 60 days, a copy on Defendants whose IP addresses were provided by Plaintiff. The Order, which was to be served on Defendants along with the subpoena, gave Defendants up to 60 days from the date of the Order to file a motion to contest the subpoena, and to do so anonymously. Several Doe defendants objected and were voluntarily dismissed by Plaintiff.
+
+DISCUSSION
+
+Rule 20 of the Federal Rules of Civil Procedure permits, in relevant part, a plaintiff to join multiple defendants into one action if “(A) any right to relief is asserted against them … arising out of the same transaction, occurrence, or series of transactions or occurrences; and (B) any question of law or fact common to all defendants will arise in the action.” Rule 20(a)(2). Rule 21 permits a court to sever parties sua sponte.
+
+When determining whether defendants are joined properly, the court should “liberally construe[ ] [the requirements] in the interest of convenience and judicial economy in a manner that will secure the just, speedy, and inexpensive
+731
+termination of the action.” If defendants do not satisfy the test for permissive joinder, the court may sever the misjoined parties, “so long as no substantial right will be prejudiced by the severance.” * * *
+
+There is a split of authority nationally over whether it is appropriate to join in a single lawsuit many Doe defendants who are alleged to have participated in a single BitTorrent swarm. Relying on BitTorrent’s architecture, some courts have concluded that Doe defendants’ infringing activities arise from the same series of transactions or occurrences if the illegally downloaded torrent file’s unique identifier links each Doe defendant to the same initial seed and swarm.
+
+This court is persuaded by the contrary view taken by many courts, that Rule 20(a) joinder of numerous Doe Defendants is not proper in BitTorrent cases, especially where, as here, the Doe Defendants’ activities spanned roughly nine weeks. The rationale for this view is expressed in Hard Drive Productions, Inc. v. Does 1–188, 809 F.Supp.2d 1150 (N.D. Cal. 2011), as follows:
+
+Does 1–188 did not participate in the same transaction or occurrence, or the same series of transactions or occurrences. Under the BitTorrent Protocol, it is not necessary that each of the Does 1–188 participated in or contributed to the downloading of each other’s copies of the work at issue—or even participated in or contributed to the downloading by any of the Does 1–188. Any “pieces” of the work copied or uploaded by any individual Doe may have gone to any other Doe or to any of the potentially thousands who participated in a given swarm. The bare fact that a Doe clicked on a command to participate in the BitTorrent Protocol does not mean that they were part of the downloading by unknown hundreds or thousands of individuals across the country or across the world.
+
+Id. at 1163 (citing numerous cases). The Court believes that these cases are well-reasoned and will follow their precedent.
+
+Even if joinder of the Doe Defendants in this action met the requirements of Rule 20(a), the Court finds it is appropriate to exercise its discretion to sever and dismiss all but one Doe Defendant to avoid causing prejudice and unfairness to Defendants, and in the interest of justice. Rule 20(a)’s purpose of promoting judicial economy and trial convenience would not be served by allowing the number of defendants in this case because the ensuing discovery and variety of defenses could prove unwieldy for a single case.
+
+732
+In addition, joinder of numerous defendants in a single case may cause them prejudice. Court proceedings would be hampered as each defendant would have the opportunity to be present with his or her attorney. Though defendants may have nothing in common other than their participation in a single BitTorrent swarm, they would be required to serve every other defendant with all pleadings. Also, each defendant would have the right to be present at all other defendants’ depositions. “The combination of these hardships could make conducting litigation difficult for individual defendants.”
+
+* * *
+
+CONCLUSION
+
+Accordingly,
+
+IT IS HEREBY ORDERED that those Defendants Doe # 2 through Doe # 188 who are still in the action are SEVERED from this action and the claims against them are DISMISSED without prejudice.

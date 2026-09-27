@@ -1,0 +1,219 @@
+712
+Joinder
+We begin with joinder. The basic idea is simple: if two people have more than one dispute between them, it may make sense for them to hash out all their grievances in a single action. This avoids multiple actions between the same parties. And to the extent that some of the disputes are similar or related to each other, resolving them in a single action allows the court to resolve them in a consistent and efficient way. Hence rules of procedure provide for joinder of claims.
+
+Joinder also applies to parties. If a dispute involves more than two people, then it may make sense for everyone with a stake in the dispute to be joined in a single action. Through joinder, a single action can resolve in a coordinated way the closely related questions raised by all parties to a dispute. Hence, rules of procedure provide for joinder of parties.
+
+In the next part of this chapter, we will study preclusion. Doctrines of preclusion determine when a party’s ability to litigate a claim or issue is foreclosed because they are bound by an earlier judgment that decided that same question. Preclusion is about connecting different cases—earlier cases affecting later cases. In this way, preclusion seems unrelated to joinder, which connects different people to the same case. But what binds a party to an earlier judgment in a different case? For starters, this: One is bound to an earlier judgment when one was a party to that judgment. And what makes someone a party to a judgment? They were joined to the case.
+
+In other words, joinder defines which persons are parties to an action and which claims the court will decide in that action. Persons joined to an action then become bound by the judgment in that action, while persons not joined are as a general matter not bound. (We will discuss exceptions in due course.) Joinder thus determines which claims a court will decide in an action. Win or lose, those claims are resolved once and for all.
+
+INTRODUCTORY NOTE TO RULES 13, 18, 19, AND 20
+The Federal Rules have a lot to say about joinder. In this chapter, we will focus on several of the key joinder provisions in the Rules. Even this handful of Rules can be a lot to digest, but their apparent complexity conceals a very
+713
+simple principle at their core. The goal of the Rules governing joinder is to enable parties and judges to combine parties and claims so that they can resolve disputes in a streamlined and sensible way. Five disputes between two neighbors shouldn’t require five separate lawsuits; one civil action should be enough to let them hash out their differences. Two pedestrians struck by the same car should be able to sue together in one action, if that saves everyone time and expense. And so on. In reading the Rules below, you should ask yourself how each one promotes that basic principle.
+
+Rules 13 and 18 address joinder of claims. Take a situation where two people, A and B, each want to sue the other. If A files suit against B, does B have to file a separate action against A? No. B can file a counterclaim against A in A’s suit. And what if two people are suing the same defendant, but they also want to sue each other? In addition to their claims against the defendant, they may be able to file crossclaims against each other. Rule 13 governs counterclaims and crossclaims.
+
+Another situation suited for joinder of claims is when a person has more than one claim against someone. If A files suit against B for breach of contract, does A have to file a separate action against B for battery? No. A can join the tort claim and the contract claim in the same civil action. Rule 18 governs the joinder of additional claims.
+
+Rules 19 and 20, address joinder of parties. Consider employees A and B, who were both fired by their employer, and who both suspect that they are victims of a racially discriminatory employment policy. If A sues the employer for employment discrimination, must B file a separate action, or can A and B join in a single action? They can, although they aren’t required to. As we shall see in a moment, Rule 20 governs permissive joinder of parties.
+
+Other situations involve parties whose claims are so connected that joinder is not only permitted, but it is required—at least to the extent feasible. A possible example of this would be a case in which an environmental protection group sues Company A to block its construction of mine as part of a joint venture with Company B. Company B has a strong interest in the outcome of that action, and the parties should ensure that Company B is included as a defendant. Rule 19 governs required joinder of parties.
+
+714
+Federal Rule of Civil Procedure 13
+Counterclaim and Crossclaim
+
+(a) Compulsory Counterclaim.
+
+(1) In General. A pleading must state as a counterclaim any claim that—at the time of its service—the pleader has against an opposing party if the claim:
+
+(A) arises out of the transaction or occurrence that is the subject matter of the opposing party’s claim; and
+
+(B) does not require adding another party over whom the court cannot acquire jurisdiction.
+
+(2) Exceptions. The pleader need not state the claim if:
+
+(A) when the action was commenced, the claim was the subject of another pending action; * * *
+
+* * *
+
+(b) Permissive Counterclaim. A pleading may state as a counterclaim against an opposing party any claim that is not compulsory.
+
+* * *
+
+(g) Crossclaim Against a Coparty. A pleading may state as a crossclaim any claim by one party against a coparty if the claim arises out of the transaction or occurrence that is the subject matter of the original action or of a counterclaim, or if the claim relates to any property that is the subject matter of the original action. The crossclaim may include a claim that the coparty is or may be liable to the crossclaimant for all or part of a claim asserted in the action against the crossclaimant.
+
+(h) Joining Additional Parties. Rules 19 and 20 govern the addition of a person as a party to a counterclaim or crossclaim.
+
+715
+Federal Rule of Civil Procedure 18
+Joinder of Claims
+
+(a) In General. A party asserting a claim, counterclaim, crossclaim, or third-party claim may join, as independent or alternative claims, as many claims as it has against an opposing party.
+
+* * *
+
+Federal Rule of Civil Procedure 19
+Required Joinder of Parties
+
+(a) Persons Required to Be Joined if Feasible.
+
+(1) Required Party. A person who is subject to service of process and whose joinder will not deprive the court of subject matter jurisdiction must be joined as a party if:
+
+(A) in that person’s absence, the court cannot accord complete relief among existing parties; or
+
+(B) that person claims an interest relating to the subject of the action and is so situated that disposing of the action in the person’s absence may:
+
+(i) as a practical matter impair or impede the person’s ability to protect the interest; or
+
+(ii) leave an existing party subject to a substantial risk of incurring double, multiple, or otherwise inconsistent obligations because of the interest.
+
+(2) Joinder by Court Order. If a person has not been joined as required, the court must order that the person be made a party. A person who refuses to join as a plaintiff may be made either a defendant or, in a proper case, an involuntary plaintiff.
+
+(3) Venue. If a joined party objects to venue and the joinder would make venue improper, the court must dismiss that party.
+
+716
+(b) When Joinder Is Not Feasible. If a person who is required to be joined if feasible cannot be joined, the court must determine whether, in equity and good conscience, the action should proceed among the existing parties or should be dismissed. The factors for the court to consider include:
+
+(1) the extent to which a judgment rendered in the person’s absence might prejudice that person or the existing parties;
+
+(2) the extent to which any prejudice could be lessened or avoided by:
+
+(A) protective provisions in the judgment;
+
+(B) shaping the relief; or
+
+(C) other measures;
+
+(3) whether a judgment rendered in the person’s absence would be adequate; and
+
+(4) whether the plaintiff would have an adequate remedy if the action were dismissed for nonjoinder.
+
+(c) Pleading the Reasons for Nonjoinder. When asserting a claim for relief, a party must state:
+
+(1) the name, if known, of any person who is required to be joined if feasible but is not joined; and
+
+(2) the reasons for not joining that person.
+
+* * *
+
+Federal Rule of Civil Procedure 20
+Permissive Joinder of Parties
+
+(a) Persons Who May Join or Be Joined.
+
+(1) Plaintiffs. Persons may join in one action as plaintiffs if:
+
+(A) they assert any right to relief jointly, severally, or in the alternative with respect to or arising out of the same transaction, occurrence, or series of transactions or occurrences; and
+
+717
+(B) any question of law or fact common to all plaintiffs will arise in the action.
+
+(2) Defendants. Persons—as well as a vessel, cargo, or other property subject to admiralty process in rem—may be joined in one action as defendants if:
+
+(A) any right to relief is asserted against them jointly, severally, or in the alternative with respect to or arising out of the same transaction, occurrence, or series of transactions or occurrences; and
+
+(B) any question of law or fact common to all defendants will arise in the action.
+
+* * *
+
+
+
+•Rules 13 and 18 provide conditions for joinder of new claims—between current parties—in addition to claims already made
+
+•Rules 19 and 20 provide conditions for joinder of new parties by the current parties
+
+•In most situations, joinder is optional, but under some conditions it is required
+
+INTRODUCTORY NOTE TO RULE 14
+Finally, Rule 14 addresses joinder of parties and claims. Unlike the Rules above, which provide a general framework for combining parties and claims in a single action, Rule 14 applies only to a very specific situation: a defendant believes that some other person is obligated to pay the defendant for any liability that the defendant owes to the plaintiff. In that situation, Rule 14 allows the defendant to become a third-party plaintiff and file a complaint against that person, who then becomes the third-party defendant.
+
+Although this is a very specific configuration of parties, it actually arises with regularity in litigation. A common situation giving rise to third-party practice under Rule 14 is construction projects. For example, a landowner hires a
+718
+general contractor to build a parking lot. The general contractor hires a subcontractor to pour the concrete for the ramps in the parking lot, and in the contract between the general contractor and the subcontractor, the subcontractor agrees to indemnify the general contractor for any liabilities that the subcontractor causes—in other words, if the subcontractor’s concrete is defective and makes the general contractor liable to the landowner, the subcontractor promises to compensate the general contractor for the loss. If the landowner ends up suing the general contractor for failing to properly build the parking lot and blames bad ramps, the general contract can implead the subcontractor under Rule 14.
+
+As you read Rule 14, take note of which parts of the Rule address joinder of new parties and which address the joinder of new claims by existing parties.
+
+Federal Rule of Civil Procedure 14
+Third-Party Practice
+
+(a) When a Defendant May Bring in a Third Party.
+
+(1) Timing of the Summons and Complaint. A defending party may, as third-party plaintiff, serve a summons and complaint on a nonparty who is or may be liable to it for all or part of the claim against it. But the third-party plaintiff must, by motion, obtain the court’s leave if it files the third-party complaint more than 14 days after serving its original answer.
+
+(2) Third-Party Defendant’s Claims and Defenses. The person served with the summons and third-party complaint—the “third-party defendant”:
+
+(A) must assert any defense against the third-party plaintiff’s claim under Rule 12;
+
+(B) must assert any counterclaim against the third-party plaintiff under Rule 13(a), and may assert any counterclaim against the third-party plaintiff under Rule 13(b) or any crossclaim against another third-party defendant under Rule 13(g);
+
+(C) may assert against the plaintiff any defense that the third-party plaintiff has to the plaintiff’s claim; and
+
+719
+(D) may also assert against the plaintiff any claim arising out of the transaction or occurrence that is the subject matter of the plaintiff’s claim against the third-party plaintiff.
+
+(3) Plaintiff’s Claims Against a Third-Party Defendant. The plaintiff may assert against the third-party defendant any claim arising out of the transaction or occurrence that is the subject matter of the plaintiff’s claim against the third-party plaintiff. The third-party defendant must then assert any defense under Rule 12 and any counterclaim under Rule 13(a), and may assert any counterclaim under Rule 13(b) or any crossclaim under Rule 13(g).
+
+(4) Motion to Strike, Sever, or Try Separately. Any party may move to strike the third-party claim, to sever it, or to try it separately.
+
+(5) Third-Party Defendant’s Claim Against a Nonparty. A third-party defendant may proceed under this rule against a nonparty who is or may be liable to the third-party defendant for all or part of any claim against it.
+
+* * *
+
+(b) When a Plaintiff May Bring in a Third Party. When a claim is asserted against a plaintiff, the plaintiff may bring in a third party if this rule would allow a defendant to do so.
+
+* * *
+
+
+
+•Rule 14 provides for party joinder in one specific scenario: the defendant (as third-party plaintiff) sues a third-party defendant whom the defendant/third-party plaintiff claims is liable for the claim brought by the plaintiff against the defendant
+
+•Rule 14 also provides for joinder of claims by other parties by and against the joined third-party defendant
+
+720
+INTRODUCTORY NOTE TO RULES 21 AND 24
+The Rules above provide the basic framework for how parties can use joinder under the Federal Rules. Two sets of questions naturally follow from those Rules. First, what can a court do when the parties have not used those Rules correctly, and there are “too many” claims or parties in the case? And even if claims and parties are properly joined, what can a court do if it concludes that justice is better served by trimming down the claims and parties in the action? Rule 21 speaks to these questions, and it will play an important role in Breaking Glass Pictures v. Does 1–188, below.
+
+Second, the rules above provide the means by which parties and court can add new claims and new parties. But what if a nonparty wants to join a case, but no current party moves to join them? This is a situation where the nonparty can move to intervene in the action and become a party. Rule 24 covers intervention, and it will be the subject of discussion in Martin v. Wilks, below.
+
+Federal Rule of Civil Procedure 21
+Misjoinder and Nonjoinder of Parties
+
+Misjoinder of parties is not a ground for dismissing an action. On motion or on its own, the court may at any time, on just terms, add or drop a party. The court may also sever any claim against a party.
+
+Federal Rule of Civil Procedure 24
+Intervention
+
+(a) Intervention of Right. On timely motion, the court must permit anyone to intervene who:
+
+(1) is given an unconditional right to intervene by a federal statute; or
+
+(2) claims an interest relating to the property or transaction that is the subject of the action, and is so situated that disposing of the action may as a practical matter impair or impede the movant’s ability
+721
+to protect its interest, unless existing parties adequately represent that interest.
+
+(b) Permissive Intervention.
+
+(1) In General. On timely motion, the court may permit anyone to intervene who:
+
+(A) is given a conditional right to intervene by a federal statute; or
+
+(B) has a claim or defense that shares with the main action a common question of law or fact.
+
+(2) By a Government Officer or Agency. On timely motion, the court may permit a federal or state governmental officer or agency to intervene if a party’s claim or defense is based on:
+
+(A) a statute or executive order administered by the officer or agency; or
+
+(B) any regulation, order, requirement, or agreement issued or made under the statute or executive order.
+
+(3) Delay or Prejudice. In exercising its discretion, the court must consider whether the intervention will unduly delay or prejudice the adjudication of the original parties’ rights.
+
+(c) Notice and Pleading Required. A motion to intervene must be served on the parties * * * . The motion must state the grounds for intervention and be accompanied by a pleading that sets out the claim or defense for which intervention is sought.
+
+
+
+•Rule 21 gives the court the power to add or remove parties or claims from a case, on motion or on its own
+
+•Rule 24 provides conditions for granting a non-party’s motion to intervene in an action

@@ -1,0 +1,254 @@
+830
+no rules of procedure specific to MDLs, as there are for class actions. What might be the benefits and drawbacks of conducting aggregate litigation without explicit rules tailored to the procedure?
+
+2. As you read the next case, Wal-Mart v. Dukes, take note of the qualms that the majority seems to have with the class action device and its emphasis on the rigorous enforcement of the requirements of Rule 23. Might the popularity of MDL be related to the unavailability of class certification for claims involving many claimants but for which Rule 23 doesn’t permit class treatment, even when there are potential efficiencies from aggregation?
+
+3. When an action is transferred to an MDL, the plaintiff loses their choice of forum—the specific court in which the plaintiff chose to file. What does a plaintiff lose or a defendant gain when a case is transferred away from its place of original filing? To what extent are these effects limited by the fact that a case cannot be tried in the transferee court without the consent of the parties?
+
+4. Why might states be more comfortable than the federal government with permitting transferee courts to try MDL cases? Does the smaller geographical scope of state MDL justify giving the transferee court greater authority?
+
+INTRODUCTORY NOTE TO WAL-MART V. DUKES
+Wal-Mart v. Dukes is an important but misunderstood case. As you read the case, it will be useful to keep in mind the following basic sketch of the relevant substantive law, which is a claim for relief under Title VII of the Civil Rights Act of 1964, which among other things prohibits discrimination in employment on the basis of sex.
+
+Broadly speaking, when plaintiffs bring sex discrimination claims under Title VII against their employer based on the employer’s pay and promotion decisions, the plaintiffs can allege that their injuries are the product of disparate treatment by the employer, or that they are the product of the disparate impact of an employer’s policy. In a disparate treatment claim, the plaintiff must prove that her employer had discriminatory intent (i.e., intent to treat a woman differently because she is a woman, even if the motivation is not malicious) when taking an employment action, such as denying a promotion, that harmed the
+831
+plaintiff. In a disparate impact claim, the plaintiff must prove that a policy of the employer has disproportionate effect on women. The good faith of the employer is irrelevant in a disparate impact claim, which means that even a well-intentioned policy can give rise to a disparate impact claim (although a sufficiently compelling, sex-neutral business justification for the policy is a defense to a disparate impact claim). The opinions in Wal-Mart v. Dukes are not always clear about these underlying substantive rules of employment discrimination law, but they are important for making sense of the justices’ reasoning.
+
+Adding to the complexity of the Wal-Mart decision is that the Court decided important and contested questions about both Rule 23(a)(2) and Rule 23(b)(2). Notably, although the Court was bitterly divided on the application of Rule 23(a)(2) in this case, it was unanimous on the application of Rule 23(b)(2).
+
+Wal-Mart Stores, Inc. v. Dukes
+_________________________
+
+564 U.S. 338 (2011)
+
+SCALIA, J., delivered the opinion of the Court, in which ROBERTS, C.J., and KENNEDY, THOMAS, and ALITO, JJ., joined, and in which GINSBURG, BREYER, SOTOMAYOR, and KAGAN, JJ., joined as to Parts I and III.
+
+We are presented with one of the most expansive class actions ever. The District Court and the Court of Appeals approved the certification of a class comprising about one and a half million plaintiffs, current and former female employees of petitioner Wal-Mart who allege that the discretion exercised by their local supervisors over pay and promotion matters violates Title VII by discriminating against women. In addition to injunctive and declaratory relief, the plaintiffs seek an award of backpay. We consider whether the certification of the plaintiff class was consistent with Federal Rules of Civil Procedure 23(a) and (b)(2).
+
+I
+
+A
+
+Petitioner Wal-Mart is the Nation’s largest private employer. It operates four types of retail stores throughout the country: Discount Stores, Supercenters, Neighborhood Markets, and Sam’s Clubs. Those stores are divided into
+832
+seven nationwide divisions, which in turn comprise 41 regions of 80 to 85 stores apiece. Each store has between 40 and 53 separate departments and 80 to 500 staff positions. In all, Wal-Mart operates approximately 3,400 stores and employs more than one million people.
+
+Pay and promotion decisions at Wal-Mart are generally committed to local managers’ broad discretion, which is exercised “in a largely subjective manner.” Local store managers may increase the wages of hourly employees (within limits) with only limited corporate oversight. As for salaried employees, such as store managers and their deputies, higher corporate authorities have discretion to set their pay within preestablished ranges.
+
+Promotions work in a similar fashion. Wal-Mart permits store managers to apply their own subjective criteria when selecting candidates as “support managers,” which is the first step on the path to management. Admission to Wal-Mart’s management training program, however, does require that a candidate meet certain objective criteria, including an above-average performance rating, at least one year’s tenure in the applicant’s current position, and a willingness to relocate. But except for those requirements, regional and district managers have discretion to use their own judgment when selecting candidates for management training. Promotion to higher office—e.g., assistant manager, co-manager, or store manager—is similarly at the discretion of the employee’s superiors after prescribed objective factors are satisfied.
+
+B
+
+The named plaintiffs in this lawsuit, representing the 1.5 million members of the certified class, are three current or former Wal-Mart employees who allege that the company discriminated against them on the basis of their sex by denying them equal pay or promotions, in violation of Title VII of the Civil Rights Act of 1964, 78 Stat. 253, as amended, 42 U.S.C. § 2000e–1 et seq.
+
+Betty Dukes began working at a Pittsburgh, California, Wal-Mart in 1994. She started as a cashier, but later sought and received a promotion to customer service manager. After a series of disciplinary violations, however, Dukes was demoted back to cashier and then to greeter. Dukes concedes she violated company policy, but contends that the disciplinary actions were in fact retaliation for invoking internal complaint procedures and that male employees have not been disciplined for similar infractions. Dukes also claims two male greeters in the Pittsburgh store are paid more than she is.
+
+833
+Christine Kwapnoski has worked at Sam’s Club stores in Missouri and California for most of her adult life. She has held a number of positions, including a supervisory position. She claims that a male manager yelled at her frequently and screamed at female employees, but not at men. The manager in question “told her to ‘doll up,’ to wear some makeup, and to dress a little better.”
+
+The final named plaintiff, Edith Arana, worked at a Wal-Mart store in Duarte, California, from 1995 to 2001. In 2000, she approached the store manager on more than one occasion about management training, but was brushed off. Arana concluded she was being denied opportunity for advancement because of her sex. She initiated internal complaint procedures, whereupon she was told to apply directly to the district manager if she thought her store manager was being unfair. Arana, however, decided against that and never applied for management training again. In 2001, she was fired for failure to comply with Wal-Mart’s timekeeping policy.
+
+These plaintiffs, respondents here, do not allege that Wal-Mart has any express corporate policy against the advancement of women. Rather, they claim that their local managers’ discretion over pay and promotions is exercised disproportionately in favor of men, leading to an unlawful disparate impact on female employees, see 42 U.S.C. § 2000e–2(k). And, respondents say, because Wal-Mart is aware of this effect, its refusal to cabin its managers’ authority amounts to disparate treatment, see § 2000e–2(a). Their complaint seeks injunctive and declaratory relief, punitive damages, and backpay. It does not ask for compensatory damages.
+
+Importantly for our purposes, respondents claim that the discrimination to which they have been subjected is common to all Wal-Mart’s female employees. The basic theory of their case is that a strong and uniform “corporate culture” permits bias against women to infect, perhaps subconsciously, the discretionary decisionmaking of each one of Wal-Mart’s thousands of managers—thereby making every woman at the company the victim of one common discriminatory practice. Respondents therefore wish to litigate the Title VII claims of all female employees at Wal-Mart’s stores in a nationwide class action.
+
+C
+
+Class certification is governed by Federal Rule of Civil Procedure 23. Under Rule 23(a), the party seeking certification must demonstrate, first, that:
+
+834
+(1) the class is so numerous that joinder of all members is impracticable,
+
+(2) there are questions of law or fact common to the class,
+
+(3) the claims or defenses of the representative parties are typical of the claims or defenses of the class, and
+
+(4) the representative parties will fairly and adequately protect the interests of the class.
+
+Second, the proposed class must satisfy at least one of the three requirements listed in Rule 23(b). Respondents rely on Rule 23(b)(2), which applies when “the party opposing the class has acted or refused to act on grounds that apply generally to the class, so that final injunctive relief or corresponding declaratory relief is appropriate respecting the class as a whole.”2
+
+Invoking these provisions, respondents moved the District Court to certify a plaintiff class consisting of “ ‘[a]ll women employed at any Wal-Mart domestic retail store at any time since December 26, 1998, who have been or may be subjected to Wal-Mart’s challenged pay and management track promotions policies and practices.’ ” As evidence that there were indeed “questions of law or fact common to” all the women of Wal-Mart, as Rule 23(a)(2) requires, respondents relied chiefly on three forms of proof: statistical evidence about pay and promotion disparities between men and women at the company, anecdotal reports of discrimination from about 120 of Wal-Mart’s female employees, and the testimony of a sociologist, Dr. William Bielby, who conducted a “social framework analysis” of Wal-Mart’s “culture” and personnel practices, and concluded that the company was “vulnerable” to gender discrimination.
+
+Wal-Mart unsuccessfully moved to strike much of this evidence. It also offered its own countervailing statistical and other proof in an effort to defeat Rule 23(a)’s requirements of commonality, typicality, and adequate representation. Wal-Mart further contended that respondents’ monetary claims for backpay
+835
+could not be certified under Rule 23(b)(2), first because that Rule refers only to injunctive and declaratory relief, and second because the backpay claims could not be manageably tried as a class without depriving Wal-Mart of its right to present certain statutory defenses. With one limitation not relevant here, the District Court granted respondents’ motion and certified their proposed class.
+
+D
+
+A divided en banc Court of Appeals substantially affirmed the District Court’s certification order. The majority concluded that respondents’ evidence of commonality was sufficient to “raise the common question whether Wal-Mart’s female employees nationwide were subjected to a single set of corporate policies (not merely a number of independent discriminatory acts) that may have worked to unlawfully discriminate against them in violation of Title VII.” It also agreed with the District Court that the named plaintiffs’ claims were sufficiently typical of the class as a whole to satisfy Rule 23(a)(3), and that they could serve as adequate class representatives, see Rule 23(a)(4). With respect to the Rule 23(b)(2) question, the Ninth Circuit held that respondents’ backpay claims could be certified as part of a (b)(2) class because they did not “predominat[e]” over the requests for declaratory and injunctive relief, meaning they were not “superior in strength, influence, or authority” to the nonmonetary claims.
+
+Finally, the Court of Appeals determined that the action could be manageably tried as a class action because the District Court could adopt the approach the Ninth Circuit approved in Hilao v. Estate of Marcos, 103 F.3d 767, 782–787 (1996). There compensatory damages for some 9,541 class members were calculated by selecting 137 claims at random, referring those claims to a special master for valuation, and then extrapolating the validity and value of the untested claims from the sample set. The Court of Appeals “s[aw] no reason why a similar procedure to that used in Hilao could not be employed in this case.” It would allow Wal-Mart “to present individual defenses in the randomly selected ‘sample cases,’ thus revealing the approximate percentage of class members whose unequal pay or nonpromotion was due to something other than gender discrimination.”
+
+We granted certiorari.
+
+836
+II
+
+The class action is “an exception to the usual rule that litigation is conducted by and on behalf of the individual named parties only.” In order to justify a departure from that rule, “a class representative must be part of the class and ‘possess the same interest and suffer the same injury’ as the class members.” Rule 23(a) ensures that the named plaintiffs are appropriate representatives of the class whose claims they wish to litigate. The Rule’s four requirements—numerosity, commonality, typicality, and adequate representation—“effectively ‘limit the class claims to those fairly encompassed by the named plaintiff’s claims.’ ”
+
+A
+
+The crux of this case is commonality—the rule requiring a plaintiff to show that “there are questions of law or fact common to the class.” Rule 23(a)(2). That language is easy to misread, since “[a]ny competently crafted class complaint literally raises common ‘questions.’ ” Nagareda, Class Certification in the Age of Aggregate Proof, 84 N.Y.U. L. Rev. 97, 131–132 (2009). For example: Do all of us plaintiffs indeed work for Wal-Mart? Do our managers have discretion over pay? Is that an unlawful employment practice? What remedies should we get? Reciting these questions is not sufficient to obtain class certification. Commonality requires the plaintiff to demonstrate that the class members “have suffered the same injury”. This does not mean merely that they have all suffered a violation of the same provision of law. Title VII, for example, can be violated in many ways—by intentional discrimination, or by hiring and promotion criteria that result in disparate impact, and by the use of these practices on the part of many different superiors in a single company. Quite obviously, the mere claim by employees of the same company that they have suffered a Title VII injury, or even a disparate-impact Title VII injury, gives no cause to believe that all their claims can productively be litigated at once. Their claims must depend upon a common contention—for example, the assertion of discriminatory bias on the part of the same supervisor. That common contention, moreover, must be of such a nature that it is capable of classwide resolution—which means that determination of its truth or falsity will resolve an issue that is central to the validity of each one of the claims in one stroke.
+
+What matters to class certification … is not the raising of common ‘questions’—even in droves—but, rather the capacity of a classwide proceeding to generate common answers apt to drive the resolution
+837
+of the litigation. Dissimilarities within the proposed class are what have the potential to impede the generation of common answers.
+
+Nagareda, 84 N.Y.U. L. Rev. at 132.
+
+Rule 23 does not set forth a mere pleading standard. A party seeking class certification must affirmatively demonstrate his compliance with the Rule—that is, he must be prepared to prove that there are in fact sufficiently numerous parties, common questions of law or fact, etc. * * *
+
+In this case, proof of commonality necessarily overlaps with respondents’ merits contention that Wal-Mart engages in a pattern or practice of discrimination.7 That is so because, in resolving an individual’s Title VII claim, the crux of the inquiry is “the reason for a particular employment decision.” Here respondents wish to sue about literally millions of employment decisions at once. Without some glue holding the alleged reasons for all those decisions together, it will be impossible to say that examination of all the class members’ claims for relief will produce a common answer to the crucial question why was I disfavored.
+
+B
+
+This Court’s opinion in General Telephone Co. of Southwest v. Falcon, 457 U.S. 147, 156 (1982), describes how the commonality issue must be approached. There an employee who claimed that he was deliberately denied a promotion on account of race obtained certification of a class comprising all employees wrongfully denied promotions and all applicants wrongfully denied jobs. We rejected that composite class for lack of commonality and typicality, explaining:
+
+Conceptually, there is a wide gap between (a) an individual’s claim that he has been denied a promotion [or higher pay] on discriminatory grounds, and his otherwise unsupported allegation that the company has a policy of discrimination, and (b) the existence of a class of persons who have suffered the same injury as that individual, such that the individual’s claim and the class claim will share
+838
+common questions of law or fact and that the individual’s claim will be typical of the class claims.
+
+Falcon suggested two ways in which that conceptual gap might be bridged. First, if the employer “used a biased testing procedure to evaluate both applicants for employment and incumbent employees, a class action on behalf of every applicant or employee who might have been prejudiced by the test clearly would satisfy the commonality and typicality requirements of Rule 23(a).” Second, “[s]ignificant proof that an employer operated under a general policy of discrimination conceivably could justify a class of both applicants and employees if the discrimination manifested itself in hiring and promotion practices in the same general fashion, such as through entirely subjective decisionmaking processes.” We think that statement precisely describes respondents’ burden in this case. The first manner of bridging the gap obviously has no application here; Wal-Mart has no testing procedure or other companywide evaluation method that can be charged with bias. The whole point of permitting discretionary decisionmaking is to avoid evaluating employees under a common standard.
+
+The second manner of bridging the gap requires “significant proof” that Wal-Mart “operated under a general policy of discrimination.” That is entirely absent here. Wal-Mart’s announced policy forbids sex discrimination, and as the District Court recognized the company imposes penalties for denials of equal employment opportunity. The only evidence of a “general policy of discrimination” respondents produced was the testimony of Dr. William Bielby, their sociological expert. Relying on “social framework” analysis, Bielby testified that Wal-Mart has a “strong corporate culture,” that makes it “vulnerable” to “gender bias.” He could not, however, “determine with any specificity how regularly stereotypes play a meaningful role in employment decisions at Wal-Mart. At his deposition … Dr. Bielby conceded that he could not calculate whether 0.5 percent or 95 percent of the employment decisions at Wal-Mart might be determined by stereotyped thinking.” The parties dispute whether Bielby’s testimony even met the standards for the admission of expert testimony * * *, but even if properly considered, Bielby’s testimony does nothing to advance respondents’ case. “[W]hether 0.5 percent or 95 percent of the employment decisions at Wal-Mart might be determined by stereotyped thinking” is the essential question on which respondents’ theory of commonality depends. If Bielby admittedly has no answer to that question, we can safely disregard
+839
+what he has to say. It is worlds away from “significant proof” that Wal-Mart “operated under a general policy of discrimination.”
+
+C
+
+The only corporate policy that the plaintiffs’ evidence convincingly establishes is Wal-Mart’s “policy” of allowing discretion by local supervisors over employment matters. On its face, of course, that is just the opposite of a uniform employment practice that would provide the commonality needed for a class action; it is a policy against having uniform employment practices. It is also a very common and presumptively reasonable way of doing business—one that we have said “should itself raise no inference of discriminatory conduct.”
+
+To be sure, we have recognized that, “in appropriate cases,” giving discretion to lower-level supervisors can be the basis of Title VII liability under a disparate-impact theory—since “an employer’s undisciplined system of subjective decisionmaking [can have] precisely the same effects as a system pervaded by impermissible intentional discrimination.” But the recognition that this type of Title VII claim “can” exist does not lead to the conclusion that every employee in a company using a system of discretion has such a claim in common. To the contrary, left to their own devices most managers in any corporation—and surely most managers in a corporation that forbids sex discrimination—would select sex-neutral, performance-based criteria for hiring and promotion that produce no actionable disparity at all. Others may choose to reward various attributes that produce disparate impact—such as scores on general aptitude tests or educational achievements. And still other managers may be guilty of intentional discrimination that produces a sex-based disparity. In such a company, demonstrating the invalidity of one manager’s use of discretion will do nothing to demonstrate the invalidity of another’s. A party seeking to certify a nationwide class will be unable to show that all the employees’ Title VII claims will in fact depend on the answers to common questions.
+
+Respondents have not identified a common mode of exercising discretion that pervades the entire company—aside from their reliance on Dr. Bielby’s social frameworks analysis that we have rejected. In a company of Wal-Mart’s size and geographical scope, it is quite unbelievable that all managers would exercise their discretion in a common way without some common direction. Respondents attempt to make that showing by means of statistical and anecdotal evidence, but their evidence falls well short.
+
+840
+The statistical evidence consists primarily of regression analyses performed by Dr. Richard Drogin, a statistician, and Dr. Marc Bendick, a labor economist. Drogin conducted his analysis region-by-region, comparing the number of women promoted into management positions with the percentage of women in the available pool of hourly workers. * * * Bendick compared work-force data from Wal-Mart and competitive retailers and concluded that Wal-Mart “promotes a lower percentage of women than its competitors.”
+
+Even if they are taken at face value, these studies are insufficient to establish that respondents’ theory can be proved on a classwide basis. * * * A regional pay disparity, for example, may be attributable to only a small set of Wal-Mart stores, and cannot by itself establish the uniform, store-by-store disparity upon which the plaintiffs’ theory of commonality depends.
+
+There is another, more fundamental, respect in which respondents’ statistical proof fails. Even if it established (as it does not) a pay or promotion pattern that differs from the nationwide figures or the regional figures in all of Wal-Mart’s 3,400 stores, that would still not demonstrate that commonality of issue exists. Some managers will claim that the availability of women, or qualified women, or interested women, in their stores’ area does not mirror the national or regional statistics. And almost all of them will claim to have been applying some sex-neutral, performance-based criteria—whose nature and effects will differ from store to store. In the landmark case of ours which held that giving discretion to lower-level supervisors can be the basis of Title VII liability under a disparate-impact theory, the plurality opinion conditioned that holding on the corollary that merely proving that the discretionary system has produced a racial or sexual disparity is not enough. “[T]he plaintiff must begin by identifying the specific employment practice that is challenged.” That is all the more necessary when a class of plaintiffs is sought to be certified. Other than the bare existence of delegated discretion, respondents have identified no “specific employment practice”—much less one that ties all their 1.5 million claims together. Merely showing that Wal-Mart’s policy of discretion has produced an overall sex-based disparity does not suffice.
+
+Respondents’ anecdotal evidence suffers from the same defects, and in addition is too weak to raise any inference that all the individual, discretionary personnel decisions are discriminatory. In Teamsters v. United States, 431 U.S. 324 (1977), in addition to substantial statistical evidence of company-wide discrimination, the Government (as plaintiff) produced about 40 specific accounts
+841
+of racial discrimination from particular individuals. That number was significant because the company involved had only 6,472 employees, of whom 571 were minorities, and the class itself consisted of around 334 persons. The 40 anecdotes thus represented roughly one account for every eight members of the class. Moreover, the Court of Appeals noted that the anecdotes came from individuals “spread throughout” the company who “for the most part” worked at the company’s operational centers that employed the largest numbers of the class members. Here, by contrast, respondents filed some 120 affidavits reporting experiences of discrimination—about 1 for every 12,500 class members—relating to only some 235 out of Wal-Mart’s 3,400 stores. More than half of these reports are concentrated in only six States (Alabama, California, Florida, Missouri, Texas, and Wisconsin); half of all States have only one or two anecdotes; and 14 States have no anecdotes about Wal-Mart’s operations at all. Even if every single one of these accounts is true, that would not demonstrate that the entire company “operate[s] under a general policy of discrimination,” which is what respondents must show to certify a companywide class.
+
+The dissent misunderstands the nature of the foregoing analysis. It criticizes our focus on the dissimilarities between the putative class members on the ground that we have “blend[ed]” Rule 23(a)(2)’s commonality requirement with Rule 23(b)(3)’s inquiry into whether common questions “predominate” over individual ones. That is not so. We quite agree that for purposes of Rule 23(a)(2) “[e]ven a single [common] question” will do. We consider dissimilarities not in order to determine (as Rule 23(b)(3) requires) whether common questions predominate, but in order to determine (as Rule 23(a)(2) requires) whether there is “[e]ven a single [common] question.” And there is not here. Because respondents provide no convincing proof of a companywide discriminatory pay and promotion policy, we have concluded that they have not established the existence of any common question.
+
+In sum, we agree with Chief Judge Kozinski that the members of the class:
+
+held a multitude of different jobs, at different levels of Wal-Mart’s hierarchy, for variable lengths of time, in 3,400 stores, sprinkled across 50 states, with a kaleidoscope of supervisors (male and female), subject to a variety of regional policies that all differed …. Some thrived while others did poorly. They have little in common but their sex and this lawsuit.
+
+842
+Dukes v. Wal-Mart Stores, Inc., 603 F.3d 571, 652 (9th Cir. 2010) (Kozinski, J., dissenting).
+
+III
+
+We also conclude that respondents’ claims for backpay were improperly certified under Federal Rule of Civil Procedure 23(b)(2). * * * [We hold that claims for monetary relief may not be certified under Rule 23(b)(2)], at least where (as here) the monetary relief is not incidental to the injunctive or declaratory relief.
+
+A
+
+Rule 23(b)(2) allows class treatment when “the party opposing the class has acted or refused to act on grounds that apply generally to the class, so that final injunctive relief or corresponding declaratory relief is appropriate respecting the class as a whole.” One possible reading of this provision is that it applies only to requests for such injunctive or declaratory relief and does not authorize the class certification of monetary claims at all. We need not reach that broader question in this case, because we think that, at a minimum, claims for individualized relief (like the backpay at issue here) do not satisfy the Rule. The key to the (b)(2) class is “the indivisible nature of the injunctive or declaratory remedy warranted—the notion that the conduct is such that it can be enjoined or declared unlawful only as to all of the class members or as to none of them.” Nagareda, 84 N.Y.U. L. Rev. at 132. In other words, Rule 23(b)(2) applies only when a single injunction or declaratory judgment would provide relief to each member of the class. It does not authorize class certification when each individual class member would be entitled to a different injunction or declaratory judgment against the defendant. Similarly, it does not authorize class certification when each class member would be entitled to an individualized award of monetary damages.
+
+That interpretation accords with the history of the Rule. Because Rule 23 “stems from equity practice” that predated its codification, in determining its meaning we have previously looked to the historical models on which the Rule was based. * * * In particular, the Rule reflects a series of decisions involving challenges to racial segregation—conduct that was remedied by a single classwide order. In none of the cases cited by the Advisory Committee as examples of (b)(2)’s antecedents did the plaintiffs combine any claim for individualized relief with their classwide injunction. See Advisory Committee’s Note, 39 F.R.D. 69, 102 (1966) (citing cases).
+
+843
+Permitting the combination of individualized and classwide relief in a (b)(2) class is also inconsistent with the structure of Rule 23(b). Classes certified under (b)(1) and (b)(2) share the most traditional justifications for class treatment—that individual adjudications would be impossible or unworkable, as in a (b)(1) class, or that the relief sought must perforce affect the entire class at once, as in a (b)(2) class. For that reason these are also mandatory classes: The Rule provides no opportunity for (b)(1) or (b)(2) class members to opt out, and does not even oblige the District Court to afford them notice of the action. Rule 23(b)(3), by contrast, is an “adventuresome innovation” of the 1966 amendments, framed for situations “in which ‘class-action treatment is not as clearly called for.’ ” It allows class certification in a much wider set of circumstances but with greater procedural protections. Its only prerequisites are that “the questions of law or fact common to class members predominate over any questions affecting only individual members, and that a class action is superior to other available methods for fairly and efficiently adjudicating the controversy.” Rule 23(b)(3). And unlike (b)(1) and (b)(2) classes, the (b)(3) class is not mandatory; class members are entitled to receive “the best notice that is practicable under the circumstances” and to withdraw from the class at their option. See Rule 23(c)(2)(B).
+
+Given that structure, we think it clear that individualized monetary claims belong in Rule 23(b)(3). The procedural protections attending the (b)(3) class—predominance, superiority, mandatory notice, and the right to opt out—are missing from (b)(2) not because the Rule considers them unnecessary, but because it considers them unnecessary to a (b)(2) class. When a class seeks an indivisible injunction benefitting all its members at once, there is no reason to undertake a case-specific inquiry into whether class issues predominate or whether class action is a superior method of adjudicating the dispute. Predominance and superiority are self-evident. But with respect to each class member’s individualized claim for money, that is not so—which is precisely why (b)(3) requires the judge to make findings about predominance and superiority before allowing the class. Similarly, (b)(2) does not require that class members be given notice and opt-out rights, presumably because it is thought (rightly or wrongly) that notice has no purpose when the class is mandatory, and that depriving people of their right to sue in this manner complies with the Due Process Clause. In the context of a class action predominantly for money damages we have held that absence of notice and opt-out violates due process. See Phillips Petroleum Co. v. Shutts, 472 U.S. 797, 812 (1985). While we have
+844
+never held that to be so where the monetary claims do not predominate, the serious possibility that it may be so provides an additional reason not to read Rule 23(b)(2) to include the monetary claims here.
+
+B
+
+Against that conclusion, respondents argue that their claims for backpay were appropriately certified as part of a class under Rule 23(b)(2) because those claims do not “predominate” over their requests for injunctive and declaratory relief. They rely upon the Advisory Committee’s statement that Rule 23(b)(2) “does not extend to cases in which the appropriate final relief relates exclusively or predominantly to money damages.” 39 F.R.D. at 102 (emphasis added). The negative implication, they argue, is that it does extend to cases in which the appropriate final relief relates only partially and nonpredominantly to money damages. Of course it is the Rule itself, not the Advisory Committee’s description of it, that governs. And a mere negative inference does not in our view suffice to establish a disposition that has no basis in the Rule’s text, and that does obvious violence to the Rule’s structural features. The mere “predominance” of a proper (b)(2) injunctive claim does nothing to justify elimination of Rule 23(b)(3)’s procedural protections: It neither establishes the superiority of class adjudication over individual adjudication nor cures the notice and opt-out problems. We fail to see why the Rule should be read to nullify these protections whenever a plaintiff class, at its option, combines its monetary claims with a request—even a “predominating request”—for an injunction.
+
+Respondents’ predominance test, moreover, creates perverse incentives for class representatives to place at risk potentially valid claims for monetary relief. In this case, for example, the named plaintiffs declined to include employees’ claims for compensatory damages in their complaint. That strategy of including only backpay claims made it more likely that monetary relief would not “predominate.” But it also created the possibility (if the predominance test were correct) that individual class members’ compensatory-damages claims would be precluded by litigation they had no power to hold themselves apart from. If it were determined, for example, that a particular class member is not entitled to backpay because her denial of increased pay or a promotion was not the product of discrimination, that employee might be collaterally estopped from independently seeking compensatory damages based on that same denial. That possibility underscores the need for plaintiffs with individual monetary claims
+845
+to decide for themselves whether to tie their fates to the class representatives’ or go it alone—a choice Rule 23(b)(2) does not ensure that they have.
+
+* * *
+
+C
+
+In Allison v. Citgo Petroleum Corp., 151 F.3d 402, 415 (5th Cir. 1998), the Fifth Circuit held that a (b)(2) class would permit the certification of monetary relief that is “incidental to requested injunctive or declaratory relief,” which it defined as “damages that flow directly from liability to the class as a whole on the claims forming the basis of the injunctive or declaratory relief.” In that court’s view, such “incidental damage should not require additional hearings to resolve the disparate merits of each individual’s case; it should neither introduce new substantial legal or factual issues, nor entail complex individualized determinations.” We need not decide in this case whether there are any forms of “incidental” monetary relief that are consistent with the interpretation of Rule 23(b)(2) we have announced and that comply with the Due Process Clause. Respondents do not argue that they can satisfy this standard, and in any event they cannot.
+
+Contrary to the Ninth Circuit’s view, Wal-Mart is entitled to individualized determinations of each employee’s eligibility for backpay. * * *
+
+The Court of Appeals believed that it was possible to replace such proceedings with Trial by Formula. A sample set of the class members would be selected, as to whom liability for sex discrimination and the backpay owing as a result would be determined in depositions supervised by a master. The percentage of claims determined to be valid would then be applied to the entire remaining class, and the number of (presumptively) valid claims thus derived would be multiplied by the average backpay award in the sample set to arrive at the entire class recovery—without further individualized proceedings. We disapprove that novel project. Because the Rules Enabling Act forbids interpreting Rule 23 to “abridge, enlarge or modify any substantive right,” 28 U.S.C. § 2072(b), a class cannot be certified on the premise that Wal-Mart will not be entitled to litigate its statutory defenses to individual claims. And because the necessity of that litigation will prevent backpay from being “incidental” to the classwide injunction, respondents’ class could not be certified even assuming, arguendo, that “incidental” monetary relief can be awarded to a 23(b)(2) class.
+
+846
+* * *
+
+The judgment of the Court of Appeals is
+
+Reversed.
+
+JUSTICE GINSBURG, with whom JUSTICE BREYER, JUSTICE SOTOMAYOR, and JUSTICE KAGAN join, concurring in part and dissenting in part.
+
+The class in this case, I agree with the Court, should not have been certified under Federal Rule of Civil Procedure 23(b)(2). The plaintiffs, alleging discrimination in violation of Title VII, 42 U.S.C. § 2000e et seq., seek monetary relief that is not merely incidental to any injunctive or declaratory relief that might be available. A putative class of this type may be certifiable under Rule 23(b)(3), if the plaintiffs show that common class questions “predominate” over issues affecting individuals—e.g., qualification for, and the amount of, backpay or compensatory damages—and that a class action is “superior” to other modes of adjudication.
+
+Whether the class the plaintiffs describe meets the specific requirements of Rule 23(b)(3) is not before the Court, and I would reserve that matter for consideration and decision on remand. The Court, however, disqualifies the class at the starting gate, holding that the plaintiffs cannot cross the “commonality” line set by Rule 23(a)(2). In so ruling, the Court imports into the Rule 23(a) determination concerns properly addressed in a Rule 23(b)(3) assessment.
+
+I
+
+A
+
+Rule 23(a)(2) establishes a preliminary requirement for maintaining a class action: “[T]here are questions of law or fact common to the class.” The Rule “does not require that all questions of law or fact raised in the litigation be common”; indeed, “[e]ven a single question of law or fact common to the members of the class will satisfy the commonality requirement,” Nagareda, The Preexistence Principle and the Structure of the Class Action, 103 Colum. L. Rev. 149, 176, n. 110 (2003).
+
+A “question” is ordinarily understood to be “[a] subject or point open to controversy.” American Heritage Dictionary 1483 (3d ed.1992). Thus, a “question”
+847
+“common to the class” must be a dispute, either of fact or of law, the resolution of which will advance the determination of the class members’ claims.3
+
+B
+
+The District Court, recognizing that “one significant issue common to the class may be sufficient to warrant certification,” found that the plaintiffs easily met that test. Absent an error of law or an abuse of discretion, an appellate tribunal has no warrant to upset the District Court’s finding of commonality.
+
+* * *
+
+[According to the district court’s findings, women] fill 70 percent of the hourly jobs in the retailer’s stores but make up only “33 percent of management employees.” “[T]he higher one looks in the organization the lower the percentage of women.” The plaintiffs’ “largely uncontested descriptive statistics” also show that women working in the company’s stores “are paid less than men in every region” and “that the salary gap widens over time even for men and women hired into the same jobs at the same time.”
+
+The District Court identified “systems for … promoting in-store employees” that were “sufficiently similar across regions and stores” to conclude that “the manner in which these systems affect the class raises issues that are common to all class members.” The selection of employees for promotion to in-store management “is fairly characterized as a ‘tap on the shoulder’ process,” in which managers have discretion about whose shoulders to tap. Vacancies are not regularly posted; from among those employees satisfying minimum qualifications, managers choose whom to promote on the basis of their own subjective impressions.
+
+Wal-Mart’s compensation policies also operate uniformly across stores, the District Court found. The retailer leaves open a $2 band for every position’s hourly pay rate. Wal-Mart provides no standards or criteria for setting wages within that band, and thus does nothing to counter unconscious bias on the part of supervisors.
+
+848
+Wal-Mart’s supervisors do not make their discretionary decisions in a vacuum. The District Court reviewed means Wal-Mart used to maintain a “carefully constructed … corporate culture,” such as frequent meetings to reinforce the common way of thinking, regular transfers of managers between stores to ensure uniformity throughout the company, monitoring of stores “on a close and constant basis,” and “Wal-Mart TV,” “broadcas[t] … into all stores.”
+
+The plaintiffs’ evidence, including class members’ tales of their own experiences, suggests that gender bias suffused Wal-Mart’s company culture. Among illustrations, senior management often refer to female associates as “little Janie Qs.” One manager told an employee that “[m]en are here to make a career and women aren’t.” A committee of female Wal-Mart executives concluded that “[s]tereotypes limit the opportunities offered to women.”
+
+Finally, the plaintiffs presented an expert’s appraisal to show that the pay and promotions disparities at Wal-Mart “can be explained only by gender discrimination and not by … neutral variables.” Using regression analyses, their expert, Richard Drogin, controlled for factors including, inter alia, job performance, length of time with the company, and the store where an employee worked.5 The results, the District Court found, were sufficient to raise an “inference of discrimination.”
+
+C
+
+The District Court’s identification of a common question, whether Wal-Mart’s pay and promotions policies gave rise to unlawful discrimination, was hardly infirm. The practice of delegating to supervisors large discretion to make personnel decisions, uncontrolled by formal standards, has long been known to have the potential to produce disparate effects. Managers, like all humankind, may be prey to biases of which they are unaware.6 The risk of discrimination is
+849
+heightened when those managers are predominantly of one sex, and are steeped in a corporate culture that perpetuates gender stereotypes.
+
+* * *
+
+The plaintiffs’ allegations state claims of gender discrimination in the form of biased decisionmaking in both pay and promotions. The evidence reviewed by the District Court adequately demonstrated that resolving those claims would necessitate examination of particular policies and practices alleged to affect, adversely and globally, women employed at Wal-Mart’s stores. Rule 23(a)(2), setting a necessary but not a sufficient criterion for class-action certification, demands nothing further.
+
+II
+
+A
+
+The Court gives no credence to the key dispute common to the class: whether Wal-Mart’s discretionary pay and promotion policies are discriminatory. “What matters,” the Court asserts, “is not the raising of common ‘questions,’ ” but whether there are “[d]issimilarities within the proposed class” that “have the potential to impede the generation of common answers.”
+
+The Court blends Rule 23(a)(2)’s threshold criterion with the more demanding criteria of Rule 23(b)(3), and thereby elevates the (a)(2) inquiry so that it is no longer “easily satisfied,” 5 J. Moore et al., Moore’s Federal Practice § 23.23[2], p. 23–72 (3d ed. 2011). Rule 23(b)(3) certification requires, in addition to the four 23(a) findings, determinations that “questions of law or fact common to class members predominate over any questions affecting only individual members” and that “a class action is superior to other available methods for … adjudicating the controversy.”
+
+The Court’s emphasis on differences between class members mimics the Rule 23(b)(3) inquiry into whether common questions “predominate” over individual issues. And by asking whether the individual differences “impede” common adjudication, the Court duplicates 23(b)(3)’s question whether “a class action is superior” to other modes of adjudication. Indeed, Professor Nagareda, whose “dissimilarities” inquiry the Court endorses, developed his position in the context of Rule 23(b)(3). See 84 N.Y.U. L. Rev. at 131. “The Rule 23(b)(3) predominance inquiry” is meant to “tes[t] whether proposed classes are sufficiently cohesive to warrant adjudication by representation.” Amchem Products,
+850
+Inc. v. Windsor, 521 U.S. 591, 623 (1997). If courts must conduct a “dissimilarities” analysis at the Rule 23(a)(2) stage, no mission remains for Rule 23(b)(3).
+
+Because Rule 23(a) is also a prerequisite for Rule 23(b)(1) and Rule 23(b)(2) classes, the Court’s “dissimilarities” position is far reaching. Individual differences should not bar a Rule 23(b)(1) or Rule 23(b)(2) class, so long as the Rule 23(a) threshold is met. * * *
+
+B
+
+The “dissimilarities” approach leads the Court to train its attention on what distinguishes individual class members, rather than on what unites them. * * *
+
+Wal-Mart’s delegation of discretion over pay and promotions is a policy uniform throughout all stores. The very nature of discretion is that people will exercise it in various ways. A system of delegated discretion, [we have] held, is a practice actionable under Title VII when it produces discriminatory outcomes. A finding that Wal-Mart’s pay and promotions practices in fact violate the law would be the first step in the usual order of proof for plaintiffs seeking individual remedies for company-wide discrimination. That each individual employee’s unique circumstances will ultimately determine whether she is entitled to backpay or damages, should not factor into the Rule 23(a)(2) determination.
+
+* * *
+
+The Court errs in importing a “dissimilarities” notion suited to Rule 23(b)(3) into the Rule 23(a) commonality inquiry. I therefore cannot join Part II of the Court’s opinion.

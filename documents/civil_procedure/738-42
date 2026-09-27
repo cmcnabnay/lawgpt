@@ -1,0 +1,71 @@
+738
+issue preclusion was called “collateral estoppel.” It was also sometimes confusingly referred to as “res judicata.”
+
+INTRODUCTORY NOTE TO ROSE V. BOARD OF ELECTION COMMISSIONERS
+We begin with Rose. This case explicitly applies claim preclusion (not issue preclusion) and addresses arguments that typically arise when when claim preclusion is at issue. Make sure you are clear on the concepts in Rose before moving on; the remaining readings are not so straightforward. Their procedural complexity is compounded by the opinions’ terminology, as the courts sometimes refer ambiguously to “res judicata” or otherwise elide the line between claim and issue preclusion.
+
+Rose v. Board of Election Commissioners for the City of Chicago
+_________________________
+
+815 F.3d 372 (7th Cir. 2016)
+
+Before WOOD, CHIEF JUDGE, and MANION and ROVNER, CIRCUIT JUDGES.
+
+MANION, CIRCUIT JUDGE.
+
+Vincent Rose sued the state of Illinois and the Chicago Board of Election Commissioners after the Board refused to put Rose’s name on the ballot for a local government election in 2015. The district court dismissed Rose’s amended complaint because an Illinois state court had already adjudicated an identical cause of action brought by Rose against the same defendants. Rose now appeals the district court’s dismissal of his federal action. We affirm.
+
+I. BACKGROUND
+
+In 2015 Rose submitted nomination petitions for the office of alderman in Chicago’s 7th Ward. Pursuant to Illinois statute, candidates for the 2015 alderman elections were required to obtain 473 valid signatures on their petitions for nomination in order to be placed on the ballot.1 Several individuals objected
+739
+to Rose’s nomination papers, and the Board conducted a records examination and a hearing for each objection. The Board concluded that Rose had only submitted 414 valid signatures, short of the required 473. Accordingly, on January 15, 2015, the Board ruled that Rose’s name would not be placed on the official ballot for the February 24, 2015 general alderman election.
+
+Rose then filed petitions for judicial review of the Board’s decision in the Circuit Court of Cook County. Rose’s petitions for judicial review challenged the validity of the Illinois statute imposing the four-percent signature requirement for aldermanic elections, as well as the Board’s enforcement of the statute in excluding his name from the ballot for the general election to be held on February 24, 2015. In particular, Rose claimed that the statute and the Board’s conduct in reliance upon it violated the First Amendment, the Equal Protection Clause, and the Due Process Clause of the state and federal constitutions. He also filed an amended memorandum of law setting out additional theories of liability under the Illinois constitution and federal Voting Rights Act.
+
+On February 3, 2015, the Circuit Court of Cook County issued a written decision denying Rose’s petitions for judicial review and affirming the Board of Elections’ January 15 decision not to place Rose’s name on the ballot. The court also rejected the additional arguments made by Rose in his amended memorandum of law. Rose did not appeal the Circuit Court’s decision, and he was not listed as a candidate on the official ballot for the February 24, 2015 alderman election.
+
+Meanwhile, Rose filed a substantively identical action in federal district court, followed by an amended complaint submitted shortly after his state action was dismissed. Like his petitions for judicial review, Rose’s amended complaint challenged (1) the validity of Illinois’s statutory four-percent signature requirement for the 2015 alderman elections, and (2) the Board’s application of that requirement as it pertained to Rose’s nomination petitions for the office of alderman of the 7th Ward. As in the state action, Rose asserted claims under the First Amendment, the Equal Protection Clause, the Due Process Clause, and the Voting Rights Act. He also alleged that the defendants were liable under 42 U.S.C. § 1983 based on the same underlying facts.
+
+The defendants moved to dismiss Rose’s amended complaint as barred by claim preclusion, arguing that Rose’s claims had already been adjudicated by the Circuit Court of Cook County in its final February 3 order dismissing Rose’s
+740
+action on the merits. The district court agreed and dismissed Rose’s amended complaint with prejudice on March 30, 2015. Rose filed this timely appeal.
+
+II. ANALYSIS
+
+We review a dismissal on claim-preclusion grounds de novo. Because the prior judgment is from an Illinois state court, Illinois preclusion principles apply. 28 U.S.C. § 1738 [(requiring that state court judgments “shall have the same full faith and credit in every court within the United States * * * as they have by law or usage in the courts of such State * * * from which they are taken”)]. In Illinois, “[t]he doctrine of claim preclusion ‘provides that a final judgment on the merits rendered by a court of competent jurisdiction bars any subsequent actions between the same parties or their privies on the same cause of action.’ ” Thus, claim preclusion has three requirements under Illinois law: (1) a final judgment on the merits rendered by a court of competent jurisdiction; (2) an identity of the causes of action; and (3) an identity of the parties or their privies.
+
+All three requirements of claim preclusion are satisfied in this case. The parties in Rose’s state and federal actions are the same, and the Circuit Court of Cook County’s February 2015 order dismissing Rose’s petitions for judicial review was unquestionably a final judgment on the merits. See Ill. S.Ct. R. 273 (“Unless … otherwise specifie[d], an involuntary dismissal of an action, other than a dismissal for lack of jurisdiction, for improper venue, or for failure to join an indispensable party, operates as an adjudication upon the merits.”).2 Nor is there any doubt that the state court was competent to resolve Rose’s federal claims. See Tafflin v. Levitt, 493 U.S. 455, 458 (1990) (“[S]tate courts have inherent authority, and are thus presumptively competent, to adjudicate claims arising under the laws of the United States.”). * * * This element of claim preclusion was therefore satisfied.
+
+Finally, Rose’s state and federal actions are identical for claim-preclusion purposes. In Illinois as elsewhere, separate claims are considered the same cause of action if “ ‘they arise from a single group of operative facts, regardless of whether they assert different theories of relief.’ ” In both his state and federal action, Rose challenged the Illinois statute prescribing the four-percent signature requirement for aldermanic elections. He also challenged the Board’s
+741
+decision, based on the four-percent requirement, not to print his name on the ballot for the February 2015 election for Chicago’s 7th Ward. Both the state and federal actions are clearly predicated on the same set of operative facts and are therefore the same cause of action under Illinois law.
+
+Rose’s addition of a § 1983 claim in his federal action does not change the analysis; it is merely a different theory of recovery arising from the same facts and circumstances that gave rise to the state action. Nor is it relevant that Rose never litigated his § 1983 claim in state court: “[c]laim preclusion applies not only to matters that were actually decided in the original action but also to matters that could have been decided.”
+
+* * *
+
+Rose also argues that claim preclusion should not apply because he did not have an adequate opportunity to litigate his claims in state court. We accord preclusive effect to a state court judgment only if the plaintiff had a “full and fair opportunity” to litigate his claims in the prior action. “A plaintiff is afforded a full and fair opportunity to litigate his claims so long as the state court proceedings complied with the minimum procedural requirements of the Due Process Clause.”
+
+We have little trouble concluding that the state court proceedings to which Rose voluntarily submitted were constitutionally adequate. After a hearing, the Circuit Court of Cook County issued a thorough written decision carefully addressing each of Rose’s claims and supporting arguments, including those raised for the first time in his amended memorandum of law. There is no indication that the state court proceedings were insufficiently extensive or substantively unfair, and the mere fact that Rose was displeased with the outcome of those proceedings does not amount to a violation of due process.
+
+Rose nonetheless complains that he did not have a fair opportunity to appeal the state court’s decision because his case became moot before the expiration of the statutory time to appeal.4 Putting aside the rather embarrassing implications of this argument (if Rose’s [claim] is moot, why does he continue to advance it [now, in the Seventh Circuit]?), the fact remains that Rose had the same statutory right to appeal as any other litigant; he simply chose not to
+742
+do so. His right to appeal was not rendered illusory merely because subsequent factual developments in his case made an appeal less advantageous. Accordingly, Rose had a full and fair opportunity to litigate his claims in state court, and the minimum procedural requirements of the Due Process Clause were met.
+
+III. CONCLUSION
+
+At oral argument, Rose’s counsel insisted that, “beyond all the doctrines … beyond all the claim preclusion … the main issue is equity and fairness.” But what is fair and equitable is the consistent application of well-settled principles of claim preclusion under controlling law. The district court properly dismissed Rose’s amended complaint on grounds of claim preclusion, and we affirm.
+
+AFFIRMED.
+
+
+
+•Claim preclusion applies both to matters decided, and which could have been decided, in the earlier action
+
+•A claim is precluded only if the party had a full and fair chance to litigate that claim in the prior action
+
+Go online for bullet points on the background and holding of Rose v. Board of Election Commissioners.
+
+NOTES AND QUESTIONS ON ROSE V. BOARD OF ELECTION COMMISSIONERS
+1. The court in Rose concludes its opinion by taking Rose’s counsel’s call for “equity and fairness” and reorienting it in support the court’s insistence on the application of black-letter law of preclusion. As you read the cases in this chapter, ask yourself why it might be that applying preclusion—which means denying a party’s request to present arguments and evidence on an issue or a claim—is “fair” and “equitable.” What goals does preclusion serve? For a party, like Rose, who argues that he merely is asking for a proverbial “day in court,”

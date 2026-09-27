@@ -1,0 +1,52 @@
+1205
+_________________________
+
+CHAPTER 13
+The Erie Problem
+We now turn to a topic anticipated by our cases on venue, transfer, and forum non conveniens: the question of which law a court should use to decide the case before it. This is known as a choice-of-law question.
+
+A federal court in a diversity action faces a particular kind of choice of law question. In a diversity action, the plaintiff’s complaint does seek relief under the U.S. Constitution, statutes, or treaties. (If it did, federal question would be a basis for subject matter jurisdiction.) For example, if the plaintiff alleges a common law tort or breach of contract, which law should the federal judge turn to when deciding that claim? Historically, federal courts have given two different answers.
+
+First, the judge could select whatever she thought was the best formulation of the common law of tort or contract. The judge might find guidance in other federal court decisions or in the decisions of one or more state courts. (This view of the common law treats it as a single body of law common to all courts.) This approach was the approach taken by federal courts for the first century and a half of their existence and is exemplified by the first case in this chapter, Swift v. Tyson.
+
+Second, for purposes of this question, the judge could treat her court as if it were a court of a specific state and follow whatever case law the judges of that state would follow. (This view of the common law treats each state’s judge-made law as a distinct set of legal commands, specific to that state.) This approach is what federal courts do today. Erie Railroad v. Tompkins, our second case, is the seminal case on this question. Erie was decided in 1938, the same year that the Federal Rules came into effect. And, like the Federal Rules, Erie marked a decisive break with the past.
+
+1206
+As we will see, Erie resolved some of the ambiguities and complications of the Swift rule but raised far more questions than it answered. These questions, with which federal courts have wrestled for nearly a century, are known as the Erie problem. The Erie problem is a problem of vertical choice of law. By “vertical choice of law,” I mean the choice between using federal law or state law to resolve an issue before the court. (This is in contrast to questions of horizontal choice of law, which refer to the choice among the laws of different states to govern an issue before the court. Horizontal choice of law is beyond the scope of this book. It is the primary subject of courses and books, which are often titled conflict of laws.) Vertical choice-of-law questions extend far beyond the specific example this chapter began with. For example, to say that a federal judge should act as if she were a state judge when defining the elements of a tort does not answer the question of which state’s judge the federal judge should pretend to be. And the Erie problem raises the question not merely of whether a federal court should follow state tort law or contract law. What about state rules of procedure? Does Erie apply to procedure?
+
+Indeed, the Erie problem poses a question with which this book began: What is procedure? As we shall study in detail, Erie requires federal courts to use state law as “rules of decision” in diversity cases. But, as we have seen throughout this book, federal courts follow federal procedural rules in all cases, including diversity cases. Thus, the Erie problem requires judges to distinguish between substantive law—the “rules of decision” that define the parties’ claims and defenses and determine who prevails in the case—and procedural law—the rules for how courts go about determining and enforcing the rights and duties created by substantive law. In this chapter, we will encounter legal issues that don’t fit neatly in only the substantive or only the procedural category.
+
+For example, consider a state statute of limitations for tort claims. It says that, in order to recover on a tort claim, a person must file suit within two years of discovering their injury. Is this procedure, because it defines rules for the filing of civil actions? Or is it substantive law, because it determines whether or not a plaintiff can obtain damages for an injury? (We will revisit this question when we read Guaranty Trust Co. of New York v. York.) In this way, the Erie problem forces courts to address the question: “What is procedure?”
+
+But first, we begin with the pathmarking cases that pose the fundamental questions this chapter will explore. Swift v. Tyson and its antithesis, Erie Railroad v. Tompkins, set the stage for all that follows. To Justice Joseph Story in
+1207
+Swift and Justice Louis Brandeis in Erie, the question was somewhat broader than “What is procedure?” Swift and Erie instead ask: “What is law?”
+
+1208
+A Brooding Omnipresence
+To understand the Erie problem, we begin with the rule that Erie replaced. Given that the Constitution created federal courts separate from state courts, and federal law separate from state courts, American courts have had to confront choice-of-law questions since the dawn of the Republic.
+
+Let’s explore the choice-of-law issues faced by federal courts in the nineteenth century and early twentieth century. Federal courts hearing cases alleging claims under federal statutes, treaties, or the U.S. Constitution have a straightforward choice-of-law problem: they will decide the case under that federal law. Federal courts hearing diversity cases face a potentially more difficult choice of law question. By definition, a diversity case does not arise under federal law. Thus, the question becomes under what law will this case be decided? If the complaint alleges violations of a state constitution, statute, or regulation, then the choice-of-law question is again easy: decide the case under the state law cited by the complaint.
+
+But what if the claim is not grounded in any constitution, statute, or regulation? What if there is no codified law upon which the claim is grounded? In other words, what if the complaint alleges a right to relief based on the common law?
+
+A traditional view of the common law was that (as the name suggests) it was “common”—shared by all courts. In this way, the general common law was a shared project to which all courts contributed, with each case offering another set of facts and statements of law to be compared with all other precedents by future judges.* From this point of view, if a federal court complaint invoked the common law, there was no choice-of-law conundrum, since there was only one common law to choose from.
+
+But things are never quite that simple! The common law is not codified, and a judge’s understanding of what the common law requires can evolve over time as case law develops. And nothing requires two judges to read the same precedents the same way, or even to cite the same precedents when deciding a case. The nature of stare decisis, of legal research, and of judicial collegiality is such that the judges of a state are much more likely to follow precedents from
+1209
+their own state than from other states. What that means is that judges in New York may describe common law rules in different terms than judges in Pennsylvania. Even if the common law was, in some sense, common to all places, the reality was also that the case law expounding the common law in New York courts did not say the same thing as the case law of the Pennsylvania courts.
+
+If you are federal judge in New York deciding a diversity case alleging common law causes of action, what do you do? Perhaps the thing to do is to decide the case under the general common law—in other words, without reference to the differences between the case laws of different states. The federal court would exercise its independent judgment about what the “right” answer was under the general common law.
+
+But perhaps the federal district court sitting in New York, recognizing that different courts reach different results when applying the common law, would just pick one state’s case law and follow that. (Presumably, the judge would pick New York law.) And these two options aren’t incompatible. A federal judge can embrace the idea of a general common law, but as a practical matter just look to the local state courts for guidance on the “true” meaning of the general common law. And that is, as a general matter, what the federal courts did in the years before 1938.
+
+But what if the federal judge thought that the local state courts had gotten the common law wrong? Could the federal court ignore the state courts of the state in which it sits and make an independent judgment? This was the question raised by Swift v. Tyson.
+
+Swift v. Tyson
+_________________________
+
+41 U.S. 1 (1842)
+
+STORY, JUSTICE, delivered the opinion of the court.
+
+This cause comes before us from the circuit court of the southern district of New York * * * . The action was brought by the plaintiff, Swift, as indorsee, against the defendant, Tyson, as acceptor, upon a bill of exchange dated at Portland, Maine, on the first day of May 1836, for the sum of $1540.30, payable six months after date, and grace, drawn by one Nathaniel Norton and one Jairus S. Keith upon and accepted by Tyson, at the city of New York, in favor

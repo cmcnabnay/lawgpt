@@ -1,0 +1,61 @@
+860
+The Judicial Power of the United States
+The United States Constitution grants three primary powers to the federal government: legislative (Article I), executive (Article II), and judicial (Article III). The Constitution established a central government of limited and enumerated powers, and just as the powers of Congress are enumerated and limited by Article I, and the powers of the President are enumerated and limited by Article II, the scope of judicial power is enumerated and limited by Article III.
+
+Article III prescribes the “judicial Power of the United States.” It defines the types of courts that the federal government can create and what the federal government can empower those courts to do. For this reason, federal courts are courts of limited jurisdiction. They cannot simply decide any case that comes before them. Rather, they have jurisdiction only to decide cases that fall within the scope of the power granted them by Article III. And because Article III gives Congress the power to create (or not create) lower federal courts, the lower federal courts have no jurisdiction except the jurisdiction granted to them by statute. In this chapter, we will study some of the federal statutes that grant jurisdiction to the federal district courts.
+
+When a case is filed in federal court, the federal court, before it can decide the case, must first determine whether the case falls within the subject matter jurisdiction of the court. If it does not, the federal court cannot decide the case. It must dismiss the case for lack of subject matter jurisdiction.
+
+In contrast, Article III says nothing about state courts. This is an important distinction. State courts pre-existed the U.S. Constitution. The powers of state courts are the product of state constitutions and state legislation. When ratified in 1789, the U.S. Constitution was silent on the powers of state courts. Only after the Civil War, with the ratification of the Reconstruction Amendments (the 13th, 14th, and 15th Amendments), did the U.S. Constitution begin to limit the power of state courts. (We have studied some of these limitations in Chapter 2 and will encounter more in Chapter 11.) This means that state courts are, by default, courts of general jurisdiction. State courts can hear any type of case that comes before them unless their jurisdiction is taken away by statute or by state constitution. The baseline, then, is that a state court can hear any case that comes before it.
+
+Before turning to the caselaw on subject matter jurisdiction, we begin with the ground upon which the jurisdiction of the federal courts rests: Article III.
+
+861
+U.S. Constitution, Article III
+Section 1.
+
+The judicial Power of the United States, shall be vested in one supreme Court, and in such inferior Courts as the Congress may from time to time ordain and establish. * * *
+
+Section 2.
+
+The judicial Power shall extend to all Cases, in Law and Equity, arising under this Constitution, the Laws of the United States, and Treaties made, or which shall be made, under their Authority; to all Cases affecting Ambassadors, other public Ministers and Consuls; to all Cases of admiralty and maritime Jurisdiction; to Controversies to which the United States shall be a Party; to Controversies between two or more States; between a State and Citizens of another State; between Citizens of different States, between Citizens of the same State claiming Lands under Grants of different States, and between a State, or the Citizens thereof, and foreign States, Citizens or Subjects.
+
+In all Cases affecting Ambassadors, other public Ministers and Consuls, and those in which a State shall be Party, the supreme Court shall have original Jurisdiction. In all the other Cases before mentioned, the supreme Court shall have appellate Jurisdiction, both as to Law and Fact, with such Exceptions, and under such Regulations as the Congress shall make.
+
+* * *
+
+
+
+•Federal courts are courts of limited jurisdiction, and Article III sets the maximum limits on federal courts subject matter jurisdiction
+
+•Article III permits Congress to create lower federal courts and give them jurisdiction over cases arising under the Constitution and laws of the United States, cases between citizens of different states, and other specific kinds of cases
+
+862
+NOTE ON ARTICLE III
+There are at least two easily overlooked features of Article III that are essential to understanding subject matter jurisdiction. First, the Constitution establishes only a United States Supreme Court. The task of creating “inferior” federal courts is left to Congress.
+
+Second, Article III distinguishes between “original” and “appellate” jurisdiction. Appellate jurisdiction, as the name implies, is jurisdiction to review the decision of another court. Original jurisdiction refers to the power to hear a case in the first instance. The Constitution assigns original jurisdiction to the Supreme Court in only a small set of cases within the federal judicial power.
+
+Query: If Article III creates only a Supreme Court, but assigns it only appellate jurisdiction in most cases within the federal judicial power, which courts have original jurisdiction? To what extent can Congress determine the answer to this question?
+
+Pursuant to its power to establish inferior federal courts under Article III, Congress has established 91 district courts corresponding to geographic jurisdictions (89 within the 50 states, and one each in the District of Columbia and Puerto Rico) and the Court of International Trade, which has specialized jurisdiction over certain claims related to customs and international trade. These 92 courts exercise original jurisdiction over claims within the federal judicial power. Congress has established 12 regional circuit courts of appeals (eleven numbered circuits and the Court of Appeals for the District of Columbia Circuit), which have appellate jurisdiction over cases in the federal district courts, and the Federal Circuit, which has appellate jurisdiction over certain specialized cases, including cases in the Court of International Trade. The jurisdiction of each of these courts is defined by statute.
+
+Article III describes the maximum scope of jurisdiction beyond which Congress cannot expand the federal courts’ power. As the Supreme Court made clear in Marbury v. Madison, 5 U.S. (1 Cranch) 137 (1803), which we read in Chapter 1, a statutory grant of jurisdiction that is greater than the judicial power outlined by Article III conflicts with Article III and is therefore invalid.
+
+With respect to the inferior federal courts, Congress need not grant them the full extent of jurisdiction permitted by the Constitution. Thus, it is not
+863
+enough that a case before a given federal court is within the “judicial Power of the United States,” as defined by Article III; it must also be within a statutory grant of jurisdiction from Congress.
+
+Our focus is primarily on the original jurisdiction of the United States district courts. Specifically, we will focus on the two most common bases for original jurisdiction: federal question jurisdiction and diversity jurisdiction. We will then turn to additional bases for the exercise of subject matter jurisdiction known as supplemental jurisdiction and removal procedure.
+
+INTRODUCTORY NOTE ON FEDERAL QUESTION JURISDICTION
+Article III, Section 2 extends the judicial power of the United States to cases “arising under this Constitution, the Laws of the United States, and Treaties.” This means that for federal courts created by Congress, Congress has the power to grant those courts subject matter jurisdiction over cases “arising under” the Constitution, laws, and treaties of the United States. This is known as federal question jurisdiction. The primary statute by which Congress granted federal question jurisdiction to the district courts is 28 U.S.C. § 1331.
+
+28 U.S.C. § 1331
+Federal Question
+
+The district courts shall have original jurisdiction of all civil actions arising under the Constitution, laws, or treaties of the United States.
+
+
+
+•Federal district courts have original jurisdiction over actions that arise under the Constitution, law, and treaties of the United States.

@@ -1,0 +1,37 @@
+1232
+An Irrepressible Myth
+For all the high-minded rhetoric about the common law and nature of judging in Swift and Erie, one should not forget that, at bottom, these cases were interpreting a federal statute. The Rules of Decision Act, after all, provides explicit statutory instructions to the federal courts on when they must use state law. Of course, to say that instructions are explicit is not to say that they are clear. The Rules of Decision Act is as ambiguous as it is brief. Recall the words of the statute as it existed at the time of Swift and, a century later, at the time of Erie:
+
+The laws of the several States, except where the Constitution, treaties, or statutes of the United States otherwise require or provide, shall be regarded as rules of decision in trials at common law, in the courts of the United States, in cases where they apply.
+
+The Rules of Decision Act (“RDA”) is a mere 45 words. In length, it is closer to a haiku poem than a typical federal statute. Yet Swift and Erie each sought to disambiguate only one phrase of the whole. They gave answers to the question: What does “The laws of the several States” mean? Swift said that “laws” did not include judicial decisions; Erie overruled Swift and said that “laws” includes judge-made law.
+
+As later cases built upon Erie, they ran up against further ambiguities in the RDA, each more subtle than the last. Indeed, we can organize the cases in this chapter around four questions of statutory interpretation that flow from the original text of the RDA. Each question seeks to clarify the meaning of a single phrase:
+
+First: What does “The laws of the several States” mean?
+
+Second: What does “at common law” mean?
+
+Third: What does “except where the Constitution, treaties, or statutes of the United States otherwise require or provide” mean?
+
+Fourth: What does “rules of decision” mean?
+
+So far, we have answered the first question. Under Erie, federal judges cannot independently craft common law rules to decide a claim for breach of contract, or personal injury, etc. If a federal judge is going to use common law
+1233
+to decide such a claim, she must follow the common law of a state. A federal judge in Tennessee, for example, will decide as if she were a state judge in Tennessee, following Tennessee law governing how to decide a breach of contract claim, or personal injury claim, etc.
+
+But what if the claim is not for breach of contract, or personal injury, but a claim for rescission of a contract, or to abate a nuisance? These are not claims “at common law,” but claims in equity. This brings us to the second question. You may recall from the discussion of the history of pleading in Chapter 3, and from the discussion of the Seventh Amendment right to jury trial in Chapter 5, the long-standing distinction between common law and equity in the United States. When the Supreme Court decided Erie, the RDA said that state law will provide the rules of decision “in trials at common law.” It said nothing about cases in equity. What are federal courts supposed to do when deciding claims for equitable relief? Ruhlin v. New York Life Insurance, which we will read about shortly, would answer this question.
+
+Next, consider the situation that arises when the choice is not merely between following state caselaw or federal caselaw, but between following state law and following federal codified law—statutes, rules, and so on. This presents us with the third question: What does “except where the Constitution, treaties, or statutes of the United States otherwise require or provide” mean? When the federal codified law is the law creating the cause of action under which the plaintiff is suing, then the RDA gives a simple answer: Federal law provides the rule of decision. If a plaintiff’s complaint alleges an antitrust conspiracy and seeks relief under Section 1 of the Sherman Act, 15 U.S.C. § 1, federal law is all the federal court needs. Of course, a plaintiff could choose to forgo federal codified law, even if it exists. If a plaintiff files a complaint in federal court on the basis of diversity jurisdiction, and the complaint alleges an antitrust conspiracy and seeks relief only under Section 3 of the Illinois Antitrust Act, 740 ILCS 10/3, the federal court will apply the Illinois Antitrust Act as the rule of decision.
+
+What about the Federal Rules? The Rules are, in a literal sense, judge-made law, as they are promulgated by federal judges, but the federal rulemaking process is authorized by an act of Congress—the Rules Enabling Act. Does this mean that state law does not apply when a Federal Rule does? We see the Court give an answer to this question in Sibbach v. Wilson & Co., which appears later in this chapter. But this question does not go away, and we shall see
+1234
+the Court revisit it over and over—in Cohen v. Beneficial Industrial Loan Corp., Hanna v. Plumer, and most recently in Shady Grove v. Allstate.
+
+Finally, consider the converse situation, when the choice is between following state codified law and following federal law. After reading Swift and Erie, one might think this is the easiest question of all. For all their differences, Swift and Erie agreed on one principle: if the plaintiff’s claim is based on a state statute—not the common law or equity—then a federal court must follow the state statute, not choose a different rule to follow. Yet the past eight decades of experience have confounded this seemingly easy principle.
+
+Why? This brings us to the fourth question: What does “rules of decision” mean? As the words suggest, a rule of decision provides the basis upon which the court determines who wins. What duty of care did Erie Railroad owe to Tompkins? The RDA says that state law provides the answer. What are the elements that Tompkins must prove to prevail on his claim for personal injury? The RDA says that state law provides the answer. Does Tompkins lose if the railroad can show he was contributorily negligent? The RDA says that state law provides the answer. Erie tells us this much.
+
+But state law includes more than causes of action for tort. States have their own rules of procedure, rules of evidence, statutes of limitation, rights to jury trial, and so on. None of these things enumerate the elements of a cause of action. But as we have seen throughout this book, procedure is often the basis upon which a court decides who wins and who loses. Yet no justice interpreting the RDA has ever claimed that it requires federal courts to follow state procedural law. As Justice Reed said in his concurrence in Erie: “The line between procedural and substantive law is hazy, but no one doubts federal power over procedure.”
+
+It is this hazy line between substance and procedure that has vexed courts for more than 80 years. We will soon turn to the 1945 case Guaranty Trust Co. of New York v. York, in which the question was whether federal courts sitting in diversity should follow state statutes of limitations.* Is a statute of limitations substance, and thus a rule of decision, or procedure, and thus outside the scope of the RDA? In every subsequent case that we shall read, the Court would encounter

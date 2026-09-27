@@ -1,0 +1,64 @@
+1209
+their own state than from other states. What that means is that judges in New York may describe common law rules in different terms than judges in Pennsylvania. Even if the common law was, in some sense, common to all places, the reality was also that the case law expounding the common law in New York courts did not say the same thing as the case law of the Pennsylvania courts.
+
+If you are federal judge in New York deciding a diversity case alleging common law causes of action, what do you do? Perhaps the thing to do is to decide the case under the general common law—in other words, without reference to the differences between the case laws of different states. The federal court would exercise its independent judgment about what the “right” answer was under the general common law.
+
+But perhaps the federal district court sitting in New York, recognizing that different courts reach different results when applying the common law, would just pick one state’s case law and follow that. (Presumably, the judge would pick New York law.) And these two options aren’t incompatible. A federal judge can embrace the idea of a general common law, but as a practical matter just look to the local state courts for guidance on the “true” meaning of the general common law. And that is, as a general matter, what the federal courts did in the years before 1938.
+
+But what if the federal judge thought that the local state courts had gotten the common law wrong? Could the federal court ignore the state courts of the state in which it sits and make an independent judgment? This was the question raised by Swift v. Tyson.
+
+Swift v. Tyson
+_________________________
+
+41 U.S. 1 (1842)
+
+STORY, JUSTICE, delivered the opinion of the court.
+
+This cause comes before us from the circuit court of the southern district of New York * * * . The action was brought by the plaintiff, Swift, as indorsee, against the defendant, Tyson, as acceptor, upon a bill of exchange dated at Portland, Maine, on the first day of May 1836, for the sum of $1540.30, payable six months after date, and grace, drawn by one Nathaniel Norton and one Jairus S. Keith upon and accepted by Tyson, at the city of New York, in favor
+1210
+of the order of Nathaniel Norton, and by Norton indorsed to the plaintiff. The bill was dishonored at maturity.
+
+[Norton and Keith had sold land in Maine to George Tyson. As partial payment for the land, Tyson made out a bill of exchange in favor of Norton, to be paid in six months—in other words, Tyson wrote Norton a backdated check for $1540.30 to pay for the land. (A bill of exchange is a type of negotiable instrument that usually takes the form of a check.) Norton did not wait six months to cash the check, however. Norton and Keith owed Swift money, and they paid their debt to Swift by indorsing the bill of exchange over to Swift—in other words, Tyson now owed $1540.30 to Swift. So when the six months were up, Swift requested payment, but the bill was dishonored—in other words, Tyson had put a “stop payment” order on the check. Swift sued for the money. In the course of the litigation, Swift discovered why Tyson had stopped payment on the bill of exchange: Norton and Keith had sold Tyson land they didn’t own. Tyson had been defrauded by Norton and Keith.
+
+[At trial, it was established that Swift had accepted the endorsed bill of exchange, that the endorsement was valid, and that Swift had no knowledge of the fraud upon Tyson; Swift was thus a bona fide holder of the negotiable instrument. Tyson, in defense, established the fraud that had been committed upon him; because of the fraud by Norton, Tyson would not have been liable for the bill of exchange had Norton sought to enforce it. Further, it was not contested that under the law of negotiable instruments, a bona fide holder of a negotiable instrument who gave “valuable consideration” in exchange for it was immune from the defense that the original recipient of the instrument obtained it by fraud. As applied in this case, this meant that Tyson’s defense would be irrelevant, and Swift would prevail, if Swift had given valuable consideration for the bill of exchange; otherwise, the defense of fraud would defeat Swift’s claim.
+
+[Because Swift had received the bill of exchange in payment for Norton and Keith’s pre-existing debt to Swift, the decision in the case would turn on a single question of law: is a pre-existing debt “valuable consideration” for a negotiable instrument? On this question, the judges of the federal circuit court divided, and they certified the question to the Supreme Court.—ed.]
+
+There is no doubt, that a bona fide holder of a negotiable instrument, for a valuable consideration, without any notice of facts which impeach its validity, as between the antecedent parties, if he takes it under an indorsement made
+1211
+before the same becomes due, holds the title unaffected by these facts, and may recover thereon, although, as between the antecedent parties, the transaction may be without any legal validity. This is a doctrine so long and so well established, and so essential to the security of negotiable paper, that it is laid up among the fundamentals of the law, and requires no authority or reasoning to be now brought in its support. * * *
+
+* * * [T]he only real question in the cause is, whether, under the circumstances of the present case, [ ] a pre-existing debt constitutes a valuable consideration, in the sense of the general rule applicable to negotiable instruments. * * * [T]he argument on behalf of the defendant is, that the contract is to be treated as a New York contract, and therefore, to be governed by the laws of New York, as expounded by its courts * * * . And then it is further contended, that by the law of New York, as thus expounded by its courts, a pre-existing debt does not constitute, in the sense of the general rule, a valuable consideration applicable to negotiable instruments.
+
+* * *
+
+But, admitting the doctrine to be fully settled in New York, it remains to be considered, whether it is obligatory upon this court, if it differs from the principles established in the general commercial law. It is observable, that the courts of New York do not found their decisions upon this point, upon any local statute, or positive, fixed or ancient local usage; but they deduce the doctrine from the general principles of commercial law. It is, however, contended, that the 34th section of the judiciary act of 1789, ch. 20 [i.e., the Rules of Decision Act], furnishes a rule obligatory upon this court to follow the decisions of the state tribunals in all cases to which they apply. That section provides ‘that the laws of the several states, except where the constitution, treaties or statutes of the United States shall otherwise require or provide, shall be regarded as rules of decision, in trials at common law, in the courts of the United States, in cases where they apply.’ In order to maintain the argument, it is essential, therefore, to hold, that the word ‘laws,’ in this section, includes within the scope of its meaning, the decisions of the local tribunals. In the ordinary use of language, it will hardly be contended, that the decisions of courts constitute laws. They are, at most, only evidence of what the laws are, and are not, of themselves, laws. They are often re-examined, reversed and qualified by the courts themselves, whenever they are found to be either defective, or ill-founded, or otherwise incorrect. The laws of a state are more usually understood to mean the rules
+1212
+and enactments promulgated by the legislative authority thereof, or long-established local customs having the force of laws. In all the various cases, which have hitherto come before us for decision, this court have uniformly supposed, that the true interpretation of the 34th section limited its application to state laws, strictly local, that is to say, to the positive statutes of the state, and the construction thereof adopted by the local tribunals, and to rights and titles to things having a permanent locality, such as the rights and titles to real estate, and other matters immovable and intra-territorial in their nature and character. It never has been supposed by us, that the section did apply, or was designed to apply, to questions of a more general nature, not at all dependent upon local statutes or local usages of a fixed and permanent operation, as, for example, to the construction of ordinary contracts or other written instruments, and especially to questions of general commercial law, where the state tribunals are called upon to perform the like functions as ourselves, that is, to ascertain, upon general reasoning and legal analogies, what is the true exposition of the contract or instrument, or what is the just rule furnished by the principles of commercial law to govern the case. And we have not now the slightest difficulty in holding, that this section, upon its true intendment and construction, is strictly limited to local statutes and local usages of the character before stated, and does not extend to contracts and other instruments of a commercial nature, the true interpretation and effect whereof are to be sought, not in the decisions of the local tribunals, but in the general principles and doctrines of commercial jurisprudence. Undoubtedly, the decisions of the local tribunals upon such subjects are entitled to, and will receive, the most deliberate attention and respect of this court; but they cannot furnish positive rules, or conclusive authority, by which our own judgments are to be bound up and governed. * * *
+
+It becomes necessary for us, therefore, upon the present occasion, to express our own opinion of the true result of the commercial law upon the question now before us. And we have no hesitation in saying, that a pre-existing debt does constitute a valuable consideration, in the sense of the general rule already stated, as applicable to negotiable instruments. * * *
+
+* * *
+
+* * * We are all, therefore, of opinion, that the question on this point [i.e., whether the evidence of fraud by Norton and Keith may be used as a defense against Swift’s claim], propounded by the circuit court for our consideration,
+1213
+ought to be answered in the negative; and we shall, accordingly, direct it so to be certified to the circuit court.
+
+[The statement of JUSTICE CATRON is omitted.]
+
+
+
+•The Rules of Decision Act (RDA) determines when federal courts must follow state law
+
+•The RDA requires federal courts to follow state statutes but not state-court interpretations of common law
+
+•Federal court will interpret the general common law on its own, although state court rulings may be persuasive
+
+Go online for bullet points on the background and holding of Swift v. Tyson.
+
+NOTES AND QUESTIONS ON SWIFT V. TYSON
+1. Although Swift v. Tyson opines on the seemingly abstract question of what it means for something to be “law,” Swift’s discussion is firmly grounded in the text of a federal statute, the Rules of Decision Act, which at that time said:
+
+The laws of the several States, except where the Constitution, treaties, or statutes of the United States otherwise require or provide, shall be regarded as rules of decision in trials at common law, in the courts of the United States, in cases where they apply.
+
+The question in Swift v. Tyson was essentially about the meaning of a single word in the Rules of Decision Act: “laws.” Crucially, Justice Story’s opinion in Swift decided that that “laws” included statutes but not the decisions of courts. Erie Railroad v. Tompkins, decided almost a century later, would look at the same text of the Rules of Decision Act and conclude that “laws” includes the decisions of courts. In other words, when deciding diversity suits alleging common law causes of action, the federal courts would be bound to follow the
