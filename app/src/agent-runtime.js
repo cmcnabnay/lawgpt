@@ -219,18 +219,22 @@ async function loadExternalSession(sessionId){
 // --resume), and the caller has already set up `entry` (fresh for a new run,
 // seeded with the prior transcript for a follow-up) and registered it in
 // liveRuns.
-function spawnClaude(entry, userId, runId, args, cwd){
+//
+// The prompt goes in over stdin rather than as a -p argument: prompts from
+// the Complete buttons inline whole attached documents, and Linux rejects any
+// single argv string over 128KB (E2BIG) -- stdin has no such cap. Writing it
+// and ending the stream right away also means the CLI never sits waiting to
+// see whether more piped input is coming.
+function spawnClaude(entry, userId, runId, args, cwd, prompt){
   let child;
   try {
     child = spawn("claude", args, {
       cwd,
       env: process.env,
-      // Nothing ever writes to this process's stdin -- left open (the
-      // default), the CLI waits briefly to see if piped input is coming
-      // ("no stdin data received in 3s...") before proceeding. Closing it
-      // immediately tells it up front there's none, skipping that wait.
-      stdio: ["ignore", "pipe", "pipe"]
+      stdio: ["pipe", "pipe", "pipe"]
     });
+    child.stdin.on("error", () => { /* surfaces via the close handler */ });
+    child.stdin.end(prompt);
   } catch (err) {
     entry.status = "error";
     entry.output += `Failed to start Claude Code: ${err.message}`;
@@ -308,12 +312,12 @@ function startRun(userId, runId, prompt, cwd){
   const entry = { userId, output: "", result: "", turns: [{ prompt, result: "" }], status: "running", child: null };
   liveRuns.set(runId, entry);
   spawnClaude(entry, userId, runId, [
-    "-p", prompt,
+    "-p",
     "--permission-mode", "auto",
     "--output-format", "stream-json",
     "--verbose",
     "--session-id", runId
-  ], cwd);
+  ], cwd, prompt);
 }
 
 // Sends a follow-up message into an already-finished run's own Claude Code
@@ -345,11 +349,11 @@ async function continueRun(userId, runId, followupPrompt, cwd){
   liveRuns.set(runId, entry);
   spawnClaude(entry, userId, runId, [
     "--resume", runId,
-    "-p", followupPrompt,
+    "-p",
     "--permission-mode", "auto",
     "--output-format", "stream-json",
     "--verbose"
-  ], cwd);
+  ], cwd, followupPrompt);
 }
 
 function getLiveRun(runId){

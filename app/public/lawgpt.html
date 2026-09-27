@@ -11443,6 +11443,26 @@ function appendCompleteButton(row, cls, text, courseCode){
   row.appendChild(btn);
 }
 
+// Full text of each attached document, for the agent-backed Complete
+// buttons. generateAgentReport only sends the prompt itself to the agent --
+// not documentIds -- and the agent's own filesystem access only reaches
+// documents/<course>/ on disk, not documents stored in this account's
+// Supabase user_documents table. So without the text inlined here, a
+// Supabase-only document (e.g. one from email sync) would show up as a title
+// the agent can't actually find anywhere. Each document is capped so one
+// huge casebook can't crowd out everything else.
+const AGENT_DOC_MAX_CHARS = 80000;
+function formatAttachedDocumentsForAgent(attached){
+  if (!attached.length) return "";
+  const blocks = attached.map(a => {
+    const body = a.text.length > AGENT_DOC_MAX_CHARS
+      ? a.text.slice(0, AGENT_DOC_MAX_CHARS) + "\n…[truncated]"
+      : a.text;
+    return `===== BEGIN DOCUMENT: "${a.title}" =====\n${body}\n===== END DOCUMENT: "${a.title}" =====`;
+  });
+  return "\n\nThe full text of every attached document is included below. These are the authoritative copies -- some are stored only in the app's database and won't exist anywhere under documents/ on disk, so don't go looking for them there.\n\n" + blocks.join("\n\n");
+}
+
 function completeAssignment(cls, text, courseCode, btn){
   const classHeader = cls.classLabel + (cls.date ? " (" + cls.date + ")" : "") + (cls.topic ? " — " + cls.topic : "");
   const courseLabel = courseCode === "civpro" ? "Civil Procedure" : courseCode === "contracts" ? "Contracts" : courseCode === "torts" ? "Torts" : "Lawyering Skills & Strategies";
@@ -11472,7 +11492,7 @@ function completeAssignment(cls, text, courseCode, btn){
 
     const contextPromptText = context.prompt.trim() ? `\n\nAdditional context from me:\n${context.prompt.trim()}` : "";
 
-    const prompt = `I'm working on an assignment for ${courseLabel}, ${classHeader}. Here is the assignment line from the schedule:\n\n"${text}"\n\n${sourceNote}${contextPromptText}\n\n${getNotesPrompt("assignment")}`;
+    const prompt = `I'm working on an assignment for ${courseLabel}, ${classHeader}. Here is the assignment line from the schedule:\n\n"${text}"\n\n${sourceNote}${contextPromptText}\n\n${getNotesPrompt("assignment")}${formatAttachedDocumentsForAgent(attached)}`;
 
     const shortTitle = text.length > 60 ? text.slice(0, 60) + "…" : text;
     await generateAgentReport({
@@ -11577,7 +11597,7 @@ function completeQuiz(quiz, courseCode, btn){
     const covered = courseCode === "civpro" && dateKey !== null ? civProTopicsCoveredThrough(dateKey) : [];
     const coveredNote = covered.length ? `\n\nMaterial covered in class through this quiz's due date:\n${covered.map(t => "- " + t).join("\n")}` : "";
 
-    const prompt = `This is a Canvas quiz for ${courseLabel}: "${quiz.title}," worth ${quiz.points} points across ${quiz.questions} question${quiz.questions === 1 ? "" : "s"}, due ${dueHeader}. ${quiz.availabilityText || ""}\n\n${sourceNote}${coveredNote}${contextPromptText}\n\n${getNotesPrompt("quiz")}`;
+    const prompt = `This is a Canvas quiz for ${courseLabel}: "${quiz.title}," worth ${quiz.points} points across ${quiz.questions} question${quiz.questions === 1 ? "" : "s"}, due ${dueHeader}. ${quiz.availabilityText || ""}\n\n${sourceNote}${coveredNote}${contextPromptText}\n\n${getNotesPrompt("quiz")}${formatAttachedDocumentsForAgent(attached)}`;
 
     await generateAgentReport({
       course: courseCode,
