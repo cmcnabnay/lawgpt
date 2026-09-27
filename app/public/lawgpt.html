@@ -11668,7 +11668,6 @@ document.getElementById("quizScrapeRunBtn").addEventListener("click", async () =
         parts.push("Anchors mentioning \"quiz\": " + data.anyQuizAnchors.map(a => `[${a.text || "(no text)"} -> ${a.href}]`).join(" "));
       }
       if (data && data.bodySnippet) parts.push(`Page text (first 1200 chars): ${data.bodySnippet}`);
-      if (data && data.debugScreenshot) parts.push(`Debug screenshot saved server-side to: ${data.debugScreenshot}`);
       throw new Error(parts.join("\n\n"));
     }
 

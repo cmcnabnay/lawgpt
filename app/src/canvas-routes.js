@@ -750,7 +750,7 @@ router.post("/quiz", async (req, res) => {
     if (!allQuizLinks.length) {
       browserFallback = await findQuizLinksViaBrowser(listRes.url || (baseUrl + `/courses/${courseId}/quizzes`), buildCookieHeader(cookie), baseOrigin);
       if (browserFallback.error) {
-        return res.status(502).json({ error: browserFallback.error, finalUrl: browserFallback.finalUrl, debugScreenshot: browserFallback.debugScreenshot });
+        return res.status(502).json({ error: browserFallback.error, finalUrl: browserFallback.finalUrl });
       }
       allQuizLinks = (browserFallback.links || []).filter(l => quizHrefShape.test(l.href));
     }
@@ -817,7 +817,6 @@ router.post("/quiz", async (req, res) => {
         return res.status(404).json({
           error: `Couldn't find a quiz titled "${quizTitle}" on the quizzes page.${detail}`,
           finalUrl: diagnosticUrl,
-          debugScreenshot: browserFallback ? browserFallback.debugScreenshot : null,
           pageTitle,
           anyQuizAnchors,
           bodySnippet
@@ -840,13 +839,12 @@ router.post("/quiz", async (req, res) => {
       const result = await scrapeNewQuiz(quizShowUrl, cookieHeader, baseOrigin);
 
       if (result.error) {
-        return res.status(502).json({ error: result.error, finalUrl: result.finalUrl, debugScreenshot: result.debugScreenshot });
+        return res.status(502).json({ error: result.error, finalUrl: result.finalUrl });
       }
       if (!result.rawText) {
         return res.status(502).json({
           error: "Started the New Quizzes attempt but couldn't read any content off the rendered page -- its player's markup may differ from what this scraper expects.",
-          finalUrl: result.finalUrl,
-          debugScreenshot: result.debugScreenshot
+          finalUrl: result.finalUrl
         });
       }
 

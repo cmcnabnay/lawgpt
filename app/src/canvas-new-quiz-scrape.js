@@ -25,17 +25,8 @@
 // clicks anything that submits/finishes it -- it only reads whatever
 // rendered on screen after that, then closes the browser. No answers are
 // selected or submitted on the user's behalf.
-//
-// Every run saves a full-page screenshot to DEBUG_SCREENSHOT_PATH,
-// overwriting the previous one -- since nothing about this page's actual
-// rendered layout could be verified from here, that screenshot (readable
-// directly off disk) is the fastest way to see what really happened instead
-// of guessing again from text-only diagnostics.
-
-const path = require("path");
 
 const MAX_TEXT_CHARS = 40000;
-const DEBUG_SCREENSHOT_PATH = path.join(__dirname, "quiz-scrape-debug.png");
 
 // Generic "does this look like a login form" check -- deliberately not
 // domain-based (an off-Canvas-origin landing is EXPECTED here, since an LTI
@@ -171,15 +162,6 @@ async function hasNextButton(page) {
   return false;
 }
 
-async function saveDebugScreenshot(page) {
-  try {
-    await page.screenshot({ path: DEBUG_SCREENSHOT_PATH, fullPage: true });
-    return DEBUG_SCREENSHOT_PATH;
-  } catch {
-    return null;
-  }
-}
-
 function setCookies(page, cookieHeader, baseOrigin) {
   const cookieObjs = cookieHeader.split(";").map(s => s.trim()).filter(Boolean).map(pair => {
     const idx = pair.indexOf("=");
@@ -204,8 +186,7 @@ async function scrapeNewQuiz(quizUrl, cookieHeader, baseOrigin) {
     await page.goto(quizUrl, { waitUntil: "domcontentloaded" });
 
     if (await looksLikeLoginPage(page)) {
-      const shot = await saveDebugScreenshot(page);
-      return { error: `Landed on what looks like a login page (${page.url()}) instead of the quiz -- the session cookie isn't authenticated.`, finalUrl: page.url(), debugScreenshot: shot };
+      return { error: `Landed on what looks like a login page (${page.url()}) instead of the quiz -- the session cookie isn't authenticated.`, finalUrl: page.url() };
     }
 
     // Some assignment/quiz pages gate the actual content behind an explicit
@@ -256,14 +237,12 @@ async function scrapeNewQuiz(quizUrl, cookieHeader, baseOrigin) {
 
     const onePerPage = screens.length > 1;
     const rawText = screens.join("\n\n----- next question -----\n\n");
-    const debugScreenshot = await saveDebugScreenshot(page);
 
     return {
       rawText: rawText.slice(0, MAX_TEXT_CHARS),
       onePerPage,
       screensRead: screens.length,
-      finalUrl: page.url(),
-      debugScreenshot
+      finalUrl: page.url()
     };
   } catch (err) {
     return { error: `Browser automation failed: ${err.message}` };
@@ -295,8 +274,7 @@ async function findQuizLinksViaBrowser(indexUrl, cookieHeader, baseOrigin) {
     await page.goto(indexUrl, { waitUntil: "domcontentloaded" });
 
     if (await looksLikeLoginPage(page)) {
-      const shot = await saveDebugScreenshot(page);
-      return { error: `Landed on what looks like a login page (${page.url()}) instead of the quizzes list -- the session cookie isn't authenticated.`, finalUrl: page.url(), debugScreenshot: shot };
+      return { error: `Landed on what looks like a login page (${page.url()}) instead of the quizzes list -- the session cookie isn't authenticated.`, finalUrl: page.url() };
     }
 
     const { text, links } = await (async () => {
@@ -304,9 +282,7 @@ async function findQuizLinksViaBrowser(indexUrl, cookieHeader, baseOrigin) {
       return collectFromAllFrames(page);
     })();
 
-    const debugScreenshot = await saveDebugScreenshot(page);
-
-    return { links, finalUrl: page.url(), bodySnippet: text.slice(0, 1200), debugScreenshot };
+    return { links, finalUrl: page.url(), bodySnippet: text.slice(0, 1200) };
   } catch (err) {
     return { error: `Browser automation failed: ${err.message}` };
   } finally {
@@ -314,4 +290,4 @@ async function findQuizLinksViaBrowser(indexUrl, cookieHeader, baseOrigin) {
   }
 }
 
-module.exports = { scrapeNewQuiz, findQuizLinksViaBrowser, DEBUG_SCREENSHOT_PATH };
+module.exports = { scrapeNewQuiz, findQuizLinksViaBrowser };
