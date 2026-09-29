@@ -53,10 +53,18 @@ router.post("/events", async (req, res) => {
 router.put("/events/:id", async (req, res) => {
   const { title, date, time, hasTime, description, location } = req.body || {};
   const patch = {};
+  if (typeof date === "string" && !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    return res.status(400).json({ error: { message: "A valid date (YYYY-MM-DD) is required." } });
+  }
+  if (typeof time === "string" && !/^\d{1,2}:\d{2}$/.test(time)) {
+    return res.status(400).json({ error: { message: "Time must be HH:MM." } });
+  }
   if (typeof title === "string") patch.title = title;
   if (typeof date === "string") patch.date = date;
   if (typeof hasTime === "boolean") patch.hasTime = hasTime;
   if (typeof time === "string" || time === null) patch.time = time;
+  // Switching an event to all-day drops its stale time.
+  if (hasTime === false) patch.time = null;
   if (typeof description === "string") patch.description = description;
   if (typeof location === "string") patch.location = location;
 

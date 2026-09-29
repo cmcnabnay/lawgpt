@@ -8579,6 +8579,9 @@ document.getElementById("emailSyncBtn").addEventListener("click", async () => {
 let calendarEventsCache = [];
 let calendarWeekStart = startOfCalendarWeek(new Date()); // Sunday 00:00 of the displayed week
 let calendarSelectedEventId = null;
+// True while the event popup is showing its date/time inputs (the "Edit
+// date/time" button) instead of the read-only date line.
+let calendarEditingDateTime = false;
 let calendarBackfillPollTimer = null;
 
 const CALENDAR_HOUR_START = 7;   // 7 AM
@@ -8804,12 +8807,14 @@ function renderCalendarWeek(){
 // and the View email / Delete actions the user asked for.
 function openCalendarEvent(id){
   calendarSelectedEventId = id;
+  calendarEditingDateTime = false;
   document.getElementById("calendarEventOverlay").style.display = "flex";
   renderCalendarEventModal();
 }
 
 function closeCalendarEventPanel(){
   calendarSelectedEventId = null;
+  calendarEditingDateTime = false;
   document.getElementById("calendarEventOverlay").style.display = "none";
 }
 
@@ -8867,6 +8872,11 @@ function renderCalendarEventModal(){
   const dayKey = calendarDayKey(ev.date);
   const [dy, dm, dd] = dayKey.split("-").map(Number);
   const evDateLocal = dayKey ? new Date(dy, dm - 1, dd) : new Date(ev.date);
+  if (calendarEditingDateTime){
+    renderCalendarDateTimeEditor(ev, dayKey, body, actions);
+    return;
+  }
+
   const dateLine = document.createElement("div");
   dateLine.className = "calendar-event-time";
   dateLine.textContent = evDateLocal.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" }) +
@@ -8918,6 +8928,16 @@ function renderCalendarEventModal(){
     actions.appendChild(viewBtn);
   }
 
+  const editBtn = document.createElement("button");
+  editBtn.type = "button";
+  editBtn.className = "btn-secondary";
+  editBtn.textContent = "Edit date/time";
+  editBtn.addEventListener("click", () => {
+    calendarEditingDateTime = true;
+    renderCalendarEventModal();
+  });
+  actions.appendChild(editBtn);
+
   const delBtn = document.createElement("button");
   delBtn.type = "button";
   delBtn.className = "btn-secondary";
@@ -8932,6 +8952,81 @@ function renderCalendarEventModal(){
   actions.appendChild(closeBtn);
 }
 
+// The "Edit date/time" mode of the event popup -- date + time inputs (same
+// convention as the Add event modal: a blank time means an all-day event),
+// with Save/Cancel in place of the usual actions.
+function renderCalendarDateTimeEditor(ev, dayKey, body, actions){
+  const form = document.createElement("div");
+  form.className = "settings-form";
+
+  const title = document.createElement("div");
+  title.className = "calendar-event-title";
+  title.textContent = ev.title || "(untitled event)";
+  form.appendChild(title);
+
+  const dateLabel = document.createElement("label");
+  dateLabel.textContent = "Date";
+  const dateInput = document.createElement("input");
+  dateInput.type = "date";
+  dateInput.value = dayKey;
+  dateLabel.htmlFor = dateInput.id = "calendarEditEventDate";
+  form.appendChild(dateLabel);
+  form.appendChild(dateInput);
+
+  const timeLabel = document.createElement("label");
+  timeLabel.textContent = "Time (leave blank for an all-day event)";
+  const timeInput = document.createElement("input");
+  timeInput.type = "time";
+  if (ev.hasTime){
+    const { hour, minute } = eventTimeParts(ev);
+    timeInput.value = String(hour).padStart(2, "0") + ":" + String(minute).padStart(2, "0");
+  }
+  timeLabel.htmlFor = timeInput.id = "calendarEditEventTime";
+  form.appendChild(timeLabel);
+  form.appendChild(timeInput);
+
+  const statusEl = document.createElement("div");
+  statusEl.className = "settings-status";
+  form.appendChild(statusEl);
+  body.appendChild(form);
+
+  const saveBtn = document.createElement("button");
+  saveBtn.type = "button";
+  saveBtn.textContent = "Save";
+  saveBtn.addEventListener("click", async () => {
+    const date = dateInput.value;
+    const time = timeInput.value;
+    if (!date){
+      statusEl.textContent = "Date is required.";
+      statusEl.className = "settings-status err";
+      return;
+    }
+    saveBtn.disabled = true;
+    const ok = await saveCalendarEventEdit(ev.id, { date, hasTime: Boolean(time), time: time || null });
+    saveBtn.disabled = false;
+    if (!ok) return;
+    // Jump to the event's (possibly new) week so it's still visible behind
+    // the popup after moving it.
+    const [y, m, d] = date.split("-").map(Number);
+    calendarWeekStart = startOfCalendarWeek(new Date(y, m - 1, d));
+    calendarEditingDateTime = false;
+    renderCalendarWeek();
+  });
+  actions.appendChild(saveBtn);
+
+  const cancelBtn = document.createElement("button");
+  cancelBtn.type = "button";
+  cancelBtn.className = "btn-secondary";
+  cancelBtn.textContent = "Cancel";
+  cancelBtn.addEventListener("click", () => {
+    calendarEditingDateTime = false;
+    renderCalendarEventModal();
+  });
+  actions.appendChild(cancelBtn);
+
+  dateInput.focus();
+}
+
 async function saveCalendarEventEdit(id, patch){
   try{
     const res = await fetch(PROXY_ORIGIN + "/api/calendar/events/" + encodeURIComponent(id), {
@@ -8944,8 +9039,10 @@ async function saveCalendarEventEdit(id, patch){
     const idx = calendarEventsCache.findIndex(e => String(e.id) === String(id));
     if (idx !== -1) calendarEventsCache[idx] = { ...calendarEventsCache[idx], ...data };
     renderCalendarWeek();
+    return true;
   } catch(e){
     alert("Couldn't save that change: " + e.message);
+    return false;
   }
 }
 
