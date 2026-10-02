@@ -2671,6 +2671,14 @@ pre code {
   border:1px solid var(--hairline);
   color:var(--text-light);
 }
+.notes-chat-msg-text.formatted{ white-space:normal; }
+.notes-chat-msg-text.formatted > :first-child{ margin-top:0; }
+.notes-chat-msg-text.formatted > :last-child{ margin-bottom:0; }
+.notes-chat-msg-text.formatted p{ margin:0 0 8px; }
+.notes-chat-msg-text.formatted p.doc-line{ margin:0 0 2px; }
+.notes-chat-msg-text.formatted ul,
+.notes-chat-msg-text.formatted ol{ margin:0 0 8px; padding-left:20px; }
+.notes-chat-msg-text.formatted pre{ white-space:pre-wrap; }
 .notes-chat-msg.pending{ color:var(--text-muted); font-style:italic; }
 .notes-chat-msg.failed{ border-color:var(--oxblood); color:#c9855a; }
 .notes-chat-input-row{
@@ -7110,10 +7118,22 @@ function renderNotesChat(){
     chat.forEach(m => {
       const div = document.createElement("div");
       div.className = "notes-chat-msg " + (m.role === "user" ? "user" : "assistant") + (m.failed ? " failed" : "");
-      const textSpan = document.createElement("span");
-      textSpan.className = "notes-chat-msg-text";
-      textSpan.textContent = m.content;
-      div.appendChild(textSpan);
+      // Assistant answers inherit the notes' formatting conventions (<b>
+      // tags, "-" bullets, "#" headings), so they go through the same
+      // formatContent renderer as the main chat instead of textContent,
+      // which used to print the literal "<b>...</b>" tags. formatContent
+      // escapes everything first, so this is still safe as innerHTML.
+      if (m.role === "assistant" && !m.failed){
+        const body = document.createElement("div");
+        body.className = "notes-chat-msg-text formatted";
+        body.innerHTML = formatContent(m.content || "");
+        div.appendChild(body);
+      } else {
+        const textSpan = document.createElement("span");
+        textSpan.className = "notes-chat-msg-text";
+        textSpan.textContent = m.content;
+        div.appendChild(textSpan);
+      }
       if (m.role === "assistant" && typeof m.cost === "number"){
         const costSpan = document.createElement("div");
         costSpan.className = "msg-cost";
@@ -7239,7 +7259,75 @@ document.getElementById("notesChatGeneralKnowledge").addEventListener("change", 
 // #caseForm's own display; Chat's visibility is decided inside
 // renderNotesChat() itself (gated on notesRightView), so re-render it here
 // too rather than setting its display directly.
+//
+// Opening/closing a panel changes the report column's width, so the report
+// text rewraps and the same scrollTop lands somewhere else entirely -- the
+// text "jerked" to a different spot. captureNotesScrollAnchor() records the
+// exact character sitting on the report's top visible line, and
+// restoreNotesScrollAnchor() re-scrolls after the reflow so that character
+// is back on the top line, i.e. the reader still sees the same passage.
+function captureNotesScrollAnchor(){
+  const body = document.getElementById("notesReportBody");
+  if (!body || !body.offsetParent || body.scrollTop === 0) return null;
+  const box = body.getBoundingClientRect();
+  const y = box.top + 4;
+  // Try a few x positions across the line in case the first hits padding
+  // or a bullet rather than text.
+  for (const fx of [0.5, 0.25, 0.75, 0.1]){
+    const x = box.left + box.width * fx;
+    let node = null, offset = 0;
+    if (document.caretRangeFromPoint){
+      const r = document.caretRangeFromPoint(x, y);
+      if (r){ node = r.startContainer; offset = r.startOffset; }
+    } else if (document.caretPositionFromPoint){
+      const p = document.caretPositionFromPoint(x, y);
+      if (p){ node = p.offsetNode; offset = p.offset; }
+    }
+    if (node && node.nodeType === Node.TEXT_NODE && body.contains(node)){
+      const rect = textRectAt(node, offset);
+      if (rect) return { body, node, offset, delta: rect.top - box.top };
+    }
+  }
+  // Fallback: the first block element crossing the top edge, anchored by
+  // how far through it the top edge was.
+  let anchor = null;
+  for (const el of body.querySelectorAll("p,li,h1,h2,h3,h4,h5,h6,tr,blockquote,pre")){
+    const r = el.getBoundingClientRect();
+    if (r.bottom <= box.top) continue;
+    if (r.top <= box.top){ anchor = { body, el, frac: (box.top - r.top) / (r.height || 1) }; continue; }
+    if (!anchor) anchor = { body, el, frac: 0, gap: r.top - box.top };
+    break;
+  }
+  return anchor;
+}
+
+function textRectAt(node, offset){
+  const range = document.createRange();
+  const len = node.textContent.length;
+  if (!len) return null;
+  const start = Math.min(offset, len - 1);
+  range.setStart(node, start);
+  range.setEnd(node, start + 1);
+  return range.getClientRects()[0] || range.getBoundingClientRect();
+}
+
+function restoreNotesScrollAnchor(anchor){
+  if (!anchor || !anchor.body.isConnected) return;
+  const { body } = anchor;
+  const boxTop = body.getBoundingClientRect().top;
+  if (anchor.node){
+    if (!anchor.node.isConnected) return;
+    const rect = textRectAt(anchor.node, anchor.offset);
+    if (rect) body.scrollTop += (rect.top - boxTop) - anchor.delta;
+  } else if (anchor.el && anchor.el.isConnected){
+    const r = anchor.el.getBoundingClientRect();
+    const target = anchor.gap != null ? r.top - boxTop - anchor.gap : r.top - boxTop + anchor.frac * r.height;
+    body.scrollTop += target;
+  }
+}
+
 function setNotesRightView(view){
+  const scrollAnchor = captureNotesScrollAnchor();
   notesRightView = view;
   document.getElementById("notesWrap").classList.toggle("notes-wrap-split", Boolean(view));
   document.getElementById("notesColRight").style.display = view ? "flex" : "none";
@@ -7248,6 +7336,9 @@ function setNotesRightView(view){
   document.getElementById("notesRightChatBtn").classList.toggle("active", view === "chat");
   document.getElementById("caseForm").style.display = view === "table" ? "flex" : "none";
   renderNotesChat();
+  // Reading getBoundingClientRect forces the new layout synchronously, so
+  // this lands before the next paint -- no visible jump.
+  restoreNotesScrollAnchor(scrollAnchor);
 }
 // Clicking whichever button is already open closes it (the report goes back
 // to full-width/centered); clicking the other one switches straight over.
