@@ -10088,7 +10088,10 @@ const CIVPRO_QUIZZES = [
   { title: "Week 2 Practice Quiz", availabilityText: "Not available until Sep 3 at 2:30pm", dueDate: "Sep 6", dueTime: "9:00pm", points: 10, questions: 10 },
   { title: "Week 3 Practice Quiz", availabilityText: "Not available until Sep 10 at 2:30pm", dueDate: "Sep 13", dueTime: "9:00pm", points: 7, questions: 7 },
   { title: "Week 4 Practice Quiz", availabilityText: "Not available until Sep 16 at 2:30pm", dueDate: "Sep 20", dueTime: "9:00pm", points: 5, questions: 5 },
-  { title: "Week 5 Practice Quiz", availabilityText: "Not available until Sep 24 at 2:30pm", dueDate: "Sep 27", dueTime: "9:00pm", points: 6, questions: 6 }
+  { title: "Week 5 Practice Quiz", availabilityText: "Not available until Sep 24 at 2:30pm", dueDate: "Sep 27", dueTime: "9:00pm", points: 6, questions: 6 },
+  { title: "Week 6 Practice Quiz", dueDate: "Oct 4", dueTime: "9:00pm" },
+  { title: "Week 7 Practice Quiz", dueDate: "Oct 11", dueTime: "9:00pm" },
+  { title: "Week 8 Practice Quiz", dueDate: "Oct 18", dueTime: "9:00pm" }
 ];
 
 // Parses either date format used in these schedules -- "8/25" (CIVPRO_SCHEDULE)
@@ -11785,7 +11788,8 @@ function completeQuiz(quiz, courseCode, btn){
     const covered = courseCode === "civpro" && dateKey !== null ? civProTopicsCoveredThrough(dateKey) : [];
     const coveredNote = covered.length ? `\n\nMaterial covered in class through this quiz's due date:\n${covered.map(t => "- " + t).join("\n")}` : "";
 
-    const prompt = `This is a Canvas quiz for ${courseLabel}: "${quiz.title}," worth ${quiz.points} points across ${quiz.questions} question${quiz.questions === 1 ? "" : "s"}, due ${dueHeader}. ${quiz.availabilityText || ""}\n\n${sourceNote}${coveredNote}${contextPromptText}\n\n${getNotesPrompt("quiz")}${formatAttachedDocumentsForAgent(attached)}`;
+    const sizeText = quiz.points != null && quiz.questions != null ? ` worth ${quiz.points} points across ${quiz.questions} question${quiz.questions === 1 ? "" : "s"},` : "";
+    const prompt = `This is a Canvas quiz for ${courseLabel}: "${quiz.title},"${sizeText} due ${dueHeader}. ${quiz.availabilityText || ""}\n\n${sourceNote}${coveredNote}${contextPromptText}\n\n${getNotesPrompt("quiz")}${formatAttachedDocumentsForAgent(attached)}`;
 
     await generateAgentReport({
       course: courseCode,

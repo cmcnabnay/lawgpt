@@ -1,0 +1,30 @@
+<head> (lines 1-2935)
+- meta tags
+- <style> block (10-2934)
+<body> markup (lines 2936-3773)
+<div class="app">
+	- <div> Account Popup (2940-2965)
+	- <div> Settings Popup (2967-3055)
+	- <div> Assignment Context Popup (3057-3075)
+	- <div> Quiz scrape popup (3077-3096)
+	- <div> Search Box ('+ Attach Document' --> 'Context' --> 'Schedule' tab) (3098-3109)
+	- <div> '+ Add Event' Button (Calendar tab) (3111-3132)
+	- <aisde> Sidebar (3134-3213)
+		- 3135 Collapse button
+		- 3136 Close button
+		- 3137-3146 LG seal drawn as an <svg>
+		- 3148 '+ New Matter'
+		- 3150-3151 Docket 
+		- 3153-3155 Storage Warning 
+		- 3156-3160 Backup/Restore
+		- 3162-3211 Model Dropdown
+	- <main> (3215 - 3749)
+		- <div> Tab bar (3216-3240)
+		- <div> Chat tab welcome screen (3241-3260)
+		- <div>  Chatbox and Send Button in Chat tab (3262-3270)
+		- <div> Draft & Compile (3272-3453)
+			- <div> Editor Toolbar (3273-3426)
+			- <div> Editor Body (3428-3452)
+		- <div> Schedule View (3455-3466) 
+		- <div> Right click menu for document badges in Schedule tab (3467-3471)
+		- <div> Document View Tab (3473-3509)
