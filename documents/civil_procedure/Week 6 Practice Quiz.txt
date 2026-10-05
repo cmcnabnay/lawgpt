@@ -1,0 +1,101 @@
+Week 6 Practice Quiz — content scraped from Canvas New Quizzes on 10/4/2026, 11:42:47 PM.
+An attempt was started in Canvas to read this content, then left open/unsubmitted -- no answers were recorded or submitted.
+NOTE: New Quizzes renders via JavaScript, so this is the quiz player's visible page text rather than cleanly separated question/answer-choice fields the way a classic quiz's scrape is -- it may include some extra UI text (timer, navigation labels, etc.) alongside the actual questions and choices.
+NOTE: this quiz shows one question at a time -- paged through "Next" (without selecting any answer) to read all 6 screens below, each separated by a "----- next question -----" marker; some navigation chrome repeats on every screen.
+
+Flag question: Question 1
+Question 1
+1 pts
+P sues D in federal court. The case goes to a jury trial. The judge empanels a jury of 18. During trial, two jurors are excused for personal reasons. At the end of the trial, the jury of 16 unanimously returns a verdict in favor of P. D argues that this was not permitted under the FRCP. Is D correct?
+Group of answer choices
+Yes, D is right and this jury verdict violates the FRCP.
+No, D is wrong, because this jury verdict is proper under the FRCP.
+Next
+
+----- next question -----
+
+Flag question: Question 2
+Question 2
+1 pts
+
+P sues D in federal court. The case proceeds to a jury trial. After P presents their case, D presents their case. Then the judge orders the jury to deliberate. The jury returns a verdict for P. The next day, D files a 50(b) motion for judgment as a matter of law.
+
+Assuming that those are all of the relevant facts--i.e., assuming that no relevant events have been omitted in this description of the procedural history of the case--can D win their 50(b) motion?
+
+Group of answer choices
+Yes.
+No.
+It depends on what the evidence at trial showed.
+ Previous
+Next
+
+----- next question -----
+
+Flag question: Question 3
+Question 3
+1 pts
+
+P sues D in federal court. The case proceeds to a jury trial. A jury of 8 is empaneled. P presents their case, then D presents their case. After D rests their case, D files a 50(a) motion for JMOL. The court denies D's 50(a) motion and sends the case to the jury. The jury returns a unanimous verdict in favor of P.
+
+D then renews their motion for JMOL, filing a 50(b) motion, and requests, in the alternative, a new trial under Rule 59. The District Court denies D's motions for both JMOL and a new trial. The District Court then enters judgment for P. D appeals.
+
+If P wants to play it safe, what should P do on appeal?
+
+Group of answer choices
+Defend the jury verdict.
+Request a new trial (assuming there is a nonfrivolous argument for it).
+Defend the jury verdict, but also request a new trial (assuming there is a nonfrivolous argument for it).
+Argue that the appeals court lacks jurisdiction because the case is not "final" under § 1291.
+ Previous
+Next
+
+----- next question -----
+
+Flag question: Question 4
+Question 4
+1 pts
+
+Under the common law in the 18th and 19th centuries, companies could sometimes be held liable for monopolistic practices if they acted "in restraint of trade." Then, in 1890, the U.S. passed the Sherman Act, which makes monopolies unlawful.
+
+In 2023, LittleTech Co. sued BigTech Co. in federal court, alleging that BigTech Co. is an unlawful monopoly. LittleTech Co. sought an injunction requiring BigTech Co. to split up into three companies. LittleTech Co. also sought monetary damages.
+
+The case proceeded to the trial phase, and LittleTech Co. asked for a jury trial. Does LittleTech, as the plaintiff, likely have a jury trial right for at least part of the case?
+
+Group of answer choices
+Yes.
+No.
+ Previous
+Next
+
+----- next question -----
+
+Flag question: Question 5
+Question 5
+1 pts
+
+Under the common law in the 18th and 19th centuries, companies could sometimes be held liable for monopolistic practices if they acted "in restraint of trade." Then, in 1890, the U.S. passed the Sherman Act, which makes monopolies unlawful.
+
+In 2023, LittleTech Co. sued BigTech Co. in federal court, alleging that BigTech Co. is an unlawful monopoly. LittleTech Co. brought two different claims:
+
+(1) For claim 1, LittleTech argued that BigTech's user agreement coerces users into agreeing to BigTech's monopolistic practices. To remedy this, LittleTech sought $1 billion in monetary damages.
+
+(2) For claim 2, LittleTech argued that BigTech operates both a search engine and an app store, and that it uses its search engine to direct users to its app store, creating a monopoly. To remedy this, LittleTech sought an injunction requiring BigTech to split into two companies, a search company and an app store.
+
+LittleTech requested a jury trial. Shortly before trial, BigTech offered $500 million to settle claim 1, and LittleTech agreed; the parties stipulated to dismiss claim 1 from the suit. The suit then proceeded on claim 2. BigTech now argues that LittleTech does not have a right to a jury trial. Does LittleTech have a right to a jury trial?
+
+Group of answer choices
+Likely yes.
+Likely no.
+ Previous
+Next
+
+----- next question -----
+
+Flag question: Question 6
+Question 6
+1 pts
+P sues D in federal court. P requests a jury trial. The judge denies that request, holding that the jury-trial right does not apply to this type of case, because P is only seeking declaratory relief (a type of equitable relief that is not an injunction). P asks the judge to certify that question for immediate appeal under § 1292(b). The judge denies that request. P appeals to the court of appeals. Does the court of appeals have jurisdiction to hear the appeal?
+Group of answer choices
+Likely yes.
+Likely no.
+ Previous
