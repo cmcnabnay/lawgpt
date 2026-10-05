@@ -7042,15 +7042,12 @@ document.getElementById("notesReportCloseBtn").addEventListener("click", () => {
 // generated with a non-Claude-Code model, or the fallback after a context
 // overflow) is unchanged: it still builds the full notes + history + question
 // blob, since there's no server-side conversation to fall back on.
-function buildNotesChatInput(report, question, historyLimit, allowGeneralKnowledge, resuming){
+function buildNotesChatInput(report, question, historyLimit, resuming){
   if (resuming){
-    const instruction = allowGeneralKnowledge
-      ? "You are continuing the earlier conversation where you generated a set of law-school reading notes from the attached document(s), and are now answering a follow-up question about them. " +
-        "Treat the attached document(s) as your source of truth for anything they cover. " +
-        "If the question goes beyond what's in the attached material, answer it anyway using your own general legal knowledge rather than refusing or saying it isn't addressed -- just make clear when you're drawing on outside knowledge rather than the attached material, so the two don't get confused."
-      : "You are continuing the earlier conversation where you generated a set of law-school reading notes from the attached document(s), and are now answering a follow-up question about them. " +
-        "Base your answer strictly and only on the attached document(s) and the notes you already produced -- do not introduce outside knowledge. " +
-        "If the attached material doesn't cover what's being asked, say plainly that it doesn't cover it rather than filling the gap yourself.";
+    const instruction =
+      "You are continuing the earlier conversation where you generated a set of law-school reading notes from the attached document(s), and are now answering a follow-up question about them. " +
+      "Treat the attached document(s) as your source of truth for anything they cover. " +
+      "If the question goes beyond what's in the attached material, answer it anyway using your own general legal knowledge rather than refusing or saying it isn't addressed -- just make clear when you're drawing on outside knowledge rather than the attached material, so the two don't get confused.";
     return [instruction, "", "## New Question", question].filter(Boolean).join("\n");
   }
 
@@ -7062,16 +7059,13 @@ function buildNotesChatInput(report, question, historyLimit, allowGeneralKnowled
   const history = chatHistory
     .map(m => (m.role === "user" ? "Q: " : "A: ") + m.content)
     .join("\n\n");
-  // Mirrors the allowGeneralKnowledge flag sent alongside this (see
-  // sendNotesChatMessage) -- both need to agree, or the instruction here
-  // would fight the server's own developerText for the same request.
-  const instruction = allowGeneralKnowledge
-    ? "You are answering a follow-up question about a set of law-school reading notes generated earlier from the attached document(s). " +
-      "Treat the attached document(s) as your source of truth for anything they cover, and the notes below as context on what's already been covered. " +
-      "If the question goes beyond what's in the attached material, answer it anyway using your own general legal knowledge rather than refusing or saying it isn't addressed -- just make clear when you're drawing on outside knowledge rather than the attached material, so the two don't get confused."
-    : "You are answering a follow-up question about a set of law-school reading notes generated earlier from the attached document(s). " +
-      "Base your answer strictly and only on the attached document(s) and the notes below -- do not introduce outside knowledge. " +
-      "If the attached material doesn't cover what's being asked, say plainly that it doesn't cover it rather than filling the gap yourself.";
+  // Matches the allowGeneralKnowledge: true that sendNotesChatMessage sends
+  // alongside this -- both need to agree, or the instruction here would
+  // fight the server's own developerText for the same request.
+  const instruction =
+    "You are answering a follow-up question about a set of law-school reading notes generated earlier from the attached document(s). " +
+    "Treat the attached document(s) as your source of truth for anything they cover, and the notes below as context on what's already been covered. " +
+    "If the question goes beyond what's in the attached material, answer it anyway using your own general legal knowledge rather than refusing or saying it isn't addressed -- just make clear when you're drawing on outside knowledge rather than the attached material, so the two don't get confused.";
   return [
     instruction,
     "",
@@ -7166,15 +7160,14 @@ async function sendNotesChatMessage(){
     // notes themselves, which stays strictly document-only). Overrides the
     // proxy's default attached-document instruction for this request; see
     // allowGeneralKnowledge in server.js.
-    const allowGeneralKnowledge = true;
     const res = await fetch(PROXY_ORIGIN + "/api/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         model,
-        input: buildNotesChatInput(currentReport, question, historyLimit, allowGeneralKnowledge, resuming),
+        input: buildNotesChatInput(currentReport, question, historyLimit, resuming),
         documentIds: currentReport.documentIds || [],
-        allowGeneralKnowledge,
+        allowGeneralKnowledge: true,
         claudeSessionId: resuming ? currentReport.claudeSessionId : null
       })
     });
