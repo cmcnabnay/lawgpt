@@ -2628,16 +2628,6 @@ pre code {
   justify-content:space-between;
   gap:12px;
 }
-.notes-chat-toggle{
-  display:flex;
-  align-items:center;
-  gap:6px;
-  font-size:11.5px;
-  color:var(--text-muted);
-  cursor:pointer;
-  white-space:nowrap;
-}
-.notes-chat-toggle input{ cursor:pointer; }
 .notes-chat-messages{
   flex:1;
   min-height:0;
@@ -3709,10 +3699,6 @@ pre code {
             <div class="notes-chat-panel" id="notesChatPanel" style="display:none;">
               <div class="notes-chat-head">
                 <div class="notes-title" style="font-size:14px;">Ask about these notes</div>
-                <label class="notes-chat-toggle" title="When off, answers are limited strictly to the attached document(s), same as generating the notes.">
-                  <input type="checkbox" id="notesChatGeneralKnowledge">
-                  Allow general knowledge
-                </label>
               </div>
               <div class="notes-chat-messages" id="notesChatMessages"></div>
               <div class="notes-chat-input-row">
@@ -7106,9 +7092,6 @@ function renderNotesChat(){
   }
   panel.style.display = "flex";
 
-  const generalKnowledgeToggle = document.getElementById("notesChatGeneralKnowledge");
-  if (generalKnowledgeToggle) generalKnowledgeToggle.checked = Boolean(currentReport.allowGeneralKnowledge);
-
   const list = document.getElementById("notesChatMessages");
   const chat = currentReport.chat || [];
   list.innerHTML = "";
@@ -7179,12 +7162,11 @@ async function sendNotesChatMessage(){
   // instead of starting a stateless one-off -- the question then lands in
   // the exact same conversation the notes were generated in.
   async function attemptSend(historyLimit, resuming){
-    // Per-report, user-controlled (see the "Allow general knowledge"
-    // toggle in the chat panel head) -- off by default, same strict
-    // document-only behavior as generating the notes themselves. Overrides
-    // the proxy's default attached-document instruction for this one
-    // request only when turned on; see allowGeneralKnowledge in server.js.
-    const allowGeneralKnowledge = Boolean(currentReport.allowGeneralKnowledge);
+    // Follow-up chat always allows general knowledge (unlike generating the
+    // notes themselves, which stays strictly document-only). Overrides the
+    // proxy's default attached-document instruction for this request; see
+    // allowGeneralKnowledge in server.js.
+    const allowGeneralKnowledge = true;
     const res = await fetch(PROXY_ORIGIN + "/api/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -7245,13 +7227,6 @@ document.getElementById("notesChatInput").addEventListener("keydown", (e) => {
   }
 });
 document.getElementById("notesChatInput").addEventListener("input", (e) => autoGrow(e.target));
-document.getElementById("notesChatGeneralKnowledge").addEventListener("change", (e) => {
-  if (!currentReport) return;
-  // Scoped to this one report's chat -- flipping it here only affects the
-  // next message sent in this thread, not any other saved report.
-  currentReport.allowGeneralKnowledge = e.target.checked;
-  persistState();
-});
 
 // Switches the Notes tab's right column between the Table (row-editor) and
 // Chat panels -- only one (or neither, at first) is ever visible. Table
@@ -9475,6 +9450,8 @@ For every case, create a separate case brief containing exactly these fields, in
 
     Where a court's name is misleading about its rank, say what it is on that line (for example, New York's trial court of general jurisdiction is styled the Supreme Court of New York).
 
+    If the opinion does not give a court's specific name, use the most specific description it does support (for example, "California trial court") and leave it at that. Never add a parenthetical or aside noting what the opinion does not state or how you identified something — no "(the opinion does not state its specific name or county)", "(identified by the 19 Cal.2d citation)", "(the opinion does not state any intermediate appellate step)", or "(the opinion does not state whether the judgment followed a bench or jury trial)". Simply omit details the opinion doesn't provide.
+
     Use the movement type that actually applies rather than defaulting to "Appeal": appeal of right, petition for writ of certiorari, petition for discretionary review, direct appeal bypassing the intermediate court, interlocutory appeal, certified question, petition for review of agency action, rehearing en banc, original jurisdiction, removal, transfer, remand, federal habeas, bankruptcy appeal, or Article I court appeal.
 
     If the current court consolidated multiple cases, give a separate chain for each, identify each by name and originating court, and state why they were consolidated.
@@ -9664,6 +9641,8 @@ Create a complete case brief using exactly this format:
     Carry party roles forward compositely on every line — "Plaintiff-Appellant," "Defendant-Appellee," "Petitioner (defendant below)," "the State (prosecuting party below, petitioner here)" — because the party who was plaintiff below is often the appellee above and a bare "appellant" is ambiguous two levels up.
 
     Where a court's name is misleading about its rank, say what it is on that line (for example, New York's trial court of general jurisdiction is styled the Supreme Court of New York).
+
+    If the opinion does not give a court's specific name, use the most specific description it does support (for example, "California trial court") and leave it at that. Never add a parenthetical or aside noting what the opinion does not state or how you identified something — no "(the opinion does not state its specific name or county)", "(identified by the 19 Cal.2d citation)", "(the opinion does not state any intermediate appellate step)", or "(the opinion does not state whether the judgment followed a bench or jury trial)". Simply omit details the opinion doesn't provide.
 
     Use the movement type that actually applies rather than defaulting to "Appeal": appeal of right, petition for writ of certiorari, petition for discretionary review, direct appeal bypassing the intermediate court, interlocutory appeal, certified question, petition for review of agency action, rehearing en banc, original jurisdiction, removal, transfer, remand, federal habeas, bankruptcy appeal, or Article I court appeal.
 
