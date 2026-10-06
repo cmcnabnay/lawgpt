@@ -4175,6 +4175,7 @@ function setAccountStatus(msg, kind){
 }
 
 function updateAccountUI(){
+  updateStorageWarning();
   if (currentUser){
     accountSignedOut.style.display = "none";
     accountSignedIn.style.display = "block";
@@ -4286,15 +4287,20 @@ function pushStateToServer(){
   clearTimeout(pushStateTimer);
   pushStateTimer = setTimeout(async () => {
     try{
-      await fetch(PROXY_ORIGIN + "/api/user/state", {
+      const res = await fetch(PROXY_ORIGIN + "/api/user/state", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ data: { matters, matterCounter, activeMatterId, savedReports, reportCounter, customNotesPrompts } })
       });
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      serverSaveFailed = false;
       if (accountSyncStatus) accountSyncStatus.textContent = "";
     } catch(e){
+      console.warn("LawGPT: couldn't sync account data to the server.", e);
+      serverSaveFailed = true;
       if (accountSyncStatus) accountSyncStatus.textContent = "Couldn't sync — check your connection.";
     }
+    updateStorageWarning();
   }, 800);
 }
 
@@ -4690,9 +4696,21 @@ let storageIsUsable = true;
   }
 })();
 
-function showStorageWarning(){
+// The browser copy is only a local cache for signed-in users -- the account
+// copy on the server (pushStateToServer) is what actually gets restored on
+// the next sign-in. So a failed browser save (most often localStorage's ~5MB
+// per-site quota filling up with saved notes) only warrants the warning when
+// there's no working server copy to fall back on: signed out, or the last
+// server save failed too.
+let localSaveFailed = false;
+let serverSaveFailed = false;
+
+function updateStorageWarning(){
   const el = document.getElementById("storageWarning");
-  if (el) el.classList.add("visible");
+  if (!el) return;
+  const localBroken = !storageIsUsable || localSaveFailed;
+  const serverKeepingIt = currentUser && !serverSaveFailed;
+  el.classList.toggle("visible", localBroken && !serverKeepingIt);
 }
 
 // Saves the full docket (every matter and its messages) to localStorage,
@@ -4706,12 +4724,14 @@ function persistState(){
   if (!currentUser || !stateLoaded) return;
   try{
     localStorage.setItem(STORAGE_KEY, JSON.stringify({ matters, matterCounter, activeMatterId, savedReports, reportCounter, customNotesPrompts, savedAt: Date.now() }));
+    localSaveFailed = false;
   } catch(e){
     // Storage can fail (private browsing, quota exceeded, disabled storage, etc.)
-    // — chat still works for the session, it just won't be remembered.
+    // -- the account copy on the server still has it; see updateStorageWarning.
     console.warn("LawGPT: couldn't save chat history to this browser.", e);
-    showStorageWarning();
+    localSaveFailed = true;
   }
+  updateStorageWarning();
   // Debounced internally so a burst of persistState() calls (e.g. rapid
   // edits) doesn't hammer the server with one request per keystroke.
   pushStateToServer();
@@ -4725,7 +4745,7 @@ function persistState(){
   window.addEventListener(evt, () => { if (document.visibilityState !== "visible" || evt !== "visibilitychange") persistState(); });
 });
 
-if (!storageIsUsable) showStorageWarning();
+updateStorageWarning();
 
 function createMatter(){
   matterCounter++;
