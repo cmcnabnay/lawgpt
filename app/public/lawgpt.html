@@ -5342,7 +5342,7 @@ const TABLE_FIELD_CONFIG = {
     order: ["rule_name", "course", "source", "document", "statement", "legal_question", "requirements", "application", "exceptions"]
   },
   definitions: {
-    order: ["term", "course", "document", "definition", "significance", "distinction"],
+    order: ["term", "course", "document", "definition", "significance", "distinction", "case"],
     // Label rows in the "load an existing row" dropdown as "Term — Course"
     // rather than the first column after the key (the full definition).
     preview: ["course"]
@@ -5951,7 +5951,8 @@ function parseDefinitionsFromReport(reportText, report){
       __term: ["term", "terms"],
       definition: ["definition"],
       significance: ["significance", "meaning", "meaning in this case", "why it matters"],
-      distinction: ["distinction"]
+      distinction: ["distinction"],
+      case: ["case", "cases", "related case"]
     });
     // Try the literal "Term:"/"Terms:" field first -- unambiguous when
     // present. Otherwise the term itself is normally the block's own
@@ -5961,12 +5962,12 @@ function parseDefinitionsFromReport(reportText, report){
       for (const line of block.split("\n")){
         const trimmed = line.trim();
         const m = /^#{1,4}\s+(.+?)\s*$/.exec(trimmed) || /^\*\*(.+?)\*\*:?\s*$/.exec(trimmed) || /^<b>(.+?)<\/b>:?\s*$/i.exec(trimmed);
-        if (m && !/^(term|terms|definition|significance|distinction|meaning|why it matters)\b/i.test(m[1])){ name = m[1].trim(); break; }
+        if (m && !/^(?:(?:term|terms|definition|significance|distinction|meaning|why it matters)\b|(?:case|cases|related case)\s*(?::|$))/i.test(m[1])){ name = m[1].trim(); break; }
       }
     }
     if (!name){
       const first = firstNonBlankLine(block);
-      if (!/^(term|terms|definition|significance|distinction|meaning|why it matters)\b/i.test(first)) name = first;
+      if (!/^(?:(?:term|terms|definition|significance|distinction|meaning|why it matters)\b|(?:case|cases|related case)\s*(?::|$))/i.test(first)) name = first;
     }
     if (!name) name = `Term ${idx + 1}`;
     delete fields.__term;
@@ -9531,6 +9532,7 @@ Identify important legal terminology. State each term using exactly this format:
 - <b>Definition</b>: Give a clear definition.
 - <b>Significance</b>: Explain its significance in this reading.
 - <b>Distinction</b>: Distinguish it from similar concepts when necessary.
+- <b>Case</b>: Name the case from this reading that the term comes from or is applied in, using the same case name as in the Cases section. If several cases in the reading use it, name each. If it isn't tied to any case in the reading, write "None (general terminology)."
 
 Separate each term from the next with a line containing only three hyphens (---), so each term is a distinct, clearly-bounded block.
 
@@ -9723,6 +9725,7 @@ Identify important legal terms used in the opinion. State each term using exactl
 - <b>Definition</b>: Give a clear definition.
 - <b>Significance</b>: Explain its significance in this reading.
 - <b>Distinction</b>: Distinguish it from similar concepts when necessary.
+- <b>Case</b>: Name the case from this reading that the term comes from or is applied in, using the same case name as in the Cases section. If several cases in the reading use it, name each. If it isn't tied to any case in the reading, write "None (general terminology)."
 
 Include procedural terms, doctrinal terms, and specialized legal terminology. Separate each term from the next with a line containing only three hyphens (---), so each term is a distinct, clearly-bounded block.
 
