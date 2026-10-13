@@ -12689,10 +12689,29 @@ int main() {
 `;
 }
 
+// Java caps every method at 64KB of bytecode, and a static array
+// initializer compiles into a single method (<clinit>) that spends several
+// bytecodes per element -- one int[] holding a whole reading's code points
+// fails with "code too large" past roughly 8-10K characters. So the code
+// points are split into chunks of JAVA_CHUNK_SIZE, each returned by its own
+// small method (~8 bytes/element, so ~16KB per method), and CHUNKS only
+// holds one method call per chunk.
+const JAVA_CHUNK_SIZE = 2000;
+
 function buildJavaSource(text, className){
   const cls = className || "Main";
   const codes = toCodePoints(text);
-  const block = formatNumbersCommaSeparated(codes, 12, "        ");
+  const chunks = [];
+  for (let i = 0; i < codes.length; i += JAVA_CHUNK_SIZE){
+    chunks.push(codes.slice(i, i + JAVA_CHUNK_SIZE));
+  }
+  const chunkRefs = chunks.map((_, i) => `        chunk${i}()`).join(",\n");
+  const chunkMethods = chunks.map((chunk, i) => `    private static int[] chunk${i}() {
+        return new int[] {
+${formatNumbersCommaSeparated(chunk, 12, "            ")}
+        };
+    }
+`).join("\n");
   return `import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -12704,14 +12723,21 @@ public class ${cls} {
 }
 
 final class CodePointRepository {
-    private static final int[] CODE_POINTS = {
-${block}
+    private static final int[][] CHUNKS = {
+${chunkRefs}
     };
 
+${chunkMethods}
     static List<Integer> codePoints() {
-        List<Integer> list = new ArrayList<>(CODE_POINTS.length);
-        for (int codePoint : CODE_POINTS) {
-            list.add(codePoint);
+        int total = 0;
+        for (int[] chunk : CHUNKS) {
+            total += chunk.length;
+        }
+        List<Integer> list = new ArrayList<>(total);
+        for (int[] chunk : CHUNKS) {
+            for (int codePoint : chunk) {
+                list.add(codePoint);
+            }
         }
         return Collections.unmodifiableList(list);
     }
