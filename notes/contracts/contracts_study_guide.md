@@ -187,8 +187,13 @@
 
 ### Document: *Batsakis v. Demotsis* (Tex. Civ. App. 1949) (emailed)
 **Case: Batsakis v. Demotsis**
-- In occupied Greece during WWII, Batsakis lent Demotsis **500,000 drachmae** (then worth about **$25**). She signed a promise to repay **$2,000** in U.S. money plus interest. She later argued the consideration was inadequate.
-- **Held:** **Enforceable.** Courts **don't inquire into the adequacy** of consideration. The drachmae were what she **bargained for**. Mere inadequacy, without fraud, isn't a defense. (The trial court awarded $750 plus interest, and the plaintiff didn't appeal that amount.)
+- On April 2, 1942, in Greece during WWII, Batsakis lent Demotsis **500,000 drachmae** (then worth about **$25**). She signed an instrument promising to repay **$2,000** in U.S. money with **8%** interest. When sued, she pleaded **want of consideration**: she had received only about $25 in value.
+- **Trial court:** awarded Batsakis only **$750** principal plus interest, apparently the value it placed on what he gave her. **Batsakis appealed.**
+- **Held:** **Judgment reformed to the full $2,000 plus 8% interest from April 2, 1942, and affirmed as reformed.**
+  - The transaction was a **sale** of the drachmae in exchange for her signing the instrument. The drachmae had **some value**, so the **plea of want of consideration** failed. That plea means the instrument never became a valid obligation in the first place.
+  - "**Mere inadequacy of consideration will not void a contract.**"
+  - **Failure of consideration** failed too: by her own testimony, she "got exactly what she contracted for."
+- **Want vs. failure of consideration:** *Want* means no consideration was ever given, so no contract formed. *Failure* means the promised consideration was never delivered.
 - **Contrast with Dohrmann:** In *Batsakis*, she was an adult, she sought the deal, and there was no proof of overreaching. In *Dohrmann*, the 89-year-old had no independent advice and was in a relationship of trust.
 - **Rule:** R2 § 79: if there is a bargain, there is no further requirement of a benefit, a detriment, or **equivalence in value**.
 

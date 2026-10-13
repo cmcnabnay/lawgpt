@@ -524,7 +524,7 @@ The proportionality factors are the importance of the issues, the amount in cont
 - **PM1 Q3:** The insurer's report on whether Waterslide Co. made the slide is **work product**, since an insurer is a "representative." The plaintiff examined the slide themselves, so there's **no substantial need**. **But the facts aren't protected**: the plaintiff can **depose the insurer** about who made the slide (answer B).
 - **PM3 Q4:** In-house counsel commissioned a root-cause report two days after an explosion. It is **work product if prepared because of anticipated litigation** (answer A). A separate SEC filing obligation doesn't negate this, and in-house counsel counts.
 
-### Document: Federal Rule of Evidence 502 (CB 431–32) — ⚠️ NOT in your exam packet; memorize it
+### Document: Federal Rule of Evidence 502 (CB 431–32) 
 - **Traditional rule:** **Any** disclosure, even inadvertent, waived the privilege. That made privilege review hugely expensive.
 
 **FRE 502(a): Intentional disclosure.** Waiver extends to **undisclosed** material on the **same subject matter** only if the waiver was **intentional**, the disclosed and undisclosed material **concern the same subject**, and they **ought in fairness be considered together**. This prevents selective "sword and shield" use.
@@ -665,7 +665,7 @@ The proportionality factors are the importance of the issues, the amount in cont
 - **Stevens's dissent:** Eight appellate judges below watched the same tape and saw something different, which is itself evidence that reasonable jurors could disagree. Judges are substituting their own **factfinding** for the jury's.
 - **Exam:** Scott is a **narrow exception** to the "view facts most favorably to the nonmovant" rule. It needs objective evidence (like a video) of **unquestioned authenticity** that **blatantly** contradicts the account. Ordinary conflicting testimony is **not** enough. The jury decides that (Tolan).
 
-### Document: *Tolan v. Cotton* (Canvas)
+### Document: *Tolan v. Cotton* 
 **Case: Tolan v. Cotton** (U.S. 2014, per curiam)
 - Police wrongly believed Tolan's car was stolen (a typo in the plate number) and confronted him on **his parents' porch**. Sgt. Cotton allegedly **slammed Tolan's mother** into the garage door. Tolan shouted "get your f---ing hands off my mom," and Cotton **shot him**. The district court granted SJ, and the **5th Circuit affirmed on qualified immunity**.
 - **Holding: Vacated and remanded.** The 5th Circuit **credited the officer's version** on four disputed facts:
@@ -713,7 +713,7 @@ The proportionality factors are the importance of the issues, the amount in cont
 
 ## Class 15 (9/29) — Trial by Jury
 
-### Document: U.S. Const. Amend. VII; Rules 38 and 39 (CB 474–77) — ⚠️ the Amendment text isn't in your packet
+### Document: U.S. Const. Amend. VII; Rules 38 and 39 (CB 474–77) — ⚠️ the Amendment text isn't in exam packet
 **Rule: Seventh Amendment.** "In Suits at **common law**, where the value in controversy shall exceed **twenty dollars**, the right of trial by jury shall be **preserved**…"
 - "**Common law**" means **law, not equity** (as of 1791 in England). Equity had **no jury**.
 - "**Preserved**" means it keeps the 1791 right rather than creating new ones. That's why we use **historical analogy** for modern claims.
@@ -791,7 +791,7 @@ The proportionality factors are the importance of the issues, the amount in cont
 - **PM2 Q2:** 9 empaneled, 3 excused, 6 deliberate, verdict 5–1. Six is enough, but with **no stipulation, the verdict must be unanimous**, so the **defendant wins** that argument (answer B).
 - The answer key says "**unlike criminal juries, civil juries do not need to be unanimous**" is **wrong** under the FRCP.
 
-### Document: Rule 47 and 28 U.S.C. § 1870 (CB 536–37) — ⚠️ § 1870 isn't in your packet
+### Document: Rule 47 and 28 U.S.C. § 1870 (CB 536–37) — ⚠️ § 1870 isn't in exam packet
 **Rule 47(a): Voir dire.** The court may examine prospective jurors itself or let the parties do it. If the court does it, it must allow the parties to supplement with further questions.
 
 **Rule 47(b):** **Peremptory challenges** are governed by **28 U.S.C. § 1870**.
@@ -1278,13 +1278,28 @@ Under **20(b)** the court may order **separate trials** to prevent prejudice.
   │     · Rules 38, 39
   │     · Rules 47, 48
   │     · Curtis / Chauffeurs Test
-  │     · Cosgrove Standard
-  │     ▸ JMOL
-  │         · Rule 50
-  │         · MSJ Test
-  │     ▸ Taking Case from Jury
-  │         · Rule 59
-  │         · Rule 61
+  │     · Colgrove Standard
+  │     ▸ Order of Trial
+  │         ○ Jury selection (Rule 47; § 1870)
+  │         ○ Plaintiff's case
+  │         ○ JMOL — Rule 50(a) (D moves against P)
+  │         │   · P (the party moved AGAINST) has been fully heard;
+  │         │     D doesn't need to put on a case first
+  │         │   · MSJ Test (no reasonable jury could find for P)
+  │         ○ Defendant's case
+  │         ○ JMOL again — Rule 50(a) (close of all evidence)
+  │         │   · Now D is fully heard, so P can move against D
+  │         │   · D renews: evidence may have changed, and it
+  │         │     preserves the issue for 50(b)
+  │         │   · Must be made before the case goes to the jury
+  │         ○ Jury instructions → deliberation
+  │         ○ VERDICT (Rule 48: unanimous unless stipulated)
+  │         ○ Entry of judgment
+  │     ▸ Post-Verdict: Taking Case from Jury
+  │         · Renewed JMOL — Rule 50(b) (28 days after judgment;
+  │           only if a 50(a) motion was made before verdict)
+  │         · New Trial — Rule 59 (28 days after judgment)
+  │         · Harmless Error — Rule 61
   │
   ●  9. APPEAL
         · 28 U.S.C. §§ 1291, 1292
