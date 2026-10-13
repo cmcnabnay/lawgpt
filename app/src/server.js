@@ -1037,10 +1037,16 @@ app.post("/api/chat", async (req, res) => {
     // Documents the user explicitly attached to this matter (via the
     // Documents tab) are always sent in full, regardless of whether they
     // look relevant to the question.
+    // Falls back to the signed-in account's own Supabase documents the same
+    // way GET /api/documents/:id does -- otherwise a per-account document
+    // (e.g. one attached via a schedule override) silently drops out here
+    // and the model gets a prompt saying it's "attached below" with no text.
+    const sessionUserId = req.session && req.session.userId;
     const attachedDocuments = Array.isArray(documentIds)
-      ? documentIds
-          .map(id => documentStore.getDocument(id))
-          .filter(Boolean)
+      ? (await Promise.all(documentIds.map(async id =>
+          documentStore.getDocument(id) ||
+          (sessionUserId ? await userDocumentStore.getDocument(sessionUserId, id) : null)
+        ))).filter(Boolean)
       : [];
 
     // The Chat tab sends passthrough:true and never anything else -- no
