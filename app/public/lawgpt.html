@@ -11031,6 +11031,13 @@ const MATCH_STOPWORDS = new Set([
 
 function normalizeForMatch(s){
   const words = (s || "")
+    // Split run-together case-name filenames ("MitchillvLath.pdf") into
+    // separate words before lowercasing erases the case boundaries -- first
+    // the joined "v" between two names, then any remaining camelCase join.
+    // Applied to query text too, so a name like "SodexoMagic" still splits
+    // identically on both sides.
+    .replace(/([a-z])v([A-Z])/g, "$1 v $2")
+    .replace(/([a-z])([A-Z])/g, "$1 $2")
     .toLowerCase()
     .replace(/[^a-z0-9 ]/g, " ")
     .split(/\s+/)
