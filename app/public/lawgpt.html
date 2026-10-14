@@ -7063,12 +7063,24 @@ document.getElementById("notesReportCloseBtn").addEventListener("click", () => {
 // generated with a non-Claude-Code model, or the fallback after a context
 // overflow) is unchanged: it still builds the full notes + history + question
 // blob, since there's no server-side conversation to fall back on.
+// Appended to both follow-up instructions below. Without it, answers came
+// back notes-length no matter how simple the question -- especially when
+// resuming the notes' own Claude Code session, whose context still holds
+// the full notes template ("state every rule using exactly this format...").
+const NOTES_CHAT_LENGTH_GUIDANCE =
+  " This is a quick follow-up in a chat, not another set of notes: match the length of your answer to the question. " +
+  "A simple or factual question gets a direct answer in one to three sentences. Go longer only when the question genuinely asks for depth (e.g. \"explain\", \"walk me through\", \"compare\"), and even then stay focused on what was asked. " +
+  "Answer the question first, with no preamble and no restating of the question. " +
+  "Do not reuse the notes' formats (Rule/Source/Document/Statement blocks, case briefs, definition entries, numbered sections) unless explicitly asked to. " +
+  "Do not recap the notes, summarize the reading, or add related points, caveats, or follow-up suggestions that weren't asked for.";
+
 function buildNotesChatInput(report, question, historyLimit, resuming){
   if (resuming){
     const instruction =
       "You are continuing the earlier conversation where you generated a set of law-school reading notes from the attached document(s), and are now answering a follow-up question about them. " +
       "Treat the attached document(s) as your source of truth for anything they cover. " +
-      "If the question goes beyond what's in the attached material, answer it anyway using your own general legal knowledge rather than refusing or saying it isn't addressed -- just make clear when you're drawing on outside knowledge rather than the attached material, so the two don't get confused.";
+      "If the question goes beyond what's in the attached material, answer it anyway using your own general legal knowledge rather than refusing or saying it isn't addressed -- just make clear when you're drawing on outside knowledge rather than the attached material, so the two don't get confused." +
+      NOTES_CHAT_LENGTH_GUIDANCE;
     return [instruction, "", "## New Question", question].filter(Boolean).join("\n");
   }
 
@@ -7086,7 +7098,8 @@ function buildNotesChatInput(report, question, historyLimit, resuming){
   const instruction =
     "You are answering a follow-up question about a set of law-school reading notes generated earlier from the attached document(s). " +
     "Treat the attached document(s) as your source of truth for anything they cover, and the notes below as context on what's already been covered. " +
-    "If the question goes beyond what's in the attached material, answer it anyway using your own general legal knowledge rather than refusing or saying it isn't addressed -- just make clear when you're drawing on outside knowledge rather than the attached material, so the two don't get confused.";
+    "If the question goes beyond what's in the attached material, answer it anyway using your own general legal knowledge rather than refusing or saying it isn't addressed -- just make clear when you're drawing on outside knowledge rather than the attached material, so the two don't get confused." +
+    NOTES_CHAT_LENGTH_GUIDANCE;
   return [
     instruction,
     "",
