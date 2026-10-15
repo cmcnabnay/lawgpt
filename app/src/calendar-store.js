@@ -179,6 +179,20 @@ async function updateEvent(userId, id, patch) {
   return event;
 }
 
+// Applies the same patch to every event extracted from one email -- used
+// when that email gets recategorized, so its events follow it.
+async function updateEventsForMessage(userId, messageId, patch) {
+  const events = await load(userId);
+  let changed = false;
+  for (const event of events) {
+    if (String(event.sourceMessageId) === String(messageId)) {
+      Object.assign(event, patch);
+      changed = true;
+    }
+  }
+  if (changed) await save(userId, events);
+}
+
 async function deleteEvent(userId, id) {
   const events = await load(userId);
   const filtered = events.filter(e => String(e.id) !== String(id));
@@ -195,4 +209,4 @@ async function clearAll(userId) {
   await save(userId, []);
 }
 
-module.exports = { getAll, addEvents, createEvent, updateEvent, deleteEvent, clearAll };
+module.exports = { getAll, addEvents, createEvent, updateEvent, updateEventsForMessage, deleteEvent, clearAll };

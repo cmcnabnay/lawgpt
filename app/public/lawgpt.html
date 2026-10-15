@@ -8672,15 +8672,28 @@ async function refreshCalendarEventsQuiet(){
   } catch(e){ /* keep showing whatever was already rendered */ }
 }
 
-// lunch/rsvp come from calendar-extract.js; events extracted before those
-// fields existed fall back to the event's own title/description text.
+// lunch/rsvp come from calendar-extract.js. Events extracted before those
+// fields existed fall back to a keyword check on the event's own text, plus
+// its source email's text when that email is about just this event (at most
+// two events came from it, e.g. an event and its RSVP deadline) -- a digest
+// email listing many events would otherwise stamp one event's RSVP/lunch
+// onto all of them.
+function calendarEventFallbackText(ev){
+  let text = `${ev.title || ""} ${ev.description || ""}`;
+  if (ev.sourceMessageId){
+    const siblings = calendarEventsCache.filter(e => String(e.sourceMessageId) === String(ev.sourceMessageId)).length;
+    const source = emailMessagesCache.find(m => String(m.id) === String(ev.sourceMessageId));
+    if (source && siblings <= 2) text += ` ${source.subject || ""} ${source.body || ""}`;
+  }
+  return text;
+}
 function calendarEventHasLunch(ev){
   if (typeof ev.lunch === "boolean") return ev.lunch;
-  return /\b(lunch|pizza|food|refreshments|breakfast|dinner|snacks)\b/i.test(`${ev.title || ""} ${ev.description || ""}`);
+  return /\b(lunch|pizza|food|refreshments|breakfast|dinner|snacks)\b/i.test(calendarEventFallbackText(ev));
 }
 function calendarEventNeedsRsvp(ev){
   if (typeof ev.rsvp === "boolean") return ev.rsvp;
-  return /\b(rsvp|register|registration|sign[- ]?up)\b/i.test(`${ev.title || ""} ${ev.description || ""}`);
+  return /\b(rsvps?|register|registration|sign[- ]?up)\b/i.test(calendarEventFallbackText(ev));
 }
 
 // One color per course; everything not tied to a course shares one.

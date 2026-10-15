@@ -388,13 +388,14 @@ async function reclassifyStaleMessages(userId, accessToken){
   for (const message of state.messages){
     if (message.courseFolder !== "uncategorized") continue;
 
-    let toRecipients;
+    // If the recipients can't be fetched (e.g. the message was moved or
+    // deleted from the mailbox since it was synced), still fall back to the
+    // sender/subject/body checks below, which only need what's stored.
+    let toRecipients = null;
     try {
       const data = await graphGet(accessToken, `${GRAPH_ROOT}/me/messages/${message.id}?$select=toRecipients`);
       toRecipients = data.toRecipients;
-    } catch (err) {
-      continue; // message may have been deleted from the mailbox since it was synced
-    }
+    } catch (err) { /* recipients unknown */ }
 
     const newFolder = matchCourseFolderFromRecipients(toRecipients) ||
       matchCourseFolderFromSender(message.from, message.body) ||
@@ -407,6 +408,7 @@ async function reclassifyStaleMessages(userId, accessToken){
     }
 
     await emailStore.updateMessage(userId, message.id, { courseFolder: newFolder });
+    await calendarStore.updateEventsForMessage(userId, message.id, { courseFolder: newFolder });
     reclassified++;
   }
 
