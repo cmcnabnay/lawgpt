@@ -159,6 +159,27 @@ function withTimeout(promise, ms) {
   ]);
 }
 
+// Canvas answers 401 both for "not logged in" AND for "logged in, but not
+// allowed to see this page" (e.g. a course whose Modules/Quizzes tab is
+// hidden from students, or a course ID you're not enrolled in) -- so a 401
+// on a course page alone doesn't mean the cookie is bad. Asking the API who
+// the cookie belongs to tells the two cases apart.
+async function canvas401Error(baseUrl, cookie, courseId, pageLabel) {
+  let sessionOk = false;
+  try {
+    const selfRes = await canvasGet(baseUrl, "/api/v1/users/self", cookie);
+    sessionOk = selfRes.ok && new URL(selfRes.url).origin === new URL(baseUrl).origin;
+  } catch { /* treat as unknown -> cookie error below */ }
+  if (!sessionOk) {
+    return { error: "Canvas rejected the session cookie (expired or invalid)." };
+  }
+  return {
+    error: `Your Canvas session cookie is valid, but Canvas denied access to the ${pageLabel} page for course ${courseId}. ` +
+      `Check that this course ID is right and that you can open ${baseUrl}/courses/${courseId}/${pageLabel} in your browser ` +
+      `(the instructor may have hidden that page from students).`
+  };
+}
+
 // True if fetchRes ended up (after node-fetch's automatic redirect-follow)
 // on a different origin than baseOrigin -- the one reliable, provider-
 // agnostic signal that a request got bounced to a login flow instead of
@@ -408,7 +429,7 @@ router.post("/scrape", async (req, res) => {
   try {
     const modulesRes = await canvasGet(baseUrl, `/courses/${courseId}/modules`, cookie);
     if (modulesRes.status === 401 || modulesRes.status === 302) {
-      return res.status(401).json({ error: "Canvas rejected the session cookie (expired or invalid)." });
+      return res.status(401).json(await canvas401Error(baseUrl, cookie, courseId, "modules"));
     }
     if (!modulesRes.ok) {
       return res.status(502).json({ error: `Canvas returned ${modulesRes.status} for the modules page.` });
@@ -688,7 +709,7 @@ router.post("/quiz", async (req, res) => {
     // title, so a small wording drift doesn't just fail outright.
     const listRes = await canvasGet(baseUrl, `/courses/${courseId}/quizzes`, cookie);
     if (listRes.status === 401 || listRes.status === 302) {
-      return res.status(401).json({ error: "Canvas rejected the session cookie (expired or invalid)." });
+      return res.status(401).json(await canvas401Error(baseUrl, cookie, courseId, "quizzes"));
     }
     if (!listRes.ok) {
       return res.status(502).json({ error: `Canvas returned ${listRes.status} for the quizzes list.` });
