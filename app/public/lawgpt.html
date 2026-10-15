@@ -7803,6 +7803,10 @@ document.getElementById("docImportBtn").addEventListener("click", async () => {
     statusEl.textContent = `Imported ${imported} new document${imported === 1 ? "" : "s"}` +
       (alreadyImported ? `, ${alreadyImported} already up to date` : "") +
       (failed ? `, ${failed} skipped/failed` : "") + ".";
+    const failures = items.filter(i => !i.id && !i.alreadyImported);
+    if (failures.length){
+      statusEl.textContent += " Skipped: " + failures.map(i => `${i.title} (${i.error || "no file"})`).join("; ");
+    }
     statusEl.className = "doc-import-status ok";
     document.getElementById("docImportCookie").value = "";
     await refreshDocumentsList();

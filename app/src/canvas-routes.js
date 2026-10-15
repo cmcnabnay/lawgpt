@@ -29,7 +29,7 @@ const documentStore = require("./document-store");
 // unless a New Quizzes scrape actually runs.
 const { scrapeNewQuiz, findQuizLinksViaBrowser } = require("./canvas-new-quiz-scrape");
 
-const MAX_ITEMS = 60;           // safety cap per course
+const MAX_ITEMS = 150;          // safety cap on items fetched from Canvas per import (already-imported items don't count)
 const MAX_TEXT_CHARS = 200000;  // cap extracted text per file before returning it
 const FETCH_TIMEOUT_MS = 20000;
 const MAX_STORED_PDF_BYTES = 20 * 1024 * 1024; // cap on keeping the raw PDF around for direct upload to OpenAI
@@ -642,12 +642,24 @@ router.post("/scrape", async (req, res) => {
       return results;
     }
 
-    for (const { title, href } of links.slice(0, MAX_ITEMS)) {
+    // The cap only counts items actually fetched from Canvas -- capping the
+    // link list itself silently dropped everything past the first N links
+    // (newest module items/assignments first), even ones that only needed
+    // the cheap already-imported check. Anything past the cap is reported,
+    // and since re-runs skip what's already imported, importing again picks
+    // up where this left off.
+    let fetchedCount = 0;
+    for (const { title, href } of links) {
       const existing = existingByBaseName.get(deriveBaseName(title).toLowerCase());
       if (existing) {
         items.push(alreadyImportedItem(existing));
         continue;
       }
+      if (fetchedCount >= MAX_ITEMS) {
+        items.push({ title, url: href, contentType: null, text: null, error: "Import limit reached -- run Import again to continue" });
+        continue;
+      }
+      fetchedCount++;
       const itemUrl = href.startsWith("http") ? href : baseUrl + href;
       try {
         const itemRes = await canvasGet(baseUrl, itemUrl, cookie);
