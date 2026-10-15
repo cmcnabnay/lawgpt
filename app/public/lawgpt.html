@@ -1710,6 +1710,13 @@ pre code {
   margin-top:6px;
 }
 .sync-result-row-session:hover{ color:var(--brass); text-decoration:underline; }
+.sync-result-row-source{
+  font-size:12px;
+  color:#8fb3d9;
+  margin-top:4px;
+  cursor:pointer;
+}
+.sync-result-row-source:hover{ color:var(--brass); text-decoration:underline; }
 .email-list{ display:flex; flex-direction:column; gap:10px; }
 .email-course-badge{
   display:inline-block;
@@ -1732,39 +1739,45 @@ pre code {
   border-radius:var(--radius);
   padding:14px 16px;
 }
-.email-card-top{ display:flex; align-items:flex-start; gap:14px; }
-.email-card-main{ flex:1; min-width:0; }
-.email-plan-block{
-  border-top:1px solid var(--hairline);
-  padding-top:12px;
-}
-.email-plan-label{
-  font-family:'IBM Plex Mono',monospace;
-  font-size:10.5px;
-  letter-spacing:0.06em;
-  text-transform:uppercase;
-  color:var(--brass-dim);
-  margin-bottom:6px;
+/* Badge + buttons share the top row (buttons wrap under the badge on a
+   narrow window); the subject gets the card's full width below them instead
+   of being squeezed beside the buttons. */
+.email-card-head{
   display:flex;
   align-items:center;
   justify-content:space-between;
+  flex-wrap:wrap;
   gap:8px;
 }
-.email-plan-textarea{
-  width:100%;
-  min-height:90px;
-  resize:vertical;
-  background:var(--ink);
-  border:1px solid var(--hairline);
-  color:var(--text-light);
-  padding:9px 10px;
+.email-card-head .email-course-badge{ margin-bottom:0; }
+.email-card-buttons{ display:flex; flex-wrap:wrap; gap:6px; }
+.email-card-title{ margin-bottom:0; }
+.email-card-attachments{ display:flex; flex-wrap:wrap; gap:6px; }
+.email-card-btn,
+.email-card-attachments .doc-open-btn{
+  font-family:inherit;
+  font-size:11.5px;
+  font-weight:600;
+  padding:6px 12px;
   border-radius:var(--radius);
-  font-family:'IBM Plex Mono',monospace;
-  font-size:12px;
-  line-height:1.55;
+  cursor:pointer;
+  white-space:nowrap;
+  border:1px solid var(--hairline);
+  background:none;
+  color:var(--text-light);
 }
-.email-plan-textarea:focus{ outline:none; border-color:var(--brass-dim); }
-.email-plan-error{ font-size:12px; color:#d98b8b; margin-top:6px; }
+.email-card-attachments .doc-open-btn{
+  font-weight:500;
+  max-width:100%;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  color:#8fb3d9;
+}
+.email-card-btn:hover,
+.email-card-attachments .doc-open-btn:hover{ border-color:var(--brass-dim); color:var(--brass); }
+.email-card-btn.email-agent-btn{ background:var(--brass); color:var(--ink); border-color:var(--brass); }
+.email-card-btn.email-agent-btn:hover{ filter:brightness(1.1); color:var(--ink); }
+.email-card-btn.email-card-btn.email-delete-btn:hover{ border-color:#d98b8b; color:#e9a3a3; }
 .email-view-body{
   white-space:pre-wrap;
   word-wrap:break-word;
@@ -1779,40 +1792,6 @@ pre code {
   line-height:1.6;
 }
 .email-delete-btn{ color:#d98b8b; }
-.email-plan-actions{
-  display:flex;
-  align-items:center;
-  flex-wrap:wrap;
-  gap:8px;
-  margin-top:8px;
-}
-.email-plan-actions button{
-  font-size:11.5px;
-  font-weight:600;
-  padding:6px 12px;
-  border-radius:var(--radius);
-  cursor:pointer;
-  white-space:nowrap;
-  border:1px solid var(--hairline);
-  background:none;
-  color:var(--text-light);
-}
-.email-plan-actions button:hover{ border-color:var(--brass-dim); color:var(--brass); }
-.email-plan-actions button:disabled{ opacity:0.5; cursor:default; }
-.email-plan-actions .email-agent-run-btn{ background:var(--brass); color:var(--ink); border:none; }
-.email-agent-status{
-  font-family:'IBM Plex Mono',monospace;
-  font-size:11px;
-  text-transform:uppercase;
-  letter-spacing:0.04em;
-  color:var(--text-muted);
-}
-.email-agent-status.launched{ color:#8fbf8f; }
-.email-agent-status.error{ color:var(--oxblood); }
-.email-agent-status-link{
-  background:none; border:none; padding:0; margin-left:6px;
-  font:inherit; color:var(--brass); text-decoration:underline; cursor:pointer;
-}
 .calendar-view{ flex:1; min-height:0; display:flex; }
 /* A single scrolling container for the whole tab (same proven pattern as
    .email-view/.documents-view -- flex:1 + min-height:0 + overflow-y:auto on
@@ -2059,15 +2038,27 @@ pre code {
 }
 .calendar-event-title{
   font-family:'Fraunces',serif;
-  font-size:18px;
+  font-size:20px;
   color:var(--parchment);
   margin-bottom:6px;
+  padding-right:4px;
 }
 .calendar-event-title[contenteditable="true"]{ outline:none; border-bottom:1px dashed var(--hairline); }
 .calendar-event-location{ font-size:13px; color:var(--brass-dim); margin-bottom:10px; }
 .calendar-event-location[contenteditable="true"]{ outline:none; border-bottom:1px dashed var(--hairline); }
 .calendar-event-location:empty::before{ content:"+ Add location"; color:var(--text-muted); opacity:0.7; }
 .calendar-event-desc{ font-size:13px; color:var(--text-muted); line-height:1.6; margin-bottom:10px; }
+.calendar-event-tags{ display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px; }
+.calendar-event-tag{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:10.5px;
+  text-transform:uppercase;
+  letter-spacing:0.04em;
+  color:var(--brass);
+  border:1px solid var(--brass-dim);
+  border-radius:10px;
+  padding:2px 9px;
+}
 .calendar-event-source{ font-size:11px; color:var(--text-muted); }
 #calendarEventModalActions{ margin-top:18px; }
 .calendar-empty{ color:var(--text-muted); font-size:12px; }
@@ -2262,18 +2253,6 @@ pre code {
   color:var(--text-muted);
   font-size:12.5px;
 }
-.email-done-btn{
-  font-size:11.5px;
-  font-weight:600;
-  padding:6px 12px;
-  border-radius:var(--radius);
-  cursor:pointer;
-  white-space:nowrap;
-  border:1px solid var(--hairline);
-  background:none;
-  color:var(--text-light);
-}
-.email-done-btn:hover{ border-color:var(--brass-dim); color:var(--brass); }
 
 /* ---------- NOTES ---------- */
 .notes-view{
@@ -3568,7 +3547,6 @@ pre code {
 
     <div class="modal-overlay" id="calendarEventOverlay" style="display:none;">
       <div class="modal">
-        <h2>Event</h2>
         <div id="calendarEventModalBody"></div>
         <div class="settings-actions" id="calendarEventModalActions"></div>
       </div>
@@ -3605,7 +3583,7 @@ pre code {
           <div class="notes-sidebar-label">Agent runs</div>
           <button type="button" class="agent-new-chat-btn" id="agentNewChatBtn" title="Start a new conversation with the agent">+ New chat</button>
         </div>
-        <div class="notes-sidebar-empty" id="agentSidebarEmpty">No runs yet. Start a chat on the right, or use "Send to agent" on an email plan in the Email tab.</div>
+        <div class="notes-sidebar-empty" id="agentSidebarEmpty">No runs yet. Start a chat on the right, or use "Send to agent" on an email in the Email tab.</div>
         <div class="notes-sidebar-list" id="agentSidebarList"></div>
       </aside>
       <div class="agent-main">
@@ -7883,10 +7861,9 @@ async function refreshEmailMessages(){
 
 // One unified list of every synced email, regardless of whether it was
 // keyword-flagged as an assignment or marked done -- no separate
-// "assignments" vs "all emails" split. Each card still gets the plan/agent
-// tools (generating a plan and sending it to the agent works the same for
-// any email, not just ones that got auto-flagged), plus View (the full
-// email in a popup) and Delete (removes it here and in the actual mailbox).
+// "assignments" vs "all emails" split. Each card gets View (the full email
+// in a popup), Send to agent (prefills a new Agent chat with the email),
+// and Delete (removes it here and in the actual mailbox).
 function renderEmailList(){
   const list = document.getElementById("emailList");
 
@@ -7902,31 +7879,31 @@ function renderEmailList(){
     card.setAttribute("data-msg-id", msg.id);
     const dateLabel = msg.date ? new Date(msg.date).toLocaleString() : "";
 
+    const attachmentsHtml = emailDocumentButtonsHtml(msg.documentIds);
+
     card.innerHTML = `
-      <div class="email-card-top">
-        <div class="email-card-main">
-          <span class="email-course-badge">${escapeHtml(emailCourseLabel(msg.courseFolder))}</span>
-          <div class="doc-card-title">${escapeHtml(msg.subject)}</div>
-          <div class="doc-card-meta">
-            <span>${escapeHtml(msg.from || "")}</span>
-            ${dateLabel ? `<span>${escapeHtml(dateLabel)}</span>` : ""}
-            ${msg.done ? `<span>Done</span>` : ""}
-          </div>
-        </div>
-        <div class="doc-card-actions">
-          ${emailDocumentButtonsHtml(msg.documentIds)}
-          <button type="button" class="email-view-btn">View</button>
-          <button type="button" class="email-done-btn">${msg.done ? "Mark not done" : "Mark done"}</button>
-          <button type="button" class="email-delete-btn">Delete</button>
+      <div class="email-card-head">
+        <span class="email-course-badge">${escapeHtml(emailCourseLabel(msg.courseFolder))}</span>
+        <div class="email-card-buttons">
+          <button type="button" class="email-card-btn email-view-btn">View</button>
+          <button type="button" class="email-card-btn email-done-btn">${msg.done ? "Mark not done" : "Mark done"}</button>
+          <button type="button" class="email-card-btn email-agent-btn">Send to agent</button>
+          <button type="button" class="email-card-btn email-delete-btn">Delete</button>
         </div>
       </div>
-      ${emailPlanBlockHtml(msg)}`;
+      <div class="doc-card-title email-card-title">${escapeHtml(msg.subject)}</div>
+      <div class="doc-card-meta">
+        <span>${escapeHtml(msg.from || "")}</span>
+        ${dateLabel ? `<span>${escapeHtml(dateLabel)}</span>` : ""}
+        ${msg.done ? `<span>Done</span>` : ""}
+      </div>
+      ${attachmentsHtml ? `<div class="email-card-attachments">${attachmentsHtml}</div>` : ""}`;
 
     attachEmailDocumentButtonListeners(card);
     card.querySelector(".email-view-btn").addEventListener("click", () => openEmailView(msg));
     card.querySelector(".email-done-btn").addEventListener("click", () => markEmailDone(msg.id, !msg.done));
+    card.querySelector(".email-agent-btn").addEventListener("click", () => sendEmailToAgent(msg));
     card.querySelector(".email-delete-btn").addEventListener("click", () => deleteEmailMessage(msg.id, msg.subject));
-    attachEmailPlanListeners(card, msg);
     list.appendChild(card);
   });
 }
@@ -7980,112 +7957,23 @@ async function deleteEmailMessage(id, subject){
   }
 }
 
-// The plan block rendered inside each assignment card: an editable textarea
-// holding the (LLM-drafted or hand-edited) plan, a "Regenerate" button, and
-// a "Send to agent" button that runs Claude Code headlessly server-side and
-// redirects to the Agent tab, where its live/saved output actually lives
-// (see runEmailAgent/openAgentRun) -- this card only shows a status pill
-// plus a link back into that tab.
-function emailPlanBlockHtml(msg){
-  const status = msg.agentStatus || "idle";
-  const hasPlan = Boolean((msg.plan || "").trim());
-
-  return `
-    <div class="email-plan-block">
-      <div class="email-plan-label">
-        <span>Plan</span>
-        ${status !== "idle" ? `<span class="email-agent-status ${escapeHtml(status)}">${escapeHtml(emailAgentStatusLabel(msg))}</span>` : ""}
-        ${msg.agentRunId ? `<button type="button" class="email-agent-status-link" data-run-id="${escapeHtml(msg.agentRunId)}">View in Agent tab</button>` : ""}
-      </div>
-      <textarea class="email-plan-textarea" placeholder="No plan yet -- click Generate plan.">${escapeHtml(msg.plan || "")}</textarea>
-      ${msg.planError ? `<div class="email-plan-error">${escapeHtml(msg.planError)}</div>` : ""}
-      <div class="email-plan-actions">
-        <button type="button" class="email-plan-generate-btn">${hasPlan ? "Regenerate plan" : "Generate plan"}</button>
-        <button type="button" class="email-agent-run-btn" ${hasPlan ? "" : "disabled"}>Send to agent</button>
-      </div>
-    </div>`;
-}
-
-function emailAgentStatusLabel(msg){
-  const time = msg.agentStartedAt ? new Date(msg.agentStartedAt).toLocaleTimeString() : "";
-  if (msg.agentStatus === "running") return `Agent running${time ? " (started " + time + ")" : ""}`;
-  if (msg.agentStatus === "done") return `Agent finished${time ? " at " + time : ""}`;
-  if (msg.agentStatus === "error") return "Agent run failed";
-  return "";
-}
-
-function attachEmailPlanListeners(card, msg){
-  const textarea = card.querySelector(".email-plan-textarea");
-  const generateBtn = card.querySelector(".email-plan-generate-btn");
-  const runBtn = card.querySelector(".email-agent-run-btn");
-  const viewLink = card.querySelector(".email-agent-status-link");
-
-  textarea.addEventListener("blur", () => saveEmailPlan(msg.id, textarea.value));
-  generateBtn.addEventListener("click", () => generateEmailPlan(msg.id, generateBtn));
-  runBtn.addEventListener("click", () => runEmailAgent(msg.id, textarea.value, runBtn));
-  if (viewLink) viewLink.addEventListener("click", () => { setView("agent"); openAgentRun(viewLink.dataset.runId); });
-}
-
-function updateCachedMessage(updated){
-  if (!updated || !updated.id) return;
-  const idx = emailMessagesCache.findIndex(m => String(m.id) === String(updated.id));
-  if (idx !== -1) emailMessagesCache[idx] = { ...emailMessagesCache[idx], ...updated };
-}
-
-async function saveEmailPlan(id, plan){
-  try{
-    const res = await fetch(PROXY_ORIGIN + "/api/email/messages/" + encodeURIComponent(id) + "/plan", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ plan })
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error((data && data.error && data.error.message) || "Couldn't save plan.");
-    updateCachedMessage(data);
-    renderEmailList();
-  } catch(e){
-    alert("Couldn't save the plan: " + e.message);
-  }
-}
-
-async function generateEmailPlan(id, btn){
-  if (btn){ btn.disabled = true; btn.textContent = "Generating…"; }
-  try{
-    const res = await fetch(PROXY_ORIGIN + "/api/email/messages/" + encodeURIComponent(id) + "/plan", { method: "POST" });
-    const data = await res.json();
-    updateCachedMessage(data);
-    if (!res.ok) throw new Error((data && data.error && data.error.message) || (data && data.planError) || "Couldn't generate a plan.");
-  } catch(e){
-    // The error is already stored server-side as planError and rendered
-    // inline in the card, so nothing else to show here.
-  } finally {
-    renderEmailList();
-  }
-}
-
-async function runEmailAgent(id, planText, btn){
-  // Without this, a second click before the first request comes back (easy
-  // to do -- there's a save-plan round-trip plus the agent/run POST before
-  // anything visible happens) fires a second POST and starts a second real
-  // run for the same email instead of just being a no-op.
-  if (btn){ if (btn.disabled) return; btn.disabled = true; btn.textContent = "Sending…"; }
-  // The plan the user is currently looking at may not be saved yet (e.g.
-  // they edited it and immediately hit "Send to agent" without tabbing
-  // away first) -- save it before running so the agent gets what's on
-  // screen.
-  await saveEmailPlan(id, planText);
-  try{
-    const res = await fetch(PROXY_ORIGIN + "/api/email/messages/" + encodeURIComponent(id) + "/agent/run", { method: "POST" });
-    const data = await res.json();
-    if (!res.ok) throw new Error((data && data.error && data.error.message) || "Couldn't start the agent.");
-    updateCachedMessage(data);
-    renderEmailList();
-    setView("agent");
-    if (data.agentRunId) openAgentRun(data.agentRunId);
-  } catch(e){
-    alert("Couldn't send this to the agent: " + e.message);
-    if (btn){ btn.disabled = false; btn.textContent = "Send to agent"; }
-  }
+// "Send to agent" -- opens a new chat in the Agent tab with this email's
+// text already in the message box, for the user to add instructions to and
+// send themselves (nothing runs until they hit Send).
+function sendEmailToAgent(msg){
+  setView("agent");
+  showAgentNewChat();
+  const dateLabel = msg.date ? new Date(msg.date).toLocaleString() : "";
+  const input = document.getElementById("agentFollowupInput");
+  input.value =
+    `Subject: ${msg.subject || "(no subject)"}\n` +
+    `From: ${msg.from || ""}\n` +
+    (dateLabel ? `Date: ${dateLabel}\n` : "") +
+    `\n${msg.body || ""}`;
+  autoGrow(input);
+  input.focus();
+  input.setSelectionRange(0, 0);
+  input.scrollTop = 0;
 }
 
 // ====== AGENT TAB ======
@@ -8617,7 +8505,16 @@ function openEmailSyncResultPopup(kind){
       row.innerHTML =
         `<div class="sync-result-row-title">${escapeHtml(ev.title || "(untitled event)")}</div>` +
         `<div class="sync-result-row-meta"><span>${escapeHtml(whenLabel)}</span>${ev.location ? `<span>${escapeHtml(ev.location)}</span>` : ""}</div>` +
-        (ev.sessionId ? `<div class="sync-result-row-session" data-session-id="${escapeHtml(ev.sessionId)}">Claude Code session: ${escapeHtml(ev.sessionId)}</div>` : "");
+        (ev.sessionId ? `<div class="sync-result-row-session" data-session-id="${escapeHtml(ev.sessionId)}">Claude Code session: ${escapeHtml(ev.sessionId)}</div>` : "") +
+        (ev.sourceMessageId ? `<div class="sync-result-row-source">From email: ${escapeHtml(ev.sourceSubject || "(no subject)")}</div>` : "");
+      const sourceEl = row.querySelector(".sync-result-row-source");
+      if (sourceEl){
+        sourceEl.addEventListener("click", (e) => {
+          e.stopPropagation();
+          closeEmailSyncResultPopup();
+          openCalendarEventSource(ev.sourceMessageId);
+        });
+      }
       const sessionEl = row.querySelector(".sync-result-row-session");
       if (sessionEl){
         sessionEl.addEventListener("click", (e) => {
@@ -8736,7 +8633,10 @@ async function refreshCalendarEvents(){
   const columns = document.getElementById("calendarWeekColumns");
   columns.innerHTML = `<div class="calendar-empty" style="padding:12px;">Loading events…</div>`;
   try{
-    const res = await fetch(PROXY_ORIGIN + "/api/calendar/events");
+    const [res] = await Promise.all([
+      fetch(PROXY_ORIGIN + "/api/calendar/events"),
+      loadEmailMessagesForCalendar()
+    ]);
     if (!res.ok) throw new Error("Server returned " + res.status);
     const data = await res.json();
     calendarEventsCache = data.events || [];
@@ -8745,6 +8645,19 @@ async function refreshCalendarEvents(){
     columns.innerHTML = `<div class="calendar-empty" style="padding:12px;">Couldn't load calendar events: ${escapeHtml(e.message)}</div>`;
   }
   pollBackfillStatusOnce();
+}
+
+// Event colors follow each source email's course (see calendarEventColor),
+// so make sure the email list is loaded even if the Email tab hasn't been
+// opened yet this session.
+async function loadEmailMessagesForCalendar(){
+  if (emailMessagesCache.length) return;
+  try{
+    const res = await fetch(PROXY_ORIGIN + "/api/email/messages");
+    if (!res.ok) return;
+    const data = await res.json();
+    emailMessagesCache = data.messages || [];
+  } catch(e){ /* colors fall back to the course stamped on each event */ }
 }
 
 // Same fetch as refreshCalendarEvents but without the "Loading…" flash --
@@ -8757,6 +8670,34 @@ async function refreshCalendarEventsQuiet(){
     calendarEventsCache = data.events || [];
     renderCalendarWeek();
   } catch(e){ /* keep showing whatever was already rendered */ }
+}
+
+// lunch/rsvp come from calendar-extract.js; events extracted before those
+// fields existed fall back to the event's own title/description text.
+function calendarEventHasLunch(ev){
+  if (typeof ev.lunch === "boolean") return ev.lunch;
+  return /\b(lunch|pizza|food|refreshments|breakfast|dinner|snacks)\b/i.test(`${ev.title || ""} ${ev.description || ""}`);
+}
+function calendarEventNeedsRsvp(ev){
+  if (typeof ev.rsvp === "boolean") return ev.rsvp;
+  return /\b(rsvp|register|registration|sign[- ]?up)\b/i.test(`${ev.title || ""} ${ev.description || ""}`);
+}
+
+// One color per course; everything not tied to a course shares one.
+const CALENDAR_COURSE_COLORS = {
+  civil_procedure: "#8fb3d9",
+  contracts: "#e0b97a",
+  torts: "#9fcc9a",
+  lawyering_skills_and_strategies: "#c8a2e0"
+};
+const CALENDAR_OTHER_COLOR = "#a3a9b3";
+
+// Prefers the source email's current course (it may have been recategorized
+// since the event was extracted) over the course stamped on the event.
+function calendarEventColor(ev){
+  const source = ev.sourceMessageId && emailMessagesCache.find(m => String(m.id) === String(ev.sourceMessageId));
+  const folder = (source && source.courseFolder) || ev.courseFolder;
+  return CALENDAR_COURSE_COLORS[folder] || CALENDAR_OTHER_COLOR;
 }
 
 function renderCalendarWeek(){
@@ -8815,6 +8756,7 @@ function renderCalendarWeek(){
       pill.className = "calendar-allday-pill";
       pill.textContent = ev.title || "(untitled event)";
       pill.title = ev.title || "";
+      pill.style.background = calendarEventColor(ev);
       pill.addEventListener("click", () => openCalendarEvent(ev.id));
       cell.appendChild(pill);
     });
@@ -8874,6 +8816,7 @@ function renderCalendarWeek(){
       block.className = "calendar-event-block";
       block.style.top = top + "px";
       block.style.height = height + "px";
+      block.style.background = calendarEventColor(primary);
       block.innerHTML = `<span class="calendar-event-block-time">${escapeHtml(formatEventTime(hour, minute))}</span> ${escapeHtml(primary.title || "(untitled event)")}`;
       block.addEventListener("click", () => openCalendarEvent(primary.id));
       col.appendChild(block);
@@ -8974,12 +8917,6 @@ function renderCalendarEventModal(){
     return;
   }
 
-  const dateLine = document.createElement("div");
-  dateLine.className = "calendar-event-time";
-  dateLine.textContent = evDateLocal.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" }) +
-    (ev.hasTime ? " · " + formatEventTime(eventTimeParts(ev).hour, eventTimeParts(ev).minute) : " · Date only");
-  body.appendChild(dateLine);
-
   const title = document.createElement("div");
   title.className = "calendar-event-title";
   title.contentEditable = "true";
@@ -8991,6 +8928,12 @@ function renderCalendarEventModal(){
   });
   body.appendChild(title);
 
+  const dateLine = document.createElement("div");
+  dateLine.className = "calendar-event-time";
+  dateLine.textContent = evDateLocal.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" }) +
+    (ev.hasTime ? " · " + formatEventTime(eventTimeParts(ev).hour, eventTimeParts(ev).minute) : " · Date only");
+  body.appendChild(dateLine);
+
   const locationEl = document.createElement("div");
   locationEl.className = "calendar-event-location";
   locationEl.contentEditable = "true";
@@ -9001,6 +8944,21 @@ function renderCalendarEventModal(){
     if (trimmed !== (ev.location || "")) saveCalendarEventEdit(ev.id, { location: trimmed });
   });
   body.appendChild(locationEl);
+
+  const tags = [];
+  if (calendarEventHasLunch(ev)) tags.push("Lunch provided");
+  if (calendarEventNeedsRsvp(ev)) tags.push("RSVP required");
+  if (tags.length){
+    const tagRow = document.createElement("div");
+    tagRow.className = "calendar-event-tags";
+    tags.forEach(label => {
+      const tag = document.createElement("span");
+      tag.className = "calendar-event-tag";
+      tag.textContent = label;
+      tagRow.appendChild(tag);
+    });
+    body.appendChild(tagRow);
+  }
 
   if (ev.description){
     const desc = document.createElement("div");
@@ -9247,8 +9205,9 @@ async function openCalendarEventSource(id){
   // back once the email view is closed. Without this, both popups stacked
   // (same z-index, calendarEventOverlay later in the DOM painted on top),
   // making it look like nothing happened when "View email" was clicked.
+  const fromEventPopup = document.getElementById("calendarEventOverlay").style.display !== "none";
   document.getElementById("calendarEventOverlay").style.display = "none";
-  emailViewOpenedFromCalendarEvent = true;
+  emailViewOpenedFromCalendarEvent = fromEventPopup && Boolean(calendarSelectedEventId);
   openEmailView(msg);
 }
 

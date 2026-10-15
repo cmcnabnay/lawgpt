@@ -254,6 +254,26 @@ function matchCourseFolderFromRecipients(toRecipients){
   return null;
 }
 
+// Course professors (and tutors) whose mail belongs to one course even when
+// neither the list address nor the subject/body names the course -- e.g.
+// Professor Bush's weekly "Episodes 21-23" recaps reference cases
+// ("Frigaliment") but never say "contracts". Matched against the sender AND
+// any forwarded "From:" header lines in the body, since mail synced from the
+// "Forwarded" folder often shows the forwarder as the sender.
+const COURSE_SENDER_ALIASES = [
+  { match: /\bBush,\s*Darren\b|\bDarren Bush\b|\bd{1,2}bush@central\.uh\.edu\b|\bmhleung@cougarnet\.uh\.edu\b/i, folder: "contracts" },
+  { match: /\bLanham\b/i, folder: "civil_procedure" },
+];
+
+function matchCourseFolderFromSender(from, body){
+  const forwardedFromLines = String(body || "").split(/\r?\n/).filter(line => /^\s*From:/i.test(line)).join("\n");
+  const text = `${from || ""}\n${forwardedFromLines}`;
+  for (const { match, folder } of COURSE_SENDER_ALIASES){
+    if (match.test(text)) return folder;
+  }
+  return null;
+}
+
 async function graphGet(accessToken, url, extraHeaders){
   const res = await fetch(url, {
     headers: {
@@ -377,6 +397,7 @@ async function reclassifyStaleMessages(userId, accessToken){
     }
 
     const newFolder = matchCourseFolderFromRecipients(toRecipients) ||
+      matchCourseFolderFromSender(message.from, message.body) ||
       matchCourseFolder(`${message.subject}\n${message.body || ""}`) || "uncategorized";
     if (newFolder === "uncategorized") continue;
 
@@ -419,7 +440,10 @@ router.post("/sync", async (req, res) => {
       const bodyText = (msg.body && msg.body.content) || "";
       const combinedText = `${subject}\n${bodyText}`;
 
-      const courseFolder = matchCourseFolderFromRecipients(msg.toRecipients) || matchCourseFolder(combinedText) || "uncategorized";
+      const senderText = (msg.from && msg.from.emailAddress) ? `${msg.from.emailAddress.name || ""} <${msg.from.emailAddress.address || ""}>` : "";
+      const courseFolder = matchCourseFolderFromRecipients(msg.toRecipients) ||
+        matchCourseFolderFromSender(senderText, bodyText) ||
+        matchCourseFolder(combinedText) || "uncategorized";
 
       const documentIds = [];
       if (msg.hasAttachments) {
