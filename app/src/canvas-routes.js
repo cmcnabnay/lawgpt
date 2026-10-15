@@ -197,6 +197,12 @@ function offCanvasOriginError(fetchRes, baseOrigin) {
   };
 }
 
+// Canvas prefixes API JSON with "while(1);" (anti-JSON-hijacking) when the
+// request is authenticated by session cookie rather than an access token.
+function parseCanvasJson(text) {
+  try { return JSON.parse(String(text).replace(/^while\(1\);/, "")); } catch { return null; }
+}
+
 function isSafeCanvasUrl(baseUrl) {
   try {
     const u = new URL(baseUrl);
@@ -507,22 +513,139 @@ router.post("/scrape", async (req, res) => {
     }
 
     const items = [];
+
+    // Extracts text from an already-fetched Canvas file response, saves the
+    // native file under documents/<course>/, indexes it, and returns the
+    // item summary the Import tab shows.
+    async function saveFetchedFile(fileRes, title, finalUrl) {
+      const contentType = fileRes.headers.get("content-type") || "";
+      const buffer = Buffer.from(await fileRes.arrayBuffer());
+      const extracted = await extractText(buffer, contentType, title);
+      const extractError = (extracted && typeof extracted === "object" && extracted.__error) ? extracted.__error : null;
+
+      const isPdf = /application\/pdf/i.test(contentType) || /\.pdf$/i.test(title);
+
+      // Keep the raw PDF bytes around in memory too (not just the
+      // extracted text), so this document can later be sent to OpenAI as
+      // an actual file — avoiding the MAX_TEXT_CHARS truncation above and
+      // letting the model read scanned/image content via vision. Only
+      // PDFs are kept this way, and only up to a size cap.
+      const fileBuffer = isPdf && buffer.length <= MAX_STORED_PDF_BYTES ? buffer : null;
+
+      // Always save the file to disk in its native (unmodified) format,
+      // regardless of whether text extraction succeeded — a document
+      // LawGPT can't parse for text is still worth having the real file
+      // for (e.g. to open directly, or read manually).
+      const ext = extFromContentTypeOrTitle(contentType, title);
+      const nativeFile = saveNativeFile(courseFolderName, title, ext, buffer);
+
+      // Re-importing a file that's already indexed (by a prior import, or
+      // by local-scan picking it up off disk first) would otherwise leave
+      // a stale duplicate entry behind under the same filePath — replace
+      // it instead of piling on, same "one entry per file on disk"
+      // invariant local-scan.js keeps.
+      if (nativeFile) {
+        const existing = documentStore.getDocumentByFilePath(nativeFile.filePath);
+        if (existing) documentStore.removeDocument(existing.id);
+      }
+
+      const document = documentStore.addDocument({
+        title,
+        url: finalUrl,
+        contentType,
+        text: extractError ? null : (extracted || null),
+        // Use the same resolved folder slug local-scan.js and the
+        // Schedule tab's SCHEDULE_COURSE_TO_FOLDER mapping key off of
+        // (see lawgpt.html), not the raw numeric Canvas course id --
+        // otherwise a Canvas-imported document ends up in a different
+        // Documents-tab group than the same course's locally-scanned
+        // files, and never matches a Schedule reading's course filter.
+        courseId: courseFolderName,
+        courseName: courseName || null,
+        fileBuffer,
+        fileName: nativeFile ? nativeFile.fileName : null,
+        filePath: nativeFile ? nativeFile.filePath : null
+      });
+
+      return {
+        id: document.id,
+        title: document.title,
+        url: document.url,
+        contentType: document.contentType,
+        text: document.text,
+        courseId: document.courseId,
+        courseName: document.courseName,
+        hasOriginalFile: Boolean(document.fileBuffer),
+        hasNativeFile: Boolean(document.filePath),
+        error: extractError
+      };
+    }
+
+    function alreadyImportedItem(existing) {
+      return {
+        id: existing.id,
+        title: existing.title,
+        url: existing.url,
+        contentType: existing.contentType,
+        text: existing.text,
+        courseId: existing.courseId,
+        courseName: existing.courseName,
+        hasOriginalFile: Boolean(existing.fileBuffer),
+        hasNativeFile: Boolean(existing.filePath),
+        error: null,
+        alreadyImported: true
+      };
+    }
+
+    // An assignment isn't itself a file -- its documents are links to course
+    // files inside its description. The student assignment page renders that
+    // description client-side, so read it from the API instead (which
+    // accepts the same session cookie for GETs) and import every file it
+    // links to, each under the file's own name.
+    const seenFileIds = new Set();
+    async function importAssignmentFiles(assignmentId, assignmentTitle, assignmentUrl) {
+      const apiRes = await canvasGet(baseUrl, `/api/v1/courses/${courseId}/assignments/${assignmentId}`, cookie);
+      if (!apiRes.ok) {
+        return [{ title: assignmentTitle, url: assignmentUrl, contentType: "assignment", text: null, error: `Canvas returned ${apiRes.status} for this assignment.` }];
+      }
+      const assignment = parseCanvasJson(await apiRes.text());
+      const $d = cheerio.load((assignment && assignment.description) || "");
+      const fileIds = [];
+      $d("a[href*='/files/']").each((_, el) => {
+        const m = /\/files\/(\d+)/.exec($d(el).attr("href") || "");
+        if (m && !seenFileIds.has(m[1])) { seenFileIds.add(m[1]); fileIds.push(m[1]); }
+      });
+      if (!fileIds.length) {
+        return [{ title: assignmentTitle, url: assignmentUrl, contentType: "assignment", text: null, error: "No downloadable file found" }];
+      }
+
+      const results = [];
+      for (const fileId of fileIds) {
+        try {
+          const metaRes = await canvasGet(baseUrl, `/api/v1/courses/${courseId}/files/${fileId}`, cookie);
+          const meta = metaRes.ok ? parseCanvasJson(await metaRes.text()) : null;
+          const fileTitle = (meta && (meta.display_name || meta.filename)) || `${assignmentTitle} (file ${fileId})`;
+
+          const existing = existingByBaseName.get(deriveBaseName(fileTitle).toLowerCase());
+          if (existing) { results.push(alreadyImportedItem(existing)); continue; }
+
+          const fileRes = await canvasGet(baseUrl, `/courses/${courseId}/files/${fileId}/download?download_frd=1`, cookie);
+          if (!fileRes.ok) {
+            results.push({ title: fileTitle, url: assignmentUrl, contentType: null, text: null, error: `Canvas returned ${fileRes.status} downloading this file.` });
+            continue;
+          }
+          results.push(await saveFetchedFile(fileRes, fileTitle, assignmentUrl));
+        } catch (err) {
+          results.push({ title: `${assignmentTitle} (file ${fileId})`, url: assignmentUrl, contentType: null, text: null, error: err.message });
+        }
+      }
+      return results;
+    }
+
     for (const { title, href } of links.slice(0, MAX_ITEMS)) {
       const existing = existingByBaseName.get(deriveBaseName(title).toLowerCase());
       if (existing) {
-        items.push({
-          id: existing.id,
-          title: existing.title,
-          url: existing.url,
-          contentType: existing.contentType,
-          text: existing.text,
-          courseId: existing.courseId,
-          courseName: existing.courseName,
-          hasOriginalFile: Boolean(existing.fileBuffer),
-          hasNativeFile: Boolean(existing.filePath),
-          error: null,
-          alreadyImported: true
-        });
+        items.push(alreadyImportedItem(existing));
         continue;
       }
       const itemUrl = href.startsWith("http") ? href : baseUrl + href;
@@ -530,6 +653,14 @@ router.post("/scrape", async (req, res) => {
         const itemRes = await canvasGet(baseUrl, itemUrl, cookie);
         const itemContentType = itemRes.headers.get("content-type") || "";
         const finalUrl = itemRes.url || itemUrl;
+
+        // Module items (/modules/items/:id) redirect to whatever they point
+        // at, so check where this actually landed.
+        const assignmentMatch = /\/courses\/[^/]+\/assignments\/(\d+)/.exec(finalUrl);
+        if (assignmentMatch) {
+          items.push(...await importAssignmentFiles(assignmentMatch[1], title, finalUrl));
+          continue;
+        }
 
         let fileRes = null;
         if (finalUrl.includes("/files/") && !itemContentType.includes("text/html")) {
@@ -551,67 +682,7 @@ router.post("/scrape", async (req, res) => {
           continue;
         }
 
-        const contentType = fileRes.headers.get("content-type") || "";
-        const buffer = Buffer.from(await fileRes.arrayBuffer());
-        const extracted = await extractText(buffer, contentType, title);
-        const extractError = (extracted && typeof extracted === "object" && extracted.__error) ? extracted.__error : null;
-
-        const isPdf = /application\/pdf/i.test(contentType) || /\.pdf$/i.test(title);
-
-        // Keep the raw PDF bytes around in memory too (not just the
-        // extracted text), so this document can later be sent to OpenAI as
-        // an actual file — avoiding the MAX_TEXT_CHARS truncation above and
-        // letting the model read scanned/image content via vision. Only
-        // PDFs are kept this way, and only up to a size cap.
-        const fileBuffer = isPdf && buffer.length <= MAX_STORED_PDF_BYTES ? buffer : null;
-
-        // Always save the file to disk in its native (unmodified) format,
-        // regardless of whether text extraction succeeded — a document
-        // LawGPT can't parse for text is still worth having the real file
-        // for (e.g. to open directly, or read manually).
-        const ext = extFromContentTypeOrTitle(contentType, title);
-        const nativeFile = saveNativeFile(courseFolderName, title, ext, buffer);
-
-        // Re-importing a file that's already indexed (by a prior import, or
-        // by local-scan picking it up off disk first) would otherwise leave
-        // a stale duplicate entry behind under the same filePath — replace
-        // it instead of piling on, same "one entry per file on disk"
-        // invariant local-scan.js keeps.
-        if (nativeFile) {
-          const existing = documentStore.getDocumentByFilePath(nativeFile.filePath);
-          if (existing) documentStore.removeDocument(existing.id);
-        }
-
-        const document = documentStore.addDocument({
-          title,
-          url: finalUrl,
-          contentType,
-          text: extractError ? null : (extracted || null),
-          // Use the same resolved folder slug local-scan.js and the
-          // Schedule tab's SCHEDULE_COURSE_TO_FOLDER mapping key off of
-          // (see lawgpt.html), not the raw numeric Canvas course id --
-          // otherwise a Canvas-imported document ends up in a different
-          // Documents-tab group than the same course's locally-scanned
-          // files, and never matches a Schedule reading's course filter.
-          courseId: courseFolderName,
-          courseName: courseName || null,
-          fileBuffer,
-          fileName: nativeFile ? nativeFile.fileName : null,
-          filePath: nativeFile ? nativeFile.filePath : null
-        });
-
-        items.push({
-          id: document.id,
-          title: document.title,
-          url: document.url,
-          contentType: document.contentType,
-          text: document.text,
-          courseId: document.courseId,
-          courseName: document.courseName,
-          hasOriginalFile: Boolean(document.fileBuffer),
-          hasNativeFile: Boolean(document.filePath),
-          error: extractError
-        });
+        items.push(await saveFetchedFile(fileRes, title, finalUrl));
       } catch (err) {
         items.push({ title, url: itemUrl, contentType: null, text: null, error: err.message });
       }
