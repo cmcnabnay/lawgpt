@@ -1,0 +1,90 @@
+Week 7 Practice Quiz — content scraped from Canvas New Quizzes on 10/17/2026, 4:44:27 PM.
+An attempt was started in Canvas to read this content, then left open/unsubmitted -- no answers were recorded or submitted.
+NOTE: New Quizzes renders via JavaScript, so this is the quiz player's visible page text rather than cleanly separated question/answer-choice fields the way a classic quiz's scrape is -- it may include some extra UI text (timer, navigation labels, etc.) alongside the actual questions and choices.
+NOTE: this quiz shows one question at a time -- paged through "Next" (without selecting any answer) to read all 5 screens below, each separated by a "----- next question -----" marker; some navigation chrome repeats on every screen.
+
+Flag question: Question 1
+Question 1
+1 pts
+
+Store sues Distributor in May 2010, alleging that Distributor failed to make deliveries of Widgets in March 2010, as required by their contract from March 2009. The court enters a judgment for Distributor, ruling that no contract had been formed in March 2009.
+
+Store sues Distributor in May 2011, alleging that Distributor failed to make deliveries of Widgets in March 2011, as required by their contract from March 2009. Can Distributor use preclusion against Store?
+
+Group of answer choices
+Likely yes, because the second case is barred by claim preclusion.
+Likely yes, because issue preclusion will apply to whether there was a contract.
+Likely no, because the Store has a Due Process right to be heard.
+Likely no, because it would be unfair to the Store.
+Next
+
+----- next question -----
+
+Flag question: Question 2
+Question 2
+1 pts
+
+Chemist has just finished their Ph.D. in chemistry. Chemist gets a job at a Lab. A month later, the Lab fires Chemist, on the ground that Chemist's skills are not as great as Chemist represented during their interview. Chemist sues for wrongful termination, seeking lost salary. The Lab wins the lawsuit.
+
+A year later, another potential employer calls the Lab, asking for a reference for Chemist. The Lab says that they believe Chemist was drinking cocktails at lunch every day, and consequently was often intoxicated at work in the afternoons. Chemist sues the Lab for slander (slander is a false statement that harms someone's reputation). The Lab argues that the slander case is claim-precluded because Chemist already sued the Lab about their employment.
+
+Does claim preclusion bar the Chemist from bringing the slander case?
+
+Group of answer choices
+Likely yes.
+Likely no.
+ Previous
+Next
+
+----- next question -----
+
+Flag question: Question 3
+Question 3
+1 pts
+
+Professional Baseball Player is practicing hitting baseballs in his back yard. He hits a baseball through his Neighbor's window. Neighbor sues, and wins the lawsuit, with the jury finding that Baseball Player was negligently hitting baseballs and broke the Neighbor's window.
+
+A month later, the Team that Baseball Player plays for then sues Baseball Player. The Team alleges that Baseball Player's contract specifies that he can only hit baseballs either (a) during baseball games or (b) during practice at Team facilities. The Team therefore alleges that Baseball Player breached his contract by hitting baseballs in his back yard, which is not a Team facility.
+
+Baseball Player argues that he has already been sued about hitting the baseballs in his back yard, so the Team is claim precluded from suing him in the new lawsuit. Is the Team claim precluded?
+
+Group of answer choices
+Yes.
+No.
+ Previous
+Next
+
+----- next question -----
+
+Flag question: Question 4
+Question 4
+1 pts
+
+Professional Baseball Player is practicing hitting baseballs in his back yard. He hits a baseball through his Neighbor's window. Neighbor sues for $500, in O'Quinn State small claims court (in the state of O'Quinn, parties are not allowed to be represented by lawyers in small claims court). Neighbor wins the lawsuit, with the court deciding that Baseball Player was negligently hitting baseballs and one of them broke Neighbor's window.
+
+The Team that Baseball Player plays for then sues Baseball Player. The Team alleges that Baseball Player's contract specifies that he can only hit baseballs (a) during baseball games or (b) during practice at Team facilities. The Team therefore alleges that Baseball Player breached his contract by hitting baseballs in his back yard. The Team is seeking to void the remaining $25,000,000 on Player's contract; the case is proceeding in regular civil court, not small claims court, with full court procedures, such as the ability to have a lawyer, available.
+
+The Team argues that in this breach of contract case, issue preclusion should be used to establish that Baseball Player did in fact hit the baseball in his back yard. Should the court apply issue preclusion and treat it as established that Baseball Player was hitting baseballs in his back yard?
+
+Group of answer choices
+Likely yes.
+Likely no.
+ Previous
+Next
+
+----- next question -----
+
+Flag question: Question 5
+Question 5
+1 pts
+
+The Government believes that one of its IRS Agents, who was collecting taxes, stole some of the tax money. The Government brings a criminal prosecution, which requires proving beyond a reasonable doubt that Agent stole the money. Agent wins the case, with the jury finding insufficient evidence to prove beyond a doubt that Agent took the money.
+
+The Government then brings a civil lawsuit against Agent, seeking return of the allegedly stolen money. (You may assume that claim preclusion does not prevent this--indeed, it is routinely the case that a party will both be prosecuted in a criminal case and then sued for damages in a civil case.) In the civil suit, the Government will have to prove theft by a preponderance of the evidence.
+
+In the civil suit, Agent argues that issue preclusion should be used to establish that Agent did not take the money. Should issue preclusion establish that Agent did not take the money?
+
+Group of answer choices
+Likely yes.
+Likely no.
+ Previous
