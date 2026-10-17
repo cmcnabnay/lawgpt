@@ -1,0 +1,77 @@
+Week 8 Practice Quiz — content scraped from Canvas New Quizzes on 10/17/2026, 4:36:33 PM.
+An attempt was started in Canvas to read this content, then left open/unsubmitted -- no answers were recorded or submitted.
+NOTE: New Quizzes renders via JavaScript, so this is the quiz player's visible page text rather than cleanly separated question/answer-choice fields the way a classic quiz's scrape is -- it may include some extra UI text (timer, navigation labels, etc.) alongside the actual questions and choices.
+NOTE: this quiz shows one question at a time -- paged through "Next" (without selecting any answer) to read all 4 screens below, each separated by a "----- next question -----" marker; some navigation chrome repeats on every screen.
+
+Flag question: Question 1
+Question 1
+1 pts
+The Board of Directors of O'Quinn State University announces that they are raising the tuition for out-of-state students by 50%, but keeping tuition exactly the same for in-state students. Approximately 2,000 out-of-state students face a tuition increase. The President of the Student Council, an in-state student, announces that she is filing a class action lawsuit on behalf of out-of-state students, seeking to enjoin the University from implementing the tuition increase. Which 23(a) requirement will present the biggest difficulty for the prospective class?
+Group of answer choices
+23(a)(1)
+23(a)(2)
+23(a)(3)
+23(a)(4)
+Next
+
+----- next question -----
+
+Flag question: Question 2
+Question 2
+1 pts
+The Board of Directors of O'Quinn State University announces that they are raising the tuition for out-of-state students by 50%, but keeping tuition exactly the same for in-state students. Approximately 2,000 out-of-state students face a tuition increase. The President of the Student Council, an out-of-state student, announces that she is filing a class action lawsuit on behalf of out-of-state students, seeking to enjoin the University from implementing the tuition increase. If the court finds that the 23(a) requirements are met, what kind of class would this be?
+Group of answer choices
+23(b)(1)
+23(b)(2)
+23(b)(3)
+ Previous
+Next
+
+----- next question -----
+
+Flag question: Question 3
+Question 3
+1 pts
+
+Defendant was texting while driving and caused a car crash, injuring six other drivers. All six other drivers sustained medical bills of between $150,000 and $200,000.
+
+Named Plaintiff, one of the injured drivers, files a class action lawsuit, represented by the leading personal injury lawyers in the state, seeking damages, on behalf of the class of injured drivers. Named Plaintiff asks the court to certify a 23(b)(3) damages class.
+
+Should the court certify the class?
+
+Group of answer choices
+Likely yes.
+Likely no.
+ Previous
+Next
+
+----- next question -----
+
+Flag question: Question 4
+Question 4
+1 pts
+I will buy candy for the class at the end of the month. Please vote for one of the following:
+Group of answer choices
+Variety Pack
+Milky Way
+Skittles
+Mars Bar
+Reese's Cups
+Reese's Pieces
+M&M
+Peanut M&M
+Snickers
+Baby Ruth
+Butterfinger
+Hershey's
+Heath Bar
+Kit Kat
+Jolly Rancher
+Milk Duds
+Dots
+Twix
+Payday
+Starburst
+Swedish Fish
+Sour Patch Kids
+ Previous
