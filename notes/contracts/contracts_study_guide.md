@@ -2,7 +2,6 @@
 
 ## How the Course and Exam Work
 
-- **Final exam:** comprehensive, **4 hours, in class, open-book**. The practice exam (Class 19) is ungraded and reviewed the following class.
 - **Two rule books:** the Restatement (Second) of Contracts ("R2 §") governs common-law contracts (services, land, employment). **UCC Article 2** governs **sales of goods**. Always ask first: **goods or not?** (*Harlow & Jones*, *Leibel*).
 - **The five questions of contract law** (Class 1). Run every fact pattern through them in order:
   1. Is there an **enforceable promise**? (assent, consideration or a substitute, Statute of Frauds)
@@ -53,7 +52,7 @@
 
 ## Class 2 — The Objective Theory Applied
 
-### Document: *Lucy v. Zehmer* (Va. 1954) (emailed)
+### Document: *Lucy v. Zehmer* (Va. 1954)
 **Case: Lucy v. Zehmer**
 - Over drinks in Zehmer's restaurant, Lucy offered **$50,000** for the Ferguson farm. Zehmer wrote "We hereby agree to sell to W. O. Lucy the Ferguson Farm complete for $50,000.00, title satisfactory to buyer." Zehmer and his wife both signed. Zehmer later said it was all a **joke** and that he was "high as a Georgia pine."
 - **Held:** There was a binding contract. The court ordered **specific performance**.

@@ -30,6 +30,14 @@ const MAX_EVENTS_PER_MESSAGE = 15; // a weekly digest-style newsletter can legit
 const MAX_BODY_CHARS_FOR_EXTRACTION = 8000; // matches MAX_BODY_CHARS in email-routes.js -- the most that's ever actually stored
 const EXTRACTION_TIMEOUT_MS = 45000;
 
+// Shared by event extraction and the flag-only pass for existing events
+// (extractEventFlagsForMessage below). Digest emails ("This Week at UHLC")
+// list many events, each with its own short section -- the flags must come
+// from that event's section only, never from a neighboring event's.
+const LUNCH_RSVP_RULES = `LUNCH_RSVP_RULES -- decide "lunch" and "rsvp" separately for EACH event, using ONLY the part of the email about that specific event. In a digest/newsletter listing many events, each event has its own block (title, time/room, a category label, a short blurb, maybe a link) -- look only inside that event's block; a different event's food or RSVP link must never carry over.
+- "lunch": true if that event's block indicates food will be provided: words like lunch, breakfast, dinner, food, pizza, snacks, refreshments, "grab a bite", "enjoy breakfast", "lunch will be served"; OR the event's title or category label is a food format such as "Lunch & Learn", "Lunch and Learn", "Lunch Social", "Breakfast with ...". Otherwise false.
+- "rsvp": true if that event's block asks attendees to RSVP, register, sign up, or buy/get tickets, or has an RSVP/registration/sign-up/tickets link; also true for an entry that is itself an RSVP or registration deadline. Otherwise false.`;
+
 const EXTRACTION_INSTRUCTIONS = `You are reading one email sent to a law student, looking for real calendar-worthy events -- something happening at a specific date/time that belongs on their calendar: a class session, review session, meeting, exam, assignment due date, RSVP deadline, or similar. This may be a single-topic email or a mass weekly digest/newsletter listing many unrelated announcements -- either way, evaluate each potential event independently against every rule below.
 
 Read the whole email for what it actually means, not just which sentences contain a date-shaped word:
@@ -51,8 +59,10 @@ For each real event found, output an object with:
 - "time": 24-hour "HH:MM" if a specific time is stated, otherwise null
 - "location": the event's location if the email states one -- a room/building, address, or video-call platform ("Zoom", "the class Teams link") -- otherwise null. Never guess a location that isn't actually stated.
 - "description": one sentence, quoting or paraphrasing the relevant part of the email
-- "lunch": true only if the email says food/lunch is provided at this event (e.g. "lunch will be served", "free pizza", "lunch provided"), otherwise false
-- "rsvp": true only if the email says attendees must or should RSVP / register / sign up for this event, otherwise false
+- "lunch": see LUNCH_RSVP_RULES below
+- "rsvp": see LUNCH_RSVP_RULES below
+
+${LUNCH_RSVP_RULES}
 
 Respond with ONLY a JSON array of these objects -- no markdown code fences, no prose before or after. If there are no real calendar-worthy events in this email, respond with exactly: []`;
 
@@ -208,4 +218,44 @@ async function extractCalendarEventsForMessage(message) {
   return { events, sessionId };
 }
 
-module.exports = { extractCalendarEventsForMessage };
+// Fills in lunch/rsvp for events that were already extracted from this
+// message (before those fields existed) without re-extracting or touching
+// anything else about them. Returns a Map of event id -> { lunch, rsvp };
+// throws on a failed/timed-out CLI call.
+async function extractEventFlagsForMessage(message, events) {
+  const list = events.map((ev, i) => ({
+    ref: i + 1,
+    title: ev.title,
+    date: ev.date,
+    time: ev.time || null,
+    description: ev.description || ""
+  }));
+  const body = (message.body || "").slice(0, MAX_BODY_CHARS_FOR_EXTRACTION);
+  const prompt = `You are given one email sent to a law student and a list of calendar events that were already extracted from it. For each listed event, decide "lunch" and "rsvp".
+
+${LUNCH_RSVP_RULES}
+
+Respond with ONLY a JSON array with one object per listed event, in the form {"ref": <the event's ref number>, "lunch": true|false, "rsvp": true|false} -- no markdown code fences, no prose before or after.
+
+EVENTS:
+${JSON.stringify(list, null, 1)}
+
+EMAIL:
+Subject: ${message.subject || "(no subject)"}
+Received: ${message.date || "unknown"}
+Body:
+${body}`;
+
+  const stdout = await runClaudeExtraction(prompt, crypto.randomUUID());
+  if (stdout === null) throw new Error("Claude Code flag extraction failed or timed out.");
+
+  const flags = new Map();
+  for (const item of parseEventsFromClaudeOutput(stdout)) {
+    const ev = item && events[Number(item.ref) - 1];
+    if (!ev) continue;
+    flags.set(ev.id, { lunch: item.lunch === true, rsvp: item.rsvp === true });
+  }
+  return flags;
+}
+
+module.exports = { extractCalendarEventsForMessage, extractEventFlagsForMessage };
