@@ -1778,6 +1778,7 @@ pre code {
 .email-card-btn.email-agent-btn{ background:var(--brass); color:var(--ink); border-color:var(--brass); }
 .email-card-btn.email-agent-btn:hover{ filter:brightness(1.1); color:var(--ink); }
 .email-card-btn.email-card-btn.email-delete-btn:hover{ border-color:#d98b8b; color:#e9a3a3; }
+.email-event-course-dot{ display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:5px; vertical-align:middle; }
 .email-view-body{
   white-space:pre-wrap;
   word-wrap:break-word;
@@ -3438,6 +3439,7 @@ pre code {
       <button type="button" id="scheduleDocCtxRemove">Remove document</button>
       <button type="button" id="scheduleDocCtxAuto">Auto-detect document</button>
     </div>
+    <div class="table-ctx-menu" id="emailCourseCtxMenu"></div>
 
     <div class="documents-view" id="documentsView" style="display:none;">
       <div class="documents-wrap">
@@ -7883,10 +7885,10 @@ function renderEmailList(){
 
     card.innerHTML = `
       <div class="email-card-head">
-        <span class="email-course-badge">${escapeHtml(emailCourseLabel(msg.courseFolder))}</span>
+        <span class="email-course-badge" title="Right-click to change course">${escapeHtml(emailCourseLabel(msg.courseFolder))}${msg.courseManual ? " ✎" : ""}</span>
         <div class="email-card-buttons">
           <button type="button" class="email-card-btn email-view-btn">View</button>
-          <button type="button" class="email-card-btn email-done-btn">${msg.done ? "Mark not done" : "Mark done"}</button>
+          <button type="button" class="email-card-btn email-events-btn">Events</button>
           <button type="button" class="email-card-btn email-agent-btn">Send to agent</button>
           <button type="button" class="email-card-btn email-delete-btn">Delete</button>
         </div>
@@ -7901,7 +7903,11 @@ function renderEmailList(){
 
     attachEmailDocumentButtonListeners(card);
     card.querySelector(".email-view-btn").addEventListener("click", () => openEmailView(msg));
-    card.querySelector(".email-done-btn").addEventListener("click", () => markEmailDone(msg.id, !msg.done));
+    card.querySelector(".email-events-btn").addEventListener("click", () => openEmailEventsPopup(msg));
+    card.querySelector(".email-course-badge").addEventListener("contextmenu", (e) => {
+      e.preventDefault();
+      showEmailCourseMenu(e.clientX, e.clientY, msg);
+    });
     card.querySelector(".email-agent-btn").addEventListener("click", () => sendEmailToAgent(msg));
     card.querySelector(".email-delete-btn").addEventListener("click", () => deleteEmailMessage(msg.id, msg.subject));
     list.appendChild(card);
@@ -8397,21 +8403,116 @@ document.getElementById("agentOpenTerminalBtn").addEventListener("click", async 
   }
 });
 
-async function markEmailDone(id, done){
-  try{
-    const res = await fetch(PROXY_ORIGIN + "/api/email/messages/" + encodeURIComponent(id) + "/done", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ done })
-    });
-    if (!res.ok) throw new Error("Server returned " + res.status);
-    const updated = await res.json();
-    const idx = emailMessagesCache.findIndex(m => String(m.id) === String(updated.id));
-    if (idx !== -1) emailMessagesCache[idx] = updated;
-    renderEmailList();
-  } catch(e){
-    alert("Couldn't update this email: " + e.message);
+// Right-click menu on an email card's course pill: pick a course by hand,
+// or (once one has been picked) go back to the automatic sender/recipient
+// rules. Events extracted from the email follow it on the calendar.
+const emailCourseCtxMenu = document.getElementById("emailCourseCtxMenu");
+
+function hideEmailCourseMenu(){
+  emailCourseCtxMenu.classList.remove("show");
+}
+
+function showEmailCourseMenu(x, y, msg){
+  emailCourseCtxMenu.innerHTML = "";
+  Object.keys(EMAIL_COURSE_LABELS).forEach(folder => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.textContent = (folder === msg.courseFolder ? "✓ " : "") + EMAIL_COURSE_LABELS[folder];
+    btn.addEventListener("click", () => { hideEmailCourseMenu(); setEmailCourse(msg.id, folder); });
+    emailCourseCtxMenu.appendChild(btn);
+  });
+  if (msg.courseManual){
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.textContent = "Auto-detect course";
+    btn.addEventListener("click", () => { hideEmailCourseMenu(); setEmailCourse(msg.id, null); });
+    emailCourseCtxMenu.appendChild(btn);
   }
+  emailCourseCtxMenu.classList.add("show");
+  const menuRect = emailCourseCtxMenu.getBoundingClientRect();
+  const left = Math.min(x, window.innerWidth - menuRect.width - 8);
+  const top = Math.min(y, window.innerHeight - menuRect.height - 8);
+  emailCourseCtxMenu.style.left = Math.max(8, left) + "px";
+  emailCourseCtxMenu.style.top = Math.max(8, top) + "px";
+}
+document.addEventListener("click", (e) => {
+  if (emailCourseCtxMenu.contains(e.target)) return;
+  hideEmailCourseMenu();
+});
+document.addEventListener("scroll", hideEmailCourseMenu, true);
+window.addEventListener("resize", hideEmailCourseMenu);
+
+// courseFolder null = clear the manual choice and auto-detect again.
+async function setEmailCourse(id, courseFolder){
+  try{
+    const res = await fetch(PROXY_ORIGIN + "/api/email/messages/" + encodeURIComponent(id) + "/course", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ courseFolder })
+    });
+    const data = await res.json().catch(() => null);
+    if (!res.ok) throw new Error((data && data.error && data.error.message) || "Server returned " + res.status);
+    const idx = emailMessagesCache.findIndex(m => String(m.id) === String(data.id));
+    if (idx !== -1) emailMessagesCache[idx] = data;
+    // The server moved this email's events too; mirror that in the
+    // calendar's cache so it recolors without a reload.
+    calendarEventsCache.forEach(ev => {
+      if (String(ev.sourceMessageId) === String(data.id)) ev.courseFolder = data.courseFolder;
+    });
+    renderEmailList();
+    if (calendarEventsCache.length) renderCalendarWeek();
+  } catch(e){
+    alert("Couldn't change this email's course: " + e.message);
+  }
+}
+
+// Lists the calendar events extracted from one email -- title, date/time
+// and the course each was filed under -- in the same popup the sync-result
+// counts use. Fetched fresh rather than read from calendarEventsCache, since
+// the Calendar tab may not have been opened yet this session.
+async function openEmailEventsPopup(msg){
+  const title = document.getElementById("emailSyncResultTitle");
+  const body = document.getElementById("emailSyncResultBody");
+  title.textContent = "Events in: " + (msg.subject || "(no subject)");
+  body.innerHTML = `<div class="sync-result-empty">Loading events…</div>`;
+  document.getElementById("emailSyncResultOverlay").style.display = "flex";
+
+  let events;
+  try{
+    const res = await fetch(PROXY_ORIGIN + "/api/calendar/events");
+    if (!res.ok) throw new Error("Server returned " + res.status);
+    const data = await res.json();
+    events = (data.events || []).filter(ev => String(ev.sourceMessageId) === String(msg.id));
+  } catch(e){
+    body.innerHTML = `<div class="sync-result-empty">Couldn't load events: ${escapeHtml(e.message)}</div>`;
+    return;
+  }
+
+  body.innerHTML = "";
+  if (!events.length){
+    const div = document.createElement("div");
+    div.className = "sync-result-empty";
+    div.textContent = msg.calendarChecked === false
+      ? "This email hasn't been checked for events yet."
+      : "No events were found in this email.";
+    body.appendChild(div);
+    return;
+  }
+
+  events.sort((a, b) => calendarDayKey(a.date).localeCompare(calendarDayKey(b.date)) || String(a.time || "").localeCompare(String(b.time || "")));
+  events.forEach(ev => {
+    const row = document.createElement("div");
+    row.className = "sync-result-row";
+    row.style.cursor = "default";
+    const { hour, minute } = eventTimeParts(ev);
+    const whenLabel = calendarDayKey(ev.date) + (ev.hasTime ? " · " + formatEventTime(hour, minute) : " · All day");
+    const color = CALENDAR_COURSE_COLORS[ev.courseFolder] || CALENDAR_OTHER_COLOR;
+    row.innerHTML =
+      `<div class="sync-result-row-title">${escapeHtml(ev.title || "(untitled event)")}</div>` +
+      `<div class="sync-result-row-meta"><span>${escapeHtml(whenLabel)}</span>` +
+      `<span><span class="email-event-course-dot" style="background:${color}"></span>${escapeHtml(emailCourseLabel(ev.courseFolder))}</span></div>`;
+    body.appendChild(row);
+  });
 }
 
 // The last "Sync now" response in full (newMessages/newDocuments/

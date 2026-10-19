@@ -41,7 +41,7 @@ const emailStore = require("./email-store");
 const calendarStore = require("./calendar-store");
 const { extractCalendarEventsForMessage } = require("./calendar-extract");
 const canvasRoutes = require("./canvas-routes");
-const { extractText, DOCS_ROOT, matchCourseFolder, isDocumentAttachment, deriveBaseName } = canvasRoutes;
+const { extractText, DOCS_ROOT, isDocumentAttachment, deriveBaseName } = canvasRoutes;
 const { getAccessTokenSilent, getEmailConfig, getPersonalApiKey } = require("./email-auth");
 const agentStore = require("./agent-store");
 const agentRuntime = require("./agent-runtime");
@@ -226,52 +226,89 @@ function isFromUhDomain(msg){
   return UH_SENDER_DOMAIN.test(domain);
 }
 
-// UH's class mailing lists are named like
-// "C_Law_Class_F26-LANHAM-Procedure@Central.UH.EDU" -- the professor's last
-// name plus a short course tag, not the full course title matchCourseFolder's
-// shared COURSE_FOLDER_ALIASES expects ("procedure" alone, not "civil
-// procedure"). Checked only against the recipient address itself, never
-// folded into the subject+body text matchCourseFolder already runs on below
-// -- a bare word like "procedure" turning up incidentally in an email body
-// is much weaker evidence than the email having been sent straight to that
-// course's own list. Takes priority over the subject/body match for exactly
-// that reason (see the /sync loop below).
-const COURSE_LIST_ADDRESS_ALIASES = [
-  { match: /procedure/i, folder: "civil_procedure" },
-  { match: /lawyering|\blss\b/i, folder: "lawyering_skills_and_strategies" },
-  { match: /contracts?/i, folder: "contracts" },
-  { match: /torts?/i, folder: "torts" },
+// An email's course comes only from who sent it and who it was sent to --
+// never from words in its subject/body. A body-text match used to be the
+// last fallback, and a newsletter listing several unrelated events got filed
+// under Torts (and every event in it colored Torts) just because one news
+// blurb mentioned the "Professor Joseph Sanders Endowed Professorship for
+// Torts". Anything matching neither list below stays "uncategorized".
+const COURSE_RECIPIENT_ADDRESSES = {
+  civil_procedure: ["C_Law_Class_F26-LANHAM-Procedure@Central.UH.EDU"],
+  torts: ["C_Law_Class_F26-SANDERS-Torts@Central.UH.EDU"],
+  contracts: ["C_Law_Class_F26-BUSH-Contracts-B1@Central.UH.EDU"],
+  lawyering_skills_and_strategies: ["hatruske@Central.UH.EDU"],
+};
+
+const COURSE_SENDER_ADDRESSES = {
+  civil_procedure: [
+    "sawill35@CougarNet.UH.EDU",
+    "ajlanham@Central.UH.EDU",
+    "msong23@CougarNet.UH.EDU",
+    "egoneill@CougarNet.UH.EDU",
+    "attrevi4@CougarNet.UH.EDU",
+  ],
+  torts: ["arkrasin@CougarNet.UH.EDU", "JSanders@Central.UH.edu"],
+  contracts: ["ddbush@Central.UH.EDU", "mhleung@CougarNet.UH.EDU"],
+  lawyering_skills_and_strategies: ["hatruske@Central.UH.EDU"],
+};
+
+// Canvas notifications all come from the same address, so they only count
+// for a course when the subject names that course's Canvas section.
+const CANVAS_NOTIFICATION_SENDER = "notifications@instructure.com";
+const CANVAS_SUBJECT_COURSES = [
+  { subject: "2026FA LAW5314 12469 - Lawyering Skills and Strategies I", folder: "lawyering_skills_and_strategies" },
 ];
 
-function matchCourseFolderFromRecipients(toRecipients){
-  const addresses = (toRecipients || [])
-    .map(r => (r && r.emailAddress && r.emailAddress.address) || "")
-    .join(" ");
-  if (!addresses) return null;
-  for (const { match, folder } of COURSE_LIST_ADDRESS_ALIASES){
-    if (match.test(addresses)) return folder;
+const EMAIL_ADDRESS_PATTERN = /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi;
+
+function extractAddresses(text){
+  return (String(text || "").match(EMAIL_ADDRESS_PATTERN) || []).map(a => a.toLowerCase());
+}
+
+// Header lines ("From:", "To:", ...) of any forwarded message quoted in the
+// body -- mail synced from the "Forwarded" folder often shows the forwarder
+// as the sender/recipient, with the original ones only in these lines.
+function forwardedHeaderLines(body, header){
+  const pattern = new RegExp(`^\\s*${header}:`, "i");
+  return String(body || "").split(/\r?\n/).filter(line => pattern.test(line)).join("\n");
+}
+
+function matchAddressTable(addresses, table){
+  for (const [folder, list] of Object.entries(table)){
+    if (list.some(a => addresses.includes(a.toLowerCase()))) return folder;
   }
   return null;
 }
 
-// Course professors (and tutors) whose mail belongs to one course even when
-// neither the list address nor the subject/body names the course -- e.g.
-// Professor Bush's weekly "Episodes 21-23" recaps reference cases
-// ("Frigaliment") but never say "contracts". Matched against the sender AND
-// any forwarded "From:" header lines in the body, since mail synced from the
-// "Forwarded" folder often shows the forwarder as the sender.
-const COURSE_SENDER_ALIASES = [
-  { match: /\bBush,\s*Darren\b|\bDarren Bush\b|\bd{1,2}bush@central\.uh\.edu\b|\bmhleung@cougarnet\.uh\.edu\b/i, folder: "contracts" },
-  { match: /\bLanham\b/i, folder: "civil_procedure" },
-];
+// Plain lowercase address list from Graph's toRecipients (the shape stored
+// on each message as `toAddresses`, so later reclassification doesn't need
+// to re-fetch it).
+function recipientAddresses(toRecipients){
+  return (toRecipients || [])
+    .map(r => ((r && r.emailAddress && r.emailAddress.address) || "").toLowerCase())
+    .filter(Boolean);
+}
 
-function matchCourseFolderFromSender(from, body){
-  const forwardedFromLines = String(body || "").split(/\r?\n/).filter(line => /^\s*From:/i.test(line)).join("\n");
-  const text = `${from || ""}\n${forwardedFromLines}`;
-  for (const { match, folder } of COURSE_SENDER_ALIASES){
-    if (match.test(text)) return folder;
+function matchCourseFolderFromRecipients(toAddresses, body){
+  const addresses = [...(toAddresses || []), ...extractAddresses(forwardedHeaderLines(body, "To"))];
+  return matchAddressTable(addresses, COURSE_RECIPIENT_ADDRESSES);
+}
+
+function matchCourseFolderFromSender(from, body, subject){
+  const addresses = extractAddresses(`${from || ""}\n${forwardedHeaderLines(body, "From")}`);
+  const folder = matchAddressTable(addresses, COURSE_SENDER_ADDRESSES);
+  if (folder) return folder;
+  if (addresses.includes(CANVAS_NOTIFICATION_SENDER)){
+    const match = CANVAS_SUBJECT_COURSES.find(c => String(subject || "").toLowerCase().includes(c.subject.toLowerCase()));
+    if (match) return match.folder;
   }
   return null;
+}
+
+function classifyEmailCourse({ toAddresses, from, subject, body }){
+  return matchCourseFolderFromRecipients(toAddresses, body) ||
+    matchCourseFolderFromSender(from, body, subject) ||
+    "uncategorized";
 }
 
 async function graphGet(accessToken, url, extraHeaders){
@@ -372,44 +409,61 @@ function moveDocumentToCourseFolder(document, newFolder){
   documentStore.updateDocument(document.id, { courseId: newFolder, courseName: newFolder, filePath: newFilePath });
 }
 
-// Backfill for mail synced before COURSE_LIST_ADDRESS_ALIASES existed (or
-// before a later alias was added) -- toRecipients is never persisted on the
-// stored message (see email-store.js), so a message already filed under
-// "uncategorized" can't be reclassified from what's on disk alone. Re-fetches
-// just that one field from Graph (cheap) for each still-uncategorized stored
-// message and reclassifies it -- and any documents it downloaded -- if that
-// changes the answer. Run at the end of every /sync rather than only once, so
-// it also catches messages that stay unresolved because the alias table
-// itself gets extended later.
+// Bumped whenever the classification rules above change, so every stored
+// message (not just "uncategorized" ones) gets re-run against the new rules
+// once -- e.g. the switch to sender/recipient-only classification moves a
+// newsletter that was filed under Torts on a body-text match back out.
+const CLASSIFIER_VERSION = 2;
+
+// Re-runs classification for stored messages classified under older rules,
+// plus every still-uncategorized message (so extending the address lists
+// later picks them up too). Run at the end of every /sync. A message's
+// documents and calendar events follow it to its new course. Messages
+// synced before `toAddresses` was stored get it re-fetched from Graph once.
+// Moves a stored message -- along with the documents it downloaded and the
+// calendar events extracted from it -- to `newFolder`, saving any extra
+// fields in `patch` on the message too. Returns true if the course changed.
+async function applyMessageCourse(userId, message, newFolder, patch){
+  const changed = newFolder !== message.courseFolder;
+  if (changed){
+    for (const docId of (message.documentIds || [])){
+      const document = documentStore.getDocument(docId);
+      if (document) moveDocumentToCourseFolder(document, newFolder);
+    }
+    await calendarStore.updateEventsForMessage(userId, message.id, { courseFolder: newFolder });
+  }
+  await emailStore.updateMessage(userId, message.id, { ...patch, courseFolder: newFolder });
+  return changed;
+}
+
+// Recipients for classifying a stored message: what was saved at sync time,
+// or -- for messages synced before `toAddresses` was stored -- re-fetched
+// from Graph. Null if neither works (e.g. the message was moved or deleted
+// from the mailbox since it was synced); the sender check still runs then.
+async function storedRecipientAddresses(message, accessToken){
+  if (Array.isArray(message.toAddresses)) return message.toAddresses;
+  if (!accessToken) return null;
+  try {
+    const data = await graphGet(accessToken, `${GRAPH_ROOT}/me/messages/${message.id}?$select=toRecipients`);
+    return recipientAddresses(data.toRecipients);
+  } catch (err) { return null; }
+}
+
 async function reclassifyStaleMessages(userId, accessToken){
   const state = await emailStore.load(userId);
   let reclassified = 0;
 
   for (const message of state.messages){
-    if (message.courseFolder !== "uncategorized") continue;
+    // A course the user picked by hand (right-click on the Email tab's
+    // course pill) is never overridden by the automatic rules.
+    if (message.courseManual) continue;
+    if (message.classifierVersion === CLASSIFIER_VERSION && message.courseFolder !== "uncategorized") continue;
 
-    // If the recipients can't be fetched (e.g. the message was moved or
-    // deleted from the mailbox since it was synced), still fall back to the
-    // sender/subject/body checks below, which only need what's stored.
-    let toRecipients = null;
-    try {
-      const data = await graphGet(accessToken, `${GRAPH_ROOT}/me/messages/${message.id}?$select=toRecipients`);
-      toRecipients = data.toRecipients;
-    } catch (err) { /* recipients unknown */ }
-
-    const newFolder = matchCourseFolderFromRecipients(toRecipients) ||
-      matchCourseFolderFromSender(message.from, message.body) ||
-      matchCourseFolder(`${message.subject}\n${message.body || ""}`) || "uncategorized";
-    if (newFolder === "uncategorized") continue;
-
-    for (const docId of (message.documentIds || [])){
-      const document = documentStore.getDocument(docId);
-      if (document) moveDocumentToCourseFolder(document, newFolder);
-    }
-
-    await emailStore.updateMessage(userId, message.id, { courseFolder: newFolder });
-    await calendarStore.updateEventsForMessage(userId, message.id, { courseFolder: newFolder });
-    reclassified++;
+    const toAddresses = await storedRecipientAddresses(message, accessToken);
+    const newFolder = classifyEmailCourse({ toAddresses, from: message.from, subject: message.subject, body: message.body });
+    const patch = { classifierVersion: CLASSIFIER_VERSION };
+    if (toAddresses) patch.toAddresses = toAddresses;
+    if (await applyMessageCourse(userId, message, newFolder, patch)) reclassified++;
   }
 
   return reclassified;
@@ -440,12 +494,10 @@ router.post("/sync", async (req, res) => {
     for (const msg of rawMessages) {
       const subject = msg.subject || "(no subject)";
       const bodyText = (msg.body && msg.body.content) || "";
-      const combinedText = `${subject}\n${bodyText}`;
 
       const senderText = (msg.from && msg.from.emailAddress) ? `${msg.from.emailAddress.name || ""} <${msg.from.emailAddress.address || ""}>` : "";
-      const courseFolder = matchCourseFolderFromRecipients(msg.toRecipients) ||
-        matchCourseFolderFromSender(senderText, bodyText) ||
-        matchCourseFolder(combinedText) || "uncategorized";
+      const toAddresses = recipientAddresses(msg.toRecipients);
+      const courseFolder = classifyEmailCourse({ toAddresses, from: senderText, subject, body: bodyText });
 
       const documentIds = [];
       if (msg.hasAttachments) {
@@ -543,6 +595,8 @@ router.post("/sync", async (req, res) => {
         date: msg.receivedDateTime || null,
         body: bodyText.slice(0, MAX_BODY_CHARS),
         courseFolder,
+        toAddresses,
+        classifierVersion: CLASSIFIER_VERSION,
         documentIds,
         calendarChecked,
         done: false,
@@ -612,6 +666,35 @@ router.delete("/messages/:id", async (req, res) => {
 
   await emailStore.deleteMessage(userId, message.id);
   res.json({ ok: true });
+});
+
+const COURSE_FOLDERS = ["civil_procedure", "contracts", "torts", "lawyering_skills_and_strategies", "uncategorized"];
+
+// Sets an email's course by hand (the Email tab's right-click menu on the
+// course pill). Its documents and calendar events move with it, and the
+// choice sticks -- reclassifyStaleMessages skips it from then on. Sending
+// { courseFolder: null } clears the manual choice and re-runs the automatic
+// sender/recipient rules on it instead.
+router.put("/messages/:id/course", async (req, res) => {
+  const userId = req.session.userId;
+  const { courseFolder } = req.body || {};
+  if (courseFolder !== null && !COURSE_FOLDERS.includes(courseFolder)) {
+    return res.status(400).json({ error: { message: "Unknown course." } });
+  }
+  const message = await emailStore.getMessage(userId, req.params.id);
+  if (!message) return res.status(404).json({ error: { message: "No synced email with that id." } });
+
+  if (courseFolder) {
+    await applyMessageCourse(userId, message, courseFolder, { courseManual: true });
+  } else {
+    const tokenResult = await getAccessTokenSilent(userId);
+    const toAddresses = await storedRecipientAddresses(message, tokenResult.error ? null : tokenResult.accessToken);
+    const newFolder = classifyEmailCourse({ toAddresses, from: message.from, subject: message.subject, body: message.body });
+    const patch = { courseManual: false, classifierVersion: CLASSIFIER_VERSION };
+    if (toAddresses) patch.toAddresses = toAddresses;
+    await applyMessageCourse(userId, message, newFolder, patch);
+  }
+  res.json(await emailStore.getMessage(userId, message.id));
 });
 
 router.post("/messages/:id/done", async (req, res) => {
