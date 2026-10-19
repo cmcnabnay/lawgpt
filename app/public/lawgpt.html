@@ -7939,7 +7939,7 @@ function closeEmailView(){
   // navigating within one flow instead of losing the event details.
   if (emailViewOpenedFromCalendarEvent){
     emailViewOpenedFromCalendarEvent = false;
-    if (calendarSelectedEventId) openCalendarEvent(calendarSelectedEventId);
+    if (calendarSelectedEventId) openCalendarEvent(calendarSelectedEventId, calendarMoreEventsReturnIds);
   }
 }
 document.getElementById("emailViewCloseBtn").addEventListener("click", closeEmailView);
@@ -8967,8 +8967,14 @@ function renderCalendarWeek(){
 // app -- see emailViewOverlay) with the title (editable in place, since the
 // model's title guess isn't always exactly right), location, description,
 // and the View email / Delete actions the user asked for.
-function openCalendarEvent(id){
+// Set while the open event popup was reached from the "+N more" picker: the
+// ids that picker listed, so closing the event goes back to it instead of
+// all the way out to the calendar.
+let calendarMoreEventsReturnIds = null;
+
+function openCalendarEvent(id, returnToMoreEventIds){
   calendarSelectedEventId = id;
+  calendarMoreEventsReturnIds = returnToMoreEventIds || null;
   calendarEditingDateTime = false;
   document.getElementById("calendarEventOverlay").style.display = "flex";
   renderCalendarEventModal();
@@ -8978,6 +8984,17 @@ function closeCalendarEventPanel(){
   calendarSelectedEventId = null;
   calendarEditingDateTime = false;
   document.getElementById("calendarEventOverlay").style.display = "none";
+
+  // Re-read from the cache so an event deleted (or moved) from its popup
+  // drops out of the list; nothing left means there's nothing to go back to.
+  const returnIds = calendarMoreEventsReturnIds;
+  calendarMoreEventsReturnIds = null;
+  if (returnIds){
+    const remaining = returnIds
+      .map(id => calendarEventsCache.find(e => String(e.id) === String(id)))
+      .filter(Boolean);
+    if (remaining.length) openCalendarMoreEvents(remaining);
+  }
 }
 
 // The "+N more" pill's picker -- lists the other events sharing a time slot
@@ -9000,7 +9017,7 @@ function openCalendarMoreEvents(events){
     row.appendChild(title);
     row.addEventListener("click", () => {
       closeCalendarMoreEvents();
-      openCalendarEvent(ev.id);
+      openCalendarEvent(ev.id, events.map(e => e.id));
     });
     body.appendChild(row);
   });
