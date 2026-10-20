@@ -97,12 +97,21 @@ const OPENROUTER_MODEL = process.env.OPENROUTER_MODEL || "nvidia/nemotron-3-supe
 const OPENROUTER_MODELS = [
   { id: "liquid/lfm-2.5-2.6b:free", note: "reliable" },
   { id: "cohere/north-mini-code:free", note: "reliable" },
+  { id: "dots-studio/dots-3-note-preview:free", note: "reliable" },
+  { id: "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free", note: "often overloaded/times out" },
   { id: "nvidia/nemotron-3.5-lightning:free", note: "reliable" },
+  { id: "google/gemma-4-26b-a4b-it:free", note: "often rate-limited" },
+  { id: "google/gemma-4-31b-it:free", note: "often rate-limited" },
   { id: "poolside/laguna-s-2.1:free", note: "reliable" },
   { id: "poolside/laguna-xs-2.1:free", note: "often rate-limited" },
   { id: "nvidia/nemotron-3-ultra-550b-a55b:free", note: "reliable" },
   { id: "nvidia/nemotron-3-super-120b-a12b:free", note: "reliable" }, // this is what "openrouter/free" was actually resolving to
-  { id: "xingchen-agi/xing4.0-29b-a4b:free", note: "often rate-limited" }
+  { id: "nvidia/nemotron-3.5-content-safety:free", note: "untested -- built as a moderation/safety classifier, may behave oddly as a general chat model" },
+  { id: "minimax/minimax-m3.1-flash:free", note: "untested" },
+  { id: "xingchen-agi/xing4.0-29b-a4b:free", note: "often rate-limited" },
+  { id: "nvidia/nemotron-3.5-super-vl:free", note: "untested" },
+  { id: "thinkingmachines/inkling-small:free", note: "failing (HTTP 403)" },
+  { id: "thinkingmachines/inkling:free", note: "failing (HTTP 403)" }
 ];
 const OPENROUTER_MODEL_IDS = new Set(OPENROUTER_MODELS.map(m => m.id));
 
