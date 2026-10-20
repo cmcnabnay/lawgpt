@@ -95,8 +95,6 @@ const OPENROUTER_MODEL = process.env.OPENROUTER_MODEL || "nvidia/nemotron-3-supe
 // chat message at all; adding them to this dropdown would just make picking
 // them silently fail every request.
 const OPENROUTER_MODELS = [
-  { id: "inclusionai/ling-3.0-flash-sante:free", note: "reliable" },
-  { id: "inclusionai/ling-3.0-flash-fin:free", note: "reliable" },
   { id: "liquid/lfm-2.5-2.6b:free", note: "reliable" },
   { id: "cohere/north-mini-code:free", note: "reliable" },
   { id: "dots-studio/dots-3-note-preview:free", note: "reliable" },
@@ -107,10 +105,13 @@ const OPENROUTER_MODELS = [
   { id: "poolside/laguna-s-2.1:free", note: "often rate-limited" },
   { id: "poolside/laguna-xs-2.1:free", note: "often rate-limited" },
   { id: "nvidia/nemotron-3-ultra-550b-a55b:free", note: "often overloaded/times out" },
-  { id: "nex-agi/nex-n2.5-mini:free", note: "untested" },
-  { id: "nex-agi/nex-n2.5-pro:free", note: "untested" },
   { id: "nvidia/nemotron-3-super-120b-a12b:free", note: "reliable" }, // this is what "openrouter/free" was actually resolving to
-  { id: "nvidia/nemotron-3.5-content-safety:free", note: "untested -- built as a moderation/safety classifier, may behave oddly as a general chat model" }
+  { id: "nvidia/nemotron-3.5-content-safety:free", note: "untested -- built as a moderation/safety classifier, may behave oddly as a general chat model" },
+  { id: "minimax/minimax-m3.1-flash:free", note: "untested" },
+  { id: "xingchen-agi/xing4.0-29b-a4b:free", note: "untested" },
+  { id: "nvidia/nemotron-3.5-super-vl:free", note: "untested" },
+  { id: "thinkingmachines/inkling-small:free", note: "untested" },
+  { id: "thinkingmachines/inkling:free", note: "untested" }
 ];
 const OPENROUTER_MODEL_IDS = new Set(OPENROUTER_MODELS.map(m => m.id));
 
