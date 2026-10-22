@@ -74,21 +74,56 @@ function indentBlock(text){
   return truncated.split("\n").map(line => "  " + line).join("\n");
 }
 
+// Per-turn structured transcript for the Agent tab's unified terminal view:
+// each turn gets a `steps` list of {type:"text", text} commentary and
+// {type:"tool", id, name, input, output} calls, so the tab can show the
+// commands live while a turn runs and fold them away once its reply lands.
+// entry.output (the flat transcript) is still kept alongside for older runs
+// and for stderr/diagnostics, which don't belong to any one step.
+function lastTurn(entry){
+  return entry.turns && entry.turns.length ? entry.turns[entry.turns.length - 1] : null;
+}
+
+function addTextStep(turn, text){
+  if (!turn || !text) return;
+  if (!Array.isArray(turn.steps)) turn.steps = [];
+  const prev = turn.steps[turn.steps.length - 1];
+  if (prev && prev.type === "text") prev.text += text;
+  else turn.steps.push({ type: "text", text });
+}
+
+function addToolStep(turn, block){
+  if (!turn) return;
+  if (!Array.isArray(turn.steps)) turn.steps = [];
+  turn.steps.push({ type: "tool", id: block.id || null, name: block.name || "tool", input: formatToolInput(block.input).trim(), output: "" });
+}
+
+function addToolResult(turn, block, text){
+  if (!turn || !Array.isArray(turn.steps)) return;
+  const step = turn.steps.find(s => s.type === "tool" && s.id && s.id === block.tool_use_id);
+  if (!step) return;
+  step.output = text.length > MAX_TOOL_RESULT_CHARS ? text.slice(0, MAX_TOOL_RESULT_CHARS) + "\n…[truncated]" : text;
+  if (block.is_error) step.error = true;
+}
+
 // Turns one parsed stream-json event into terminal-transcript text appended
-// to entry.output, and captures the final deliverable into entry.result --
-// see the module comment above for why those are tracked separately. Silent
-// no-op for event types with nothing worth showing (e.g. the initial
-// "system"/"init" event).
+// to entry.output (and a step on the current turn), and captures the final
+// deliverable into entry.result -- see the module comment above for why
+// those are tracked separately. Silent no-op for event types with nothing
+// worth showing (e.g. the initial "system"/"init" event).
 function handleStreamEvent(entry, evt){
   if (!evt || typeof evt !== "object") return;
+  const turn = lastTurn(entry);
 
   if (evt.type === "assistant" && evt.message && Array.isArray(evt.message.content)) {
     for (const block of evt.message.content) {
       if (!block) continue;
       if (block.type === "text" && block.text) {
         entry.output += block.text;
+        addTextStep(turn, block.text);
       } else if (block.type === "tool_use") {
         entry.output += `\n\n$ ${block.name || "tool"}${formatToolInput(block.input)}\n`;
+        addToolStep(turn, block);
       }
     }
   } else if (evt.type === "user" && evt.message && Array.isArray(evt.message.content)) {
@@ -96,13 +131,14 @@ function handleStreamEvent(entry, evt){
       if (block && block.type === "tool_result") {
         const text = toolResultText(block.content);
         if (text) entry.output += indentBlock(text) + "\n";
+        addToolResult(turn, block, text);
       }
     }
   } else if (evt.type === "result") {
     entry.result = typeof evt.result === "string" ? evt.result : (entry.result || "");
     // The newest turn is the one this process is answering (see startRun/
     // continueRun) -- its reply is what the Agent tab's chat history shows.
-    if (entry.turns && entry.turns.length) entry.turns[entry.turns.length - 1].result = entry.result;
+    if (turn) turn.result = entry.result;
     // If nothing rendered as running commentary (e.g. the agent answered in
     // one shot with no tool calls), fall back to showing the final result
     // in the terminal panel too rather than leaving it blank.
@@ -176,24 +212,28 @@ async function loadExternalSession(sessionId){
       const content = evt.message.content;
       if (typeof content === "string") {
         output += `> ${content}\n\n`;
-        turns.push({ prompt: content, result: "" });
+        turns.push({ prompt: content, result: "", steps: [] });
       } else if (Array.isArray(content)) {
         for (const block of content) {
           if (block && block.type === "tool_result") {
             const text = toolResultText(block.content);
             if (text) output += indentBlock(text) + "\n";
+            addToolResult(turns[turns.length - 1], block, text);
           }
         }
       }
     } else if (evt.type === "assistant" && evt.message && Array.isArray(evt.message.content)) {
       let msgText = "";
+      const turn = turns[turns.length - 1];
       for (const block of evt.message.content) {
         if (!block) continue;
         if (block.type === "text" && block.text) {
           output += block.text;
           msgText += block.text;
+          addTextStep(turn, block.text);
         } else if (block.type === "tool_use") {
           output += `\n\n$ ${block.name || "tool"}${formatToolInput(block.input)}\n`;
+          addToolStep(turn, block);
         }
       }
       if (msgText.trim()) {
@@ -309,7 +349,7 @@ function spawnClaude(entry, userId, runId, args, cwd, prompt){
 // `claude --resume` for the interactive picker, which will list it among
 // recent sessions since it's a real persisted session like any other.
 function startRun(userId, runId, prompt, cwd){
-  const entry = { userId, output: "", result: "", turns: [{ prompt, result: "" }], status: "running", child: null };
+  const entry = { userId, output: "", result: "", turns: [{ prompt, result: "", steps: [] }], status: "running", child: null };
   liveRuns.set(runId, entry);
   spawnClaude(entry, userId, runId, [
     "-p",
@@ -342,7 +382,7 @@ async function continueRun(userId, runId, followupPrompt, cwd){
     userId,
     output: priorOutput + (priorOutput ? "\n\n" : "") + `> ${followupPrompt}\n`,
     result: (stored && stored.result) || "",
-    turns: priorTurns.concat([{ prompt: followupPrompt, result: "" }]),
+    turns: priorTurns.concat([{ prompt: followupPrompt, result: "", steps: [] }]),
     status: "running",
     child: null
   };
