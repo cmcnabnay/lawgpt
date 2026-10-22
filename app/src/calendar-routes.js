@@ -51,7 +51,7 @@ router.post("/events", async (req, res) => {
 // guessed wrong (or fill in one it didn't extract), without waiting on a
 // re-sync.
 router.put("/events/:id", async (req, res) => {
-  const { title, date, time, hasTime, description, location } = req.body || {};
+  const { title, date, time, hasTime, description, location, rsvpDone } = req.body || {};
   const patch = {};
   if (typeof date === "string" && !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
     return res.status(400).json({ error: { message: "A valid date (YYYY-MM-DD) is required." } });
@@ -67,6 +67,9 @@ router.put("/events/:id", async (req, res) => {
   if (hasTime === false) patch.time = null;
   if (typeof description === "string") patch.description = description;
   if (typeof location === "string") patch.location = location;
+  // Set from the RSVP pill in the event popup once the user confirms they
+  // submitted the event's RSVP form.
+  if (typeof rsvpDone === "boolean") patch.rsvpDone = rsvpDone;
 
   const updated = await calendarStore.updateEvent(req.session.userId, req.params.id, patch);
   if (!updated) return res.status(404).json({ error: { message: "No calendar event with that id." } });

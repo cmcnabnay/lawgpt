@@ -2060,6 +2060,19 @@ pre code {
   border-radius:10px;
   padding:2px 9px;
 }
+.calendar-event-tag-rsvp{ background:none; cursor:pointer; }
+.calendar-event-tag-rsvp:hover{ color:var(--parchment); border-color:var(--brass); }
+.calendar-event-tag-rsvp.done{ color:#8fbf8f; border-color:#5f8a5f; }
+.calendar-rsvp-confirm{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  gap:8px;
+  margin:-2px 0 12px;
+  font-size:12.5px;
+  color:var(--text-light);
+}
+.calendar-rsvp-confirm .btn-secondary{ font-size:11px; padding:3px 10px; }
 .calendar-event-source{ font-size:11px; color:var(--text-muted); }
 #calendarEventModalActions{ margin-top:18px; }
 .calendar-empty{ color:var(--text-muted); font-size:12px; }
@@ -8547,7 +8560,7 @@ async function openEmailEventsPopup(msg){
     const whenLabel = calendarDayKey(ev.date) + (ev.hasTime ? " · " + formatEventTime(hour, minute) : " · All day");
     const color = CALENDAR_COURSE_COLORS[ev.courseFolder] || CALENDAR_OTHER_COLOR;
     const tags = [];
-    if (calendarEventNeedsRsvp(ev)) tags.push("RSVP required");
+    if (calendarEventNeedsRsvp(ev)) tags.push(calendarRsvpTagLabel(ev));
     if (calendarEventHasLunch(ev)) tags.push("Lunch provided");
     row.innerHTML =
       `<div class="sync-result-row-title">${escapeHtml(ev.title || "(untitled event)")}</div>` +
@@ -8840,6 +8853,35 @@ function calendarEventNeedsRsvp(ev){
   if (typeof ev.rsvp === "boolean") return ev.rsvp;
   return /\b(rsvps?|register|registration|sign[- ]?up)\b/i.test(calendarEventFallbackText(ev));
 }
+function calendarRsvpTagLabel(ev){
+  return ev.rsvpDone ? "\u2713 RSVP" : "RSVP required";
+}
+
+// The link the RSVP pill opens. rsvpUrl comes from calendar-extract.js;
+// events extracted before that field existed fall back to an RSVP-looking
+// link in the source email -- only when that email is about just this event
+// (same two-event rule as calendarEventFallbackText), so a digest can't hand
+// one event another event's form.
+function calendarEventRsvpUrl(ev){
+  if (ev.rsvpUrl) return ev.rsvpUrl;
+  if (!ev.sourceMessageId) return null;
+  const siblings = calendarEventsCache.filter(e => String(e.sourceMessageId) === String(ev.sourceMessageId)).length;
+  const source = emailMessagesCache.find(m => String(m.id) === String(ev.sourceMessageId));
+  if (!source || siblings > 2) return null;
+  const body = source.body || "";
+  const urlRe = /https?:\/\/[^\s<>"')\]]+/g;
+  let match;
+  while ((match = urlRe.exec(body))){
+    const context = body.slice(Math.max(0, match.index - 80), match.index) + match[0];
+    if (/rsvp|regist|sign[- ]?up|ticket|eventbrite|forms\.|\/forms?\//i.test(context)) return match[0].replace(/[.,;:]+$/, "");
+  }
+  return null;
+}
+
+// Which event's popup is showing the "Did you submit the RSVP?" prompt --
+// set when its RSVP pill is clicked. The RSVP form lives on another site,
+// so the app can't see the submission itself; the user confirms it here.
+let calendarRsvpConfirmFor = null;
 
 // One color per course; everything not tied to a course shares one.
 const CALENDAR_COURSE_COLORS = {
@@ -9018,6 +9060,7 @@ function openCalendarEvent(id, returnToMoreEventIds){
 
 function closeCalendarEventPanel(){
   calendarSelectedEventId = null;
+  calendarRsvpConfirmFor = null;
   calendarEditingDateTime = false;
   document.getElementById("calendarEventOverlay").style.display = "none";
 
@@ -9120,19 +9163,20 @@ function renderCalendarEventModal(){
   });
   body.appendChild(locationEl);
 
-  const tags = [];
-  if (calendarEventHasLunch(ev)) tags.push("Lunch provided");
-  if (calendarEventNeedsRsvp(ev)) tags.push("RSVP required");
-  if (tags.length){
+  const hasLunch = calendarEventHasLunch(ev);
+  const needsRsvp = calendarEventNeedsRsvp(ev);
+  if (hasLunch || needsRsvp){
     const tagRow = document.createElement("div");
     tagRow.className = "calendar-event-tags";
-    tags.forEach(label => {
+    if (hasLunch){
       const tag = document.createElement("span");
       tag.className = "calendar-event-tag";
-      tag.textContent = label;
+      tag.textContent = "Lunch provided";
       tagRow.appendChild(tag);
-    });
+    }
+    if (needsRsvp) tagRow.appendChild(buildCalendarRsvpPill(ev));
     body.appendChild(tagRow);
+    if (needsRsvp && String(calendarRsvpConfirmFor) === String(ev.id)) body.appendChild(buildCalendarRsvpConfirm(ev));
   }
 
   if (ev.description){
@@ -9180,6 +9224,50 @@ function renderCalendarEventModal(){
   closeBtn.textContent = "Close";
   closeBtn.addEventListener("click", closeCalendarEventPanel);
   actions.appendChild(closeBtn);
+}
+
+// The RSVP pill opens the event's RSVP link in a new tab and asks, back in
+// the popup, whether the form was submitted -- "Yes" checks the pill off
+// ("\u2713 RSVP"). With no link on record it opens the source email instead,
+// so the link can still be found there.
+function buildCalendarRsvpPill(ev){
+  const pill = document.createElement("button");
+  pill.type = "button";
+  pill.className = "calendar-event-tag calendar-event-tag-rsvp" + (ev.rsvpDone ? " done" : "");
+  pill.textContent = calendarRsvpTagLabel(ev);
+  const url = calendarEventRsvpUrl(ev);
+  pill.title = url ? "Open the RSVP link" : "No RSVP link found -- open the email to find it";
+  pill.addEventListener("click", () => {
+    if (!url){
+      if (ev.sourceMessageId) openCalendarEventSource(ev.sourceMessageId);
+      return;
+    }
+    window.open(url, "_blank", "noopener");
+    calendarRsvpConfirmFor = ev.id;
+    renderCalendarEventModal();
+  });
+  return pill;
+}
+
+function buildCalendarRsvpConfirm(ev){
+  const row = document.createElement("div");
+  row.className = "calendar-rsvp-confirm";
+  const text = document.createElement("span");
+  text.textContent = "Did you submit the RSVP?";
+  row.appendChild(text);
+  [[true, "Yes, submitted"], [false, "Not yet"]].forEach(([done, label]) => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "btn-secondary";
+    btn.textContent = label;
+    btn.addEventListener("click", async () => {
+      calendarRsvpConfirmFor = null;
+      if (!!ev.rsvpDone !== done) await saveCalendarEventEdit(ev.id, { rsvpDone: done });
+      renderCalendarEventModal();
+    });
+    row.appendChild(btn);
+  });
+  return row;
 }
 
 // The "Edit date/time" mode of the event popup -- date + time inputs (same

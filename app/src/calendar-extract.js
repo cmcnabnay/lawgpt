@@ -61,6 +61,7 @@ For each real event found, output an object with:
 - "description": one sentence, quoting or paraphrasing the relevant part of the email
 - "lunch": see LUNCH_RSVP_RULES below
 - "rsvp": see LUNCH_RSVP_RULES below
+- "rsvpUrl": if "rsvp" is true and that event's own block gives an RSVP/registration/sign-up/tickets link, that link's full URL copied exactly (http/https only) -- otherwise null. Same rule as above: never take a link from a different event's block.
 
 ${LUNCH_RSVP_RULES}
 
@@ -209,6 +210,9 @@ async function extractCalendarEventsForMessage(message) {
       description: (typeof item.description === "string" ? item.description : "").slice(0, 300),
       lunch: item.lunch === true,
       rsvp: item.rsvp === true,
+      rsvpUrl: item.rsvp === true && typeof item.rsvpUrl === "string" && /^https?:\/\//i.test(item.rsvpUrl.trim())
+        ? item.rsvpUrl.trim().slice(0, 2000)
+        : null,
       sourceMessageId: message.id,
       sourceSubject: subject,
       courseFolder: message.courseFolder || "uncategorized",
