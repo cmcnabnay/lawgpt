@@ -111,7 +111,8 @@ const OPENROUTER_MODELS = [
   { id: "xingchen-agi/xing4.0-29b-a4b:free", note: "often rate-limited" },
   { id: "nvidia/nemotron-3.5-super-vl:free", note: "untested" },
   { id: "thinkingmachines/inkling-small:free", note: "failing (HTTP 403)" },
-  { id: "thinkingmachines/inkling:free", note: "failing (HTTP 403)" }
+  { id: "thinkingmachines/inkling:free", note: "failing (HTTP 403)" },
+  { id: "recursive/flint-v1.0:free", note: "untested" }
 ];
 const OPENROUTER_MODEL_IDS = new Set(OPENROUTER_MODELS.map(m => m.id));
 
