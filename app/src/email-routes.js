@@ -653,6 +653,52 @@ router.get("/messages", async (req, res) => {
   res.json({ messages: await emailStore.getAll(userId), configured: !tokenResult.error });
 });
 
+// The email's flyer, for a calendar event's RSVP pill when no RSVP link was
+// found -- e.g. a flyer whose only registration link is a QR code. Its
+// stored PDF attachment if it has one (see attachment-links.js), otherwise
+// the largest image attached to it in the mailbox. Images are never saved
+// at sync (isDocumentAttachment skips them, so signature logos don't become
+// documents), so that one is fetched from Graph on demand. Images under
+// MIN_FLYER_IMAGE_BYTES are taken for logos, not flyers. 404 when there's
+// neither.
+const MIN_FLYER_IMAGE_BYTES = 30 * 1024;
+
+router.get("/messages/:id/flyer", async (req, res) => {
+  const userId = req.session.userId;
+  const message = await emailStore.getMessage(userId, req.params.id);
+  if (!message) return res.status(404).json({ error: { message: "No synced email with that id." } });
+
+  for (const id of message.documentIds || []) {
+    const document = await userDocumentStore.getDocument(userId, id);
+    if (!document || !document.fileBuffer) continue;
+    if (!/pdf/i.test(document.contentType || "") && !/\.pdf$/i.test(document.fileName || "")) continue;
+    res.set("Content-Type", "application/pdf");
+    res.set("Content-Disposition", "inline");
+    return res.send(document.fileBuffer);
+  }
+
+  const tokenResult = await getAccessTokenSilent(userId);
+  if (tokenResult.error) return res.status(401).json({ error: { message: tokenResult.error } });
+  try {
+    const listUrl = `${GRAPH_ROOT}/me/messages/${encodeURIComponent(message.id)}/attachments?$select=id,name,contentType,size`;
+    const attachments = (await graphGet(tokenResult.accessToken, listUrl)).value || [];
+    const flyer = attachments
+      .filter(a => a["@odata.type"] === "#microsoft.graph.fileAttachment" && /^image\//i.test(a.contentType || "") && a.size >= MIN_FLYER_IMAGE_BYTES)
+      .sort((a, b) => b.size - a.size)[0];
+    if (!flyer) return res.status(404).json({ error: { message: "This email has no flyer attached." } });
+
+    const fileRes = await fetch(`${GRAPH_ROOT}/me/messages/${encodeURIComponent(message.id)}/attachments/${encodeURIComponent(flyer.id)}/$value`, {
+      headers: { Authorization: `Bearer ${tokenResult.accessToken}` }
+    });
+    if (!fileRes.ok) throw new Error(`Graph returned ${fileRes.status}`);
+    res.set("Content-Type", flyer.contentType);
+    res.set("Content-Disposition", "inline");
+    res.send(Buffer.from(await fileRes.arrayBuffer()));
+  } catch (err) {
+    res.status(502).json({ error: { message: `Couldn't load the flyer from Outlook: ${err.message}` } });
+  }
+});
+
 // Deletes an email from both the actual Outlook mailbox and this app's
 // local store -- a destructive, cross-system action, so the frontend
 // confirms with the user before ever calling this.
