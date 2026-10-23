@@ -107,7 +107,6 @@ const OPENROUTER_MODELS = [
   { id: "nvidia/nemotron-3-ultra-550b-a55b:free", note: "reliable" },
   { id: "nvidia/nemotron-3-super-120b-a12b:free", note: "reliable" }, // this is what "openrouter/free" was actually resolving to
   { id: "nvidia/nemotron-3.5-content-safety:free", note: "untested -- built as a moderation/safety classifier, may behave oddly as a general chat model" },
-  { id: "minimax/minimax-m3.1-flash:free", note: "untested" },
   { id: "xingchen-agi/xing4.0-29b-a4b:free", note: "often rate-limited" },
   { id: "nvidia/nemotron-3.5-super-vl:free", note: "untested" },
   { id: "thinkingmachines/inkling-small:free", note: "failing (HTTP 403)" },
