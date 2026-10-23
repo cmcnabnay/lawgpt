@@ -11,7 +11,7 @@ const router = express.Router();
 const calendarStore = require("./calendar-store");
 const calendarBackfill = require("./calendar-backfill");
 const emailStore = require("./email-store");
-const { findRsvpUrlForEvent } = require("./calendar-extract");
+const { findRsvpUrlsForMessage } = require("./calendar-extract");
 
 function requireLogin(req, res, next) {
   if (!req.session || !req.session.userId) {
@@ -22,7 +22,13 @@ function requireLogin(req, res, next) {
 router.use(requireLogin);
 
 router.get("/events", async (req, res) => {
-  res.json({ events: await calendarStore.getAll(req.session.userId) });
+  const events = await calendarStore.getAll(req.session.userId);
+  // Fill in RSVP links for older events in the background (see
+  // calendar-backfill.js's startRsvpUrlBackfill) -- not awaited.
+  if (events.some(ev => ev.rsvp === true && !ev.rsvpUrl && !ev.rsvpUrlChecked)) {
+    calendarBackfill.startRsvpUrlBackfill(req.session.userId).catch(() => {});
+  }
+  res.json({ events, rsvpUrlBackfillRunning: calendarBackfill.isRsvpUrlBackfillRunning(req.session.userId) });
 });
 
 // Lets the user add an event by hand (as opposed to one extracted from a
@@ -79,7 +85,8 @@ router.put("/events/:id", async (req, res) => {
 });
 
 // Looks up (once) the RSVP link for an event that doesn't have one on
-// record -- see findRsvpUrlForEvent. The answer is saved either way
+// record yet -- the fallback for a pill clicked before the background
+// startRsvpUrlBackfill reached its event. See findRsvpUrlsForMessage. The answer is saved either way
 // (rsvpUrlChecked), so a later click on the RSVP pill doesn't re-ask Claude.
 router.post("/events/:id/rsvp-url", async (req, res) => {
   const userId = req.session.userId;
@@ -92,7 +99,7 @@ router.post("/events/:id/rsvp-url", async (req, res) => {
     return res.json(await calendarStore.updateEvent(userId, event.id, { rsvpUrl: null, rsvpUrlChecked: true }));
   }
   try {
-    const rsvpUrl = await findRsvpUrlForEvent(message, event);
+    const rsvpUrl = (await findRsvpUrlsForMessage(message, [event])).get(event.id) || null;
     res.json(await calendarStore.updateEvent(userId, event.id, { rsvpUrl, rsvpUrlChecked: true }));
   } catch (err) {
     res.status(502).json({ error: { message: err.message } });

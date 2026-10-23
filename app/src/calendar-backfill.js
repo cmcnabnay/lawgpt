@@ -20,7 +20,7 @@
 
 const emailStore = require("./email-store");
 const calendarStore = require("./calendar-store");
-const { extractCalendarEventsForMessage } = require("./calendar-extract");
+const { extractCalendarEventsForMessage, findRsvpUrlsForMessage } = require("./calendar-extract");
 
 const CONCURRENCY = 3;
 
@@ -149,4 +149,63 @@ async function runJob(userId, messages, job) {
   job.finishedAt = new Date().toISOString();
 }
 
-module.exports = { startBackfill, startForceRecheck, getStatus };
+// Fills in rsvpUrl for RSVP events extracted before calendar-extract.js
+// saved links -- one CLI call per source email, covering all of that
+// email's events (see findRsvpUrlsForMessage), so clicking an RSVP pill
+// opens its link right away instead of looking it up on the spot. Started
+// automatically from GET /events (see calendar-routes.js); quietly does
+// nothing when every RSVP event already has its link or has been checked.
+// Each event is marked rsvpUrlChecked either way, so a failed lookup is the
+// only thing ever retried.
+const rsvpUrlJobs = new Set();
+
+async function startRsvpUrlBackfill(userId) {
+  if (rsvpUrlJobs.has(userId)) return;
+  rsvpUrlJobs.add(userId);
+  try {
+    const pending = (await calendarStore.getAll(userId))
+      .filter(ev => ev.rsvp === true && !ev.rsvpUrl && !ev.rsvpUrlChecked && ev.sourceMessageId);
+    if (!pending.length) return;
+
+    const byMessage = new Map();
+    for (const ev of pending) {
+      const key = String(ev.sourceMessageId);
+      if (!byMessage.has(key)) byMessage.set(key, []);
+      byMessage.get(key).push(ev);
+    }
+    const groups = Array.from(byMessage.entries());
+    let index = 0;
+    // Same reason as runJob's serializeWrite: each store write is a
+    // load-mutate-save of one JSONB column.
+    let writeQueue = Promise.resolve();
+
+    async function worker() {
+      while (index < groups.length) {
+        const [messageId, events] = groups[index++];
+        const message = await emailStore.getMessage(userId, messageId);
+        let urls;
+        try {
+          urls = message ? await findRsvpUrlsForMessage(message, events) : new Map(events.map(ev => [ev.id, null]));
+        } catch (err) {
+          continue; // left unchecked, so the next run retries it
+        }
+        writeQueue = writeQueue.then(async () => {
+          for (const ev of events) {
+            await calendarStore.updateEvent(userId, ev.id, { rsvpUrl: urls.get(ev.id) || null, rsvpUrlChecked: true });
+          }
+        }).catch(() => {});
+      }
+    }
+
+    await Promise.all(Array.from({ length: Math.min(CONCURRENCY, groups.length) }, worker));
+    await writeQueue;
+  } finally {
+    rsvpUrlJobs.delete(userId);
+  }
+}
+
+function isRsvpUrlBackfillRunning(userId) {
+  return rsvpUrlJobs.has(userId);
+}
+
+module.exports = { startBackfill, startForceRecheck, getStatus, startRsvpUrlBackfill, isRsvpUrlBackfillRunning };

@@ -2060,8 +2060,7 @@ pre code {
   border-radius:10px;
   padding:2px 9px;
 }
-/* A <button> so it's clickable, but styled exactly like the Lunch pill. */
-.calendar-event-tag-rsvp{ background:none; margin:0; line-height:inherit; cursor:pointer; }
+.calendar-event-tag-rsvp{ cursor:pointer; }
 .calendar-rsvp-confirm{
   display:flex;
   flex-wrap:wrap;
@@ -8798,6 +8797,7 @@ async function refreshCalendarEvents(){
     const data = await res.json();
     calendarEventsCache = data.events || [];
     renderCalendarWeek();
+    watchRsvpUrlBackfill(data);
   } catch(e){
     columns.innerHTML = `<div class="calendar-empty" style="padding:12px;">Couldn't load calendar events: ${escapeHtml(e.message)}</div>`;
   }
@@ -8826,7 +8826,19 @@ async function refreshCalendarEventsQuiet(){
     const data = await res.json();
     calendarEventsCache = data.events || [];
     renderCalendarWeek();
+    watchRsvpUrlBackfill(data);
   } catch(e){ /* keep showing whatever was already rendered */ }
+}
+
+// While the server is filling in RSVP links for older events (see
+// calendar-backfill.js's startRsvpUrlBackfill), re-fetch quietly every few
+// seconds so their pills pick up the links -- capped, so a lookup that
+// keeps failing can't keep this polling forever.
+let rsvpUrlBackfillPolls = 0;
+function watchRsvpUrlBackfill(data){
+  if (!data || !data.rsvpUrlBackfillRunning || rsvpUrlBackfillPolls >= 40) return;
+  rsvpUrlBackfillPolls++;
+  setTimeout(refreshCalendarEventsQuiet, 5000);
 }
 
 // lunch/rsvp come from calendar-extract.js. Events extracted before those
@@ -9232,8 +9244,7 @@ function renderCalendarEventModal(){
 // find it (POST /events/:id/rsvp-url); only if that finds nothing does the
 // pill fall back to opening the source email.
 function buildCalendarRsvpPill(ev){
-  const pill = document.createElement("button");
-  pill.type = "button";
+  const pill = document.createElement("span");
   pill.className = "calendar-event-tag calendar-event-tag-rsvp";
   pill.textContent = calendarRsvpTagLabel(ev);
   pill.title = "Open the RSVP link";
@@ -9250,6 +9261,7 @@ function buildCalendarRsvpPill(ev){
       openCalendarEventSource(ev.sourceMessageId);
       return;
     }
+    if (pill.dataset.busy) return; // a lookup from an earlier click is still running
     // Opened now, while this is still the click itself -- a tab opened
     // after the lookup's await would be caught by the popup blocker.
     const tab = window.open("", "_blank");
@@ -9258,7 +9270,7 @@ function buildCalendarRsvpPill(ev){
       tab.document.title = "Finding RSVP link\u2026";
       tab.document.body.textContent = "Finding the RSVP link\u2026";
     }
-    pill.disabled = true;
+    pill.dataset.busy = "1";
     let found = null;
     try{
       const res = await fetch(PROXY_ORIGIN + "/api/calendar/events/" + encodeURIComponent(ev.id) + "/rsvp-url", { method: "POST" });
@@ -9269,7 +9281,7 @@ function buildCalendarRsvpPill(ev){
         found = data.rsvpUrl || null;
       }
     } catch(e){ /* fall back to the email below */ }
-    pill.disabled = false;
+    delete pill.dataset.busy;
     if (found){
       if (tab) tab.location.href = found; else window.open(found, "_blank", "noopener");
       calendarRsvpConfirmFor = ev.id;

@@ -262,21 +262,30 @@ ${body}`;
   return flags;
 }
 
-// Finds one already-extracted event's RSVP link in its source email -- for
+// Finds the RSVP links for events already extracted from one email -- for
 // events extracted before rsvpUrl existed, especially ones from digest
 // emails ("SBA x White & Case", "SBA x Bracewell", ...) where each event has
-// its own link and the frontend can't safely guess which is which. Returns
-// the URL, or null when the event's own section has none. The URL must
-// appear verbatim in the email, so a made-up link can never come back.
-// Throws on a failed/timed-out CLI call.
-async function findRsvpUrlForEvent(message, event) {
+// its own link and the frontend can't safely guess which is which. One CLI
+// call covers every listed event. Returns a Map of event id -> URL or null
+// (null when that event's own section has no link). A URL must appear
+// verbatim in the email, so a made-up link can never come back. Throws on a
+// failed/timed-out CLI call.
+async function findRsvpUrlsForMessage(message, events) {
   const body = (message.body || "").slice(0, MAX_BODY_CHARS_FOR_EXTRACTION);
-  const prompt = `You are given one email sent to a law student and one calendar event that was extracted from it. The email may be a digest listing many events, each with its own section and its own links. Find the RSVP / registration / sign-up / tickets link for THIS event only, using only this event's own section of the email -- never a link from a different event's section, and never a general website/newsletter link.
+  const list = events.map((ev, i) => ({
+    ref: i + 1,
+    title: ev.title,
+    date: ev.date,
+    time: ev.time || null,
+    location: ev.location || "",
+    description: ev.description || ""
+  }));
+  const prompt = `You are given one email sent to a law student and a list of calendar events that were already extracted from it. The email may be a digest listing many events, each with its own section and its own links. For EACH listed event, find the RSVP / registration / sign-up / tickets link for that event only, using only that event's own section of the email -- never a link from a different event's section, and never a general website/newsletter link.
 
-Respond with ONLY a JSON array holding one object, in the form [{"rsvpUrl": "<the full URL copied exactly>"}] or [{"rsvpUrl": null}] if this event's section has no such link -- no markdown code fences, no prose before or after.
+Respond with ONLY a JSON array with one object per listed event, in the form {"ref": <the event's ref number>, "rsvpUrl": "<the full URL copied exactly>"} or {"ref": <ref>, "rsvpUrl": null} if that event's section has no such link -- no markdown code fences, no prose before or after.
 
-EVENT:
-${JSON.stringify({ title: event.title, date: event.date, time: event.time || null, location: event.location || "", description: event.description || "" }, null, 1)}
+EVENTS:
+${JSON.stringify(list, null, 1)}
 
 EMAIL:
 Subject: ${message.subject || "(no subject)"}
@@ -286,10 +295,13 @@ ${body}`;
   const stdout = await runClaudeExtraction(prompt, crypto.randomUUID());
   if (stdout === null) throw new Error("Claude Code RSVP link lookup failed or timed out.");
 
-  const item = parseEventsFromClaudeOutput(stdout)[0];
-  const url = item && typeof item.rsvpUrl === "string" ? item.rsvpUrl.trim() : "";
-  if (!/^https?:\/\//i.test(url) || !body.includes(url)) return null;
-  return url.slice(0, 2000);
+  const urls = new Map(events.map(ev => [ev.id, null]));
+  for (const item of parseEventsFromClaudeOutput(stdout)) {
+    const ev = item && events[Number(item.ref) - 1];
+    const url = ev && typeof item.rsvpUrl === "string" ? item.rsvpUrl.trim() : "";
+    if (/^https?:\/\//i.test(url) && body.includes(url)) urls.set(ev.id, url.slice(0, 2000));
+  }
+  return urls;
 }
 
-module.exports = { extractCalendarEventsForMessage, extractEventFlagsForMessage, findRsvpUrlForEvent };
+module.exports = { extractCalendarEventsForMessage, extractEventFlagsForMessage, findRsvpUrlsForMessage };
