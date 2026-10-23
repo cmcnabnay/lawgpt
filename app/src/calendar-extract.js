@@ -262,4 +262,34 @@ ${body}`;
   return flags;
 }
 
-module.exports = { extractCalendarEventsForMessage, extractEventFlagsForMessage };
+// Finds one already-extracted event's RSVP link in its source email -- for
+// events extracted before rsvpUrl existed, especially ones from digest
+// emails ("SBA x White & Case", "SBA x Bracewell", ...) where each event has
+// its own link and the frontend can't safely guess which is which. Returns
+// the URL, or null when the event's own section has none. The URL must
+// appear verbatim in the email, so a made-up link can never come back.
+// Throws on a failed/timed-out CLI call.
+async function findRsvpUrlForEvent(message, event) {
+  const body = (message.body || "").slice(0, MAX_BODY_CHARS_FOR_EXTRACTION);
+  const prompt = `You are given one email sent to a law student and one calendar event that was extracted from it. The email may be a digest listing many events, each with its own section and its own links. Find the RSVP / registration / sign-up / tickets link for THIS event only, using only this event's own section of the email -- never a link from a different event's section, and never a general website/newsletter link.
+
+Respond with ONLY a JSON array holding one object, in the form [{"rsvpUrl": "<the full URL copied exactly>"}] or [{"rsvpUrl": null}] if this event's section has no such link -- no markdown code fences, no prose before or after.
+
+EVENT:
+${JSON.stringify({ title: event.title, date: event.date, time: event.time || null, location: event.location || "", description: event.description || "" }, null, 1)}
+
+EMAIL:
+Subject: ${message.subject || "(no subject)"}
+Body:
+${body}`;
+
+  const stdout = await runClaudeExtraction(prompt, crypto.randomUUID());
+  if (stdout === null) throw new Error("Claude Code RSVP link lookup failed or timed out.");
+
+  const item = parseEventsFromClaudeOutput(stdout)[0];
+  const url = item && typeof item.rsvpUrl === "string" ? item.rsvpUrl.trim() : "";
+  if (!/^https?:\/\//i.test(url) || !body.includes(url)) return null;
+  return url.slice(0, 2000);
+}
+
+module.exports = { extractCalendarEventsForMessage, extractEventFlagsForMessage, findRsvpUrlForEvent };

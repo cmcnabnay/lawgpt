@@ -2060,9 +2060,8 @@ pre code {
   border-radius:10px;
   padding:2px 9px;
 }
-.calendar-event-tag-rsvp{ background:none; cursor:pointer; }
-.calendar-event-tag-rsvp:hover{ color:var(--parchment); border-color:var(--brass); }
-.calendar-event-tag-rsvp.done{ color:#8fbf8f; border-color:#5f8a5f; }
+/* A <button> so it's clickable, but styled exactly like the Lunch pill. */
+.calendar-event-tag-rsvp{ background:none; margin:0; line-height:inherit; cursor:pointer; }
 .calendar-rsvp-confirm{
   display:flex;
   flex-wrap:wrap;
@@ -9228,23 +9227,57 @@ function renderCalendarEventModal(){
 
 // The RSVP pill opens the event's RSVP link in a new tab and asks, back in
 // the popup, whether the form was submitted -- "Yes" checks the pill off
-// ("\u2713 RSVP"). With no link on record it opens the source email instead,
-// so the link can still be found there.
+// ("\u2713 RSVP"). Events with no link on record (extracted before rsvpUrl
+// existed, e.g. one of several events in a digest email) ask the server to
+// find it (POST /events/:id/rsvp-url); only if that finds nothing does the
+// pill fall back to opening the source email.
 function buildCalendarRsvpPill(ev){
   const pill = document.createElement("button");
   pill.type = "button";
-  pill.className = "calendar-event-tag calendar-event-tag-rsvp" + (ev.rsvpDone ? " done" : "");
+  pill.className = "calendar-event-tag calendar-event-tag-rsvp";
   pill.textContent = calendarRsvpTagLabel(ev);
-  const url = calendarEventRsvpUrl(ev);
-  pill.title = url ? "Open the RSVP link" : "No RSVP link found -- open the email to find it";
-  pill.addEventListener("click", () => {
-    if (!url){
-      if (ev.sourceMessageId) openCalendarEventSource(ev.sourceMessageId);
+  pill.title = "Open the RSVP link";
+  pill.addEventListener("click", async () => {
+    const url = calendarEventRsvpUrl(ev);
+    if (url){
+      window.open(url, "_blank", "noopener");
+      calendarRsvpConfirmFor = ev.id;
+      renderCalendarEventModal();
       return;
     }
-    window.open(url, "_blank", "noopener");
-    calendarRsvpConfirmFor = ev.id;
-    renderCalendarEventModal();
+    if (!ev.sourceMessageId) return;
+    if (ev.rsvpUrlChecked){
+      openCalendarEventSource(ev.sourceMessageId);
+      return;
+    }
+    // Opened now, while this is still the click itself -- a tab opened
+    // after the lookup's await would be caught by the popup blocker.
+    const tab = window.open("", "_blank");
+    if (tab){
+      tab.opener = null;
+      tab.document.title = "Finding RSVP link\u2026";
+      tab.document.body.textContent = "Finding the RSVP link\u2026";
+    }
+    pill.disabled = true;
+    let found = null;
+    try{
+      const res = await fetch(PROXY_ORIGIN + "/api/calendar/events/" + encodeURIComponent(ev.id) + "/rsvp-url", { method: "POST" });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok){
+        const idx = calendarEventsCache.findIndex(e => String(e.id) === String(ev.id));
+        if (idx !== -1) calendarEventsCache[idx] = { ...calendarEventsCache[idx], ...data };
+        found = data.rsvpUrl || null;
+      }
+    } catch(e){ /* fall back to the email below */ }
+    pill.disabled = false;
+    if (found){
+      if (tab) tab.location.href = found; else window.open(found, "_blank", "noopener");
+      calendarRsvpConfirmFor = ev.id;
+      renderCalendarEventModal();
+    } else {
+      if (tab) tab.close();
+      openCalendarEventSource(ev.sourceMessageId);
+    }
   });
   return pill;
 }

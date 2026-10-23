@@ -10,6 +10,8 @@ const router = express.Router();
 
 const calendarStore = require("./calendar-store");
 const calendarBackfill = require("./calendar-backfill");
+const emailStore = require("./email-store");
+const { findRsvpUrlForEvent } = require("./calendar-extract");
 
 function requireLogin(req, res, next) {
   if (!req.session || !req.session.userId) {
@@ -74,6 +76,27 @@ router.put("/events/:id", async (req, res) => {
   const updated = await calendarStore.updateEvent(req.session.userId, req.params.id, patch);
   if (!updated) return res.status(404).json({ error: { message: "No calendar event with that id." } });
   res.json(updated);
+});
+
+// Looks up (once) the RSVP link for an event that doesn't have one on
+// record -- see findRsvpUrlForEvent. The answer is saved either way
+// (rsvpUrlChecked), so a later click on the RSVP pill doesn't re-ask Claude.
+router.post("/events/:id/rsvp-url", async (req, res) => {
+  const userId = req.session.userId;
+  const event = (await calendarStore.getAll(userId)).find(e => String(e.id) === String(req.params.id));
+  if (!event) return res.status(404).json({ error: { message: "No calendar event with that id." } });
+  if (event.rsvpUrl || event.rsvpUrlChecked) return res.json(event);
+
+  const message = event.sourceMessageId ? await emailStore.getMessage(userId, event.sourceMessageId) : null;
+  if (!message) {
+    return res.json(await calendarStore.updateEvent(userId, event.id, { rsvpUrl: null, rsvpUrlChecked: true }));
+  }
+  try {
+    const rsvpUrl = await findRsvpUrlForEvent(message, event);
+    res.json(await calendarStore.updateEvent(userId, event.id, { rsvpUrl, rsvpUrlChecked: true }));
+  } catch (err) {
+    res.status(502).json({ error: { message: err.message } });
+  }
 });
 
 router.delete("/events/:id", async (req, res) => {
