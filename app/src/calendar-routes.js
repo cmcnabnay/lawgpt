@@ -25,7 +25,7 @@ router.get("/events", async (req, res) => {
   const events = await calendarStore.getAll(req.session.userId);
   // Fill in RSVP links for older events in the background (see
   // calendar-backfill.js's startRsvpUrlBackfill) -- not awaited.
-  if (events.some(ev => ev.rsvp === true && !ev.rsvpUrl && !ev.rsvpUrlChecked)) {
+  if (events.some(calendarBackfill.needsRsvpUrlLookup)) {
     calendarBackfill.startRsvpUrlBackfill(req.session.userId).catch(() => {});
   }
   res.json({ events, rsvpUrlBackfillRunning: calendarBackfill.isRsvpUrlBackfillRunning(req.session.userId) });
@@ -92,7 +92,7 @@ router.post("/events/:id/rsvp-url", async (req, res) => {
   const userId = req.session.userId;
   const event = (await calendarStore.getAll(userId)).find(e => String(e.id) === String(req.params.id));
   if (!event) return res.status(404).json({ error: { message: "No calendar event with that id." } });
-  if (event.rsvpUrl || event.rsvpUrlChecked) return res.json(event);
+  if (!calendarBackfill.needsRsvpUrlLookup(event)) return res.json(event);
 
   const message = event.sourceMessageId ? await emailStore.getMessage(userId, event.sourceMessageId) : null;
   if (!message) {
@@ -102,6 +102,8 @@ router.post("/events/:id/rsvp-url", async (req, res) => {
     const rsvpUrl = (await findRsvpUrlsForMessage(message, [event])).get(event.id) || null;
     res.json(await calendarStore.updateEvent(userId, event.id, { rsvpUrl, rsvpUrlChecked: true }));
   } catch (err) {
+    const attempts = (event.rsvpUrlAttempts || 0) + 1;
+    await calendarStore.updateEvent(userId, event.id, { rsvpUrlAttempts: attempts });
     res.status(502).json({ error: { message: err.message } });
   }
 });

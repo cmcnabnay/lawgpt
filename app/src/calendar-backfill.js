@@ -155,16 +155,23 @@ async function runJob(userId, messages, job) {
 // opens its link right away instead of looking it up on the spot. Started
 // automatically from GET /events (see calendar-routes.js); quietly does
 // nothing when every RSVP event already has its link or has been checked.
-// Each event is marked rsvpUrlChecked either way, so a failed lookup is the
-// only thing ever retried.
+// Each event is marked rsvpUrlChecked once answered; a failed/timed-out
+// lookup is retried on a later calendar load, but only up to
+// MAX_RSVP_URL_ATTEMPTS times, so a lookup that keeps failing can't keep
+// relaunching CLI calls.
 const rsvpUrlJobs = new Set();
+const MAX_RSVP_URL_ATTEMPTS = 2;
+
+function needsRsvpUrlLookup(ev) {
+  return ev.rsvp === true && !ev.rsvpUrl && !ev.rsvpUrlChecked && ev.sourceMessageId &&
+    (ev.rsvpUrlAttempts || 0) < MAX_RSVP_URL_ATTEMPTS;
+}
 
 async function startRsvpUrlBackfill(userId) {
   if (rsvpUrlJobs.has(userId)) return;
   rsvpUrlJobs.add(userId);
   try {
-    const pending = (await calendarStore.getAll(userId))
-      .filter(ev => ev.rsvp === true && !ev.rsvpUrl && !ev.rsvpUrlChecked && ev.sourceMessageId);
+    const pending = (await calendarStore.getAll(userId)).filter(needsRsvpUrlLookup);
     if (!pending.length) return;
 
     const byMessage = new Map();
@@ -187,7 +194,13 @@ async function startRsvpUrlBackfill(userId) {
         try {
           urls = message ? await findRsvpUrlsForMessage(message, events) : new Map(events.map(ev => [ev.id, null]));
         } catch (err) {
-          continue; // left unchecked, so the next run retries it
+          writeQueue = writeQueue.then(async () => {
+            for (const ev of events) {
+              const attempts = (ev.rsvpUrlAttempts || 0) + 1;
+              await calendarStore.updateEvent(userId, ev.id, { rsvpUrlAttempts: attempts, rsvpUrlChecked: attempts >= MAX_RSVP_URL_ATTEMPTS });
+            }
+          }).catch(() => {});
+          continue;
         }
         writeQueue = writeQueue.then(async () => {
           for (const ev of events) {
@@ -197,7 +210,9 @@ async function startRsvpUrlBackfill(userId) {
       }
     }
 
-    await Promise.all(Array.from({ length: Math.min(CONCURRENCY, groups.length) }, worker));
+    // One email at a time -- this runs in the background alongside
+    // everything else, and calendar-extract.js caps CLI calls overall.
+    await worker();
     await writeQueue;
   } finally {
     rsvpUrlJobs.delete(userId);
@@ -208,4 +223,4 @@ function isRsvpUrlBackfillRunning(userId) {
   return rsvpUrlJobs.has(userId);
 }
 
-module.exports = { startBackfill, startForceRecheck, getStatus, startRsvpUrlBackfill, isRsvpUrlBackfillRunning };
+module.exports = { startBackfill, startForceRecheck, getStatus, startRsvpUrlBackfill, isRsvpUrlBackfillRunning, needsRsvpUrlLookup };

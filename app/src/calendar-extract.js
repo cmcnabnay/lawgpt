@@ -25,10 +25,16 @@
 
 const { spawn } = require("child_process");
 const crypto = require("crypto");
+const { tagLinks, linkForTag } = require("./email-links");
 
 const MAX_EVENTS_PER_MESSAGE = 15; // a weekly digest-style newsletter can legitimately list this many separate real events
 const MAX_BODY_CHARS_FOR_EXTRACTION = 8000; // matches MAX_BODY_CHARS in email-routes.js -- the most that's ever actually stored
 const EXTRACTION_TIMEOUT_MS = 45000;
+// Most CLI calls allowed at once across sync, backfills and RSVP-link
+// lookups. Each `claude` process needs ~100MB+, and the production box has
+// under 1GB of RAM and 2 CPUs -- uncapped, overlapping jobs pushed it deep
+// into swap until every call timed out.
+const MAX_CONCURRENT_CLAUDE_CALLS = 2;
 
 // Shared by event extraction and the flag-only pass for existing events
 // (extractEventFlagsForMessage below). Digest emails ("This Week at UHLC")
@@ -61,17 +67,22 @@ For each real event found, output an object with:
 - "description": one sentence, quoting or paraphrasing the relevant part of the email
 - "lunch": see LUNCH_RSVP_RULES below
 - "rsvp": see LUNCH_RSVP_RULES below
-- "rsvpUrl": if "rsvp" is true and that event's own block gives an RSVP/registration/sign-up/tickets link, that link's full URL copied exactly (http/https only) -- otherwise null. Same rule as above: never take a link from a different event's block.
+- "rsvpLink": links in the email are shown as tags like [L3]. If "rsvp" is true and that event's own block gives an RSVP/registration/sign-up/tickets link, that link's tag (e.g. "L3") -- otherwise null. Same rule as above: never take a link from a different event's block, and never a general website/calendar/newsletter link.
 
 ${LUNCH_RSVP_RULES}
 
 Respond with ONLY a JSON array of these objects -- no markdown code fences, no prose before or after. If there are no real calendar-worthy events in this email, respond with exactly: []`;
 
+// Links are swapped for short [L1]-style tags (see email-links.js) before
+// the body is capped, so a link-heavy digest still fits whole and Claude can
+// name an RSVP link by tag instead of copying it out. Returns the prompt and
+// the links in tag order.
 function buildPrompt(message) {
   const subject = message.subject || "(no subject)";
   const received = message.date || "unknown";
-  const body = (message.body || "").slice(0, MAX_BODY_CHARS_FOR_EXTRACTION);
-  return `${EXTRACTION_INSTRUCTIONS}\n\nEMAIL:\nSubject: ${subject}\nReceived: ${received}\nBody:\n${body}`;
+  const { text, links } = tagLinks(message.body || "");
+  const body = text.slice(0, MAX_BODY_CHARS_FOR_EXTRACTION);
+  return { prompt: `${EXTRACTION_INSTRUCTIONS}\n\nEMAIL:\nSubject: ${subject}\nReceived: ${received}\nBody:\n${body}`, links };
 }
 
 // Spawns `claude -p <prompt> --output-format json --session-id <sessionId>`
@@ -81,12 +92,33 @@ function buildPrompt(message) {
 // non-zero exit with no usable output) so the caller can decide how to
 // handle "couldn't extract this one" without the whole sync/backfill run
 // dying over it.
-function runClaudeExtraction(prompt, sessionId) {
+let activeClaudeCalls = 0;
+const waitingClaudeCalls = [];
+
+async function runClaudeExtraction(prompt, sessionId) {
+  if (activeClaudeCalls >= MAX_CONCURRENT_CLAUDE_CALLS) {
+    await new Promise(resolve => waitingClaudeCalls.push(resolve));
+  }
+  activeClaudeCalls++;
+  try {
+    return await spawnClaudeExtraction(prompt, sessionId);
+  } finally {
+    activeClaudeCalls--;
+    const next = waitingClaudeCalls.shift();
+    if (next) next();
+  }
+}
+
+// --tools "" and --strict-mcp-config keep this a plain text turn: no tools,
+// and none of the MCP servers configured for interactive/agent sessions
+// (e.g. the Playwright browser server), which would otherwise be launched
+// for every single extraction call.
+function spawnClaudeExtraction(prompt, sessionId) {
   return new Promise((resolve) => {
     let settled = false;
     let child;
     try {
-      child = spawn("claude", ["-p", prompt, "--output-format", "json", "--session-id", sessionId], {
+      child = spawn("claude", ["-p", prompt, "--output-format", "json", "--session-id", sessionId, "--tools", "", "--strict-mcp-config"], {
         env: process.env,
         stdio: ["ignore", "pipe", "pipe"]
       });
@@ -99,7 +131,9 @@ function runClaudeExtraction(prompt, sessionId) {
     const timer = setTimeout(() => {
       if (settled) return;
       settled = true;
-      try { child.kill(); } catch (err) { /* already exited */ }
+      // SIGKILL, not the default SIGTERM -- a call stuck under memory
+      // pressure can ignore SIGTERM and linger, holding its memory.
+      try { child.kill("SIGKILL"); } catch (err) { /* already exited */ }
       resolve(null);
     }, EXTRACTION_TIMEOUT_MS);
 
@@ -184,7 +218,8 @@ async function extractCalendarEventsForMessage(message) {
   if (!subject.trim() && !body.trim()) return { events: [], sessionId: null };
 
   const sessionId = crypto.randomUUID();
-  const stdout = await runClaudeExtraction(buildPrompt(message), sessionId);
+  const { prompt, links } = buildPrompt(message);
+  const stdout = await runClaudeExtraction(prompt, sessionId);
   if (stdout === null) {
     throw new Error("Claude Code extraction failed or timed out.");
   }
@@ -210,9 +245,7 @@ async function extractCalendarEventsForMessage(message) {
       description: (typeof item.description === "string" ? item.description : "").slice(0, 300),
       lunch: item.lunch === true,
       rsvp: item.rsvp === true,
-      rsvpUrl: item.rsvp === true && typeof item.rsvpUrl === "string" && /^https?:\/\//i.test(item.rsvpUrl.trim())
-        ? item.rsvpUrl.trim().slice(0, 2000)
-        : null,
+      rsvpUrl: item.rsvp === true ? linkForTag(links, item.rsvpLink) : null,
       sourceMessageId: message.id,
       sourceSubject: subject,
       courseFolder: message.courseFolder || "uncategorized",
@@ -266,12 +299,13 @@ ${body}`;
 // events extracted before rsvpUrl existed, especially ones from digest
 // emails ("SBA x White & Case", "SBA x Bracewell", ...) where each event has
 // its own link and the frontend can't safely guess which is which. One CLI
-// call covers every listed event. Returns a Map of event id -> URL or null
-// (null when that event's own section has no link). A URL must appear
-// verbatim in the email, so a made-up link can never come back. Throws on a
-// failed/timed-out CLI call.
+// call covers every listed event, and Claude answers with link tags (see
+// buildPrompt), so only a link actually in the email can come back. Returns
+// a Map of event id -> URL or null (null when that event's own section has
+// no usable link). Throws on a failed/timed-out CLI call.
 async function findRsvpUrlsForMessage(message, events) {
-  const body = (message.body || "").slice(0, MAX_BODY_CHARS_FOR_EXTRACTION);
+  const { text, links } = tagLinks(message.body || "");
+  const body = text.slice(0, MAX_BODY_CHARS_FOR_EXTRACTION);
   const list = events.map((ev, i) => ({
     ref: i + 1,
     title: ev.title,
@@ -280,9 +314,9 @@ async function findRsvpUrlsForMessage(message, events) {
     location: ev.location || "",
     description: ev.description || ""
   }));
-  const prompt = `You are given one email sent to a law student and a list of calendar events that were already extracted from it. The email may be a digest listing many events, each with its own section and its own links. For EACH listed event, find the RSVP / registration / sign-up / tickets link for that event only, using only that event's own section of the email -- never a link from a different event's section, and never a general website/newsletter link.
+  const prompt = `You are given one email sent to a law student and a list of calendar events that were already extracted from it. Links in the email are shown as tags like [L3]. The email may be a digest listing many events, each with its own section and its own links. For EACH listed event, find the RSVP / registration / sign-up / tickets link for that event only, using only that event's own section of the email -- never a link from a different event's section, and never a general website/calendar/newsletter link.
 
-Respond with ONLY a JSON array with one object per listed event, in the form {"ref": <the event's ref number>, "rsvpUrl": "<the full URL copied exactly>"} or {"ref": <ref>, "rsvpUrl": null} if that event's section has no such link -- no markdown code fences, no prose before or after.
+Respond with ONLY a JSON array with one object per listed event, in the form {"ref": <the event's ref number>, "rsvpLink": "<the link's tag, e.g. L3>"} or {"ref": <ref>, "rsvpLink": null} if that event's section has no such link -- no markdown code fences, no prose before or after.
 
 EVENTS:
 ${JSON.stringify(list, null, 1)}
@@ -298,8 +332,7 @@ ${body}`;
   const urls = new Map(events.map(ev => [ev.id, null]));
   for (const item of parseEventsFromClaudeOutput(stdout)) {
     const ev = item && events[Number(item.ref) - 1];
-    const url = ev && typeof item.rsvpUrl === "string" ? item.rsvpUrl.trim() : "";
-    if (/^https?:\/\//i.test(url) && body.includes(url)) urls.set(ev.id, url.slice(0, 2000));
+    if (ev) urls.set(ev.id, linkForTag(links, item.rsvpLink));
   }
   return urls;
 }

@@ -9272,8 +9272,12 @@ function buildCalendarRsvpPill(ev){
     }
     pill.dataset.busy = "1";
     let found = null;
+    // Gives up after 30s and opens the email instead, rather than leaving
+    // the new tab on "Finding the RSVP link…" if the server is slow.
+    const abort = new AbortController();
+    const abortTimer = setTimeout(() => abort.abort(), 30000);
     try{
-      const res = await fetch(PROXY_ORIGIN + "/api/calendar/events/" + encodeURIComponent(ev.id) + "/rsvp-url", { method: "POST" });
+      const res = await fetch(PROXY_ORIGIN + "/api/calendar/events/" + encodeURIComponent(ev.id) + "/rsvp-url", { method: "POST", signal: abort.signal });
       const data = await res.json().catch(() => ({}));
       if (res.ok){
         const idx = calendarEventsCache.findIndex(e => String(e.id) === String(ev.id));
@@ -9281,6 +9285,7 @@ function buildCalendarRsvpPill(ev){
         found = data.rsvpUrl || null;
       }
     } catch(e){ /* fall back to the email below */ }
+    clearTimeout(abortTimer);
     delete pill.dataset.busy;
     if (found){
       if (tab) tab.location.href = found; else window.open(found, "_blank", "noopener");

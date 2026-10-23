@@ -40,6 +40,7 @@ const userDocumentStore = require("./user-document-store");
 const emailStore = require("./email-store");
 const calendarStore = require("./calendar-store");
 const { extractCalendarEventsForMessage } = require("./calendar-extract");
+const { unwrapLinksInText } = require("./email-links");
 const canvasRoutes = require("./canvas-routes");
 const { extractText, DOCS_ROOT, isDocumentAttachment, deriveBaseName } = canvasRoutes;
 const { getAccessTokenSilent, getEmailConfig, getPersonalApiKey } = require("./email-auth");
@@ -493,7 +494,10 @@ router.post("/sync", async (req, res) => {
 
     for (const msg of rawMessages) {
       const subject = msg.subject || "(no subject)";
-      const bodyText = (msg.body && msg.body.content) || "";
+      // Proofpoint-wrapped links unwrapped up front (see email-links.js) --
+      // shorter, so the stored copy (capped at MAX_BODY_CHARS) keeps a
+      // digest's later links intact, and its links are the real ones.
+      const bodyText = unwrapLinksInText((msg.body && msg.body.content) || "");
 
       const senderText = (msg.from && msg.from.emailAddress) ? `${msg.from.emailAddress.name || ""} <${msg.from.emailAddress.address || ""}>` : "";
       const toAddresses = recipientAddresses(msg.toRecipients);
