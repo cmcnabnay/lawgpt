@@ -12,6 +12,7 @@ const calendarStore = require("./calendar-store");
 const calendarBackfill = require("./calendar-backfill");
 const emailStore = require("./email-store");
 const { findRsvpUrlsForMessage } = require("./calendar-extract");
+const { attachmentLinksText } = require("./attachment-links");
 
 function requireLogin(req, res, next) {
   if (!req.session || !req.session.userId) {
@@ -92,14 +93,18 @@ router.post("/events/:id/rsvp-url", async (req, res) => {
   const userId = req.session.userId;
   const event = (await calendarStore.getAll(userId)).find(e => String(e.id) === String(req.params.id));
   if (!event) return res.status(404).json({ error: { message: "No calendar event with that id." } });
-  if (!calendarBackfill.needsRsvpUrlLookup(event)) return res.json(event);
+  // An event extracted before the rsvp flag existed has none at all -- its
+  // pill comes from the frontend's text guess (calendarEventNeedsRsvp), and
+  // a click on it is reason enough to look.
+  if (!calendarBackfill.needsRsvpUrlLookup({ ...event, rsvp: event.rsvp !== false })) return res.json(event);
 
   const message = event.sourceMessageId ? await emailStore.getMessage(userId, event.sourceMessageId) : null;
   if (!message) {
     return res.json(await calendarStore.updateEvent(userId, event.id, { rsvpUrl: null, rsvpUrlChecked: true }));
   }
   try {
-    const rsvpUrl = (await findRsvpUrlsForMessage(message, [event])).get(event.id) || null;
+    const attachmentLinks = await attachmentLinksText(userId, message.documentIds).catch(() => "");
+    const rsvpUrl = (await findRsvpUrlsForMessage({ ...message, attachmentLinks }, [event])).get(event.id) || null;
     res.json(await calendarStore.updateEvent(userId, event.id, { rsvpUrl, rsvpUrlChecked: true }));
   } catch (err) {
     const attempts = (event.rsvpUrlAttempts || 0) + 1;

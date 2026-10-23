@@ -21,6 +21,7 @@
 const emailStore = require("./email-store");
 const calendarStore = require("./calendar-store");
 const { extractCalendarEventsForMessage, findRsvpUrlsForMessage } = require("./calendar-extract");
+const { attachmentLinksText } = require("./attachment-links");
 
 const CONCURRENCY = 3;
 
@@ -121,7 +122,8 @@ async function runJob(userId, messages, job) {
     while (index < messages.length) {
       const message = messages[index++];
       try {
-        const { events, sessionId } = await extractCalendarEventsForMessage(message);
+        const attachmentLinks = await attachmentLinksText(userId, message.documentIds).catch(() => "");
+        const { events, sessionId } = await extractCalendarEventsForMessage({ ...message, attachmentLinks });
         if (sessionId) job.lastSessionId = sessionId;
         events.forEach(ev => { ev.sessionId = sessionId; });
         await serializeWrite(async () => {
@@ -192,7 +194,9 @@ async function startRsvpUrlBackfill(userId) {
         const message = await emailStore.getMessage(userId, messageId);
         let urls;
         try {
-          urls = message ? await findRsvpUrlsForMessage(message, events) : new Map(events.map(ev => [ev.id, null]));
+          urls = message
+            ? await findRsvpUrlsForMessage({ ...message, attachmentLinks: await attachmentLinksText(userId, message.documentIds).catch(() => "") }, events)
+            : new Map(events.map(ev => [ev.id, null]));
         } catch (err) {
           writeQueue = writeQueue.then(async () => {
             for (const ev of events) {

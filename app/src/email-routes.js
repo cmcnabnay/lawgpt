@@ -41,6 +41,7 @@ const emailStore = require("./email-store");
 const calendarStore = require("./calendar-store");
 const { extractCalendarEventsForMessage } = require("./calendar-extract");
 const { unwrapLinksInText } = require("./email-links");
+const { attachmentLinksText } = require("./attachment-links");
 const canvasRoutes = require("./canvas-routes");
 const { extractText, DOCS_ROOT, isDocumentAttachment, deriveBaseName } = canvasRoutes;
 const { getAccessTokenSilent, getEmailConfig, getPersonalApiKey } = require("./email-auth");
@@ -574,7 +575,10 @@ router.post("/sync", async (req, res) => {
       // unchecked (calendarChecked stays false) on failure/timeout so the
       // one-time backfill (calendar-backfill.js) can retry it later instead
       // of silently treating a failed check as "nothing to find".
-      const messageForEvents = { id: msg.id, subject, body: bodyText, date: msg.receivedDateTime || null, courseFolder };
+      const messageForEvents = {
+        id: msg.id, subject, body: bodyText, date: msg.receivedDateTime || null, courseFolder,
+        attachmentLinks: await attachmentLinksText(userId, documentIds).catch(() => "")
+      };
       let calendarChecked = false;
       try {
         const { events, sessionId } = await extractCalendarEventsForMessage(messageForEvents);

@@ -67,7 +67,7 @@ For each real event found, output an object with:
 - "description": one sentence, quoting or paraphrasing the relevant part of the email
 - "lunch": see LUNCH_RSVP_RULES below
 - "rsvp": see LUNCH_RSVP_RULES below
-- "rsvpLink": links in the email are shown as tags like [L3]. If "rsvp" is true and that event's own block gives an RSVP/registration/sign-up/tickets link, that link's tag (e.g. "L3") -- otherwise null. Same rule as above: never take a link from a different event's block, and never a general website/calendar/newsletter link.
+- "rsvpLink": links in the email are shown as tags like [L3]. If "rsvp" is true and that event's own block gives an RSVP/registration/sign-up/tickets link, that link's tag (e.g. "L3") -- otherwise null. Same rule as above: never take a link from a different event's block, and never a general website/calendar/newsletter link. If the email says to register through a link in an attached flyer/file, a registration link listed under ATTACHED FILE (after the body) counts as this event's link.
 
 ${LUNCH_RSVP_RULES}
 
@@ -80,9 +80,23 @@ Respond with ONLY a JSON array of these objects -- no markdown code fences, no p
 function buildPrompt(message) {
   const subject = message.subject || "(no subject)";
   const received = message.date || "unknown";
-  const { text, links } = tagLinks(message.body || "");
-  const body = text.slice(0, MAX_BODY_CHARS_FOR_EXTRACTION);
+  const { text: body, links } = taggedEmailText(message);
   return { prompt: `${EXTRACTION_INSTRUCTIONS}\n\nEMAIL:\nSubject: ${subject}\nReceived: ${received}\nBody:\n${body}`, links };
+}
+
+// The email body plus, after it, message.attachmentLinks (links inside its
+// attached PDFs, see attachment-links.js), tagged together so both share
+// one tag numbering. Only the body is capped -- the attachment block comes
+// after it, so a long digest can't cut it off.
+function taggedEmailText(message) {
+  const separator = "\u0000";
+  const attachments = message.attachmentLinks || "";
+  const { text, links } = tagLinks((message.body || "") + (attachments ? separator + attachments : ""));
+  const [body, attachmentText] = text.split(separator);
+  return {
+    text: body.slice(0, MAX_BODY_CHARS_FOR_EXTRACTION) + (attachmentText ? "\n\n" + attachmentText : ""),
+    links
+  };
 }
 
 // Spawns `claude -p <prompt> --output-format json --session-id <sessionId>`
@@ -304,8 +318,7 @@ ${body}`;
 // a Map of event id -> URL or null (null when that event's own section has
 // no usable link). Throws on a failed/timed-out CLI call.
 async function findRsvpUrlsForMessage(message, events) {
-  const { text, links } = tagLinks(message.body || "");
-  const body = text.slice(0, MAX_BODY_CHARS_FOR_EXTRACTION);
+  const { text: body, links } = taggedEmailText(message);
   const list = events.map((ev, i) => ({
     ref: i + 1,
     title: ev.title,
@@ -314,7 +327,7 @@ async function findRsvpUrlsForMessage(message, events) {
     location: ev.location || "",
     description: ev.description || ""
   }));
-  const prompt = `You are given one email sent to a law student and a list of calendar events that were already extracted from it. Links in the email are shown as tags like [L3]. The email may be a digest listing many events, each with its own section and its own links. For EACH listed event, find the RSVP / registration / sign-up / tickets link for that event only, using only that event's own section of the email -- never a link from a different event's section, and never a general website/calendar/newsletter link.
+  const prompt = `You are given one email sent to a law student and a list of calendar events that were already extracted from it. Links in the email are shown as tags like [L3]. The email may be a digest listing many events, each with its own section and its own links. For EACH listed event, find the RSVP / registration / sign-up / tickets link for that event only, using only that event's own section of the email -- never a link from a different event's section, and never a general website/calendar/newsletter link. If the email says to register through a link in an attached flyer/file, a registration link listed under ATTACHED FILE (after the body) counts as that event's link.
 
 Respond with ONLY a JSON array with one object per listed event, in the form {"ref": <the event's ref number>, "rsvpLink": "<the link's tag, e.g. L3>"} or {"ref": <ref>, "rsvpLink": null} if that event's section has no such link -- no markdown code fences, no prose before or after.
 

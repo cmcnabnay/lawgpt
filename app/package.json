@@ -28,6 +28,7 @@
     "mammoth": "^1.12.1",
     "node-fetch": "^2.7.0",
     "pdf-parse": "^2.4.5",
+    "pdfjs-dist": "^5.4.296",
     "pg": "^8.23.0",
     "puppeteer": "^25.10.0"
   },
