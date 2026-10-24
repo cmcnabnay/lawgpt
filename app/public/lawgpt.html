@@ -3470,6 +3470,9 @@ pre code {
       <button type="button" id="scheduleDocCtxAuto">Auto-detect document</button>
     </div>
     <div class="table-ctx-menu" id="emailCourseCtxMenu"></div>
+    <div class="table-ctx-menu" id="dbResultsCtxMenu">
+      <button type="button" id="dbResultsCtxDelete">Delete row</button>
+    </div>
 
     <div class="documents-view" id="documentsView" style="display:none;">
       <div class="documents-wrap">
@@ -5329,6 +5332,7 @@ let dbTables = [];
 let dbSelectedTable = null;
 let dbRowsCache = [];
 let currentCaseId = null; // the loaded row's primary-key value; null for a new/unsaved row
+let caseFormDirty = false; // true when the form holds edits/filled values that haven't been saved yet
 
 function renderNotes(){
   renderReportPanel();
@@ -5434,7 +5438,10 @@ function setCaseFormValues(values){
     const field = el.id.slice(3);
     el.value = (values && values[field] != null) ? values[field] : "";
   });
+  caseFormDirty = false;
 }
+
+document.getElementById("caseFormGrid").addEventListener("input", () => { caseFormDirty = true; });
 
 const CASE_COURSE_LABELS = { civpro: "Civil Procedure", contracts: "Contracts", lss: "Lawyering Skills & Strategies", torts: "Torts" };
 
@@ -5567,6 +5574,7 @@ document.getElementById("caseBriefSaveBtn").addEventListener("click", async () =
       if (rowSelect) rowSelect.value = String(currentCaseId);
       document.getElementById("caseBriefDeleteBtn").style.display = "inline-block";
     }
+    caseFormDirty = false;
     setCaseBriefStatus("Saved.");
   } catch(err){
     setCaseBriefStatus("Couldn't save: " + err.message);
@@ -6006,9 +6014,18 @@ const REPORT_PARSERS = {
   definitions: parseDefinitionsFromReport
 };
 
+// Each fill starts a fresh row (as if "+ New row" were picked first), so
+// filling the next item right after saving the previous one never reuses
+// the just-saved row's key. Only warns when the form holds something that
+// would actually be lost -- edits or a previous fill that hasn't been saved.
 function applyReportFillItem(item){
-  if (currentCaseId && !confirm("This will overwrite the form with fields parsed from the report. Continue?")) return;
+  if (caseFormDirty && !confirm("The form has unsaved changes. Replace them with fields parsed from the report?")) return;
+  currentCaseId = null;
+  const rowSelect = document.getElementById("dbRowSelect");
+  if (rowSelect) rowSelect.value = "";
+  document.getElementById("caseBriefDeleteBtn").style.display = "none";
   setCaseFormValues(item.values);
+  caseFormDirty = true;
   setCaseBriefStatus(`Filled "${item.label}" from report — review before saving.`);
 }
 
@@ -6151,8 +6168,8 @@ function renderDbResults(data){
       return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     };
     let html = "<table><thead><tr>" + columns.map(c => `<th>${escape(c)}</th>`).join("") + "</tr></thead><tbody>";
-    data.rows.forEach(row => {
-      html += "<tr>" + columns.map(c => `<td>${escape(row[c])}</td>`).join("") + "</tr>";
+    data.rows.forEach((row, i) => {
+      html += `<tr data-row-index="${i}">` + columns.map(c => `<td>${escape(row[c])}</td>`).join("") + "</tr>";
     });
     html += "</tbody></table>";
     el.innerHTML = html;
@@ -6162,6 +6179,91 @@ function renderDbResults(data){
     el.innerHTML = '<div class="db-results-info">Query ran successfully.</div>';
   }
 }
+
+// The rows currently shown in the results grid and the table they came
+// from, so right-click -> "Delete row" can delete the matching row in the
+// real database. dbResultsTable is only set when the query is a plain
+// single-table SELECT on one of dbTables (no joins / comma-joins) with a
+// single-column primary key that's present in the result columns --
+// otherwise there's no reliable way to know which row a result maps to.
+let dbResultsRows = [];
+let dbResultsTable = null;
+
+function detectDbResultsTable(query, rows){
+  const q = String(query || "");
+  if (!/^\s*select\b/i.test(q) || /\bjoin\b/i.test(q)) return null;
+  const m = /\bfrom\s+(?:"?public"?\.)?"?(\w+)"?\s*(,)?/i.exec(q);
+  if (!m || m[2]) return null;
+  const tableInfo = (dbTables || []).find(t => t.name === m[1].toLowerCase());
+  if (!tableInfo || tableInfo.primaryKey.length !== 1) return null;
+  if (!rows.length || !(tableInfo.primaryKey[0] in rows[0])) return null;
+  return tableInfo;
+}
+
+const dbResultsCtxMenu = document.getElementById("dbResultsCtxMenu");
+let dbResultsCtxRow = null; // the <tr> right-clicked
+
+function hideDbResultsCtxMenu(){
+  dbResultsCtxMenu.classList.remove("show");
+  dbResultsCtxRow = null;
+}
+
+document.getElementById("dbResults").addEventListener("contextmenu", (e) => {
+  const tr = e.target.closest("tr[data-row-index]");
+  if (!tr) return;
+  e.preventDefault();
+  dbResultsCtxRow = tr;
+  dbResultsCtxMenu.classList.add("show");
+  const menuRect = dbResultsCtxMenu.getBoundingClientRect();
+  dbResultsCtxMenu.style.left = Math.max(8, Math.min(e.clientX, window.innerWidth - menuRect.width - 8)) + "px";
+  dbResultsCtxMenu.style.top = Math.max(8, Math.min(e.clientY, window.innerHeight - menuRect.height - 8)) + "px";
+});
+document.addEventListener("click", (e) => {
+  if (dbResultsCtxMenu.contains(e.target)) return;
+  hideDbResultsCtxMenu();
+});
+document.addEventListener("scroll", hideDbResultsCtxMenu, true);
+window.addEventListener("resize", hideDbResultsCtxMenu);
+
+document.getElementById("dbResultsCtxDelete").addEventListener("click", async () => {
+  const tr = dbResultsCtxRow;
+  hideDbResultsCtxMenu();
+  if (!tr) return;
+  const statusEl = document.getElementById("dbQueryStatus");
+  const tableInfo = dbResultsTable;
+  if (!tableInfo){
+    statusEl.textContent = "Can't delete from these results — run a plain SELECT from a single table (cases, rules, or definitions) that includes its primary key.";
+    return;
+  }
+  const pk = tableInfo.primaryKey[0];
+  const row = dbResultsRows[Number(tr.getAttribute("data-row-index"))];
+  const pkValue = row && row[pk];
+  if (pkValue == null || pkValue === ""){
+    statusEl.textContent = `This row has no "${pk}" value to delete it by.`;
+    return;
+  }
+  if (!confirm(`Delete this row from "${tableInfo.name}" (${pk} = "${pkValue}")? This can't be undone.`)) return;
+  try{
+    const res = await fetch(PROXY_ORIGIN + "/api/db/" + encodeURIComponent(tableInfo.name) + "/" + encodeURIComponent(pkValue), { method: "DELETE" });
+    if (!res.ok){
+      const data = await res.json().catch(() => null);
+      throw new Error((data && data.error && (data.error.message || JSON.stringify(data.error))) || "Delete failed.");
+    }
+    tr.remove();
+    statusEl.textContent = `Deleted ${pk} = "${pkValue}" from ${tableInfo.name}.`;
+    // Keep the Notes tab's row picker in sync if it's showing this table.
+    if (getSelectedTableInfo()?.name === tableInfo.name){
+      if (currentCaseId != null && String(currentCaseId) === String(pkValue)){
+        currentCaseId = null;
+        setCaseFormValues({});
+        document.getElementById("caseBriefDeleteBtn").style.display = "none";
+      }
+      loadDbRows(tableInfo);
+    }
+  } catch(err){
+    statusEl.textContent = "Couldn't delete: " + err.message;
+  }
+});
 
 async function runDbQuery(){
   const btn = document.getElementById("dbRunBtn");
@@ -6175,6 +6277,8 @@ async function runDbQuery(){
   btn.disabled = true;
   statusEl.textContent = "Running…";
   resultsEl.innerHTML = "";
+  dbResultsRows = [];
+  dbResultsTable = null;
   try{
     let res = await fetch(PROXY_ORIGIN + "/api/db/query", {
       method: "POST",
@@ -6199,6 +6303,8 @@ async function runDbQuery(){
       statusEl.textContent = "";
       return;
     }
+    dbResultsRows = (data && Array.isArray(data.rows)) ? data.rows : [];
+    dbResultsTable = detectDbResultsTable(query, dbResultsRows);
     renderDbResults(data);
     statusEl.textContent = data && data.truncated ? `Showing first ${data.rows.length} rows.` : "";
   } catch(err){
