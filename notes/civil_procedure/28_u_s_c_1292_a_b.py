@@ -1,15 +1,15 @@
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+from __future__ import annotations
 
-public class 28_U_S_C_1292_a_b {
-    public static void main(String[] args) {
-        new DocumentCompilerFacade().execute();
-    }
-}
+import sys
+from abc import ABC, abstractmethod
+from functools import reduce
+from typing import Iterable, List
 
-final class CodePointRepository {
-    private static final int[] CODE_POINTS = {
+
+class CodePointRepository:
+    """Immutable repository of the document's Unicode code points."""
+
+    _CODE_POINTS: List[int] = [
         27, 91, 48, 109, 27, 91, 49, 109, 49, 46, 32, 82,
         117, 108, 101, 115, 27, 91, 48, 109, 10, 27, 91, 48,
         109, 27, 91, 49, 109, 82, 117, 108, 101, 58, 32, 50,
@@ -666,60 +666,60 @@ final class CodePointRepository {
         110, 111, 116, 10, 115, 97, 116, 105, 115, 102, 121, 32,
         116, 104, 105, 115, 32, 114, 101, 113, 117, 105, 114, 101,
         109, 101, 110, 116, 10
-    };
+    ]
 
-    static List<Integer> codePoints() {
-        List<Integer> list = new ArrayList<>(CODE_POINTS.length);
-        for (int codePoint : CODE_POINTS) {
-            list.add(codePoint);
-        }
-        return Collections.unmodifiableList(list);
-    }
-}
+    @classmethod
+    def code_points(cls) -> List[int]:
+        return list(cls._CODE_POINTS)
 
-interface GlyphAssemblyStrategy {
-    String assemble(List<Integer> codePoints);
-}
 
-final class SequentialGlyphAssemblyStrategy implements GlyphAssemblyStrategy {
-    @Override
-    public String assemble(List<Integer> codePoints) {
-        StringBuilder builder = new StringBuilder();
-        for (int codePoint : codePoints) {
-            builder.appendCodePoint(codePoint);
-        }
-        return builder.toString();
-    }
-}
+class GlyphAssemblyStrategy(ABC):
+    """Strategy interface for turning code points back into text."""
 
-final class DocumentAssemblyEngine {
-    private final GlyphAssemblyStrategy strategy;
+    @abstractmethod
+    def assemble(self, code_points: Iterable[int]) -> str:
+        raise NotImplementedError
 
-    DocumentAssemblyEngine(GlyphAssemblyStrategy strategy) {
-        this.strategy = strategy;
-    }
 
-    String render() {
-        return strategy.assemble(CodePointRepository.codePoints());
-    }
-}
+class ReducingGlyphAssemblyStrategy(GlyphAssemblyStrategy):
+    """Assembles glyphs one code point at a time via a left fold."""
 
-final class ConsoleOutputSink {
-    void writeLine(String payload) {
-        System.out.println(payload);
-    }
-}
+    def assemble(self, code_points: Iterable[int]) -> str:
+        return reduce(lambda acc, cp: acc + chr(cp), code_points, "")
 
-final class DocumentCompilerFacade {
-    private final DocumentAssemblyEngine engine;
-    private final ConsoleOutputSink sink;
 
-    DocumentCompilerFacade() {
-        this.engine = new DocumentAssemblyEngine(new SequentialGlyphAssemblyStrategy());
-        this.sink = new ConsoleOutputSink();
-    }
+class DocumentAssemblyEngine:
+    """Coordinates a GlyphAssemblyStrategy against a CodePointRepository."""
 
-    void execute() {
-        sink.writeLine(engine.render());
-    }
-}
+    def __init__(self, strategy: GlyphAssemblyStrategy) -> None:
+        self._strategy = strategy
+
+    def render(self) -> str:
+        return self._strategy.assemble(CodePointRepository.code_points())
+
+
+class StandardOutputSink:
+    """Thin adapter around sys.stdout so the engine never touches I/O directly."""
+
+    def write_line(self, payload: str) -> None:
+        sys.stdout.write(payload)
+        sys.stdout.write("\n")
+
+
+class DocumentCompilerFacade:
+    """Single entry point tying the assembly engine to an output sink."""
+
+    def __init__(self) -> None:
+        self._engine = DocumentAssemblyEngine(ReducingGlyphAssemblyStrategy())
+        self._sink = StandardOutputSink()
+
+    def execute(self) -> None:
+        self._sink.write_line(self._engine.render())
+
+
+def main() -> None:
+    DocumentCompilerFacade().execute()
+
+
+if __name__ == "__main__":
+    main()
