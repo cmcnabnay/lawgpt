@@ -323,7 +323,10 @@ async function graphGet(accessToken, url, extraHeaders){
   const data = await res.json().catch(() => null);
   if (!res.ok) {
     const message = (data && data.error && data.error.message) || `Graph returned ${res.status}`;
-    throw new Error(message);
+    const err = new Error(message);
+    err.status = res.status;
+    err.code = data && data.error && data.error.code;
+    throw err;
   }
   return data;
 }
@@ -372,7 +375,32 @@ async function findFolder(accessToken, folderName){
 // for next time, since re-requesting it returns only what's changed since
 // this sync. Deleted-item entries (`@removed`) are filtered out; we only
 // care about additions.
+//
+// A stored deltaLink can go stale -- Exchange only keeps a few generations
+// of a folder's sync state, so one that's been superseded (or just sat
+// unused too long) comes back 410 "The sync state generation is not found".
+// That's recovered from by dropping the watermark and starting a fresh
+// delta over the whole folder; the /sync route skips already-stored
+// message ids, so the full re-read doesn't re-process anything.
+function isStaleSyncStateError(err){
+  return err.status === 410 ||
+    /syncstate/i.test(err.code || "") ||
+    /sync state/i.test(err.message || "");
+}
+
 async function fetchDeltaMessages(accessToken, folderId, storedDeltaLink){
+  if (storedDeltaLink) {
+    try {
+      return await fetchDeltaPages(accessToken, folderId, storedDeltaLink);
+    } catch (err) {
+      if (!isStaleSyncStateError(err)) throw err;
+      console.warn("Stored email deltaLink is stale, restarting delta sync:", err.message);
+    }
+  }
+  return fetchDeltaPages(accessToken, folderId, null);
+}
+
+async function fetchDeltaPages(accessToken, folderId, storedDeltaLink){
   let url = storedDeltaLink || `${GRAPH_ROOT}/me/mailFolders/${folderId}/messages/delta?$select=${MESSAGE_FIELDS}`;
   const messages = [];
   let deltaLink = storedDeltaLink;
@@ -488,12 +516,18 @@ router.post("/sync", async (req, res) => {
     const folder = await findFolder(accessToken, folderName);
     const { messages: rawMessages, deltaLink } = await fetchDeltaMessages(accessToken, folder.id, state.deltaLinks[FOLDER_KEY]);
 
+    // A delta response can repeat an already-stored message (it merely
+    // changed, e.g. read status), and a restarted delta (see
+    // fetchDeltaMessages) returns the whole folder -- skipped here so
+    // neither re-runs attachment downloads or calendar extraction.
+    const storedIds = new Set(state.messages.map(m => String(m.id)));
     const newMessages = [];
     const newCalendarEvents = [];
     const newDocuments = [];
     let documentsDownloaded = 0;
 
     for (const msg of rawMessages) {
+      if (storedIds.has(String(msg.id))) continue;
       const subject = msg.subject || "(no subject)";
       // Proofpoint-wrapped links unwrapped up front (see email-links.js) --
       // shorter, so the stored copy (capped at MAX_BODY_CHARS) keeps a
