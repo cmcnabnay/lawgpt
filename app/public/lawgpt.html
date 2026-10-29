@@ -4357,6 +4357,7 @@ async function refreshAuthStatus(){
     matterCounter = 0;
     savedReports = [];
     reportCounter = 0;
+    resetReportSyncTracking();
     customNotesPrompts = {};
     currentReport = null;
     stateLoaded = false; // re-armed by the next syncAfterLogin(), same as a fresh page load
@@ -4394,6 +4395,7 @@ async function syncAfterLogin(){
       activeMatterId = matters.some(m => m.id === data.data.activeMatterId) ? data.data.activeMatterId : (matters[0] ? matters[0].id : null);
       savedReports = Array.isArray(data.data.savedReports) ? data.data.savedReports : [];
       reportCounter = typeof data.data.reportCounter === "number" ? data.data.reportCounter : savedReports.length;
+      resetReportSyncTracking();
       customNotesPrompts = (data.data.customNotesPrompts && typeof data.data.customNotesPrompts === "object") ? data.data.customNotesPrompts : {};
       stateLoaded = true;
       persistState();
@@ -4420,9 +4422,13 @@ function pushStateToServer(){
       const res = await fetch(PROXY_ORIGIN + "/api/user/state", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ data: { matters, matterCounter, activeMatterId, savedReports, reportCounter, customNotesPrompts } })
+        body: JSON.stringify({ data: { matters, matterCounter, activeMatterId, reportCounter, customNotesPrompts } })
       });
       if (!res.ok) throw new Error("HTTP " + res.status);
+      // Chained so two syncs never overlap -- an older batch finishing
+      // after a newer one would otherwise write stale report content.
+      reportSyncChain = reportSyncChain.catch(() => {}).then(syncSavedReports);
+      await reportSyncChain;
       serverSaveFailed = false;
       if (accountSyncStatus) accountSyncStatus.textContent = "";
     } catch(e){
@@ -4432,6 +4438,73 @@ function pushStateToServer(){
     }
     updateStorageWarning();
   }, 800);
+}
+
+// Sends only what changed in savedReports since the last successful sync:
+// loaded (non-stub) reports whose JSON differs from syncedReportJson, ids
+// that have disappeared, and the full id order if it changed. Nothing is
+// sent when nothing changed. The tracking only advances once the server
+// has accepted the batch, so a failed sync is simply retried next time.
+async function syncSavedReports(){
+  const order = savedReports.map(r => r.id);
+  const currentIds = new Set(order);
+  const upserts = [];
+  const upsertJson = new Map();
+  for (const r of savedReports){
+    if (r.stub || !r.id) continue;
+    const json = JSON.stringify(r);
+    if (syncedReportJson.get(r.id) === json) continue;
+    upserts.push(r);
+    upsertJson.set(r.id, json);
+  }
+  const deletes = syncedReportOrder.filter(id => !currentIds.has(id));
+  const orderChanged = order.join("\u0000") !== syncedReportOrder.join("\u0000");
+  if (!upserts.length && !deletes.length && !orderChanged) return;
+
+  const res = await fetch(PROXY_ORIGIN + "/api/user/reports/sync", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ upserts, deletes, order: orderChanged ? order : null })
+  });
+  if (!res.ok) throw new Error("HTTP " + res.status);
+  upsertJson.forEach((json, id) => syncedReportJson.set(id, json));
+  deletes.forEach(id => syncedReportJson.delete(id));
+  syncedReportOrder = order;
+}
+
+// Opens a saved report from the Notes sidebar. A stub (see savedReports
+// above) gets its body fetched first, behind a "Loading" placeholder;
+// after that it's an ordinary in-memory report like before.
+let openingReportId = null;
+async function openSavedReport(r){
+  if (!r.stub){
+    currentReport = r;
+    renderReportPanel();
+    return;
+  }
+  openingReportId = r.id;
+  const placeholder = { id: r.id, title: r.title, course: r.course, classLabel: r.classLabel, content: "Loading report…", loading: true, chat: [] };
+  currentReport = placeholder;
+  renderReportPanel();
+  try{
+    const res = await fetch(PROXY_ORIGIN + "/api/user/reports/" + encodeURIComponent(r.id));
+    const data = await res.json();
+    if (!res.ok) throw new Error((data && data.error && data.error.message) || "HTTP " + res.status);
+    if (r.stub){
+      Object.assign(r, data.report);
+      delete r.stub;
+      syncedReportJson.set(r.id, JSON.stringify(r));
+    }
+    if (currentReport === placeholder && openingReportId === r.id){
+      currentReport = r;
+      renderReportPanel();
+    }
+  } catch(e){
+    if (currentReport === placeholder){
+      currentReport = { ...placeholder, loading: false, failed: true, content: "Couldn't load this report: " + e.message };
+      renderReportPanel();
+    }
+  }
 }
 
 function openAccountModal(){
@@ -4500,6 +4573,7 @@ document.getElementById("accountLogoutBtn").addEventListener("click", async () =
   matterCounter = 0;
   savedReports = [];
   reportCounter = 0;
+  resetReportSyncTracking();
   customNotesPrompts = {};
   currentReport = null;
   stateLoaded = false; // re-armed by the next syncAfterLogin(), same as a fresh page load
@@ -4794,8 +4868,28 @@ let stateLoaded = false;
 // Saved reading reports (Schedule tab "Notes" -> AI report -> Notes tab),
 // independent of any matter — these live for as long as the docket does,
 // and are listed in the Notes tab's own sidebar (#notesSidebar).
+//
+// Signed in, each report is its own row server-side (see
+// saved-report-store.js), and GET /api/user/state only returns stubs --
+// { id, title, course, classLabel, createdAt, stub: true } -- so the page
+// load doesn't pull every report's body. openSavedReport() fetches a
+// stub's body the first time it's opened. pushStateToServer() then sends
+// only the reports whose JSON changed since the last successful sync
+// (syncedReportJson), plus deleted ids and the order (syncedReportOrder).
+// A stub is never sent -- it has no body, and sending it would wipe one.
 let savedReports = [];
 let reportCounter = 0;
+let syncedReportJson = new Map(); // report id -> JSON last synced (or fetched)
+let syncedReportOrder = [];       // report ids in the order last synced
+let reportSyncChain = Promise.resolve();
+
+// Called whenever savedReports is replaced wholesale by what the server
+// has (syncAfterLogin) or cleared (sign-out): nothing loaded yet, and the
+// current list is exactly what's stored.
+function resetReportSyncTracking(){
+  syncedReportJson = new Map();
+  syncedReportOrder = savedReports.map(r => r.id);
+}
 
 // Declared here (rather than next to DEFAULT_NOTES_PROMPTS, much further
 // down) because syncAfterLogin() assigns to it directly, and that runs at
@@ -7225,10 +7319,7 @@ function renderReportSidebar(){
       });
       item.appendChild(del);
 
-      item.addEventListener("click", () => {
-        currentReport = r;
-        renderReportPanel();
-      });
+      item.addEventListener("click", () => openSavedReport(r));
 
       itemsWrap.appendChild(item);
     });
@@ -15671,8 +15762,24 @@ document.getElementById("saveDocBtn").addEventListener("click", saveDocument);
 // docket. Some browsers/app-shells accept localStorage writes during a
 // session but don't keep them after the app fully closes; this sidesteps
 // that entirely by letting the person save their own copy of the data. ----
-document.getElementById("backupExportBtn").addEventListener("click", () => {
-  const payload = { app: "LawGPT", version: 1, exportedAt: new Date().toISOString(), matters, matterCounter, activeMatterId, savedReports, reportCounter, customNotesPrompts };
+document.getElementById("backupExportBtn").addEventListener("click", async () => {
+  // Reports never opened this session are still stubs (no body) -- fetch
+  // their full copies for the backup. Opened ones are taken from memory,
+  // since they may hold edits the server hasn't received yet.
+  let reportsForBackup = savedReports;
+  if (savedReports.some(r => r.stub)){
+    try{
+      const res = await fetch(PROXY_ORIGIN + "/api/user/reports");
+      const data = await res.json();
+      if (!res.ok) throw new Error((data && data.error && data.error.message) || "HTTP " + res.status);
+      const full = new Map((data.reports || []).map(r => [r.id, r]));
+      reportsForBackup = savedReports.map(r => (r.stub ? full.get(r.id) : r)).filter(Boolean);
+    } catch(err){
+      alert("Sorry — couldn't fetch your saved reports for the backup: " + err.message);
+      return;
+    }
+  }
+  const payload = { app: "LawGPT", version: 1, exportedAt: new Date().toISOString(), matters, matterCounter, activeMatterId, savedReports: reportsForBackup, reportCounter, customNotesPrompts };
   const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json;charset=utf-8" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
@@ -15718,6 +15825,9 @@ document.getElementById("backupImportInput").addEventListener("change", async (e
       if (!Array.isArray(m.attachedDocumentIds)) m.attachedDocumentIds = [];
     });
     if (Array.isArray(data.savedReports)){
+      // A backup always holds full reports; never let a stray stub flag
+      // through, or syncSavedReports would skip saving that report.
+      data.savedReports.forEach(r => { if (r) delete r.stub; });
       if (replace){
         savedReports = data.savedReports;
         reportCounter = typeof data.reportCounter === "number" ? data.reportCounter : savedReports.length;

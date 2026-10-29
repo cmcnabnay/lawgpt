@@ -32,6 +32,7 @@ const app = express();
 //In memory document store
 const documentStore = require("./document-store");
 const userDocumentStore = require("./user-document-store");
+const savedReportStore = require("./saved-report-store");
 const { scanLocalDocuments } = require("./local-scan");
 
 app.use(cors());
@@ -813,22 +814,24 @@ app.get("/api/auth/me", (req, res) => {
 // The client-side "docket" blob (matters, savedReports, etc. -- see
 // STORAGE_KEY in lawgpt.html) is stored across separate columns rather than
 // one combined `data` JSONB blob (see migrations/2026-09-14-split-user-state-columns.sql)
-// -- matters/savedReports/customNotesPrompts each get their own column, plus
-// the three small scalars. GET re-assembles them into the same { matters,
-// savedReports, matterCounter, reportCounter, activeMatterId,
-// customNotesPrompts } shape the client has always sent/expected, so
-// lawgpt.html's persistState()/syncAfterLogin() didn't need to change.
+// -- matters/customNotesPrompts each get their own column, plus the three
+// small scalars. Saved reports live one row each in the saved_reports table
+// (see saved-report-store.js): GET returns only their sidebar fields as
+// stubs, a report's body comes from GET /api/user/reports/:id when it's
+// opened, and changes go through POST /api/user/reports/sync -- never
+// through this POST. The old user_state.saved_reports column is no longer
+// read or written.
 app.get("/api/user/state", requireAppDb, requireLogin, async (req, res) => {
   try {
     const result = await appPool.query(
-      `SELECT matters, saved_reports, custom_notes_prompts, matter_counter, report_counter, active_matter_id
+      `SELECT matters, custom_notes_prompts, matter_counter, report_counter, active_matter_id
        FROM user_state WHERE user_id = $1`,
       [req.session.userId]
     );
     const row = result.rows[0];
     const data = row ? {
       matters: row.matters,
-      savedReports: row.saved_reports,
+      savedReports: await savedReportStore.listStubs(req.session.userId),
       customNotesPrompts: row.custom_notes_prompts,
       matterCounter: row.matter_counter,
       reportCounter: row.report_counter,
@@ -847,11 +850,10 @@ app.post("/api/user/state", requireAppDb, requireLogin, async (req, res) => {
       return res.status(400).json({ error: { message: "No 'data' provided." } });
     }
     await appPool.query(
-      `INSERT INTO user_state (user_id, matters, saved_reports, custom_notes_prompts, matter_counter, report_counter, active_matter_id, updated_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, now())
+      `INSERT INTO user_state (user_id, matters, custom_notes_prompts, matter_counter, report_counter, active_matter_id, updated_at)
+       VALUES ($1, $2, $3, $4, $5, $6, now())
        ON CONFLICT (user_id) DO UPDATE SET
          matters = EXCLUDED.matters,
-         saved_reports = EXCLUDED.saved_reports,
          custom_notes_prompts = EXCLUDED.custom_notes_prompts,
          matter_counter = EXCLUDED.matter_counter,
          report_counter = EXCLUDED.report_counter,
@@ -860,13 +862,49 @@ app.post("/api/user/state", requireAppDb, requireLogin, async (req, res) => {
       [
         req.session.userId,
         JSON.stringify(data.matters || []),
-        JSON.stringify(data.savedReports || []),
         JSON.stringify(data.customNotesPrompts || {}),
         Number.isFinite(data.matterCounter) ? data.matterCounter : 0,
         Number.isFinite(data.reportCounter) ? data.reportCounter : 0,
         data.activeMatterId || null
       ]
     );
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: { message: err.message } });
+  }
+});
+
+// ---- Saved reports, one row each (see saved-report-store.js) ----
+// Every full report -- only for the Backup button, never on page load.
+app.get("/api/user/reports", requireAppDb, requireLogin, async (req, res) => {
+  try {
+    res.json({ reports: await savedReportStore.getAllReports(req.session.userId) });
+  } catch (err) {
+    res.status(500).json({ error: { message: err.message } });
+  }
+});
+
+// One report's full body, fetched when it's opened in the Notes tab.
+app.get("/api/user/reports/:id", requireAppDb, requireLogin, async (req, res) => {
+  try {
+    const report = await savedReportStore.getReport(req.session.userId, req.params.id);
+    if (!report) return res.status(404).json({ error: { message: "Report not found." } });
+    res.json({ report });
+  } catch (err) {
+    res.status(500).json({ error: { message: err.message } });
+  }
+});
+
+// Changed/new reports, deleted ids, and the sidebar order, from
+// lawgpt.html's pushStateToServer -- only what changed since its last sync.
+app.post("/api/user/reports/sync", requireAppDb, requireLogin, async (req, res) => {
+  try {
+    const body = req.body || {};
+    await savedReportStore.sync(req.session.userId, {
+      upserts: Array.isArray(body.upserts) ? body.upserts : [],
+      deletes: Array.isArray(body.deletes) ? body.deletes : [],
+      order: Array.isArray(body.order) ? body.order : null
+    });
     res.json({ ok: true });
   } catch (err) {
     res.status(500).json({ error: { message: err.message } });
