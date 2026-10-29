@@ -73,11 +73,11 @@ const ENV_PATH = path.join(__dirname, "..", ".env");
 // documents go in as extracted text instead.
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/responses";
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY || "";
-// z-ai/glm-5.2:free (the previous default) is no longer in the allow-list
-// below -- nvidia/nemotron-3-super-120b-a12b:free is what "openrouter/free"
-// (also removed; see that entry's old spot below) actually resolved to in
-// practice, now listed explicitly instead of behind an auto-router alias.
-const OPENROUTER_MODEL = process.env.OPENROUTER_MODEL || "nvidia/nemotron-3-super-120b-a12b:free";
+// nvidia/nemotron-3-super-120b-a12b:free (the previous default) was dropped
+// by OpenRouter, so every request that fell back to it failed. Ultra is in
+// the allow-list below, tested reliable, and has a ~1M-token context window,
+// so large attached readings fit without erroring.
+const OPENROUTER_MODEL = process.env.OPENROUTER_MODEL || "nvidia/nemotron-3-ultra-550b-a55b:free";
 
 // Every free, text-only OpenRouter model tested against this same endpoint
 // (see the test scripts in ~/Documents) -- shown in the frontend's model
