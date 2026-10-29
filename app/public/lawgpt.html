@@ -2898,6 +2898,55 @@ pre code {
   flex:0 0 auto;
 }
 .db-sql-textarea:focus{ outline:none; border-color:var(--brass-dim); }
+.db-mode-toggle{ display:flex; border:1px solid var(--hairline); border-radius:var(--radius); overflow:hidden; }
+.db-mode-btn{
+  font-size:11.5px;
+  font-weight:600;
+  padding:6px 12px;
+  border:none;
+  background:none;
+  color:var(--text-muted);
+  cursor:pointer;
+}
+.db-mode-btn + .db-mode-btn{ border-left:1px solid var(--hairline); }
+.db-mode-btn:hover{ color:var(--brass); }
+.db-mode-btn.active{ background:var(--ink-3); color:var(--brass); }
+.db-search-panel{ flex:0 0 auto; margin-bottom:12px; }
+.db-search-row{ display:flex; gap:16px; align-items:flex-start; flex-wrap:wrap; margin-bottom:12px; }
+.db-search-table{ flex:0 0 200px; }
+.db-search-columns-wrap{ flex:1; min-width:240px; }
+.db-search-label{
+  display:block;
+  font-size:11px;
+  text-transform:uppercase;
+  letter-spacing:0.04em;
+  color:var(--text-muted);
+  margin-bottom:6px;
+}
+.db-search-columns{ display:flex; flex-wrap:wrap; gap:6px; }
+.db-search-col{
+  display:flex;
+  align-items:center;
+  gap:5px;
+  font-family:'IBM Plex Mono',monospace;
+  font-size:12px;
+  color:var(--text-light);
+  border:1px solid var(--hairline);
+  border-radius:var(--radius);
+  padding:4px 9px;
+  cursor:pointer;
+  user-select:none;
+}
+.db-search-col:has(input:checked){ border-color:var(--brass-dim); color:var(--brass); }
+.db-search-col input{ accent-color:var(--brass); margin:0; }
+.db-search-fields{ display:grid; grid-template-columns:repeat(auto-fill, minmax(240px, 1fr)); gap:12px; }
+.db-search-sql{
+  margin-top:10px;
+  font-family:'IBM Plex Mono',monospace;
+  font-size:11.5px;
+  color:var(--text-muted);
+  word-break:break-word;
+}
 .db-results{
   flex:1;
   min-height:0;
@@ -3395,6 +3444,7 @@ pre code {
         <div class="lang-select-wrap">
           <label for="langSelect">Compile to</label>
           <select id="langSelect">
+            <option value="docx" selected>Word (.docx)</option>
             <option value="html">HTML (.html)</option>
             <option value="python">Python (.py)</option>
             <option value="javascript">JavaScript (.js)</option>
@@ -3727,13 +3777,31 @@ pre code {
       <div class="notes-main">
         <div class="notes-wrap">
           <div class="notes-head">
-            <div class="notes-title">SQL Editor</div>
+            <div class="notes-title" id="dbModeTitle">Search</div>
             <div class="notes-head-actions">
               <div class="notes-save-status" id="dbQueryStatus"></div>
-              <button type="button" class="notes-head-btn primary" id="dbRunBtn">Run Query</button>
+              <div class="db-mode-toggle" role="tablist" aria-label="Query mode">
+                <button type="button" class="db-mode-btn active" data-db-mode="search">Search</button>
+                <button type="button" class="db-mode-btn" data-db-mode="sql">SQL</button>
+              </div>
+              <button type="button" class="notes-head-btn primary" id="dbRunBtn">Search</button>
             </div>
           </div>
-          <textarea class="db-sql-textarea" id="dbSqlInput" placeholder="select * from cases limit 50;" spellcheck="false"></textarea>
+          <div class="db-search-panel" id="dbSearchPanel">
+            <div class="db-search-row">
+              <label class="case-field db-search-table">
+                <span>Table</span>
+                <select id="dbSearchTable"></select>
+              </label>
+              <div class="db-search-columns-wrap">
+                <span class="db-search-label">Search columns</span>
+                <div class="db-search-columns" id="dbSearchColumns"></div>
+              </div>
+            </div>
+            <div class="db-search-fields" id="dbSearchFields"></div>
+            <div class="db-search-sql" id="dbSearchSql"></div>
+          </div>
+          <textarea class="db-sql-textarea" id="dbSqlInput" placeholder="select * from cases limit 50;" spellcheck="false" style="display:none;"></textarea>
           <div class="db-results" id="dbResults"></div>
         </div>
       </div>
@@ -4898,7 +4966,7 @@ function formatContent(text){
   for (let i = 0; i < parts.length; i++){
     if (i % 3 === 0){
       // plain text chunk — run through your existing paragraph logic
-      const chunk = parts[i];
+      const chunk = normalizeMarkdownTables(parts[i]);
       if (chunk.trim()){
         html += chunk
           .split(/\n{2,}/)
@@ -4915,6 +4983,45 @@ function formatContent(text){
     }
   }
   return html;
+}
+
+// Keeps a pipe table in one paragraph so tryRenderMarkdownTable sees the
+// whole thing. Agent replies sometimes come back with a blank line between
+// every row (header, "|---|", each data row), which the \n{2,} split in
+// formatContent used to break into one-row paragraphs that each printed as
+// raw "| cell | cell |" text. Also puts a blank line between a table and
+// prose directly above or below it, so the table gets a paragraph of its own.
+function normalizeMarkdownTables(text){
+  const isRow = (l) => /^\s*\|.*\|\s*$/.test(l);
+  const isSeparator = (l) => /^\s*\|?\s*:?-+:?\s*(\|\s*:?-+:?\s*)*\|?\s*$/.test(l);
+  // The next non-blank line after `from`, or "" if there isn't one.
+  const nextNonBlank = (lines, from) => {
+    for (let k = from; k < lines.length; k++) if (lines[k].trim()) return lines[k];
+    return "";
+  };
+  const lines = text.split("\n");
+  const out = [];
+  for (let i = 0; i < lines.length; i++){
+    const line = lines[i];
+    if (!line.trim()){
+      // Drop blank lines sitting between two rows of the same table -- but
+      // not before a row followed by its own "|---|" line, which is the
+      // header of a second table.
+      const prev = out.length ? out[out.length - 1] : "";
+      let j = i;
+      while (j < lines.length && !lines[j].trim()) j++;
+      if (isRow(prev) && j < lines.length && isRow(lines[j]) && !isSeparator(nextNonBlank(lines, j + 1))) {
+        i = j - 1;
+        continue;
+      }
+      out.push(line);
+      continue;
+    }
+    const prev = out.length ? out[out.length - 1] : "";
+    if (prev.trim() && isRow(line) !== isRow(prev)) out.push("");
+    out.push(line);
+  }
+  return out.join("\n");
 }
 
 // A single blank-line-delimited paragraph of Markdown-lite -> HTML. The
@@ -5490,6 +5597,7 @@ async function loadDbTables(){
   }
   onDbTableChanged();
   populateDatabaseTableList();
+  renderDbSearchBuilder();
 }
 
 document.getElementById("dbTableSelect").addEventListener("change", (e) => {
@@ -6154,14 +6262,31 @@ function populateDatabaseTableList(){
   });
 }
 
-function renderDbResults(data){
+// Column order for results from these tables. Only applied to "select *"
+// queries (which every Search builds) -- an explicit column list in SQL
+// mode keeps the order it was written in. Columns not listed here are
+// appended after these, in whatever order the database returned them.
+const DB_RESULT_COLUMN_ORDER = {
+  cases: ["course", "case", "document", "facts", "procedural_posture", "issue", "holding", "rule", "reasoning", "plantiff_arguments", "defendant_arguments", "disposition", "importance"],
+  rules: ["course", "rule_name", "source", "document", "statement", "legal_question", "requirements", "application", "exceptions"],
+  definitions: ["course", "term", "definition"]
+};
+
+function orderDbResultColumns(query, columns){
+  const m = /^\s*select\s+\*\s+from\s+(?:"?public"?\.)?"?(\w+)"?/i.exec(String(query || ""));
+  const order = m && DB_RESULT_COLUMN_ORDER[m[1].toLowerCase()];
+  if (!order) return columns;
+  return order.filter(c => columns.includes(c)).concat(columns.filter(c => !order.includes(c)));
+}
+
+function renderDbResults(data, query){
   const el = document.getElementById("dbResults");
   if (data && Array.isArray(data.rows)){
     if (!data.rows.length){
       el.innerHTML = '<div class="db-results-empty">Query ran successfully — no rows returned.</div>';
       return;
     }
-    const columns = Object.keys(data.rows[0]);
+    const columns = orderDbResultColumns(query, Object.keys(data.rows[0]));
     const escape = (v) => {
       if (v == null) return "";
       const s = typeof v === "object" ? JSON.stringify(v) : String(v);
@@ -6268,6 +6393,18 @@ document.getElementById("dbResultsCtxDelete").addEventListener("click", async ()
 async function runDbQuery(){
   const btn = document.getElementById("dbRunBtn");
   const statusEl = document.getElementById("dbQueryStatus");
+  // Search mode is just a front end for SQL: it builds the equivalent
+  // SELECT, drops it into the SQL box (so switching to SQL shows exactly
+  // what ran), and runs that.
+  if (dbQueryMode === "search"){
+    const built = buildDbSearchSql();
+    if (!built){
+      statusEl.textContent = "Pick a table first.";
+      return;
+    }
+    document.getElementById("dbSqlInput").value = built;
+    document.getElementById("dbSearchSql").textContent = built;
+  }
   const query = document.getElementById("dbSqlInput").value.trim();
   const resultsEl = document.getElementById("dbResults");
   if (!query){
@@ -6305,7 +6442,7 @@ async function runDbQuery(){
     }
     dbResultsRows = (data && Array.isArray(data.rows)) ? data.rows : [];
     dbResultsTable = detectDbResultsTable(query, dbResultsRows);
-    renderDbResults(data);
+    renderDbResults(data, query);
     statusEl.textContent = data && data.truncated ? `Showing first ${data.rows.length} rows.` : "";
   } catch(err){
     resultsEl.innerHTML = `<div class="db-results-error">${err.message}</div>`;
@@ -6314,6 +6451,149 @@ async function runDbQuery(){
     btn.disabled = false;
   }
 }
+
+// ---- Search mode: table + column pickers that build a SELECT ----
+// Each checked column gets a search box (text columns match with ILIKE
+// '%value%', "course" is a dropdown matched exactly), all ANDed together.
+// Checked columns and typed values are remembered per table, so switching
+// tables and back doesn't lose them.
+let dbQueryMode = "search";
+let dbSearchTableName = null;
+const dbSearchState = {}; // table name -> { checked: Set<column>, values: {column: value} }
+
+const SQL_RESERVED_IDENTS = new Set(["all", "and", "as", "case", "default", "end", "from", "group", "limit", "not", "or", "order", "select", "table", "to", "user", "where"]);
+function quoteSqlIdent(name){
+  return (/^[a-z_][a-z0-9_]*$/.test(name) && !SQL_RESERVED_IDENTS.has(name))
+    ? name
+    : '"' + name.replace(/"/g, '""') + '"';
+}
+function quoteSqlLiteral(value){
+  return "'" + String(value).replace(/'/g, "''") + "'";
+}
+
+function getDbSearchState(tableName){
+  if (!dbSearchState[tableName]){
+    const tableInfo = dbTables.find(t => t.name === tableName);
+    // Start with the row's name column (its primary key) checked, so a
+    // search box is ready to type into straight away.
+    dbSearchState[tableName] = { checked: new Set(tableInfo ? tableInfo.primaryKey.slice(0, 1) : []), values: {} };
+  }
+  return dbSearchState[tableName];
+}
+
+// The table's columns in the same order its results are displayed.
+function orderedSearchColumns(tableInfo){
+  const names = tableInfo.columns.map(c => c.name);
+  const order = DB_RESULT_COLUMN_ORDER[tableInfo.name];
+  const ordered = order ? order.filter(c => names.includes(c)).concat(names.filter(c => !order.includes(c))) : names;
+  return ordered.map(n => tableInfo.columns.find(c => c.name === n));
+}
+
+function renderDbSearchBuilder(){
+  const tableSelect = document.getElementById("dbSearchTable");
+  tableSelect.innerHTML = "";
+  dbTables.forEach(t => tableSelect.appendChild(new Option(t.name, t.name)));
+  if (!dbTables.some(t => t.name === dbSearchTableName)){
+    dbSearchTableName = dbTables.some(t => t.name === "cases") ? "cases" : (dbTables[0] ? dbTables[0].name : null);
+  }
+  tableSelect.value = dbSearchTableName || "";
+  renderDbSearchColumns();
+}
+
+function renderDbSearchColumns(){
+  const colsEl = document.getElementById("dbSearchColumns");
+  const fieldsEl = document.getElementById("dbSearchFields");
+  colsEl.innerHTML = "";
+  fieldsEl.innerHTML = "";
+  document.getElementById("dbSearchSql").textContent = "";
+  const tableInfo = dbTables.find(t => t.name === dbSearchTableName);
+  if (!tableInfo) return;
+  const state = getDbSearchState(tableInfo.name);
+  const columns = orderedSearchColumns(tableInfo);
+
+  columns.forEach(col => {
+    const label = document.createElement("label");
+    label.className = "db-search-col";
+    const box = document.createElement("input");
+    box.type = "checkbox";
+    box.checked = state.checked.has(col.name);
+    box.addEventListener("change", () => {
+      if (box.checked) state.checked.add(col.name); else state.checked.delete(col.name);
+      renderDbSearchColumns();
+    });
+    label.appendChild(box);
+    label.appendChild(document.createTextNode(col.name));
+    colsEl.appendChild(label);
+  });
+
+  columns.filter(col => state.checked.has(col.name)).forEach(col => {
+    const label = document.createElement("label");
+    label.className = "case-field";
+    const span = document.createElement("span");
+    span.textContent = col.name === "course" ? "course =" : col.name + " contains";
+    label.appendChild(span);
+    let field;
+    if (col.name === "course"){
+      field = document.createElement("select");
+      field.appendChild(new Option("Any course", ""));
+      Object.values(CASE_COURSE_LABELS).forEach(c => field.appendChild(new Option(c, c)));
+      field.value = state.values.course || "";
+      field.addEventListener("change", () => { state.values.course = field.value; });
+      enhanceSelectDropdown(field);
+    } else {
+      field = document.createElement("input");
+      field.type = "text";
+      field.spellcheck = false;
+      field.value = state.values[col.name] || "";
+      field.addEventListener("input", () => { state.values[col.name] = field.value; });
+      field.addEventListener("keydown", (e) => {
+        if (e.key === "Enter"){ e.preventDefault(); runDbQuery(); }
+      });
+    }
+    label.appendChild(field);
+    fieldsEl.appendChild(label);
+  });
+}
+
+// e.g. rules + rule_name "rule 14" + course "Civil Procedure" ->
+//   select * from rules where rule_name ilike '%rule 14%' and course = 'Civil Procedure'
+// Empty boxes are skipped; % and _ typed into a box match literally.
+function buildDbSearchSql(){
+  const tableInfo = dbTables.find(t => t.name === dbSearchTableName);
+  if (!tableInfo) return null;
+  const state = getDbSearchState(tableInfo.name);
+  const conditions = [];
+  orderedSearchColumns(tableInfo).forEach(col => {
+    if (!state.checked.has(col.name)) return;
+    const value = (state.values[col.name] || "").trim();
+    if (!value) return;
+    const ident = quoteSqlIdent(col.name);
+    if (col.name === "course"){
+      conditions.push(`${ident} = ${quoteSqlLiteral(value)}`);
+    } else {
+      const pattern = "%" + value.replace(/\\/g, "\\\\").replace(/[%_]/g, "\\$&") + "%";
+      const target = /char|text/i.test(col.type || "text") ? ident : `${ident}::text`;
+      conditions.push(`${target} ilike ${quoteSqlLiteral(pattern)}`);
+    }
+  });
+  return `select * from ${quoteSqlIdent(tableInfo.name)}` + (conditions.length ? " where " + conditions.join(" and ") : "");
+}
+
+function setDbQueryMode(mode){
+  dbQueryMode = mode;
+  document.querySelectorAll(".db-mode-btn").forEach(b => b.classList.toggle("active", b.dataset.dbMode === mode));
+  document.getElementById("dbSearchPanel").style.display = mode === "search" ? "" : "none";
+  document.getElementById("dbSqlInput").style.display = mode === "sql" ? "" : "none";
+  document.getElementById("dbModeTitle").textContent = mode === "search" ? "Search" : "SQL Editor";
+  document.getElementById("dbRunBtn").textContent = mode === "search" ? "Search" : "Run Query";
+  document.getElementById("dbQueryStatus").textContent = "";
+}
+
+document.querySelectorAll(".db-mode-btn").forEach(b => b.addEventListener("click", () => setDbQueryMode(b.dataset.dbMode)));
+document.getElementById("dbSearchTable").addEventListener("change", (e) => {
+  dbSearchTableName = e.target.value;
+  renderDbSearchColumns();
+});
 
 document.getElementById("dbRunBtn").addEventListener("click", runDbQuery);
 document.getElementById("dbSqlInput").addEventListener("keydown", (e) => {
@@ -8447,6 +8727,19 @@ function pollAgentRun(id){
   }, 1500);
 }
 
+// Shows a just-sent message in the session box right away (as the "> ..."
+// prompt line plus a live cursor) and jumps to the bottom, instead of
+// waiting for the next poll to bring it back from the server. The next
+// renderAgentRun replaces it with the real turn, and since the box is now
+// scrolled to the bottom it keeps following the output from there.
+function echoAgentPrompt(text){
+  const bodyEl = document.getElementById("agentOutputBody");
+  bodyEl.insertAdjacentHTML("beforeend",
+    `<div class="agent-turn-user">${escapeHtml(text)}</div>` +
+    `<div class="agent-steps"><span class="agent-cursor"></span></div>`);
+  bodyEl.scrollTop = bodyEl.scrollHeight;
+}
+
 // Sends a follow-up message into the open run's own Claude Code session
 // (see agent-runtime.js's continueRun / agent-routes.js's POST
 // /runs/:id/message) -- what lets a "Send to agent" run turn into an actual
@@ -8466,6 +8759,7 @@ async function sendAgentFollowup(){
   input.disabled = true;
   sendBtn.disabled = true;
   sendBtn.textContent = "Working…";
+  echoAgentPrompt(message);
   // Reflect "running" immediately rather than waiting for the first poll --
   // continueRun's spawn happens moments after this request returns, so
   // there'd otherwise be a beat where the UI still looks idle.
@@ -8485,6 +8779,7 @@ async function sendAgentFollowup(){
     pollAgentRun(id);
   } catch(e){
     alert("Couldn't send that message: " + e.message);
+    if (currentAgentRun) renderAgentRun(currentAgentRun); // drop the echoed prompt
     input.value = message;
     autoGrow(input);
     input.disabled = false;
@@ -8509,6 +8804,9 @@ async function startAgentChat(){
   input.disabled = true;
   sendBtn.disabled = true;
   sendBtn.textContent = "Starting…";
+  document.getElementById("agentNewChatIntro").style.display = "none";
+  document.getElementById("agentPanels").style.display = "";
+  echoAgentPrompt(message);
   const title = message.length > 60 ? message.slice(0, 57).trimEnd() + "…" : message;
 
   try{
@@ -8525,6 +8823,9 @@ async function startAgentChat(){
     refreshAgentRuns();
   } catch(e){
     alert("Couldn't start the agent: " + e.message);
+    document.getElementById("agentOutputBody").innerHTML = "";
+    document.getElementById("agentPanels").style.display = "none";
+    document.getElementById("agentNewChatIntro").style.display = "block";
     input.disabled = false;
     sendBtn.disabled = false;
     sendBtn.textContent = "Send";
@@ -14625,6 +14926,16 @@ function compileToSource(lang, opts){
     return { source, filename, ext: "html", lang };
   }
 
+  // "Compile to Word" also starts from the editor's HTML, but the .docx
+  // itself is binary and built server-side (see compiledToBlob), so
+  // `source` here is the Word-oriented HTML that gets converted -- that's
+  // what the preview panel shows.
+  if (lang === "docx"){
+    const source = buildDocxSourceHtml(titleRaw, docEditor.getHTML());
+    const filename = (titleRaw.replace(/[\\/:*?"<>|]+/g, "").trim() || "Untitled Document") + ".docx";
+    return { source, filename, ext: "docx", lang };
+  }
+
   const useAnsi = true; // bold/italic/underline are always preserved as terminal (ANSI) styling
   const meta = LANG_META[lang] || LANG_META.python;
 
@@ -14663,7 +14974,9 @@ const previewOverlay = document.getElementById("previewOverlay");
 
 function openPreviewPanel(compiled){
   document.getElementById("previewLangLabel").textContent =
-    compiled.lang === "html" ? "HTML Document" : ((LANG_META[compiled.lang] || {}).label || compiled.lang);
+    compiled.lang === "html" ? "HTML Document"
+      : compiled.lang === "docx" ? "Word Document (HTML shown is converted to .docx on Download)"
+      : ((LANG_META[compiled.lang] || {}).label || compiled.lang);
   document.getElementById("previewFilenameInput").value = compiled.filename;
   document.getElementById("sourcePreviewCode").textContent = compiled.source;
   sourcePreviewPanel.classList.add("open");
@@ -14784,13 +15097,63 @@ function buildDocumentHtml(title, bodyHtml){
 `;
 }
 
+// The HTML handed to LibreOffice for "Compile to Word": plain print styling
+// (no on-screen page card/background), and each editor page-break marker
+// turned into an empty paragraph with page-break-before, which LibreOffice
+// writes out as a real Word page break.
+function buildDocxSourceHtml(title, editorHtml){
+  const root = document.createElement("div");
+  root.innerHTML = editorHtml;
+  root.querySelectorAll("[data-page-break]").forEach(el => {
+    const p = document.createElement("p");
+    p.style.pageBreakBefore = "always";
+    el.replaceWith(p);
+  });
+  const safeTitle = title.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>${safeTitle}</title>
+<style>
+  body{ font-family:'Times New Roman',serif; font-size:12pt; line-height:1.5; }
+  table{ border-collapse:collapse; width:100%; }
+  td, th{ border:1px solid #000; padding:4px 8px; vertical-align:top; }
+  th{ font-weight:700; }
+</style>
+</head>
+<body>${prettyPrintHtml(root.innerHTML, "  ")}</body>
+</html>
+`;
+}
+
+// Turns a compileToSource() result into the bytes Download/Save write. Text
+// formats are the source itself; .docx is converted server-side from the
+// compiled HTML (POST /api/convert-html-to-docx) since there's no .docx
+// writer in the browser.
+async function compiledToBlob(compiled){
+  const mime = MIME_BY_EXT[compiled.ext] || "text/plain";
+  if (compiled.ext !== "docx") return new Blob([compiled.source], { type: mime + ";charset=utf-8" });
+  const res = await fetch(PROXY_ORIGIN + "/api/convert-html-to-docx", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ html: compiled.source })
+  });
+  const data = await res.json().catch(() => null);
+  if (!res.ok || !data || !data.fileBase64){
+    throw new Error((data && data.error) || "Couldn't convert the document to .docx.");
+  }
+  return new Blob([base64ToArrayBuffer(data.fileBase64)], { type: mime });
+}
+
 // MIME types for the File System Access API's save-picker filter, keyed by extension.
 const MIME_BY_EXT = {
   html: "text/html", txt: "text/plain", py: "text/x-python", js: "text/javascript", ts: "text/typescript",
   c: "text/x-csrc", cpp: "text/x-c++src", java: "text/x-java", cs: "text/x-csharp",
   go: "text/x-go", rs: "text/x-rust", rb: "text/x-ruby", php: "application/x-httpd-php",
   sh: "application/x-sh", swift: "text/x-swift", kt: "text/x-kotlin", pl: "text/x-perl",
-  lua: "text/x-lua", asm: "text/x-asm"
+  lua: "text/x-lua", asm: "text/x-asm",
+  docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
 };
 
 // Extra formats the Open picker accepts but that Save can't write back to
@@ -14798,7 +15161,6 @@ const MIME_BY_EXT = {
 const OPEN_ONLY_MIME_BY_EXT = {
   htm: "text/html",
   doc: "application/msword",
-  docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
   odt: "application/vnd.oasis.opendocument.text",
   ods: "application/vnd.oasis.opendocument.spreadsheet",
   pdf: "application/pdf"
@@ -15021,7 +15383,7 @@ async function downloadDocument(triggerBtn){
   }
 
   const mime = MIME_BY_EXT[ext] || "text/plain";
-  const blob = new Blob([compiled.source], { type: mime + ";charset=utf-8" });
+  const typeLabel = ext === "docx" ? "Word" : (LANG_META[lang] ? LANG_META[lang].label : "HTML");
 
   if (window.showSaveFilePicker){
     try{
@@ -15036,8 +15398,20 @@ async function downloadDocument(triggerBtn){
       const handle = await window.showSaveFilePicker({
         suggestedName: defaultName,
         startIn: notesDir || "documents",
-        types: [{ description: (LANG_META[lang] ? LANG_META[lang].label : "HTML") + " File", accept: { [mime]: ["." + ext] } }]
+        types: [{ description: typeLabel + " File", accept: { [mime]: ["." + ext] } }]
       });
+      // Built only after the picker is open -- the .docx conversion is a
+      // server round trip that would otherwise eat this click's user
+      // activation before showSaveFilePicker() got to run.
+      let blob;
+      try{
+        if (ext === "docx") btn.textContent = "Converting…";
+        blob = await compiledToBlob(compiled);
+      } catch(convertErr){
+        btn.textContent = originalLabel;
+        alert(convertErr.message);
+        return;
+      }
       const writable = await handle.createWritable();
       await writable.write(blob);
       await writable.close();
@@ -15070,6 +15444,13 @@ async function downloadDocument(triggerBtn){
   // Fallback for browsers without the File System Access API: plain browser
   // download to its default location, since there's no way to open a real
   // Explorer/Finder dialog without that API.
+  let blob;
+  try{
+    blob = await compiledToBlob(compiled);
+  } catch(convertErr){
+    alert(convertErr.message);
+    return;
+  }
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
@@ -15110,10 +15491,10 @@ async function saveDocument(){
     // "text" means the file was opened as plain text (.txt or an unrecognized
     // extension) — write the editor's text back verbatim under the file's
     // original extension rather than running it through the compiler.
-    let source, ext;
+    let blob;
     if (savedFileLang === "text"){
-      source = getEditorPlainText();
-      ext = savedFileExt;
+      const mime = MIME_BY_EXT[savedFileExt] || "text/plain";
+      blob = new Blob([getEditorPlainText()], { type: mime + ";charset=utf-8" });
     } else {
       // For Java, re-derive the class name from the file's actual saved
       // name (not the current doc title, which may well differ from a
@@ -15122,11 +15503,8 @@ async function saveDocument(){
       const compiled = (savedFileLang === "java" && savedFileHandle.name)
         ? compileToSource(savedFileLang, { filenameBase: savedFileHandle.name.replace(/\.[A-Za-z0-9]+$/, "") })
         : compileToSource(savedFileLang);
-      source = compiled.source;
-      ext = compiled.ext;
+      blob = await compiledToBlob(compiled);
     }
-    const mime = MIME_BY_EXT[ext] || "text/plain";
-    const blob = new Blob([source], { type: mime + ";charset=utf-8" });
     const writable = await savedFileHandle.createWritable();
     await writable.write(blob);
     await writable.close();

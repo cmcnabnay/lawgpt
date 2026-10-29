@@ -1521,6 +1521,47 @@ app.post("/api/convert-to-docx", async (req, res) => {
   }
 });
 
+// Converts the Draft & Compile editor's HTML into a Word .docx via headless
+// LibreOffice -- the "Word (.docx)" option in the editor's Compile-to list.
+// The browser has no .docx writer of its own, so Download/Save post the
+// compiled HTML here and write the returned bytes to the chosen file.
+app.post("/api/convert-html-to-docx", async (req, res) => {
+  const { html } = req.body || {};
+  if (!html || typeof html !== "string") {
+    return res.status(400).json({ error: "html is required." });
+  }
+
+  const workDir = path.join(os.tmpdir(), `lawgpt-convert-${crypto.randomUUID()}`);
+  const inputPath = path.join(workDir, "input.html");
+
+  try {
+    fs.mkdirSync(workDir, { recursive: true });
+    fs.writeFileSync(inputPath, html, "utf8");
+
+    await new Promise((resolve, reject) => {
+      execFile(
+        "soffice",
+        ["--headless", "--convert-to", "docx:MS Word 2007 XML", "--outdir", workDir, inputPath],
+        { timeout: 60000 },
+        (err) => (err ? reject(err) : resolve())
+      );
+    });
+
+    const outputPath = path.join(workDir, "input.docx");
+    if (!fs.existsSync(outputPath)) {
+      throw new Error("LibreOffice didn't produce a .docx output file.");
+    }
+
+    const docxBuffer = fs.readFileSync(outputPath);
+    res.json({ fileBase64: docxBuffer.toString("base64") });
+  } catch (err) {
+    console.error("HTML-to-docx conversion failed:", err);
+    res.status(500).json({ error: err.message || "Conversion failed." });
+  } finally {
+    fs.rm(workDir, { recursive: true, force: true }, () => {});
+  }
+});
+
 // Reveals a document's native file in the desktop file manager — the local
 // equivalent of double-clicking it in the documents/ folder, for file types
 // (like .docx) the browser can't render or launch a native app for the way
