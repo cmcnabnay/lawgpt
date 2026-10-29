@@ -639,6 +639,24 @@
     height:1px;
     background:var(--hairline);
   }
+  /* The tab buttons scroll sideways when the window is too narrow to fit
+     them all (e.g. half-screen with the docket open). The scroller is its
+     own element so the bar's ::after underline above isn't clipped, and the
+     menu toggle and account/settings buttons stay put outside it. */
+  .view-tabs-scroll{
+    display:flex;
+    align-self:stretch;
+    flex:1 1 auto;
+    min-width:0;
+    overflow-x:auto;
+    overflow-y:hidden;
+    scrollbar-width:thin;
+    scrollbar-color:var(--hairline) transparent;
+  }
+  .view-tabs-scroll::-webkit-scrollbar{ height:4px; }
+  .view-tabs-scroll::-webkit-scrollbar-button{ display:none; }
+  .view-tabs-scroll .view-tab{ flex:0 0 auto; white-space:nowrap; }
+  .view-tabs-scroll .view-tab:last-child{ margin-right:0; }
   .view-tab{
     background:none;
     border:none;
@@ -3298,6 +3316,7 @@ pre code {
   <main>
     <div class="view-tabs">
       <button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle docket">&#9776;</button>
+      <div class="view-tabs-scroll" id="viewTabsScroll">
       <button class="view-tab active" id="tabChat" data-view="chat">Chat</button>
       <button class="view-tab" id="tabEditor" data-view="editor">Draft &amp; Compile</button>
       <button class="view-tab" id="tabSchedule" data-view="schedule">Schedule</button>
@@ -3307,6 +3326,7 @@ pre code {
       <button class="view-tab" id="tabEmail" data-view="email">Email</button>
       <button class="view-tab" id="tabCalendar" data-view="calendar">Calendar</button>
       <button class="view-tab" id="tabAgent" data-view="agent">Agent</button>
+      </div>
       <button class="settings-gear-btn" id="accountBtn" aria-label="Account" title="Sign in to save your notes and chat history">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
           <circle cx="12" cy="8" r="3.5" stroke="currentColor" stroke-width="1.5"/>
@@ -3811,17 +3831,17 @@ pre code {
       <div class="notes-main">
         <div class="notes-wrap">
           <div class="notes-head">
-            <div class="notes-title" id="dbModeTitle">Search</div>
+            <div class="notes-title" id="dbModeTitle">SQL Editor</div>
             <div class="notes-head-actions">
               <div class="notes-save-status" id="dbQueryStatus"></div>
               <div class="db-mode-toggle" role="tablist" aria-label="Query mode">
-                <button type="button" class="db-mode-btn active" data-db-mode="search">Search</button>
-                <button type="button" class="db-mode-btn" data-db-mode="sql">SQL</button>
+                <button type="button" class="db-mode-btn" data-db-mode="search">Search</button>
+                <button type="button" class="db-mode-btn active" data-db-mode="sql">SQL</button>
               </div>
-              <button type="button" class="notes-head-btn primary" id="dbRunBtn">Search</button>
+              <button type="button" class="notes-head-btn primary" id="dbRunBtn">Run Query</button>
             </div>
           </div>
-          <div class="db-search-panel" id="dbSearchPanel">
+          <div class="db-search-panel" id="dbSearchPanel" style="display:none;">
             <div class="db-search-row">
               <label class="case-field db-search-table">
                 <span>Table</span>
@@ -3836,7 +3856,7 @@ pre code {
             <div class="db-search-fields" id="dbSearchFields"></div>
             <div class="db-search-sql" id="dbSearchSql"></div>
           </div>
-          <textarea class="db-sql-textarea" id="dbSqlInput" placeholder="select * from cases limit 50;" spellcheck="false" style="display:none;"></textarea>
+          <textarea class="db-sql-textarea" id="dbSqlInput" placeholder="select * from cases limit 50;" spellcheck="false"></textarea>
           <div class="db-results" id="dbResults"></div>
         </div>
       </div>
@@ -5129,6 +5149,32 @@ function formatParagraph(para){
     return renderNestedList(nonBlankRawLines, listLineMatch);
   }
 
+  // A paragraph mixing headings, list items, and plain lines with no blank
+  // line between them (e.g. "## Claim 3" directly above "No." directly
+  // above "- No independent basis: ..."). The checks above and below only
+  // fire when the WHOLE paragraph is one kind, so this used to fall through
+  // to plain lines and print the "##"/"-" markers literally. Splits it into
+  // runs of one kind each and formats every run on its own. An indented
+  // non-marker line inside a list run is a wrapped continuation of the item
+  // above it.
+  const isHeadingLine = (l) => /^[ \t]*#{1,6}[ \t]+\S/.test(l);
+  if (nonBlankRawLines.length > 1 && nonBlankRawLines.some(l => isHeadingLine(l) || listLineMatch(l))) {
+    const runs = [];
+    let kind = null;
+    nonBlankRawLines.forEach(l => {
+      let lineKind = isHeadingLine(l) ? "heading" : listLineMatch(l) ? "list" : "text";
+      if (lineKind === "text" && kind === "list" && /^\s+\S/.test(l)) {
+        const run = runs[runs.length - 1];
+        run[run.length - 1] += " " + l.trim();
+        return;
+      }
+      if (lineKind === "heading" || lineKind !== kind) runs.push([]);
+      runs[runs.length - 1].push(l);
+      kind = lineKind;
+    });
+    return runs.map(run => formatParagraph(run.join("\n"))).join("");
+  }
+
   const escaped = escapeHtml(para);
   const headingMatch = /^[ \t]*#{1,6}[ \t]+(.*)$/.exec(escaped);
   if (headingMatch && !headingMatch[1].includes("\n")){
@@ -5173,7 +5219,12 @@ function boldInline(line){
     // (a stray close with no matching open, or a leftover fragment) -- drop
     // it rather than show it.
     .replace(/&lt;\/?b&gt;/gi, "")
+    .replace(/\*\*\*(.+?)\*\*\*/g, "<strong><em>$1</em></strong>")
     .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+    // Markdown italics, e.g. a case name like *Owen v. Kroger*. The opening
+    // "*" can't follow a word character and neither "*" can sit against a
+    // space, so arithmetic like "2 * 3 * 4" or a stray asterisk is left alone.
+    .replace(/(^|[^\w*])\*(?=\S)([^*\n]*?\S)\*(?!\w)/g, "$1<em>$2</em>")
     // Markdown links, e.g. a registration link the agent quoted from an
     // email -- escapeHtml leaves [ ] ( ) untouched, so this runs on the
     // already-escaped text like everything else above.
@@ -5455,6 +5506,24 @@ document.getElementById("tabCalendar").addEventListener("click", () => setView("
 document.getElementById("tabAgent").addEventListener("click", () => setView("agent"));
 document.getElementById("tabNotes").addEventListener("click", () => setView("notes"));
 document.getElementById("tabDatabase").addEventListener("click", () => setView("database"));
+
+// With the cursor over the tab titles, a normal (vertical) mouse wheel
+// scrolls the tab strip sideways when it's too narrow to show every tab.
+// Trackpad sideways swipes (deltaX) already scroll it natively, so only a
+// mostly-vertical wheel gesture is translated.
+const viewTabsScroll = document.getElementById("viewTabsScroll");
+viewTabsScroll.addEventListener("wheel", (e) => {
+  if (viewTabsScroll.scrollWidth <= viewTabsScroll.clientWidth) return;
+  if (Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return;
+  e.preventDefault();
+  const step = e.deltaMode === 1 ? e.deltaY * 16 : e.deltaY; // line-mode wheels report lines, not pixels
+  viewTabsScroll.scrollLeft += step;
+}, { passive: false });
+// Clicking a tab that's half cut off at either edge scrolls it fully into view.
+viewTabsScroll.addEventListener("click", (e) => {
+  const tab = e.target.closest(".view-tab");
+  if (tab) tab.scrollIntoView({ block: "nearest", inline: "nearest" });
+});
 
 
 // ====== ROW EDITOR (Notes tab) ======
@@ -6492,7 +6561,7 @@ async function runDbQuery(){
 // '%value%', "course" is a dropdown matched exactly), all ANDed together.
 // Checked columns and typed values are remembered per table, so switching
 // tables and back doesn't lose them.
-let dbQueryMode = "search";
+let dbQueryMode = "sql";
 let dbSearchTableName = null;
 const dbSearchState = {}; // table name -> { checked: Set<column>, values: {column: value} }
 
