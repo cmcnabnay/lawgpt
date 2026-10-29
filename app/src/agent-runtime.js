@@ -17,10 +17,11 @@
 // terminal-style transcript.
 //
 // Both are buffered in-memory per run while it's in flight (liveRuns) so the
-// Agent tab can poll cheaply without hitting Supabase on every chunk, then
-// flushed to agent-store.js on a short debounce while running and always
-// once more on completion -- so a run survives a server restart and shows
-// up again next time the account signs in, same as email/notes state.
+// Agent tab's poll is answered from memory without touching Supabase at
+// all, then flushed to agent-store.js on a short debounce while running and
+// always once more on completion -- so a run survives a server restart and
+// shows up again next time the account signs in. Each flush is a write-only
+// UPDATE of that run's own row (see agent-store.js), never a read.
 
 const { spawn } = require("child_process");
 const fs = require("fs");
@@ -28,7 +29,7 @@ const os = require("os");
 const path = require("path");
 const agentStore = require("./agent-store");
 
-const liveRuns = new Map(); // runId -> { userId, output, result, turns, status, child }
+const liveRuns = new Map(); // runId -> { userId, title, output, result, turns, status, child }
 const flushTimers = new Map();
 const FLUSH_INTERVAL_MS = 1500;
 const MAX_TOOL_RESULT_CHARS = 4000;
@@ -348,8 +349,10 @@ function spawnClaude(entry, userId, runId, args, cwd, prompt){
 // `claude --resume <runId>` to open that exact conversation, or just
 // `claude --resume` for the interactive picker, which will list it among
 // recent sessions since it's a real persisted session like any other.
-function startRun(userId, runId, prompt, cwd){
-  const entry = { userId, output: "", result: "", turns: [{ prompt, result: "", steps: [] }], status: "running", child: null };
+// `title` is kept on the live entry so GET /runs/:id can answer a poll
+// entirely from memory.
+function startRun(userId, runId, prompt, cwd, title){
+  const entry = { userId, title: title || "Agent run", output: "", result: "", turns: [{ prompt, result: "", steps: [] }], status: "running", child: null };
   liveRuns.set(runId, entry);
   spawnClaude(entry, userId, runId, [
     "-p",
@@ -380,6 +383,7 @@ async function continueRun(userId, runId, followupPrompt, cwd){
     : (stored && (stored.prompt || stored.result) ? [{ prompt: stored.prompt || "", result: stored.result || "" }] : []);
   const entry = {
     userId,
+    title: (stored && stored.title) || "Agent run",
     output: priorOutput + (priorOutput ? "\n\n" : "") + `> ${followupPrompt}\n`,
     result: (stored && stored.result) || "",
     turns: priorTurns.concat([{ prompt: followupPrompt, result: "", steps: [] }]),

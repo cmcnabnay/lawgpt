@@ -70,10 +70,11 @@ router.get("/runs/:id", async (req, res) => {
   const userId = req.session.userId;
   const live = agentRuntime.getLiveRun(req.params.id);
   if (live && live.userId === userId) {
-    const stored = await agentStore.getRun(userId, req.params.id);
+    // Answered entirely from memory -- this is polled every 1.5s while the
+    // run streams, so it must not touch Supabase.
     return res.json({
       id: req.params.id,
-      title: (stored && stored.title) || "Agent run",
+      title: live.title || "Agent run",
       status: live.status,
       output: live.output,
       result: live.result,
@@ -97,6 +98,9 @@ router.patch("/runs/:id", async (req, res) => {
   if (!title) return res.status(400).json({ error: { message: "title is required." } });
   const run = await getOrAdoptRun(userId, req.params.id);
   if (!run) return res.status(404).json({ error: { message: "Run not found." } });
+  // A live run's polls read the title from memory, so rename it there too.
+  const live = agentRuntime.getLiveRun(req.params.id);
+  if (live && live.userId === userId) live.title = title;
   res.json(await agentStore.updateRun(userId, req.params.id, { title }));
 });
 
@@ -117,19 +121,18 @@ async function getOrAdoptRun(userId, id){
     // continueRun.
     const external = await agentRuntime.loadExternalSession(id);
     if (external) {
-      run = await agentStore.createRun(userId, {
+      await agentStore.createRun(userId, {
         id,
         title: external.title || "Claude Code session",
         prompt: "",
-        source: "external"
-      });
-      run = await agentStore.updateRun(userId, id, {
+        source: "external",
         output: external.output,
         result: external.result,
         turns: external.turns,
         status: "done",
         cwd: external.cwd || null
       });
+      run = await agentStore.getRun(userId, id);
     }
   }
   return run;
@@ -142,7 +145,7 @@ router.post("/run", async (req, res) => {
   }
   const id = crypto.randomUUID();
   const run = await agentStore.createRun(req.session.userId, { id, title, prompt, source });
-  agentRuntime.startRun(req.session.userId, id, prompt, REPO_ROOT);
+  agentRuntime.startRun(req.session.userId, id, prompt, REPO_ROOT, run.title);
   res.json(run);
 });
 

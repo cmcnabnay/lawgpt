@@ -855,7 +855,7 @@ router.post("/messages/:id/agent/run", async (req, res) => {
     prompt: agentPrompt,
     source: { type: "email", messageId: message.id }
   });
-  agentRuntime.startRun(userId, runId, agentPrompt, REPO_ROOT);
+  agentRuntime.startRun(userId, runId, agentPrompt, REPO_ROOT, message.subject || "Agent run");
 
   const updated = await emailStore.updateMessage(userId, message.id, {
     agentStatus: "running",
