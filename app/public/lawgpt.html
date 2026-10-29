@@ -2914,7 +2914,7 @@ pre code {
 .db-search-panel{ flex:0 0 auto; margin-bottom:12px; }
 .db-search-row{ display:flex; gap:16px; align-items:flex-start; flex-wrap:wrap; margin-bottom:12px; }
 .db-search-table{ flex:0 0 200px; }
-.db-search-columns-wrap{ flex:1; min-width:240px; }
+.db-search-columns-wrap{ flex:0 1 320px; min-width:220px; position:relative; }
 .db-search-label{
   display:block;
   font-size:11px;
@@ -2923,21 +2923,55 @@ pre code {
   color:var(--text-muted);
   margin-bottom:6px;
 }
-.db-search-columns{ display:flex; flex-wrap:wrap; gap:6px; }
+.db-search-cols-btn{
+  width:100%;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:8px;
+  background:var(--ink-2);
+  border:1px solid var(--hairline);
+  color:var(--text-light);
+  padding:10px 12px;
+  border-radius:var(--radius);
+  font-family:'IBM Plex Mono',monospace;
+  font-size:13px;
+  line-height:1.6;
+  text-align:left;
+  cursor:pointer;
+}
+.db-search-cols-btn:hover, .db-search-cols-btn[aria-expanded="true"]{ border-color:var(--brass-dim); }
+.db-search-cols-btn .db-search-cols-text{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.db-search-cols-btn .db-search-cols-caret{ color:var(--text-muted); flex:0 0 auto; }
+.db-search-cols-menu{
+  display:none;
+  position:absolute;
+  left:0;
+  right:0;
+  top:calc(100% + 4px);
+  z-index:50;
+  max-height:300px;
+  overflow:auto;
+  background:var(--ink-2);
+  border:1px solid var(--hairline);
+  border-radius:var(--radius);
+  box-shadow:0 8px 24px rgba(0,0,0,0.35);
+  padding:4px 0;
+}
+.db-search-cols-menu.show{ display:block; }
 .db-search-col{
   display:flex;
   align-items:center;
-  gap:5px;
+  gap:8px;
   font-family:'IBM Plex Mono',monospace;
-  font-size:12px;
+  font-size:12.5px;
   color:var(--text-light);
-  border:1px solid var(--hairline);
-  border-radius:var(--radius);
-  padding:4px 9px;
+  padding:6px 12px;
   cursor:pointer;
   user-select:none;
 }
-.db-search-col:has(input:checked){ border-color:var(--brass-dim); color:var(--brass); }
+.db-search-col:hover{ background:var(--ink-3); }
+.db-search-col:has(input:checked){ color:var(--brass); }
 .db-search-col input{ accent-color:var(--brass); margin:0; }
 .db-search-fields{ display:grid; grid-template-columns:repeat(auto-fill, minmax(240px, 1fr)); gap:12px; }
 .db-search-sql{
@@ -3795,7 +3829,8 @@ pre code {
               </label>
               <div class="db-search-columns-wrap">
                 <span class="db-search-label">Search columns</span>
-                <div class="db-search-columns" id="dbSearchColumns"></div>
+                <button type="button" class="db-search-cols-btn" id="dbSearchColsBtn" aria-haspopup="listbox" aria-expanded="false"></button>
+                <div class="db-search-cols-menu" id="dbSearchColumns" role="listbox" aria-multiselectable="true"></div>
               </div>
             </div>
             <div class="db-search-fields" id="dbSearchFields"></div>
@@ -6526,6 +6561,19 @@ function renderDbSearchColumns(){
     colsEl.appendChild(label);
   });
 
+  const picked = columns.filter(col => state.checked.has(col.name)).map(col => col.name);
+  const btn = document.getElementById("dbSearchColsBtn");
+  btn.innerHTML = "";
+  const text = document.createElement("span");
+  text.className = "db-search-cols-text";
+  text.textContent = picked.length ? picked.join(", ") : "Select columns…";
+  const caret = document.createElement("span");
+  caret.className = "db-search-cols-caret";
+  caret.textContent = "▾";
+  btn.appendChild(text);
+  btn.appendChild(caret);
+  btn.title = picked.join(", ");
+
   columns.filter(col => state.checked.has(col.name)).forEach(col => {
     const label = document.createElement("label");
     label.className = "case-field";
@@ -6590,6 +6638,22 @@ function setDbQueryMode(mode){
 }
 
 document.querySelectorAll(".db-mode-btn").forEach(b => b.addEventListener("click", () => setDbQueryMode(b.dataset.dbMode)));
+// Search-columns dropdown: a multi-select menu of checkboxes that stays
+// open while columns are ticked, and closes on an outside click or Escape.
+const dbSearchColsBtn = document.getElementById("dbSearchColsBtn");
+const dbSearchColsMenu = document.getElementById("dbSearchColumns");
+function setDbSearchColsMenuOpen(open){
+  dbSearchColsMenu.classList.toggle("show", open);
+  dbSearchColsBtn.setAttribute("aria-expanded", open ? "true" : "false");
+}
+dbSearchColsBtn.addEventListener("click", () => setDbSearchColsMenuOpen(!dbSearchColsMenu.classList.contains("show")));
+document.addEventListener("mousedown", (e) => {
+  if (!dbSearchColsMenu.contains(e.target) && !dbSearchColsBtn.contains(e.target)) setDbSearchColsMenuOpen(false);
+});
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") setDbSearchColsMenuOpen(false);
+});
+
 document.getElementById("dbSearchTable").addEventListener("change", (e) => {
   dbSearchTableName = e.target.value;
   renderDbSearchColumns();
