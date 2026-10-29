@@ -9106,7 +9106,19 @@ async function openEmailEventsPopup(msg){
       `<div class="sync-result-row-meta"><span>${escapeHtml(whenLabel)}</span>` +
       `<span><span class="email-event-course-dot" style="background:${color}"></span>${escapeHtml(emailCourseLabel(ev.courseFolder))}</span>` +
       tags.map(t => `<span class="calendar-event-tag">${escapeHtml(t)}</span>`).join("") +
-      `</div>`;
+      `</div>` +
+      (ev.sessionId ? `<div class="sync-result-row-session">claude --resume ${escapeHtml(ev.sessionId)}</div>` : "");
+    // Same Claude Code session popup the sync result's "calendar events
+    // found" list opens (see openEmailSyncResultPopup). A merged event keeps
+    // the session of the email that first created it (calendarStore.addEvents),
+    // so that's the email named here.
+    const sessionEl = row.querySelector(".sync-result-row-session");
+    if (sessionEl){
+      sessionEl.addEventListener("click", (e) => {
+        e.stopPropagation();
+        showClaudeSessionPopup(ev.sessionId, `This event was extracted from "${ev.sourceSubject || ev.title || "an email"}" by this Claude Code session.`, `${ev.sourceSubject || ev.title || "Email"} - Claude Code`);
+      });
+    }
     body.appendChild(row);
   });
 }
