@@ -814,17 +814,18 @@ app.get("/api/auth/me", (req, res) => {
 // The client-side "docket" blob (matters, savedReports, etc. -- see
 // STORAGE_KEY in lawgpt.html) is stored across separate columns rather than
 // one combined `data` JSONB blob (see migrations/2026-09-14-split-user-state-columns.sql)
-// -- matters/customNotesPrompts each get their own column, plus the three
+// -- matters/customNotesPrompts each get their own column, plus the two
 // small scalars. Saved reports live one row each in the saved_reports table
 // (see saved-report-store.js): GET returns only their sidebar fields as
 // stubs, a report's body comes from GET /api/user/reports/:id when it's
 // opened, and changes go through POST /api/user/reports/sync -- never
-// through this POST. The old user_state.saved_reports column is no longer
-// read or written.
+// through this POST. reportCounter isn't stored: the page only uses it as
+// a suffix on new report ids (already unique by Date.now()) and falls back
+// to savedReports.length, which GET still lets it compute.
 app.get("/api/user/state", requireAppDb, requireLogin, async (req, res) => {
   try {
     const result = await appPool.query(
-      `SELECT matters, custom_notes_prompts, matter_counter, report_counter, active_matter_id
+      `SELECT matters, custom_notes_prompts, matter_counter, active_matter_id
        FROM user_state WHERE user_id = $1`,
       [req.session.userId]
     );
@@ -834,7 +835,6 @@ app.get("/api/user/state", requireAppDb, requireLogin, async (req, res) => {
       savedReports: await savedReportStore.listStubs(req.session.userId),
       customNotesPrompts: row.custom_notes_prompts,
       matterCounter: row.matter_counter,
-      reportCounter: row.report_counter,
       activeMatterId: row.active_matter_id
     } : null;
     res.json({ data });
@@ -850,13 +850,12 @@ app.post("/api/user/state", requireAppDb, requireLogin, async (req, res) => {
       return res.status(400).json({ error: { message: "No 'data' provided." } });
     }
     await appPool.query(
-      `INSERT INTO user_state (user_id, matters, custom_notes_prompts, matter_counter, report_counter, active_matter_id, updated_at)
-       VALUES ($1, $2, $3, $4, $5, $6, now())
+      `INSERT INTO user_state (user_id, matters, custom_notes_prompts, matter_counter, active_matter_id, updated_at)
+       VALUES ($1, $2, $3, $4, $5, now())
        ON CONFLICT (user_id) DO UPDATE SET
          matters = EXCLUDED.matters,
          custom_notes_prompts = EXCLUDED.custom_notes_prompts,
          matter_counter = EXCLUDED.matter_counter,
-         report_counter = EXCLUDED.report_counter,
          active_matter_id = EXCLUDED.active_matter_id,
          updated_at = now()`,
       [
@@ -864,7 +863,6 @@ app.post("/api/user/state", requireAppDb, requireLogin, async (req, res) => {
         JSON.stringify(data.matters || []),
         JSON.stringify(data.customNotesPrompts || {}),
         Number.isFinite(data.matterCounter) ? data.matterCounter : 0,
-        Number.isFinite(data.reportCounter) ? data.reportCounter : 0,
         data.activeMatterId || null
       ]
     );
