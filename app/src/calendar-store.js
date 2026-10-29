@@ -127,17 +127,46 @@ function isDuplicateEvent(existing, candidate) {
   return overlap.shared >= 3 && overlap.ratio >= 0.5;
 }
 
-// Appends events from a freshly-synced message (or a backfill batch),
-// skipping any candidate that looks like the same real-world event as one
-// already stored -- the same deadline can legitimately be mentioned in more
-// than one email (an announcement, then a reminder), and each is extracted
-// independently with no visibility into the others, so this is the one place
-// that actually catches it.
+// Fields a later email can fill in when the first email to mention an event
+// left them blank -- e.g. a digest sent the week before that didn't have a
+// room yet, followed by one that did.
+const MERGEABLE_FIELDS = ["location", "rsvpUrl", "description"];
+
+// Copies onto `existing` whatever `candidate` knows that it doesn't, and
+// records the candidate's email as another source. Only fills gaps -- never
+// overwrites a value already stored, since backfill can process an older
+// email after a newer one and a user may have edited the event by hand.
+function mergeEventInto(existing, candidate) {
+  for (const field of MERGEABLE_FIELDS) {
+    if (!existing[field] && candidate[field]) existing[field] = candidate[field];
+  }
+  if (!existing.hasTime && candidate.hasTime) {
+    existing.time = candidate.time;
+    existing.hasTime = true;
+  }
+  if (candidate.lunch) existing.lunch = true;
+  if (candidate.rsvp) existing.rsvp = true;
+
+  const sources = existing.sourceMessageIds || (existing.sourceMessageId ? [existing.sourceMessageId] : []);
+  if (candidate.sourceMessageId && !sources.some(id => String(id) === String(candidate.sourceMessageId))) {
+    sources.push(candidate.sourceMessageId);
+  }
+  existing.sourceMessageIds = sources;
+}
+
+// Appends events from a freshly-synced message (or a backfill batch). A
+// candidate that looks like the same real-world event as one already stored
+// is merged into it rather than dropped, so a later email can supply
+// details (room, time, RSVP link) the first one didn't have.
 async function addEvents(userId, newEvents) {
   if (!newEvents || !newEvents.length) return await load(userId);
   const events = await load(userId);
   for (const candidate of newEvents) {
-    if (!events.some(existing => isDuplicateEvent(existing, candidate))) {
+    const existing = events.find(ev => isDuplicateEvent(ev, candidate));
+    if (existing) {
+      mergeEventInto(existing, candidate);
+    } else {
+      candidate.sourceMessageIds = [candidate.sourceMessageId];
       events.push(candidate);
     }
   }

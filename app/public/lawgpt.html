@@ -9072,7 +9072,8 @@ async function openEmailEventsPopup(msg){
     // Refreshed here too because calendarEventHasLunch/NeedsRsvp's fallback
     // counts an email's events in this cache (see calendarEventFallbackText).
     calendarEventsCache = data.events || [];
-    events = calendarEventsCache.filter(ev => String(ev.sourceMessageId) === String(msg.id));
+    events = calendarEventsCache.filter(ev =>
+      (ev.sourceMessageIds || [ev.sourceMessageId]).some(id => String(id) === String(msg.id)));
   } catch(e){
     body.innerHTML = `<div class="sync-result-empty">Couldn't load events: ${escapeHtml(e.message)}</div>`;
     return;
