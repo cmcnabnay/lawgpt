@@ -663,7 +663,7 @@ router.post("/sync", async (req, res) => {
       documentsDownloaded,
       eventsFound: newCalendarEvents.length,
       reclassified,
-      messages: await emailStore.getAll(userId),
+      messages: await emailStore.getAllSummaries(userId),
       // Full records behind each count above, so the Email tab's sync-result
       // popups ("3 new emails", "0 documents downloaded", "1 calendar event
       // found") have something to actually list when clicked, instead of
@@ -681,7 +681,16 @@ router.post("/sync", async (req, res) => {
 router.get("/messages", async (req, res) => {
   const userId = req.session.userId;
   const tokenResult = await getAccessTokenSilent(userId);
-  res.json({ messages: await emailStore.getAll(userId), configured: !tokenResult.error });
+  res.json({ messages: await emailStore.getAllSummaries(userId), configured: !tokenResult.error });
+});
+
+// One message in full, body included -- the list above leaves bodies out,
+// so the Email tab fetches this when an email is actually viewed (or sent
+// to the agent).
+router.get("/messages/:id", async (req, res) => {
+  const message = await emailStore.getMessage(req.session.userId, req.params.id);
+  if (!message) return res.status(404).json({ error: { message: "No synced email with that id." } });
+  res.json(message);
 });
 
 // The email's flyer, for a calendar event's RSVP pill when no RSVP link was

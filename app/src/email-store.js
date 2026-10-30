@@ -90,6 +90,20 @@ async function getAll(userId){
   return result.rows.map(r => r.data);
 }
 
+// Same list as getAll, minus each message's body -- for the Email tab's
+// tiles, which only show subject/sender/date. The body is most of each
+// row, so leaving it out keeps a tab open from downloading every stored
+// email in full; the Email tab fetches one message's body via getMessage
+// when it's actually viewed.
+async function getAllSummaries(userId){
+  if (!appPool || !userId) return [];
+  const result = await appPool.query(
+    "SELECT data - 'body' AS data FROM email_messages WHERE user_id = $1 ORDER BY received_at DESC NULLS LAST",
+    [userId]
+  );
+  return result.rows.map(r => r.data);
+}
+
 async function getMessage(userId, id){
   if (!appPool || !userId || id == null) return null;
   const result = await appPool.query(
@@ -145,4 +159,4 @@ async function updateMessage(userId, id, patch){
   return result.rows[0] ? result.rows[0].data : null;
 }
 
-module.exports = { getDeltaLink, getIds, addMessages, getAll, getMessage, getStaleForReclassify, deleteMessage, markDone, updateMessage };
+module.exports = { getDeltaLink, getIds, addMessages, getAll, getAllSummaries, getMessage, getStaleForReclassify, deleteMessage, markDone, updateMessage };

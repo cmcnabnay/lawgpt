@@ -8554,14 +8554,38 @@ function renderEmailList(){
 // popup back afterward.
 let emailViewOpenedFromCalendarEvent = false;
 
-function openEmailView(msg){
+// The email list (GET /api/email/messages) leaves bodies out, so a
+// message's body is fetched the first time it's needed and kept on the
+// cached message object, so viewing it again doesn't re-fetch.
+async function loadEmailBody(msg){
+  if (typeof msg.body === "string") return msg.body;
+  const res = await fetch(PROXY_ORIGIN + "/api/email/messages/" + encodeURIComponent(msg.id));
+  const data = await res.json();
+  if (!res.ok) throw new Error((data && data.error && data.error.message) || "Server returned " + res.status);
+  msg.body = data.body || "";
+  return msg.body;
+}
+
+async function openEmailView(msg){
   const dateLabel = msg.date ? new Date(msg.date).toLocaleString() : "";
+  const bodyEl = document.getElementById("emailViewBody");
   document.getElementById("emailViewSubject").textContent = msg.subject || "(no subject)";
   document.getElementById("emailViewMeta").innerHTML =
     `<span>${escapeHtml(msg.from || "")}</span>${dateLabel ? `<span>${escapeHtml(dateLabel)}</span>` : ""}`;
-  document.getElementById("emailViewBody").textContent = msg.body || "(No body text.)";
+  bodyEl.textContent = typeof msg.body === "string" ? (msg.body || "(No body text.)") : "Loading…";
   document.getElementById("emailViewOverlay").style.display = "flex";
+  if (typeof msg.body === "string") return;
+  // Another email may have been opened while this one's body was loading --
+  // only fill the popup if it's still showing this message.
+  const viewSeq = ++emailViewSeq;
+  try{
+    const body = await loadEmailBody(msg);
+    if (viewSeq === emailViewSeq) bodyEl.textContent = body || "(No body text.)";
+  } catch(e){
+    if (viewSeq === emailViewSeq) bodyEl.textContent = "Couldn't load this email: " + e.message;
+  }
 }
+let emailViewSeq = 0;
 function closeEmailView(){
   document.getElementById("emailViewOverlay").style.display = "none";
   // If this email view was opened from the calendar event popup's "View
@@ -8597,7 +8621,13 @@ async function deleteEmailMessage(id, subject){
 // "Send to agent" -- opens a new chat in the Agent tab with this email's
 // text already in the message box, for the user to add instructions to and
 // send themselves (nothing runs until they hit Send).
-function sendEmailToAgent(msg){
+async function sendEmailToAgent(msg){
+  try{
+    await loadEmailBody(msg);
+  } catch(e){
+    alert("Couldn't load this email: " + e.message);
+    return;
+  }
   setView("agent");
   showAgentNewChat();
   const dateLabel = msg.date ? new Date(msg.date).toLocaleString() : "";
