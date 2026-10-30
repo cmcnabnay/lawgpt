@@ -1,22 +1,36 @@
 // email-store.js
 //
 // Per-account store for synced email metadata -- each user's messages,
-// per-folder delta-sync watermarks, done-flags, and generated plans live in
-// their own `email_sync_state` column (see ~/Documents/setup-user-accounts.sql),
-// the same app_user-backed pattern user_state.js-equivalent code in
-// server.js already uses for the notes/chat docket. Unlike document-store.js
-// (an in-memory Map rebuilt by rescanning documents/ on disk), there's no
-// folder to rescan here -- the mailbox itself is the source of truth for the
-// messages, but which ones have already been synced (and their
-// assignment/course classification, and whether the user marked them done)
-// has to survive a server restart on its own.
+// done-flags, and generated plans, one row per message in the
+// `email_messages` table (`data` holds the whole message object). The
+// mailbox itself is the source of truth for the messages, but which ones
+// have already been synced (and their course classification, and whether
+// the user marked them done) has to survive a server restart on its own.
 //
-// deltaLinks is keyed per source folder (currently just "forwarded", see
-// email-routes.js) rather than a single watermark -- Outlook's own
-// junk-mail filtering runs before inbox rules, so mail that should have
-// been moved into a "Forwarded"-style folder can land in Junk instead;
-// syncing multiple folders recovers those without depending on Outlook's
-// Safe-senders list actually working, should that ever be added back.
+// One row per message, not the single users.email_sync_state.messages
+// array they used to live in: with the array, marking one email done or
+// saving one plan read and rewrote every stored email body. Here those are
+// single-row UPDATEs that return just that message.
+//
+// deltaLinks (per-folder Graph delta watermarks) stay in
+// users.email_sync_state, now holding only { deltaLinks } -- keyed per
+// source folder (currently just "forwarded", see email-routes.js) rather
+// than a single watermark, since Outlook's junk filtering can land mail
+// meant for a "Forwarded"-style folder in Junk instead.
+//
+// Requires (run once against the Supabase app_user DB):
+//
+//   CREATE TABLE IF NOT EXISTS email_messages (
+//     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+//     id TEXT NOT NULL,
+//     data JSONB NOT NULL,
+//     received_at TEXT GENERATED ALWAYS AS (data->>'date') STORED,
+//     PRIMARY KEY (user_id, id)
+//   );
+//   CREATE INDEX IF NOT EXISTS email_messages_user_received_idx ON email_messages(user_id, received_at DESC);
+//   GRANT SELECT, INSERT, UPDATE, DELETE ON email_messages TO app_user;
+//   CREATE POLICY app_user_full_access ON email_messages
+//     FOR ALL TO app_user USING (true) WITH CHECK (true);
 
 const SUPABASE_APP_DB_URL = process.env.SUPABASE_APP_DB_URL || "";
 let appPool = null;
@@ -28,52 +42,82 @@ if (SUPABASE_APP_DB_URL) {
   });
 }
 
-async function load(userId){
-  if (!appPool || !userId) return { deltaLinks: {}, messages: [] };
-  const result = await appPool.query("SELECT email_sync_state FROM users WHERE id = $1", [userId]);
-  const parsed = (result.rows[0] && result.rows[0].email_sync_state) || {};
-  return {
-    deltaLinks: (parsed.deltaLinks && typeof parsed.deltaLinks === "object") ? parsed.deltaLinks : {},
-    messages: Array.isArray(parsed.messages) ? parsed.messages : []
-  };
+// The stored watermark for one source folder, or undefined if there isn't
+// one yet. Reads only the deltaLinks key, never the rest of the column.
+async function getDeltaLink(userId, folderKey){
+  if (!appPool || !userId) return undefined;
+  const result = await appPool.query(
+    "SELECT email_sync_state->'deltaLinks'->>$2::text AS link FROM users WHERE id = $1",
+    [userId, folderKey]
+  );
+  return (result.rows[0] && result.rows[0].link) || undefined;
 }
 
-async function save(userId, state){
-  if (!appPool || !userId) return;
-  await appPool.query("UPDATE users SET email_sync_state = $1 WHERE id = $2", [JSON.stringify(state), userId]);
+// Ids of every stored message -- what /sync needs to skip mail it already
+// has, without pulling any bodies.
+async function getIds(userId){
+  if (!appPool || !userId) return new Set();
+  const result = await appPool.query("SELECT id FROM email_messages WHERE user_id = $1", [userId]);
+  return new Set(result.rows.map(r => String(r.id)));
 }
 
-// Appends newly-synced messages for one source folder and advances that
+// Inserts newly-synced messages for one source folder and advances that
 // folder's delta watermark (a Graph "@odata.deltaLink" URL -- passing it
 // back as the next request's URL is how Graph's delta query returns only
-// what changed since last time) in one write. Deduped by message id, since
-// a delta response can include an already-seen message again if it merely
-// changed (e.g. read status) -- without this, re-syncing would pile up
-// duplicate rows for the same email instead of just updating nothing.
+// what changed since last time). Deduped by message id, since a delta
+// response can include an already-seen message again if it merely changed
+// (e.g. read status) -- an existing row is left untouched.
 async function addMessages(userId, newMessages, folderKey, deltaLink){
-  const state = await load(userId);
-  state.deltaLinks[folderKey] = deltaLink;
-
-  const existingIds = new Set(state.messages.map(m => m.id));
+  if (!appPool || !userId) return;
   for (const msg of newMessages) {
-    if (!existingIds.has(msg.id)) {
-      state.messages.push(msg);
-      existingIds.add(msg.id);
-    }
+    await appPool.query(
+      "INSERT INTO email_messages (user_id, id, data) VALUES ($1, $2, $3) ON CONFLICT (user_id, id) DO NOTHING",
+      [userId, String(msg.id), JSON.stringify(msg)]
+    );
   }
-
-  await save(userId, state);
-  return state;
+  if (deltaLink) {
+    await appPool.query(
+      `UPDATE users SET email_sync_state = jsonb_set(
+         CASE WHEN jsonb_typeof(email_sync_state->'deltaLinks') = 'object' THEN email_sync_state
+              ELSE jsonb_set(coalesce(email_sync_state, '{}'::jsonb), '{deltaLinks}', '{}'::jsonb) END,
+         ARRAY['deltaLinks', $2::text], to_jsonb($3::text))
+       WHERE id = $1`,
+      [userId, folderKey, deltaLink]
+    );
+  }
 }
 
+// Every message, newest first -- the Email tab's list.
 async function getAll(userId){
-  const state = await load(userId);
-  return state.messages.slice().sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
+  if (!appPool || !userId) return [];
+  const result = await appPool.query(
+    "SELECT data FROM email_messages WHERE user_id = $1 ORDER BY received_at DESC NULLS LAST",
+    [userId]
+  );
+  return result.rows.map(r => r.data);
 }
 
 async function getMessage(userId, id){
-  const state = await load(userId);
-  return state.messages.find(m => String(m.id) === String(id)) || null;
+  if (!appPool || !userId || id == null) return null;
+  const result = await appPool.query(
+    "SELECT data FROM email_messages WHERE user_id = $1 AND id = $2",
+    [userId, String(id)]
+  );
+  return result.rows[0] ? result.rows[0].data : null;
+}
+
+// Messages /sync's reclassification pass needs to look at: not hand-filed,
+// and either classified under older rules or still uncategorized.
+async function getStaleForReclassify(userId, classifierVersion){
+  if (!appPool || !userId) return [];
+  const result = await appPool.query(
+    `SELECT data FROM email_messages
+     WHERE user_id = $1
+       AND coalesce((data->>'courseManual')::boolean, false) = false
+       AND (coalesce(data->>'classifierVersion', '') <> $2 OR data->>'courseFolder' = 'uncategorized')`,
+    [userId, String(classifierVersion)]
+  );
+  return result.rows.map(r => r.data);
 }
 
 // Removes a message from the local store -- called after it's been deleted
@@ -82,34 +126,30 @@ async function getMessage(userId, id){
 // only returns what's new/changed, and a message we deleted ourselves is
 // neither.
 async function deleteMessage(userId, id){
-  const state = await load(userId);
-  const index = state.messages.findIndex(m => String(m.id) === String(id));
-  if (index === -1) return false;
-  state.messages.splice(index, 1);
-  await save(userId, state);
-  return true;
+  if (!appPool || !userId) return false;
+  const result = await appPool.query(
+    "DELETE FROM email_messages WHERE user_id = $1 AND id = $2",
+    [userId, String(id)]
+  );
+  return result.rowCount > 0;
 }
 
 async function markDone(userId, id, done){
-  const state = await load(userId);
-  const message = state.messages.find(m => String(m.id) === String(id));
-  if (!message) return null;
-  message.done = Boolean(done);
-  await save(userId, state);
-  return message;
+  return updateMessage(userId, id, { done: Boolean(done) });
 }
 
 // Generic patch used by the plan-generation and agent-run endpoints in
 // email-routes.js -- merges the given fields onto the stored message rather
 // than needing a bespoke setter for every new field those features track
-// (plan text, plan errors, agent status/log/timestamps).
+// (plan text, plan errors, agent status/log/timestamps). One row, no read
+// beforehand; returns the updated message, or null if there's no such id.
 async function updateMessage(userId, id, patch){
-  const state = await load(userId);
-  const message = state.messages.find(m => String(m.id) === String(id));
-  if (!message) return null;
-  Object.assign(message, patch);
-  await save(userId, state);
-  return message;
+  if (!appPool || !userId) return null;
+  const result = await appPool.query(
+    "UPDATE email_messages SET data = data || $3::jsonb WHERE user_id = $1 AND id = $2 RETURNING data",
+    [userId, String(id), JSON.stringify(patch || {})]
+  );
+  return result.rows[0] ? result.rows[0].data : null;
 }
 
-module.exports = { load, save, addMessages, getAll, getMessage, deleteMessage, markDone, updateMessage };
+module.exports = { getDeltaLink, getIds, addMessages, getAll, getMessage, getStaleForReclassify, deleteMessage, markDone, updateMessage };

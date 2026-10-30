@@ -480,15 +480,14 @@ async function storedRecipientAddresses(message, accessToken){
 }
 
 async function reclassifyStaleMessages(userId, accessToken){
-  const state = await emailStore.load(userId);
+  // Only the messages that need it: never hand-filed ones (a course picked
+  // by right-clicking the Email tab's course pill is never overridden by the
+  // automatic rules), and only those classified under older rules or still
+  // uncategorized -- filtered in the query rather than loading every email.
+  const stale = await emailStore.getStaleForReclassify(userId, CLASSIFIER_VERSION);
   let reclassified = 0;
 
-  for (const message of state.messages){
-    // A course the user picked by hand (right-click on the Email tab's
-    // course pill) is never overridden by the automatic rules.
-    if (message.courseManual) continue;
-    if (message.classifierVersion === CLASSIFIER_VERSION && message.courseFolder !== "uncategorized") continue;
-
+  for (const message of stale){
     const toAddresses = await storedRecipientAddresses(message, accessToken);
     const newFolder = classifyEmailCourse({ toAddresses, from: message.from, subject: message.subject, body: message.body });
     const patch = { classifierVersion: CLASSIFIER_VERSION };
@@ -510,17 +509,16 @@ router.post("/sync", async (req, res) => {
   if (!folderName) {
     return res.status(400).json({ error: { message: "No email folder configured yet. Set one in Settings before syncing." } });
   }
-  const state = await emailStore.load(userId);
-
   try {
     const folder = await findFolder(accessToken, folderName);
-    const { messages: rawMessages, deltaLink } = await fetchDeltaMessages(accessToken, folder.id, state.deltaLinks[FOLDER_KEY]);
+    const { messages: rawMessages, deltaLink } = await fetchDeltaMessages(accessToken, folder.id, await emailStore.getDeltaLink(userId, FOLDER_KEY));
 
     // A delta response can repeat an already-stored message (it merely
     // changed, e.g. read status), and a restarted delta (see
     // fetchDeltaMessages) returns the whole folder -- skipped here so
-    // neither re-runs attachment downloads or calendar extraction.
-    const storedIds = new Set(state.messages.map(m => String(m.id)));
+    // neither re-runs attachment downloads or calendar extraction. Ids
+    // only -- no stored bodies are read for this.
+    const storedIds = await emailStore.getIds(userId);
     const newMessages = [];
     const newCalendarEvents = [];
     const newDocuments = [];

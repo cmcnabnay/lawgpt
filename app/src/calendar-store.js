@@ -2,14 +2,29 @@
 //
 // Per-account store for calendar events extracted from synced email (see
 // calendar-extract.js, called from email-routes.js's /sync and from
-// calendar-backfill.js). Same app_user-backed per-user JSONB pattern already
-// used for agent_runs/email_sync_state/doc_overrides -- see agent-store.js,
-// which this mirrors.
+// calendar-backfill.js), plus ones added by hand -- one row per event in
+// the `calendar_events` table (`data` holds the whole event object), rather
+// than the single users.calendar_events array they used to live in, where
+// editing one event read and rewrote all of them. `event_day` and
+// `source_message_id` are generated from `data` so addEvents' duplicate
+// check can read just that day's events and a recategorized email can move
+// just its own events.
 //
-// Requires (run once against the Supabase app_user DB, alongside whatever
-// created users/user_state -- see ~/Documents/setup-user-accounts.sql):
+// Requires (run once against the Supabase app_user DB):
 //
-//   ALTER TABLE users ADD COLUMN IF NOT EXISTS calendar_events JSONB NOT NULL DEFAULT '[]'::jsonb;
+//   CREATE TABLE IF NOT EXISTS calendar_events (
+//     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+//     id TEXT NOT NULL,
+//     data JSONB NOT NULL,
+//     event_day TEXT GENERATED ALWAYS AS (substring(data->>'date' from '^\d{4}-\d{2}-\d{2}')) STORED,
+//     source_message_id TEXT GENERATED ALWAYS AS (data->>'sourceMessageId') STORED,
+//     PRIMARY KEY (user_id, id)
+//   );
+//   CREATE INDEX IF NOT EXISTS calendar_events_user_day_idx ON calendar_events(user_id, event_day);
+//   CREATE INDEX IF NOT EXISTS calendar_events_user_source_idx ON calendar_events(user_id, source_message_id);
+//   GRANT SELECT, INSERT, UPDATE, DELETE ON calendar_events TO app_user;
+//   CREATE POLICY app_user_full_access ON calendar_events
+//     FOR ALL TO app_user USING (true) WITH CHECK (true);
 
 const crypto = require("crypto");
 
@@ -25,14 +40,30 @@ if (SUPABASE_APP_DB_URL) {
 
 async function load(userId) {
   if (!appPool || !userId) return [];
-  const result = await appPool.query("SELECT calendar_events FROM users WHERE id = $1", [userId]);
-  const events = result.rows[0] && result.rows[0].calendar_events;
-  return Array.isArray(events) ? events : [];
+  const result = await appPool.query("SELECT data FROM calendar_events WHERE user_id = $1", [userId]);
+  return result.rows.map(r => r.data);
 }
 
-async function save(userId, events) {
+// Inserts or replaces whole events, by id.
+async function upsertEvents(userId, events) {
   if (!appPool || !userId) return;
-  await appPool.query("UPDATE users SET calendar_events = $1 WHERE id = $2", [JSON.stringify(events), userId]);
+  for (const event of events) {
+    await appPool.query(
+      `INSERT INTO calendar_events (user_id, id, data) VALUES ($1, $2, $3)
+       ON CONFLICT (user_id, id) DO UPDATE SET data = EXCLUDED.data`,
+      [userId, String(event.id), JSON.stringify(event)]
+    );
+  }
+}
+
+// One event, scoped to the owning user.
+async function getEvent(userId, id) {
+  if (!appPool || !userId || id == null) return null;
+  const result = await appPool.query(
+    "SELECT data FROM calendar_events WHERE user_id = $1 AND id = $2",
+    [userId, String(id)]
+  );
+  return result.rows[0] ? result.rows[0].data : null;
 }
 
 function sortKeyOf(ev) {
@@ -158,20 +189,31 @@ function mergeEventInto(existing, candidate) {
 // candidate that looks like the same real-world event as one already stored
 // is merged into it rather than dropped, so a later email can supply
 // details (room, time, RSVP link) the first one didn't have.
+// Only events on the candidates' own days are read -- isDuplicateEvent
+// never matches across days -- and only the merged or new ones are
+// written. Returns those touched events.
 async function addEvents(userId, newEvents) {
-  if (!newEvents || !newEvents.length) return await load(userId);
-  const events = await load(userId);
+  if (!newEvents || !newEvents.length || !appPool || !userId) return [];
+  const days = [...new Set(newEvents.map(ev => calendarDayKeyOf(ev.date)))];
+  const result = await appPool.query(
+    "SELECT data FROM calendar_events WHERE user_id = $1 AND event_day = ANY($2::text[])",
+    [userId, days]
+  );
+  const events = result.rows.map(r => r.data);
+  const touched = new Map();
   for (const candidate of newEvents) {
     const existing = events.find(ev => isDuplicateEvent(ev, candidate));
     if (existing) {
       mergeEventInto(existing, candidate);
+      touched.set(existing.id, existing);
     } else {
       candidate.sourceMessageIds = [candidate.sourceMessageId];
       events.push(candidate);
+      touched.set(candidate.id, candidate);
     }
   }
-  await save(userId, events);
-  return events;
+  await upsertEvents(userId, [...touched.values()]);
+  return [...touched.values()];
 }
 
 // Manually added by the user from the Calendar tab (as opposed to extracted
@@ -180,7 +222,6 @@ async function addEvents(userId, newEvents) {
 // adding an event should never be silently dropped for looking similar to
 // something already on the calendar.
 async function createEvent(userId, data) {
-  const events = await load(userId);
   const event = {
     id: crypto.randomUUID(),
     title: (data.title || "").trim() || "(untitled event)",
@@ -194,40 +235,38 @@ async function createEvent(userId, data) {
     courseFolder: "uncategorized",
     createdAt: new Date().toISOString()
   };
-  events.push(event);
-  await save(userId, events);
+  await upsertEvents(userId, [event]);
   return event;
 }
 
+// Merges `patch` onto one event's row without reading it first; returns
+// the updated event, or null if there's no such id.
 async function updateEvent(userId, id, patch) {
-  const events = await load(userId);
-  const event = events.find(e => String(e.id) === String(id));
-  if (!event) return null;
-  Object.assign(event, patch);
-  await save(userId, events);
-  return event;
+  if (!appPool || !userId) return null;
+  const result = await appPool.query(
+    "UPDATE calendar_events SET data = data || $3::jsonb WHERE user_id = $1 AND id = $2 RETURNING data",
+    [userId, String(id), JSON.stringify(patch || {})]
+  );
+  return result.rows[0] ? result.rows[0].data : null;
 }
 
 // Applies the same patch to every event extracted from one email -- used
 // when that email gets recategorized, so its events follow it.
 async function updateEventsForMessage(userId, messageId, patch) {
-  const events = await load(userId);
-  let changed = false;
-  for (const event of events) {
-    if (String(event.sourceMessageId) === String(messageId)) {
-      Object.assign(event, patch);
-      changed = true;
-    }
-  }
-  if (changed) await save(userId, events);
+  if (!appPool || !userId || messageId == null) return;
+  await appPool.query(
+    "UPDATE calendar_events SET data = data || $3::jsonb WHERE user_id = $1 AND source_message_id = $2",
+    [userId, String(messageId), JSON.stringify(patch || {})]
+  );
 }
 
 async function deleteEvent(userId, id) {
-  const events = await load(userId);
-  const filtered = events.filter(e => String(e.id) !== String(id));
-  if (filtered.length === events.length) return false;
-  await save(userId, filtered);
-  return true;
+  if (!appPool || !userId) return false;
+  const result = await appPool.query(
+    "DELETE FROM calendar_events WHERE user_id = $1 AND id = $2",
+    [userId, String(id)]
+  );
+  return result.rowCount > 0;
 }
 
 // Wipes every stored event for the account -- used by calendar-backfill.js's
@@ -235,7 +274,8 @@ async function deleteEvent(userId, id) {
 // (including any from before a fix to the extraction/date logic) don't stick
 // around alongside the freshly re-extracted ones.
 async function clearAll(userId) {
-  await save(userId, []);
+  if (!appPool || !userId) return;
+  await appPool.query("DELETE FROM calendar_events WHERE user_id = $1", [userId]);
 }
 
-module.exports = { getAll, addEvents, createEvent, updateEvent, updateEventsForMessage, deleteEvent, clearAll };
+module.exports = { getAll, getEvent, addEvents, createEvent, updateEvent, updateEventsForMessage, deleteEvent, clearAll };

@@ -104,11 +104,10 @@ async function startForceRecheck(userId) {
 async function runJob(userId, messages, job) {
   let index = 0;
 
-  // emailStore.updateMessage/calendarStore.addEvents are each a
-  // load-mutate-save round trip against one JSONB column -- fine for a
-  // single caller, but concurrent workers finishing at nearly the same time
-  // could each load the same "before" state and overwrite each other's write
-  // on save. The CLI calls (the actual bottleneck) still run at CONCURRENCY
+  // calendarStore.addEvents is a read-merge-write over the candidates' days
+  // (its duplicate check) -- fine for a single caller, but concurrent
+  // workers finishing at nearly the same time could each read the same
+  // "before" events for a day and insert the same event twice. The CLI calls (the actual bottleneck) still run at CONCURRENCY
   // in parallel; only the store writes that follow are funneled through this
   // one-at-a-time queue.
   let writeQueue = Promise.resolve();

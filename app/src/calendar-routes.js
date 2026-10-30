@@ -91,7 +91,7 @@ router.put("/events/:id", async (req, res) => {
 // (rsvpUrlChecked), so a later click on the RSVP pill doesn't re-ask Claude.
 router.post("/events/:id/rsvp-url", async (req, res) => {
   const userId = req.session.userId;
-  const event = (await calendarStore.getAll(userId)).find(e => String(e.id) === String(req.params.id));
+  const event = await calendarStore.getEvent(userId, req.params.id);
   if (!event) return res.status(404).json({ error: { message: "No calendar event with that id." } });
   // An event extracted before the rsvp flag existed has none at all -- its
   // pill comes from the frontend's text guess (calendarEventNeedsRsvp), and
