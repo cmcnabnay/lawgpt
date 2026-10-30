@@ -12,13 +12,17 @@
 // saving one plan read and rewrote every stored email body. Here those are
 // single-row UPDATEs that return just that message.
 //
-// deltaLinks (per-folder Graph delta watermarks) stay in
-// users.email_sync_state, now holding only { deltaLinks } -- keyed per
-// source folder (currently just "forwarded", see email-routes.js) rather
-// than a single watermark, since Outlook's junk filtering can land mail
-// meant for a "Forwarded"-style folder in Junk instead.
+// The Graph delta watermark for the synced folder (only "Forwarded" is
+// synced, see email-routes.js's /sync) is the users.email_delta_link
+// column -- just the URL; it's the old users.email_sync_state column,
+// renamed and narrowed once the messages moved out of it.
 //
 // Requires (run once against the Supabase app_user DB):
+//
+//   ALTER TABLE users RENAME COLUMN email_sync_state TO email_delta_link;
+//   ALTER TABLE users ALTER COLUMN email_delta_link DROP DEFAULT,
+//     ALTER COLUMN email_delta_link DROP NOT NULL,
+//     ALTER COLUMN email_delta_link TYPE TEXT USING email_delta_link->'deltaLinks'->>'forwarded';
 //
 //   CREATE TABLE IF NOT EXISTS email_messages (
 //     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -42,15 +46,11 @@ if (SUPABASE_APP_DB_URL) {
   });
 }
 
-// The stored watermark for one source folder, or undefined if there isn't
-// one yet. Reads only the deltaLinks key, never the rest of the column.
-async function getDeltaLink(userId, folderKey){
+// The stored watermark, or undefined if there isn't one yet.
+async function getDeltaLink(userId){
   if (!appPool || !userId) return undefined;
-  const result = await appPool.query(
-    "SELECT email_sync_state->'deltaLinks'->>$2::text AS link FROM users WHERE id = $1",
-    [userId, folderKey]
-  );
-  return (result.rows[0] && result.rows[0].link) || undefined;
+  const result = await appPool.query("SELECT email_delta_link FROM users WHERE id = $1", [userId]);
+  return (result.rows[0] && result.rows[0].email_delta_link) || undefined;
 }
 
 // Ids of every stored message -- what /sync needs to skip mail it already
@@ -61,13 +61,13 @@ async function getIds(userId){
   return new Set(result.rows.map(r => String(r.id)));
 }
 
-// Inserts newly-synced messages for one source folder and advances that
-// folder's delta watermark (a Graph "@odata.deltaLink" URL -- passing it
-// back as the next request's URL is how Graph's delta query returns only
-// what changed since last time). Deduped by message id, since a delta
-// response can include an already-seen message again if it merely changed
-// (e.g. read status) -- an existing row is left untouched.
-async function addMessages(userId, newMessages, folderKey, deltaLink){
+// Inserts newly-synced messages and advances the delta watermark (a Graph
+// "@odata.deltaLink" URL -- passing it back as the next request's URL is
+// how Graph's delta query returns only what changed since last time).
+// Deduped by message id, since a delta response can include an
+// already-seen message again if it merely changed (e.g. read status) -- an
+// existing row is left untouched.
+async function addMessages(userId, newMessages, deltaLink){
   if (!appPool || !userId) return;
   for (const msg of newMessages) {
     await appPool.query(
@@ -76,14 +76,7 @@ async function addMessages(userId, newMessages, folderKey, deltaLink){
     );
   }
   if (deltaLink) {
-    await appPool.query(
-      `UPDATE users SET email_sync_state = jsonb_set(
-         CASE WHEN jsonb_typeof(email_sync_state->'deltaLinks') = 'object' THEN email_sync_state
-              ELSE jsonb_set(coalesce(email_sync_state, '{}'::jsonb), '{deltaLinks}', '{}'::jsonb) END,
-         ARRAY['deltaLinks', $2::text], to_jsonb($3::text))
-       WHERE id = $1`,
-      [userId, folderKey, deltaLink]
-    );
+    await appPool.query("UPDATE users SET email_delta_link = $1 WHERE id = $2", [deltaLink, userId]);
   }
 }
 

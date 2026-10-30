@@ -72,11 +72,6 @@ const MESSAGE_FIELDS = "subject,from,toRecipients,receivedDateTime,hasAttachment
 // instead of a loose file under version control.
 const REPO_ROOT = path.join(__dirname, "..", "..");
 
-// Key emailStore's deltaLinks under -- see email-store.js's header comment
-// for why it's an object keyed per source folder rather than one value.
-// Only the "Forwarded" folder is actually synced today (see /sync below).
-const FOLDER_KEY = "forwarded";
-
 // Same OpenAI Responses API that server.js's /api/chat proxies to, using
 // the signed-in user's own saved key (getPersonalApiKey) -- same per-account
 // lookup /api/chat uses, so Generate Plan works with whatever key that user
@@ -462,7 +457,11 @@ async function applyMessageCourse(userId, message, newFolder, patch){
     }
     await calendarStore.updateEventsForMessage(userId, message.id, { courseFolder: newFolder });
   }
-  await emailStore.updateMessage(userId, message.id, { ...patch, courseFolder: newFolder });
+  // Every /sync re-checks each still-uncategorized message, and most come
+  // out exactly as they went in -- skip the write when nothing would change.
+  const update = { ...patch, courseFolder: newFolder };
+  const unchanged = Object.keys(update).every(k => JSON.stringify(update[k]) === JSON.stringify(message[k]));
+  if (!unchanged) await emailStore.updateMessage(userId, message.id, update);
   return changed;
 }
 
@@ -511,7 +510,7 @@ router.post("/sync", async (req, res) => {
   }
   try {
     const folder = await findFolder(accessToken, folderName);
-    const { messages: rawMessages, deltaLink } = await fetchDeltaMessages(accessToken, folder.id, await emailStore.getDeltaLink(userId, FOLDER_KEY));
+    const { messages: rawMessages, deltaLink } = await fetchDeltaMessages(accessToken, folder.id, await emailStore.getDeltaLink(userId));
 
     // A delta response can repeat an already-stored message (it merely
     // changed, e.g. read status), and a restarted delta (see
@@ -649,7 +648,7 @@ router.post("/sync", async (req, res) => {
       });
     }
 
-    await emailStore.addMessages(userId, newMessages, FOLDER_KEY, deltaLink);
+    await emailStore.addMessages(userId, newMessages, deltaLink);
     await calendarStore.addEvents(userId, newCalendarEvents);
     const reclassified = await reclassifyStaleMessages(userId, accessToken);
 
