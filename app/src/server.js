@@ -103,8 +103,6 @@ const OPENROUTER_MODELS = [
   { id: "nvidia/nemotron-3.5-lightning:free", note: "reliable" },
   { id: "google/gemma-4-26b-a4b-it:free", note: "often rate-limited" },
   { id: "google/gemma-4-31b-it:free", note: "often rate-limited" },
-  { id: "poolside/laguna-s-2.1:free", note: "reliable" },
-  { id: "poolside/laguna-xs-2.1:free", note: "often rate-limited" },
   { id: "nvidia/nemotron-3-ultra-550b-a55b:free", note: "reliable" },
   { id: "nvidia/nemotron-3.5-content-safety:free", note: "untested -- built as a moderation/safety classifier, may behave oddly as a general chat model" },
   { id: "xingchen-agi/xing4.0-29b-a4b:free", note: "often rate-limited" },
