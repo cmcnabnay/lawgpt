@@ -107,7 +107,8 @@ const OPENROUTER_MODELS = [
   { id: "xingchen-agi/xing4.0-29b-a4b:free", note: "often rate-limited" },
   { id: "nvidia/nemotron-3.5-super-vl:free", note: "untested" },
   { id: "recursive/flint-v1.0:free", note: "untested" },
-  { id: "stealth/crouton-alpha", note: "untested" }
+  { id: "stealth/crouton-alpha", note: "untested" },
+  { id: "liquid/lfm-3-1.7b:free", note: "untested" }
 ];
 const OPENROUTER_MODEL_IDS = new Set(OPENROUTER_MODELS.map(m => m.id));
 
