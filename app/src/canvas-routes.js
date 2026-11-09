@@ -30,7 +30,7 @@ const documentStore = require("./document-store");
 const { scrapeNewQuiz, findQuizLinksViaBrowser } = require("./canvas-new-quiz-scrape");
 
 const MAX_ITEMS = 150;          // safety cap on items fetched from Canvas per import (already-imported items don't count)
-const MAX_TEXT_CHARS = 200000;  // cap extracted text per file before returning it
+const MAX_TEXT_CHARS = 260000;  // cap extracted text per file before returning it
 const FETCH_TIMEOUT_MS = 20000;
 const MAX_STORED_PDF_BYTES = 20 * 1024 * 1024; // cap on keeping the raw PDF around for direct upload to OpenAI
 
