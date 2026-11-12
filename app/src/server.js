@@ -1152,16 +1152,26 @@ app.post("/api/chat", async (req, res) => {
       // Claude Code is text-only via the CLI -- no native-PDF path like the
       // OpenAI branch below, so every attached document goes in as its
       // already-extracted text, same as the OpenRouter branch further down.
-      const context = attachedDocuments
-        .map(doc => `SOURCE: ${doc.fileName || doc.title}\n\n${doc.text || ""}`)
-        .join("\n\n---\n\n");
-      const userPrompt =
-        `Canvas course materials:\n\n${context || "(No relevant Canvas documents found.)"}\n\n` +
-        `User question:\n${question}`;
+      //
       // claudeSessionId only ever arrives here from the Notes follow-up chat
       // (see sendNotesChatMessage in lawgpt.html) -- Notes generation itself
       // never sends one, so that first call always starts a fresh session,
-      // same as before.
+      // same as before. A resumed session already holds the attached
+      // documents from the turn that generated the notes, so a resuming call
+      // sends only the new question: re-pasting the full reading text on
+      // every follow-up just piled another copy of it into the same
+      // conversation each turn.
+      let userPrompt;
+      if (claudeSessionId) {
+        userPrompt = question;
+      } else {
+        const context = attachedDocuments
+          .map(doc => `SOURCE: ${doc.fileName || doc.title}\n\n${doc.text || ""}`)
+          .join("\n\n---\n\n");
+        userPrompt =
+          `Canvas course materials:\n\n${context || "(No relevant Canvas documents found.)"}\n\n` +
+          `User question:\n${question}`;
+      }
       const result = await runClaudeCode({ systemPrompt: developerText, userPrompt, resumeSessionId: claudeSessionId || undefined });
       if (result.ok) {
         const realDocNames = attachedDocuments.map(doc => doc.fileName || doc.title).filter(Boolean);
