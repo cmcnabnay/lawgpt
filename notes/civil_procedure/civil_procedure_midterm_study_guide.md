@@ -1851,6 +1851,444 @@ Under **20(b)** the court may order **separate trials** to prevent prejudice.
 
 ---
 
+# UNIT X — Personal Jurisdiction (Classes 30–33)
+
+**Personal jurisdiction (PJ)** is the court's **power over the parties**. Without it, a court can't enter a judgment that **binds** the defendant, just as it can't without SMJ. PJ and SMJ are **independent**: a court can have one and lack the other.
+- Unlike SMJ, PJ limits **both state and federal courts**. SMJ comes from Article III; PJ comes from the **Due Process Clause** (14th Amendment for state courts).
+- Unlike SMJ, PJ is a **waivable, personal** defense. It's lost if left out of the first Rule 12 motion or answer (12(h)(1)), and a defendant can consent to it.
+
+**PJ roadmap:**
+1. **Statute:** Does the forum state's **long-arm statute** authorize jurisdiction? A **federal** court borrows the state's reach under **Rule 4(k)(1)(A)**. Most long-arm statutes go to the constitutional limit, so this step usually merges into step 2.
+2. **Traditional bases** (no contacts analysis needed):
+   - **Tag:** served while **physically present** in the state (Burnham). Not if brought in by **force or fraud**, or present as a party or witness in another case.
+   - **Consent:** appearing and litigating without objecting, a forum-selection clause, or **registering to do business** under a consent statute (Mallory).
+   - **Domicile** (individuals) or **at home** (corporations: state of incorporation + principal place of business).
+3. **General jurisdiction** ("all-purpose"; any claim, even one unrelated to the forum): the defendant is **"essentially at home"** in the forum (Goodyear, Daimler).
+4. **Specific jurisdiction** ("case-linked"): (a) **minimum contacts** that the **defendant itself purposefully** created with the **forum state** (WWVW, Nicastro, Walden); (b) the claim **arises out of or relates to** those contacts; (c) exercising jurisdiction is **fair and reasonable** (the WWVW factors).
+
+| | **General jurisdiction** | **Specific jurisdiction** |
+|---|---|---|
+| Claims covered | **Any and all** claims | Only claims that **arise out of or relate to** the forum contacts |
+| Test | Affiliations so continuous and systematic the defendant is **"essentially at home"** | **Minimum contacts** + **fair play and substantial justice** |
+| Individuals | **Domicile**; tag (Burnham) | Purposeful contacts with the forum |
+| Corporations | **State of incorporation** + **principal place of business**; maybe an "exceptional case" (Perkins); registration consent (Mallory) | Purposeful availment; stream of commerce "plus" (Nicastro) |
+| Key cases | Goodyear, Daimler, Perkins, Helicopteros, Burnham, Mallory | Int'l Shoe, WWVW, Nicastro, Walden, Calder, be2 |
+
+**Ways to challenge PJ:**
+- **Special appearance** / Rule 12(b)(2) motion in the original case. Litigating without objecting **waives** the defense.
+- **Default, then collaterally attack** the judgment as void (riskier). If the court had PJ, the defendant loses the chance to contest the merits. A defaulting defendant who later challenges PJ **bears the burden of proof** (be2).
+
+## Class 30 (11/3) — Historical Development of the Doctrine
+
+**Lecture wrap-up on removal:**
+- **Caterpillar:** If complete diversity is missing at removal, **dropping the nondiverse party** before judgment cures the defect.
+- **Grupo Dataflux:** Domicile is fixed **at filing**. A later **change in citizenship** can't cure a defect, which is different from dropping a party.
+- **Removal and change of citizenship:** For diversity removal, courts require complete diversity **both at filing and at removal**. A defendant can't change domicile after filing to make the case removable. Some courts say a **plaintiff's** change of domicile after filing in state court can make the case removable.
+
+### Reading: Introduction to Personal Jurisdiction (CB 1017–19)
+**Rule: Connection principle.** "The courts of a state can adjudicate only the rights of those who have **enough of a connection to the state** to justify the exercise of the state's judicial authority over them."
+- **Before the 14th Amendment:** Courts generally wouldn't exercise jurisdiction over defendants not present in their territory. This was a matter of **comity** (mutual respect among sovereigns), not constitutional compulsion.
+- **After the 14th Amendment:** The Due Process Clause bars states, **including state courts**, from depriving anyone of "life, liberty, or property, without due process of law." Personal jurisdiction became a **constitutional** limit.
+
+### Reading: *Pennoyer v. Neff* (CB 1019–26)
+**Rule: Pennoyer's territorial framework.** A state's courts have power over **persons and property within its territory**, and none beyond it. A personal (in personam) judgment requires:
+- **Presence:** service of process **within the state**, or
+- **Consent:** a voluntary appearance, or
+- **Property:** an in rem or quasi in rem case tied to property in the state (the property must be **attached at the start** of the suit).
+- A judgment entered **without personal jurisdiction is void**. It violates due process and isn't entitled to full faith and credit.
+
+**Case: Pennoyer v. Neff** (U.S. 1878)
+- **Facts:**
+  - **Mitchell**, an Oregon lawyer, sued **Neff**, a nonresident, in Oregon state court on a **contract claim** for unpaid fees. Neff was served only **by publication** and never appeared. Mitchell got a **default judgment**.
+  - To satisfy it, Neff's Oregon land was sold at a sheriff's execution sale, and **Pennoyer** eventually bought it.
+  - Neff later sued Pennoyer in federal court to recover the land, which was worth about $15,000. Neff claimed title through a U.S. land patent; Pennoyer claimed it through the sheriff's deed.
+- **Issue:** Was the Oregon judgment against Neff valid? Does due process limit a state court's power to enter judgment against a defendant who can't be found in the state?
+- **Holding:** No, the judgment was **void**. Neff wasn't served in Oregon and didn't appear. The land was within Oregon's territory, but it **wasn't attached at the outset**, and the case was a **personal contract claim** against Neff. So Pennoyer's title failed.
+- **Takeaway:** Under Pennoyer, a personal judgment requires in-state service or consent, and a judgment entered without personal jurisdiction is void and can be attacked collaterally.
+
+### Reading: *Hess v. Pawloski* (CB 1029–31)
+**Rule: Implied consent.** A state may declare that a nonresident's **use of its highways** is **equivalent to appointing a state official as agent** for service of process in suits arising from accidents there, as long as the statute gives **actual notice** and a **reasonable opportunity to defend**.
+- **Rationale:** The state has power to **exclude** nonresident drivers until they formally appoint an agent, so it can treat driving as the appointment. The difference between **formal and implied appointment** is "not substantial."
+- **Foreign corporations:** A state's qualified power to exclude them supports implying their consent.
+- **Individuals doing business:** A state **can't** exclude individuals from doing business, so their consent can't be implied from mere business activity.
+- Motor vehicles are "**dangerous machines**," giving the state a police-power interest in regulating everyone on its roads. The statute puts nonresidents "on the same footing as residents."
+
+**Case: Hess v. Pawloski** (U.S. 1927)
+- **Facts:**
+  - Hess, a **Pennsylvania** resident, allegedly drove negligently in **Massachusetts** and injured Pawloski, who sued in Massachusetts state court.
+  - Hess wasn't personally served, and no property was attached. Service was made under a Massachusetts statute treating a nonresident's driving as appointing the **registrar** as agent for service. The statute required notice by **registered mail**, the defendant's return receipt, and continuances if needed to defend.
+  - Hess **appeared specially** to contest jurisdiction and lost. The jury found for Pawloski.
+- **Issue:** Does a statute treating a nonresident's driving on state highways as appointment of the registrar as agent for service violate due process?
+- **Holding:** No. **Affirmed.** Since the state may require formal appointment before nonresidents drive on its roads, it may deem driving to be that appointment. Consent is limited to highway accident cases, and the statute ensures actual notice and a chance to defend.
+- **Takeaway:** Hess was the first crack in Pennoyer. It kept Pennoyer's form (service on an authorized agent) while expanding its reach through the **fiction of implied consent**.
+
+### Reading: *International Shoe Co. v. Washington* (CB 1034–39)
+**Rule: Minimum contacts.** If the defendant is "not present within the territory of the forum," due process requires only "**certain minimum contacts** with it such that the maintenance of the suit does not offend '**traditional notions of fair play and substantial justice**.'"
+- **Corporate "presence" is a fiction.** A corporation acts only through its agents, so asking whether it's "present" just "begs the question." The real question is whether its contacts make it **reasonable** to require it to defend this suit.
+- **Not mechanical or quantitative.** The test depends on "the **quality and nature** of the activity" in relation to the fair and orderly administration of the laws.
+- **Outer limit:** A state can't bind a defendant with "**no contacts, ties, or relations**" to it.
+- **Reciprocity:** A corporation that conducts activities in a state "enjoys the **benefits and protection** of the laws of that state." Requiring it to answer suits on obligations that **arise out of** those activities is "hardly" undue.
+- **Inconvenience** to the defendant of trial away from its "home" is relevant.
+- The old "**mere solicitation**" vs. "**solicitation plus**" labels gave way to the functional test.
+
+**International Shoe's two-variable grid** (the source of specific vs. general jurisdiction):
+
+| Defendant's activity in the forum | Claim **related** to the activity | Claim **unrelated** to the activity |
+|---|---|---|
+| **Continuous and systematic** | **Jurisdiction** (this case) | Usually **no**, unless operations are "so substantial" (later: general jurisdiction) |
+| **Single or isolated** | **Sometimes**, depending on the "nature and quality" of the acts | **No** |
+
+**Case: International Shoe Co. v. Washington** (U.S. 1945)
+- **Facts:**
+  - International Shoe was a **Delaware** corporation with its principal place of business in **St. Louis, Missouri**. It had **no office, inventory, or contracts** in Washington.
+  - From 1937 to 1940 it employed **11–13 salesmen** who lived and worked in Washington. They displayed samples and **solicited orders**, which were accepted in St. Louis and shipped from outside the state. Commissions topped **$31,000 a year**.
+  - Washington sought unpaid **unemployment-fund contributions** based on those salesmen's wages. It served notice on a Washington salesman and mailed a copy to St. Louis.
+  - The company **appeared specially**, arguing it wasn't "doing business" in Washington and had no agent there.
+- **Issue:** Did the company's activities in Washington subject it to suit there, consistent with due process? Was the notice adequate?
+- **Holding:** Yes. The salesmen's activities were "**systematic and continuous**," produced a large volume of business, and **gave rise to the very obligation sued on**. That's enough minimum contacts. Notice by service on a salesman plus registered mail to the home office was adequate. **Affirmed.**
+  - **Justice Black (separately):** "Fair play" and "substantial justice" are too vague, giving courts room to second-guess state legislatures.
+- **Takeaway:** International Shoe replaced Pennoyer's territorial-presence model with the minimum contacts and fair play test, which is the foundation of the modern specific/general framework.
+
+**Lecture summary (from Pennoyer to Shoe).** There's PJ if:
+- The defendant is a **resident** of the state, or the case is about **property** in the state (Pennoyer).
+- The defendant **consents** by litigating in that court (Pennoyer).
+- **Tag:** the defendant is served within the state (lecture ties this to Hess).
+- The defendant **causes harm in the state** / implied consent (Hess), which International Shoe expands: an out-of-state defendant with **minimum contacts** can be sued on claims **arising from** those contacts.
+
+---
+
+## Class 31 (11/4) — Specific Jurisdiction
+
+### Reading: Note on Long-Arm Statutes (CB 1041–42)
+**Rule: Two sources of limits.** State-court PJ is limited by **(1) state law** and **(2) the 14th Amendment's Due Process Clause**.
+- **Long-arm statute:** a state law that reaches defendants far from the state. States expanded these statutes after International Shoe's "more permissive paradigm."
+- **Constitutional maximum:** Courts usually read long-arm statutes to reach as far as the Constitution allows (e.g., Cal. Civ. Proc. Code § 410.10; 735 ILCS 5/2-209(c); Nev. Rev. Stat. § 14.065).
+- **States may go narrower** than due process allows.
+- **Two-step inquiry:** (1) Does state law authorize jurisdiction? (2) Is it consistent with due process? With a maximum-reach statute, the two steps **collapse into one**: the due process question.
+- **Federal courts:** **Rule 4(k)(1)(A)** gives a federal court the same PJ as "a court of general jurisdiction in the state where the district court is located." So federal courts use the same two steps (Walden, Daimler, be2).
+
+### Reading: *World-Wide Volkswagen Corp. v. Woodson* (CB 1043–54)
+**Rule: Foreseeability isn't enough.** "'Foreseeability' alone has never been a sufficient benchmark." What matters is that "the defendant's conduct and connection with the forum State are such that he should **reasonably anticipate being haled into court there**."
+- **Purposeful availment:** A defendant that "purposefully avails itself of the privilege of conducting activities within the forum State" has **clear notice** it can be sued there. It can manage the risk through insurance, pricing, or leaving the market.
+- **Stream of commerce:** A state may assert jurisdiction over "a corporation that **delivers its products into the stream of commerce with the expectation that they will be purchased by consumers in the forum State**."
+- **Unilateral activity:** "The mere unilateral activity of those who claim some relationship with a nonresident defendant" can't supply the contact.
+- **Collateral financial benefits** (e.g., revenue from cars that happen to be driven into the state) don't count.
+- **Two functions of minimum contacts:** (1) protect the defendant from litigating in a distant or inconvenient forum; (2) keep states within their limits as **coequal sovereigns** (interstate federalism).
+- **Federalism can override convenience.** Even if the defendant faces little inconvenience, the forum has a strong interest, and it's the most convenient place, due process can still bar jurisdiction.
+- **Reasonableness (fairness) factors:**
+  1. Burden on the defendant (always a primary concern)
+  2. Forum state's interest in adjudicating the dispute
+  3. Plaintiff's interest in convenient and effective relief
+  4. Interstate judicial system's interest in efficiency
+  5. States' shared interest in furthering fundamental substantive social policies
+
+**Case: World-Wide Volkswagen Corp. v. Woodson** (U.S. 1980)
+- **Facts:**
+  - The **Robinsons**, New York residents, bought an Audi from **Seaway** (a New York dealer) in Massena, NY.
+  - While driving to their new home in Arizona, they were rear-ended in **Oklahoma**. The car caught fire, severely burning Kay Robinson and two children.
+  - They sued in Oklahoma state court: **Audi** (manufacturer), **Volkswagen of America** (importer), **World-Wide** (regional distributor serving only NY, NJ, CT), and **Seaway** (dealer).
+  - World-Wide and Seaway did **no business in Oklahoma**: no sales, shipments, agents, or advertising aimed there. Only World-Wide and Seaway challenged jurisdiction in the Supreme Court.
+- **Issue:** Can Oklahoma exercise PJ over a New York dealer and regional distributor when their only connection to Oklahoma is that a car sold in New York had an accident there?
+- **Holding:** No. **Reversed.** There was "a **total absence** of those affiliating circumstances." The defendants' only link was the "**fortuitous circumstance**" of the Robinsons' **unilateral** decision to drive through Oklahoma. A car's mobility makes injury elsewhere foreseeable, but that's not enough. Otherwise every seller would make its products "agents for service of process" wherever they travel.
+  - **Dissents (Brennan; Marshall and Blackmun):** The defendants joined a **nationwide** network for a product whose usefulness is its **mobility**, so its use in Oklahoma was a "virtual certainty." Blackmun also asked why the plaintiffs needed to sue the dealer and distributor at all.
+- **Takeaway:** A defendant must have purposefully created contacts with the forum, and foreseeable harm there from a consumer's unilateral act isn't enough.
+
+### Reading: *J. McIntyre Machinery, Ltd. v. Nicastro* (CB 1059–73)
+**Rule: Stream of commerce, three competing approaches.**
+- **Plurality (Kennedy, "stream of commerce plus" / targeting):** "The defendant's transmission of goods permits the exercise of jurisdiction **only where the defendant can be said to have targeted the forum**." Predicting goods will reach the forum isn't enough. "It is the defendant's **actions, not his expectations**." Jurisdiction is "a question of **authority rather than fairness**."
+- **Concurrence (Breyer and Alito, decide narrowly):** A **single isolated sale** isn't enough under existing precedent. Jurisdiction needs a "**regular … flow**" of sales into the forum, or "**something more**," such as special state-related design, advertising, advice, or marketing.
+- **Dissent (Ginsburg, Sotomayor, Kagan):** A manufacturer that targets the **entire U.S. market** through a distributor should be answerable where its product causes injury. Otherwise it can "**Pilate-like wash its hands**" of the product through an independent distributor.
+- **Sovereign-by-sovereign analysis (plurality):** A defendant can be subject to the jurisdiction of the **United States** but **not of any particular state**.
+- The **New Jersey Supreme Court's** rule (jurisdiction if the manufacturer knew its products were distributed nationally and didn't prevent sales in New Jersey) was **rejected** by six Justices.
+
+**Case: J. McIntyre Machinery, Ltd. v. Nicastro** (U.S. 2011)
+- **Facts:**
+  - **Nicastro** lost four fingers to a **McIntyre** metal-shearing machine at work in **New Jersey**.
+  - McIntyre is an **English** company. It sold to the U.S. only through an **independent Ohio distributor** and attended U.S. trade shows (never in New Jersey) hoping to reach buyers "anywhere in the United States."
+  - **No more than four machines** (perhaps just one) ended up in New Jersey. McIntyre had no office, property, advertising, or employees there.
+- **Issue:** Can New Jersey exercise specific jurisdiction over a foreign manufacturer that targeted the U.S. market generally but never targeted New Jersey?
+- **Holding:** No (6–3, **no majority opinion**). **Reversed.** The plurality found no purposeful availment of **New Jersey** specifically. The concurrence found a single isolated sale insufficient under precedent.
+- **Takeaway:** Targeting the U.S. as a whole, plus one product reaching the forum, doesn't create jurisdiction in that state. Because no rationale got five votes, an exam answer should **analyze stream-of-commerce facts under all three approaches**.
+
+**Lecture summary (specific jurisdiction):**
+- Stream of commerce = manufacturer → distributor → retailer → consumer.
+- A **single sale** through the stream of commerce likely isn't enough, but **many sales** might be.
+- WWVW suggested PJ where a company puts products into the stream "with the expectation" they'll be bought in the forum. **Nicastro limits** that: the plurality requires **targeting**; the concurrence requires more than an isolated sale.
+
+---
+
+## Class 32 (11/5) — Specific & General Jurisdiction
+
+### Reading: *Walden v. Fiore* (CB 1082–89)
+**Rule: The defendant's own contacts with the forum state.** "The defendant's **suit-related conduct** must create a **substantial connection with the forum State**."
+- The contacts must be ones "the **defendant himself** creates." The plaintiff's contacts, however significant, can't decide it.
+- Look at the defendant's contacts with **the forum state itself**, "not the defendant's contacts with persons who reside there." "**The plaintiff cannot be the only link** between the defendant and the forum."
+- Contacts that are "**random, fortuitous, or attenuated**," or that come from the **unilateral activity** of a plaintiff or third party, don't count.
+- **Physical entry** (in person, or through an agent, goods, or mail) isn't required, but it's a relevant contact.
+- **Effects test (Calder), as Walden reframes it:** Out-of-state intentional conduct can support jurisdiction when its **effects connect the defendant to the forum state itself**, "not just to a plaintiff who lived there." "**Mere injury to a forum resident** is not a sufficient connection."
+
+**Case: Walden v. Fiore** (U.S. 2014)
+- **Facts:**
+  - **Walden**, a Georgia police officer working as a deputized DEA agent at the **Atlanta airport**, seized almost **$97,000** in cash from Fiore and Gipson, who were flying home to Las Vegas.
+  - He allegedly helped draft a **false probable-cause affidavit** in Georgia. No forfeiture complaint was filed, and the money was returned months later.
+  - The plaintiffs sued Walden in **federal court in Nevada** (a Bivens claim). Walden never went to, contacted anyone in, or sent anything to Nevada.
+- **Issue:** Can a Nevada court exercise PJ over a defendant whose conduct occurred entirely in Georgia, because he knew it would harm plaintiffs with Nevada connections?
+- **Holding:** No. **Reversed.** All of Walden's conduct occurred in Georgia. The Ninth Circuit wrongly focused on his contacts with the **plaintiffs** instead of with **Nevada**. The plaintiffs felt the harm in Nevada only because that's where they **chose to be**; they would have suffered the same loss anywhere.
+- **Takeaway:** Specific jurisdiction depends on the defendant's own contacts with the forum, and knowing that harm will be felt by a forum resident isn't enough.
+
+**Case: Calder v. Jones** (U.S. 1984) (described in Walden)
+- **Facts:** A California actress sued a **Florida**-based National Enquirer reporter and editor for libel over an article written and edited in Florida. The Enquirer had about **600,000 California readers**, the story drew on California sources, and it concerned her California activities.
+- **Holding:** Jurisdiction in California was proper based on the "**effects**" of the Florida conduct in California. California was "the **focal point** both of the story and of the harm suffered."
+- **Takeaway:** Under Walden's reading, Calder's effects test works because libel requires publication to third parties, so the tort itself happened in California and the defendants' conduct was connected to the state, not just to the plaintiff.
+
+| | **Calder** | **Walden** |
+|---|---|---|
+| Where the defendant acted | Florida, calling California sources | Entirely in Georgia |
+| Forum focus | Story about California, aimed at California readers | Nothing to do with Nevada itself |
+| Injury | Reputational harm among California readers | Delayed access to money wherever the plaintiffs happened to be |
+| Connection created | **Defendants → forum** | Defendant → **plaintiffs only** |
+| Result | Jurisdiction | No jurisdiction |
+
+### Reading: General Jurisdiction (CB 1091–92)
+**Rule: General jurisdiction** lets the forum's courts hear **any and all claims** against the defendant, "even claims totally unrelated" to its forum activities. The key question is **how substantial** the connection must be. The Court said little about this for decades, then marked the limits in **Goodyear** and **Daimler**.
+- **Specific jurisdiction can't be stretched.** If the claim doesn't arise out of the forum contacts, specific jurisdiction is unavailable "**even if those contacts are extensive**."
+- International Shoe's minimum contacts test applies only to defendants "**not present**" in the forum. For defendants **present when served**, courts have long relied on Pennoyer: **tag jurisdiction**.
+
+### Reading: *Burnham v. Superior Court of California* (CB 1092–1104)
+**Rule: Tag (transient) jurisdiction.** Jurisdiction based on **personal service while the defendant is physically present** in the state satisfies due process, even if the suit is **unrelated** to the defendant's activities there and the visit is **brief**.
+- **Scalia (plurality, 4 Justices): tradition.** Tag jurisdiction is "one of the **continuing traditions** of our legal system that define the due process standard of 'traditional notions of fair play and substantial justice.'" A rule with that pedigree, still followed by every state, **is** due process. International Shoe's contacts test **replaces** presence for absent defendants; it doesn't make presence insufficient.
+- **Brennan (concurrence in the judgment, 4 Justices): fairness.** History matters but isn't decisive; every jurisdictional rule must meet **contemporary notions of due process**. Tag jurisdiction is generally fair because a **voluntary** visitor **avails himself** of the state's benefits (police, roads, economy), knowingly takes on the risk of suit, and faces little modern burden in defending.
+- **White:** The rule is so widely accepted that it can't be struck down; there's no need for case-by-case fairness challenges, at least where presence is **intentional**.
+- **Stevens:** History, fairness, and common sense all make this "a very easy case."
+- **Traditional exceptions:** No tag jurisdiction over someone brought into the state by **force or fraud**, or present as a **party or witness** in another proceeding.
+
+**Case: Burnham v. Superior Court of California** (U.S. 1990)
+- **Facts:**
+  - Dennis and Francie Burnham lived in **New Jersey** and separated. She moved to **California** with the children and filed for divorce there.
+  - Dennis visited California for **three days**, first on business and then to see his children. While returning a child to Francie's home, he was **served** with the California summons and divorce petition. He then went back to New Jersey.
+  - He **appeared specially** to quash service, arguing he lacked minimum contacts with California. The California courts refused.
+- **Issue:** Does due process bar California from exercising jurisdiction over a nonresident personally served while temporarily in the state, in a suit unrelated to his activities there?
+- **Holding:** No. **Affirmed (unanimous in result, no majority rationale).** In-state personal service on a **voluntarily present** defendant is enough.
+- **Takeaway:** Tag jurisdiction survives International Shoe; all nine Justices agreed on the result, but split 4–4 between tradition and fairness as the reason.
+
+### Reading: *Goodyear Dunlop Tires Operations, S.A. v. Brown* (CB 1107–12)
+**Rule: "At home."** A court may hear any and all claims against a foreign (sister-state or foreign-country) corporation only when its affiliations with the state are "so '**continuous and systematic**' as to render [it] **essentially at home** in the forum State."
+- **Paradigm forums:** For an **individual**, **domicile**. For a **corporation**, "an equivalent place": **place of incorporation** and **principal place of business**.
+- **Stream of commerce doesn't create general jurisdiction.** Product flow into the forum "may bolster an affiliation germane to **specific** jurisdiction," but those ties don't establish **general** jurisdiction.
+- **Purchases** in the forum, "even if occurring at regular intervals," aren't enough (Helicopteros).
+- **Specific jurisdiction** depends on an "affiliation between the forum and the underlying controversy," mainly activity or an occurrence **in the forum state**.
+
+**Case: Goodyear Dunlop Tires Operations, S.A. v. Brown** (U.S. 2011)
+- **Facts:**
+  - A bus overturned outside **Paris**, killing two **North Carolina** boys. Their parents sued in North Carolina state court, blaming a **tire made in Turkey**.
+  - Defendants: **Goodyear USA** (Ohio; didn't contest jurisdiction) and three **foreign subsidiaries** (Luxembourg, Turkey, France).
+  - The subsidiaries had no North Carolina registration, office, employees, or bank accounts, and didn't advertise or sell there themselves. Other Goodyear affiliates distributed **tens of thousands** of their tires in North Carolina (out of tens of millions made). The tire model in the crash was **never distributed** there.
+- **Issue:** Are foreign subsidiaries subject to general jurisdiction in North Carolina on claims unrelated to the forum because some of their products reached the state through the stream of commerce?
+- **Holding:** No. **Reversed.** Specific jurisdiction was unavailable because the accident occurred in France and the tire was made and sold abroad. The North Carolina courts "elided the essential difference" between specific and general jurisdiction. The subsidiaries were "**in no sense at home**" in North Carolina.
+- **Takeaway:** General jurisdiction requires the defendant to be essentially at home in the forum, and stream-of-commerce sales that might support specific jurisdiction can't establish general jurisdiction.
+
+**Case: Perkins v. Benguet Consolidated Mining Co.** (U.S. 1952) (described in Goodyear)
+- **Facts:** A **Philippine** mining company stopped operating in the Philippines during the Japanese occupation in WWII. Its president ran its limited wartime business **from an office in Ohio** and kept company files there. It was sued in Ohio on a claim that didn't arise there.
+- **Holding:** Ohio could adjudicate the claim consistent with due process.
+- **Takeaway:** Perkins is "the textbook case" of general jurisdiction over a foreign corporation: Ohio was effectively the company's **principal, if temporary, place of business**.
+
+**Case: Helicopteros Nacionales de Colombia, S.A. v. Hall** (U.S. 1984) (described in Goodyear)
+- **Facts:** A **Colombian** company's helicopter crashed in **Peru**, killing U.S. citizens, whose survivors sued in Texas. The company had sent its CEO to **Houston** to negotiate a contract, accepted checks drawn on a Houston bank, **bought helicopters and training** from a Texas company, and sent personnel there for training.
+- **Holding:** These contacts were **not** "continuous and systematic general business contacts" and couldn't support jurisdiction over unrelated claims.
+- **Takeaway:** Substantial, repeated **purchases** and business trips to a forum still fall short of general jurisdiction.
+
+---
+
+## Class 33 (11/10) — Specific & General Jurisdiction (cont.)
+
+### Reading: *Daimler AG v. Bauman* (CB 1114–22)
+**Rule: "At home" means at home.** General jurisdiction over a corporation requires affiliations "so continuous and systematic as to render it **essentially at home**." A corporation isn't subject to general jurisdiction in every state where it "engages in a **substantial, continuous, and systematic course of business**." That formulation is "**unacceptably grasping**."
+- **Paradigm forums:** **place of incorporation** and **principal place of business**. They're unique and easy to identify, and they give plaintiffs **at least one clear forum**.
+- **Exceptional case:** Daimler leaves open that a corporation **might** be at home somewhere else in an exceptional case (Perkins), but doesn't say where.
+- **Predictability:** Defendants must be able to "structure their primary conduct with some minimum assurance as to where that conduct will and will not render them liable to suit."
+- **Subsidiaries:** A parent isn't subject to general jurisdiction just because its subsidiary or agent is. The Ninth Circuit's agency test (are the subsidiary's services "**important**" to the parent?) is rejected. Even if a subsidiary's contacts are **imputed** to the parent, the **parent itself** must be at home in the forum.
+- **International comity:** Other countries (e.g., the EU) limit general jurisdiction to a corporation's domicile. Expansive U.S. general jurisdiction risks friction with them, which reinforces that it would offend fair play and substantial justice.
+- **Specific vs. general over time:** Since International Shoe, **specific jurisdiction has expanded**, while **general jurisdiction has shrunk**.
+
+**Case: Daimler AG v. Bauman** (U.S. 2014)
+- **Facts:**
+  - **22 Argentinian residents** sued **Daimler** (a German company) in **federal court in California**. They alleged that its Argentine subsidiary, **MB Argentina**, collaborated with security forces to kidnap, torture, and kill workers during Argentina's 1976–1983 "**Dirty War**." Nothing happened in California or the United States.
+  - Jurisdiction rested on the California contacts of **MBUSA**, Daimler's U.S. distributor (Delaware corporation, principal place of business in **New Jersey**). MBUSA had several California facilities and was the **largest luxury-car supplier** in California; its California sales were **2.4%** of Daimler's worldwide sales.
+  - Neither Daimler nor MBUSA was incorporated or headquartered in California.
+- **Issue:** Can a California court exercise general jurisdiction over a German parent, based on its U.S. subsidiary's California contacts, for foreign plaintiffs' claims about conduct in Argentina?
+- **Holding:** No. **Reversed.** Even **assuming** MBUSA is at home in California and its contacts are imputed to Daimler, Daimler's "**slim contacts**" don't make Daimler itself at home there. If they did, the same reach would exist in every state where MBUSA's sales are sizable, which would be "**exorbitant**."
+  - **Sotomayor (concurring in the judgment):** omitted from the casebook.
+- **Takeaway:** General jurisdiction over a corporation is generally limited to its place of incorporation and principal place of business, and a subsidiary's in-state business doesn't make the parent at home there.
+
+**Lecture summary (general jurisdiction):**
+- **Tag** jurisdiction if served in the forum state, unless brought there by force or fraud or present as a party or witness in another case (Burnham). There's a **circuit split** on whether a corporation can be "tagged" by serving its CEO in the state.
+- **Individuals:** general jurisdiction in their **domicile**.
+- **Corporations:** general jurisdiction where **at home**: (1) **place of incorporation**; (2) **principal place of business** (Goodyear); maybe (3) another state where affiliations are so continuous and systematic as to make it essentially at home (Daimler).
+- **Unincorporated associations:** many lower courts say (1) **state of formation** and (2) **principal place of business**.
+- **Daimler in lecture:** Having a regional distribution office in California wasn't enough to make MBUSA (let alone Daimler) at home there. Lots of companies do business in California.
+
+### Reading: *be2 LLC v. Ivanov* (CB 1123–27)
+**Rule: Internet contacts require targeting.** A defendant isn't subject to jurisdiction "simply because the defendant owns or operates a website that is **accessible in the forum state**, even if that site is '**interactive**.'" The defendant "must in some way **target the forum state's market**," that is, **deliberately target or exploit** it.
+- A few forum residents registering on the site are "**attenuated contacts**" that can't support jurisdiction.
+- A defendant's **lack of credibility** isn't a forum contact. The question is still whether the record shows minimum contacts.
+- **Default strategy:** A defendant who **knew about the suit and chose to default** bears the **burden of proof** on a post-judgment motion challenging PJ. A judgment entered without PJ is **void** and must be vacated.
+- **Federal analysis:** The Lanham Act has no nationwide service, so **Rule 4(k)(1)(A)** applies. Illinois's long-arm statute reaches the constitutional limit, so the question becomes federal due process.
+- The Supreme Court has left **virtual contacts** "for another day" (Walden), so lower courts have developed the doctrine.
+
+**Case: be2 LLC v. Ivanov** (7th Cir. 2011)
+- **Facts:**
+  - **be2 LLC** (Delaware) and its German parent run the dating site **be2.com**. They sued **Ivanov** (New Jersey), allegedly CEO of the **confusingly similar be2.net**, in federal court in **Illinois** for trademark infringement.
+  - Ivanov didn't answer, and the court entered a **default judgment**. Ivanov then moved to vacate for lack of PJ, claiming he was just an unpaid volunteer and that "CEO" meant "Centralized Expert Operator." The court found him **not credible** ("preposterous").
+  - The only Illinois evidence: **20 free be2.net profiles** with Chicago-area addresses (in lecture notes: 26 Illinois sign-ups).
+- **Issue:** Does running a website accessible in Illinois, on which about 20 Illinois residents created free profiles, give the operator minimum contacts with Illinois?
+- **Holding:** No. **Reversed and remanded** with instructions to vacate the judgment and **dismiss for lack of PJ**. Nothing showed Ivanov targeted Illinois. A few resident registrations are attenuated contacts.
+- **Takeaway:** For internet contacts, the defendant must target the forum's market; an accessible or interactive website plus a few forum users isn't enough.
+
+**Lecture hypotheticals (internet and specific jurisdiction):**
+- **Colorado ski resort buys Google ads targeted at Texas and New Mexico:** Likely **yes** in Texas or New Mexico, if a customer who came because of the ads sues there.
+- **Texas news site publishes a story about a Las Vegas celebrity jailed there; the celebrity sues for libel:** Apply the **Calder effects test**: (a) an intentional tort, (b) **expressly aimed** at the forum, (c) knowing the **brunt of the harm** would be felt there.
+- **Cayman Islands website called "Best Houston Barbecue":** Likely **yes** in Texas for claims about the site's content (e.g., a Houston restaurant suing over a defamatory review).
+- **Washington seller's interactive website takes a Texas order and ships to Texas:** Likely **yes** if the seller regularly sells to Texans. That's the top of the **Zippo** sliding scale: the seller knowingly takes Texas orders and ships into Texas, and the claim arises from that sale. (*McGee v. International Life*: even **one contract** deliberately made with a forum resident can be enough.)
+
+### Reading: *Mallory v. Norfolk Southern Railway Co.* (Canvas)
+**Rule: Consent by registration.** A state may require an out-of-state corporation, as a **condition of registering to do business**, to **consent to general jurisdiction** on any claim, even an out-of-state plaintiff's claim unconnected to the state. Such statutes "comport with the Due Process Clause" under ***Pennsylvania Fire*** (1917).
+- **Consent is an independent basis** for PJ, alongside International Shoe's contacts-based specific and general jurisdiction. International Shoe added "an **additional road**" for **non-consenting** defendants; it didn't close the consent road (plurality).
+- **PJ is a waivable personal right.** Many arrangements count as express or implied consent: failing to appear specially, forum-selection clauses, pretrial orders, and registering.
+- **Lower courts must follow directly controlling Supreme Court precedent**, even if later cases seem to undermine it. Only the Supreme Court can overrule its own precedents.
+- **Open question: dormant Commerce Clause.** Such statutes may **unduly burden interstate commerce** (Alito). The issue was left for remand.
+
+**Case: Mallory v. Norfolk Southern Railway Co.** (U.S. 2023)
+- **Facts:**
+  - **Mallory** worked for Norfolk Southern for nearly 20 years in **Ohio and Virginia**, allegedly exposed to asbestos and carcinogens. He developed cancer and, while living in **Virginia**, sued under FELA in **Pennsylvania** state court.
+  - Norfolk Southern is incorporated and headquartered in **Virginia**. **No specific jurisdiction** (the claim arose in Ohio and Virginia) and **no contacts-based general jurisdiction** (it's at home only in Virginia).
+  - But Norfolk Southern had **registered** as a foreign corporation in Pennsylvania. Pennsylvania law says registration lets its courts exercise **general jurisdiction** on "**any cause of action**."
+  - It had a big Pennsylvania presence: about **5,000 employees**, **2,400+ miles of track**, and North America's largest locomotive shop.
+- **Issue:** Does due process bar a state from requiring an out-of-state corporation to consent to general jurisdiction as a condition of registering to do business there?
+- **Holding:** No (5–4). **Vacated and remanded.** *Pennsylvania Fire* controls, and the Pennsylvania Supreme Court erred by treating it as implicitly overruled.
+  - **Gorsuch (majority for Parts I and III-B; plurality otherwise):** Consent statutes have a long history. If a Virginia train conductor can be **tagged** while passing through Pennsylvania, it would be "incongruous" to shield the railroad. Norfolk Southern took "full advantage" of the Pennsylvania market and isn't a victim of local prejudice.
+  - **Jackson (concurring):** Norfolk Southern **waived** its PJ rights by registering.
+  - **Alito (concurring in part):** Due process is satisfied for a large corporation with substantial in-state operations, but there's a "good prospect" the scheme violates the **dormant Commerce Clause**.
+  - **Dissent (Barrett, Roberts, Kagan, Kavanaugh):** "Consent" here is just a **relabeled** general-jurisdiction long-arm statute that **evades Daimler** and offends interstate federalism.
+- **Takeaway:** Registering to do business under a consent statute can subject a corporation to general jurisdiction outside its at-home states, though a dormant Commerce Clause challenge to such statutes remains open.
+
+**Lecture summary:** States can require corporations to consent to general jurisdiction in order to register to do business. Whether that violates the **dormant Commerce Clause** is an **open question**.
+
+---
+
+# UNIT XI — Venue & Transfer (Class 34)
+
+**Venue** is a **separate requirement** layered on top of SMJ and PJ: among courts that have jurisdiction, **which district** is the proper place for the case? Like PJ, venue accounts for **inconvenience to the parties** and the **connection between the dispute and the forum**. Like PJ, an improper-venue objection is **waivable** (12(b)(3), 12(h)(1); § 1406(b)).
+
+**Three tools for "where":**
+
+| | **Venue (§ 1391)** | **Transfer (§§ 1404, 1406)** | **Forum non conveniens** |
+|---|---|---|---|
+| Source | Statute | Statute (1948) | **Common law** |
+| Question | Is this district a **proper** place to file? | Should the case be **moved** to another **federal** district? | Is another forum (state or **foreign**) much better suited? |
+| Remedy | Dismissal or § 1406 transfer if venue is improper | **Transfer** within the federal system | **Dismissal** (plaintiff refiles elsewhere) |
+| Key authorities | §§ 1390, 1391 | § 1404(a) (proper venue); § 1406(a) (improper venue) | Gulf Oil, Piper |
+
+## Class 34 (11/11) — Venue; Transfer
+
+### Reading: Venue and Transfer; 28 U.S.C. §§ 1390, 1391 (CB 1167–69)
+**Rule § 1390(a): Definition.** "Venue" means "the **geographic specification** of the proper court or courts for the litigation of a civil action that is **within the subject-matter jurisdiction** of the district courts in general." A statute limiting which district has **SMJ** isn't a venue provision.
+
+**Rule § 1390(c): Removed cases.** The venue chapter **doesn't determine** which district a state case is **removed** to (§ 1441(a) does: the district embracing the state court). But it **does govern transfer** of a removed case between districts and divisions.
+
+**Rule § 1391(a):** "Except as otherwise provided by law," § 1391 governs venue in **all civil actions** in federal district court.
+
+**Rule § 1391(b): Where venue is proper.**
+- **(b)(1) Residence:** "a judicial district in which **any defendant resides**, if **all defendants are residents of the State** in which the district is located." The plaintiff's residence doesn't matter.
+- **(b)(2) Events or property:** "a judicial district in which a **substantial part of the events or omissions** giving rise to the claim occurred, or a substantial part of **property** that is the subject of the action is situated." More than one district can qualify ("a substantial part," not "the most substantial part").
+- **(b)(3) Fallback:** **Only if no district qualifies** under (b)(1) or (b)(2), "any judicial district in which **any defendant is subject to the court's personal jurisdiction** with respect to such action."
+
+**Rule § 1391(c): Residence.**
+- **(c)(1) Natural persons** (including lawful permanent residents) reside in the district of their **domicile**.
+- **(c)(2) Entities** (incorporated or not), **as defendants**, reside in **any district where they're subject to PJ** for the action in question.
+- **(c)(3) Defendants not resident in the U.S.** may be sued in **any district**, and they're **disregarded** when determining venue for the other defendants.
+
+**Rule § 1391(d): Corporations in multi-district states.** A corporation resides in **any district** in the state where its contacts **would support PJ if that district were a separate state**. If no district qualifies, it resides in the district with the **most significant contacts**.
+
+**Venue roadmap:**
+1. Is this an originally filed case? (Removed cases go where § 1441(a) says; § 1390(c).)
+2. Determine each defendant's **residence**: (c)(1) individuals, (c)(2) entities, (d) corporations in multi-district states, and drop non-U.S. residents under (c)(3).
+3. **(b)(1):** Do all remaining defendants reside in one state? If so, any district there where any defendant resides works.
+4. **(b)(2):** Where did a **substantial part** of the events or omissions occur, or where is a substantial part of the property?
+5. **(b)(3):** Only if steps 3 and 4 produce nothing: any district where any defendant is subject to PJ.
+
+### Reading: *Gulf Oil Corp. v. Gilbert* (CB 1171–77)
+**Rule: Forum non conveniens.** Even when jurisdiction and venue are proper, a court may **decline to hear** a case because another forum is more convenient, after weighing **private** and **public** interest factors. The doctrine **never applies** if jurisdiction is lacking or venue is wrong.
+- **Strong presumption for the plaintiff's choice:** "Unless the balance is **strongly in favor of the defendant**, the plaintiff's choice of forum should **rarely be disturbed**." A plaintiff may not choose an inconvenient forum to "vex," "harass," or "oppress" the defendant.
+- **Private interest factors** (the litigants):
+  - Relative **ease of access to sources of proof**
+  - Availability of **compulsory process** for unwilling witnesses, and the cost of bringing willing ones
+  - Possibility of a **view of the premises**
+  - All other practical problems that make trial "easy, expeditious and inexpensive"
+  - **Enforceability** of a judgment
+- **Public interest factors** (the courts and community):
+  - **Administrative difficulties** of court congestion
+  - The burden of **jury duty** on a community with no relation to the case
+  - The **local interest** in having localized controversies decided at home
+  - Having a diversity case tried in a forum **at home with the governing state law**, avoiding conflict-of-laws problems and foreign law
+
+**Case: Gulf Oil Corp. v. Gilbert** (U.S. 1947)
+- **Facts:**
+  - **Gilbert**, who ran a public warehouse in **Lynchburg, Virginia**, sued **Gulf Oil** (a Pennsylvania corporation qualified to do business in Virginia and New York) in the **Southern District of New York**, based on diversity.
+  - He alleged Gulf Oil **carelessly delivered gasoline**, causing an explosion and fire that destroyed the warehouse and customers' goods. He sought about **$365,000**.
+  - Every event and almost every witness (about **350 customers** who stored goods, firefighters, and others) was in or near Lynchburg, about 400 miles from New York. Gulf Oil also wanted to implead a Virginia contractor that it couldn't bring into a New York court.
+  - Gilbert's only stated reason for New York: a Virginia jury might be "staggered" by a claim near **$400,000**.
+- **Issue:** Does a federal district court have inherent power to dismiss a case under forum non conveniens? If so, was dismissal an abuse of discretion?
+- **Holding:** Yes, the power exists, and dismissal was **not an abuse of discretion**. **Reversed** (reinstating the dismissal). The Court refused to "entertain a provincial fear of the provincialism of a Virginia jury." Virginia was the source of all proof, and a Virginia court would know the governing law.
+  - **Dissent (Black, joined by Rutledge):** Whether federal courts should decline cases for convenience is a policy question for **Congress**: "Whether the doctrine of forum non conveniens is good or bad, I should wait for Congress to adopt it."
+- **Takeaway:** A federal court may dismiss for forum non conveniens when the private and public interest factors strongly favor another forum, but the plaintiff's choice of forum should rarely be disturbed.
+
+### Reading: 28 U.S.C. §§ 1404, 1406 (CB 1177–78)
+**Introductory note:** In **1948** (after Gulf Oil), Congress authorized **transfer** between federal districts "for the convenience of the parties and witnesses [and] the interest of justice." The statutes allow transfer **only within the federal system**. Sending a case to a **state or foreign court** still requires **dismissal without prejudice** (i.e., forum non conveniens).
+- A **division** is the part of a district served by a single courthouse. A one-courthouse district has no divisions.
+
+**Rule § 1404(a): Transfer from a proper venue.** "For the **convenience of parties and witnesses**, in the **interest of justice**, a district court **may** transfer any civil action to any other district or division **where it might have been brought** or to any district or division to which **all parties have consented**."
+- Discretionary ("may"). The original venue is **proper**; transfer is for **convenience**.
+- The transferee court must be one where the case **could have been filed** (proper venue and jurisdiction there), unless all parties consent.
+
+**Rule § 1404(b):** On motion, consent, or stipulation of **all parties**, a case (or any motion or hearing in it) may be transferred to **another division in the same district**, in the court's discretion.
+
+**Rule § 1404(c):** A court may order a civil action **tried at any place within its division**.
+
+**Rule § 1406(a): Wrong venue.** A district court where a case is filed "laying venue in the **wrong** division or district **shall dismiss**, or **if it be in the interest of justice, transfer** such case to any district or division in which it **could have been brought**."
+- Mandatory to act ("shall"): the court must dismiss or transfer.
+
+**Rule § 1406(b): Waiver.** The chapter doesn't impair a court's jurisdiction over a party who doesn't make a **timely and sufficient objection to venue**. Venue objections are **waivable** (and under 12(h)(1), lost if left out of the first Rule 12 motion or answer).
+
+| | **§ 1404(a)** | **§ 1406(a)** | **Forum non conveniens** |
+|---|---|---|---|
+| Original venue | **Proper** | **Improper** | Proper |
+| Destination | Another **federal** district where the case might have been brought (or all parties consent) | Another **federal** district where it could have been brought | Any better forum, usually **state or foreign** |
+| Remedy | Transfer (discretionary) | Dismiss, or transfer in the interest of justice | Dismissal |
+
+### Reading: *Piper Aircraft Co. v. Reyno* (CB 1180–90)
+**Rule: An unfavorable change in law doesn't bar forum non conveniens dismissal.** "The possibility of a change in substantive law should ordinarily **not be given conclusive or even substantial weight** in the forum non conveniens inquiry."
+- **Exception:** If the alternative forum's remedy is "**so clearly inadequate or unsatisfactory that it is no remedy at all**," the change in law may get substantial weight.
+- **An alternative forum must exist.** Here the defendants agreed to submit to Scottish jurisdiction and waive statute-of-limitations defenses.
+- **Less deference to foreign plaintiffs:** A plaintiff's choice gets a strong presumption, especially when the plaintiff chose its **home forum** (it's reasonable to assume that's convenient). When the plaintiff or real parties in interest are **foreign**, that assumption is "much less reasonable," so the choice gets **less deference**.
+- **Review:** Forum non conveniens rests in the trial court's **sound discretion** and is reversed only for a **clear abuse of discretion**.
+- **Defendants needn't detail every unavailable witness.** They must give enough information for the court to balance the interests.
+- **Why change in law can't control:** It would make the doctrine "virtually useless," since plaintiffs pick the forum with the most favorable law. It would force courts into complex comparative law. And it would draw even more foreign plaintiffs into already crowded U.S. courts.
+
+**Case: Piper Aircraft Co. v. Reyno** (U.S. 1981)
+- **Facts:**
+  - A small plane crashed in the **Scottish highlands**, killing the pilot and five passengers, all **Scottish**. The plane was made in **Pennsylvania** (Piper); the propellers were made in **Ohio** (Hartzell). The plane was registered in Britain and owned, maintained, and operated by British companies. A British investigation suggested possible **pilot error**.
+  - **Reyno**, a legal secretary to the plaintiffs' lawyer, was appointed administratrix by a California court and sued Piper and Hartzell in **California state court**. She admitted she chose the U.S. because its law was **more favorable**: Scotland didn't recognize **strict liability** and allowed only relatives to sue for limited damages.
+  - **Procedural moves:** The defendants **removed** to federal court in California. Piper moved to **transfer under § 1404(a)** to the Middle District of Pennsylvania; Hartzell moved to dismiss for lack of **PJ** or transfer. The court **transferred** the case to Pennsylvania. The defendants then moved to dismiss for **forum non conveniens**, and the court granted it. The Third Circuit reversed.
+- **Issue:** Can a plaintiff defeat a forum non conveniens dismissal by showing the alternative forum's law is less favorable? Did the district court abuse its discretion?
+- **Holding:** No and no. **Reversed** (dismissal reinstated). Scotland's remedy was less generous but not "no remedy at all." The district court reasonably gave **less deference** to foreign real parties in interest and reasonably weighed the factors:
+  - **Private:** Key evidence and witnesses (maintenance, pilot training, the investigation, damages) were in Britain. The defendants couldn't **implead** the Scottish pilot's estate, owner, and operator in the U.S., risking inconsistent verdicts.
+  - **Public:** Trial in Pennsylvania would apply Pennsylvania law to Piper and **Scottish law** to Hartzell, confusing the jury. Scotland had a **very strong interest** in the case.
+- **Takeaway:** A forum non conveniens dismissal isn't barred just because the alternative forum's law is less favorable to the plaintiff, and a foreign plaintiff's choice of a U.S. forum gets less deference.
+
+**Exam angle (sequence of motions in Piper):** Removal → § 1404(a) transfer to a district with a strong forum non conveniens case → forum non conveniens dismissal to a foreign court. Consider why the defendants made each move, and what court interests the sequence served or disserved.
+
+---
+
 # TIMELINE
 
 ```
@@ -1874,6 +2312,30 @@ Under **20(b)** the court may order **separate trials** to prevent prejudice.
   │         · > $75,000; legal certainty (St. Paul, AFA Tours, Freeland)
   │         · Time-of-filing rule (Grupo Dataflux)
   │     ▸ Supplemental — § 1367 (Exxon)
+  │
+  ●  2a. PERSONAL JURISDICTION (power over the defendant)
+  │     · Long-arm statute (usually = due process); Rule 4(k)(1)(A)
+  │     · Pennoyer (presence, consent, property) → Hess (implied
+  │       consent) → Int'l Shoe (minimum contacts + fair play)
+  │     ▸ Specific — claim arises from/relates to forum contacts
+  │         · Purposeful availment; foreseeability not enough (WWVW)
+  │         · Stream of commerce plus / targeting (Nicastro)
+  │         · Defendant's contacts with forum, not plaintiff (Walden)
+  │         · Effects test (Calder); internet targeting (be2)
+  │         · Fairness factors (WWVW)
+  │     ▸ General — any claim; "essentially at home"
+  │         · Incorporation + PPB (Goodyear, Daimler)
+  │         · Tag jurisdiction (Burnham)
+  │         · Consent by registration (Mallory)
+  │
+  ●  2b. VENUE (which federal district)
+  │     · § 1391(b): defendants' residence / substantial part of
+  │       events / fallback PJ district
+  │     · § 1391(c)–(d): residence of people, entities, corporations
+  │     ▸ Moving the case
+  │         · § 1404(a) transfer (venue proper; convenience)
+  │         · § 1406(a) dismiss or transfer (venue improper)
+  │         · Forum non conveniens dismissal (Gulf Oil, Piper)
   │
   ●  3. EQUITABLE RELIEF
   │     ▸ Preliminary Injunction / TRO
@@ -2024,6 +2486,7 @@ Under **20(b)** the court may order **separate trials** to prevent prejudice.
 | Diversity removal outer limit | **1 year** after commencement (unless plaintiff's bad faith) | § 1446(c)(1) |
 | Remand for non-SMJ defects | **30 days** after the notice of removal | § 1447(c) |
 | Remand for lack of SMJ | **Any time before final judgment** | § 1447(c) |
+| Object to PJ or venue | In the **first** Rule 12 motion or the answer, or it's **waived** | 12(h)(1); § 1406(b) |
 
 ## Must-know tests
 
@@ -2083,3 +2546,22 @@ Under **20(b)** the court may order **separate trials** to prevent prejudice.
 - **Amount:** **legal certainty** test (St. Paul Mercury); count punitive damages and injunction value (AFA Tours); declaratory actions use the value of the object, minus undisputed amounts (Freeland). Post-removal reductions don't oust jurisdiction.
 - **§ 1367:** (a) same case or controversy (**common nucleus**); (b) in diversity-only cases, no jurisdiction over plaintiffs' claims against Rule 14/19/20/24 parties or Rule 19/24 plaintiffs; (c) discretion to decline. **Exxon:** one plaintiff meeting the amount lets Rule 20 and Rule 23 co-plaintiffs ride along; complete diversity still required.
 - **Removal:** defendants only; all defendants consent; **30 days**; **forum-defendant rule** for diversity; **1-year** limit for diversity; remand orders unreviewable. **Caterpillar:** a defect cured before judgment saves the judgment. **Grupo Dataflux:** a change in a continuing party's citizenship can't cure; dropping a dispensable nondiverse party can.
+
+**Personal jurisdiction**
+- **Two steps:** (1) state **long-arm statute** (federal courts borrow it under **Rule 4(k)(1)(A)**); (2) **due process**. Most long-arm statutes reach the constitutional limit, so the steps usually collapse.
+- **Int'l Shoe:** **minimum contacts** such that the suit doesn't offend "**traditional notions of fair play and substantial justice**."
+- **Specific jurisdiction:** (1) the **defendant's own purposeful** contacts with the **forum state** (not with the plaintiff: Walden); (2) the claim **arises out of or relates to** them; (3) **reasonableness** (WWVW factors: burden on the defendant, forum state's interest, plaintiff's interest in relief, judicial efficiency, shared social policies).
+- **Foreseeability alone fails;** the defendant must "reasonably anticipate being haled into court there" (WWVW). **Unilateral** acts of the plaintiff or third parties don't count.
+- **Stream of commerce (Nicastro):** plurality = **targeting** the forum; Breyer = **regular flow** or "**something more**"; dissent = targeting the U.S. as a whole is enough. Argue all three.
+- **Effects test (Calder, as read by Walden):** intentional tort **expressly aimed** at the forum, with the brunt of the harm felt there, connecting the defendant to the **state itself**. Mere injury to a forum resident isn't enough.
+- **Internet (be2):** an accessible or even interactive website isn't enough; the defendant must **target** the forum's market.
+- **General jurisdiction:** "**essentially at home**" (Goodyear, Daimler): individuals → **domicile**; corporations → **state of incorporation + principal place of business** (maybe an exceptional case like Perkins). Doing substantial business isn't enough, and a subsidiary's contacts don't make the parent at home.
+- **Traditional bases:** **tag** (Burnham; not by force or fraud), **consent** (appearing without objection; registration statutes per Mallory, subject to an open dormant Commerce Clause question).
+- **Waiver:** PJ is lost if not raised in the first Rule 12 motion or answer (12(h)(1)). A defendant who **defaults** can attack the judgment as void later but bears the burden (be2).
+
+**Venue and transfer**
+- **§ 1391(b):** (1) any district where **any defendant resides** if **all defendants reside in that state**; (2) where a **substantial part of the events or omissions** occurred or property is; (3) **only if neither works**, any district where any defendant is subject to PJ.
+- **Residence (§ 1391(c)–(d)):** people → **domicile** district; entity defendants → **anywhere subject to PJ** for this action; corporations in multi-district states → districts whose contacts would support PJ **as if each were a separate state**; non-U.S. residents → sued anywhere and **ignored** for the others.
+- **§ 1404(a):** venue **proper**; transfer for **convenience and interest of justice** to a district where the case **might have been brought** (or all parties consent).
+- **§ 1406(a):** venue **improper**; court **shall dismiss** or, in the interest of justice, **transfer**.
+- **Forum non conveniens (Gulf Oil, Piper):** an **adequate alternative forum** exists + private and public interest factors **strongly** favor it → **dismiss**. Plaintiff's choice is rarely disturbed, but gets **less deference** if the plaintiff is **foreign**. **Less favorable law** in the other forum isn't a bar unless the remedy is **no remedy at all**. Used when the better forum is **state or foreign** (transfer statutes can't send cases there).
