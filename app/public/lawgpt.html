@@ -7117,7 +7117,7 @@ async function generateReadingReport({ course, classLabel, title, prompt, docume
       const errMsg = (data && data.error && data.error.message) ? data.error.message : "Request failed.";
       throw new Error(errMsg);
     }
-    currentReport = { id: null, course, classLabel, title, source, documentIds: documentIds || [], content: extractText(data), cost: costFromUsage(data.usage, model), claudeSessionId: data.claudeSessionId || null, createdAt: new Date().toISOString(), notes: currentReport.notes || "", chat: [] };
+    currentReport = { id: null, course, classLabel, title, source, documentIds: documentIds || [], content: extractText(data), cost: costFromUsage(data.usage, model), claudeSessionId: data.claudeSessionId || null, openaiResponseId: data.openaiResponseId || null, createdAt: new Date().toISOString(), notes: currentReport.notes || "", chat: [] };
   } catch(err){
     currentReport = {
       id: null, course, classLabel, title, source,
@@ -7843,7 +7843,8 @@ async function sendNotesChatMessage(){
         input: buildNotesChatInput(currentReport, question, historyLimit, resuming),
         documentIds: currentReport.documentIds || [],
         allowGeneralKnowledge: true,
-        claudeSessionId: resuming ? currentReport.claudeSessionId : null
+        claudeSessionId: resuming && useClaudeCode ? currentReport.claudeSessionId : null,
+        openaiResponseId: resuming && !useClaudeCode ? currentReport.openaiResponseId : null
       })
     });
     const data = await res.json();
@@ -7857,26 +7858,45 @@ async function sendNotesChatMessage(){
   }
 
   const model = document.getElementById("modelSelect").value;
+  // Which server-side conversation (if any) this request can continue
+  // depends on the model picked *now*, not the one the notes were made
+  // with: a Claude Code session id means nothing to OpenAI and vice versa.
+  // OpenRouter keeps no conversation at all, so it never resumes -- but the
+  // frontend can't tell OpenAI from OpenRouter (the server picks by whether
+  // the account has an OpenAI key), so any non-Claude-Code model tries the
+  // OpenAI id and the server answers session_unavailable if it can't use it.
+  const useClaudeCode = model === CLAUDE_CODE_MODEL_ID;
   try{
-    // Resume this report's own session whenever it has one (set by an
-    // earlier generation or follow-up -- see below). Reports with no session
-    // yet (e.g. notes generated with a non-Claude-Code model) fall back to
-    // the original full-history-in-the-prompt behavior, and pick up a
-    // session from here on once the response returns one.
-    const hasSession = Boolean(currentReport.claudeSessionId);
+    // Resume this report's own conversation whenever it has one for the
+    // selected provider (set by an earlier generation or follow-up -- see
+    // below). Otherwise fall back to the original full-history-in-the-prompt
+    // behavior, and pick up a conversation from here on once the response
+    // returns one.
+    const hasSession = Boolean(useClaudeCode ? currentReport.claudeSessionId : currentReport.openaiResponseId);
     let data;
     try{
       data = await attemptSend(undefined, hasSession);
     } catch(err){
-      const isContextOverflow = /context.length|context_length_exceeded|maximum context|too (long|many tokens)/i
-        .test(String(err.code || "") + " " + err.message);
-      if (!isContextOverflow) throw err;
-      // The resumed session's accumulated context (or, without a session,
-      // the freshly built history) is too big -- fall back to a brand-new,
-      // context-free session seeded with just the notes and this question.
+      const errText = String(err.code || "") + " " + err.message;
+      const isContextOverflow = /context.length|context_length_exceeded|maximum context|too (long|many tokens)/i.test(errText);
+      // The earlier conversation is gone or unusable: OpenAI expired/deleted
+      // the stored response, the Claude Code session file isn't there, or
+      // (session_unavailable) this request isn't going to OpenAI at all.
+      const isSessionGone = hasSession &&
+        /session_unavailable|previous_response_not_found|previous response .*not found|no conversation found/i.test(errText);
+      if (!isContextOverflow && !isSessionGone) throw err;
+      if (isSessionGone){
+        if (useClaudeCode) currentReport.claudeSessionId = null;
+        else currentReport.openaiResponseId = null;
+      }
+      // The resumed conversation's accumulated context (or, without one,
+      // the freshly built history) is too big, or the conversation is gone
+      // -- fall back to a brand-new, context-free request seeded with just
+      // the notes and this question.
       data = await attemptSend(0, false);
     }
     if (data.claudeSessionId) currentReport.claudeSessionId = data.claudeSessionId;
+    if (data.openaiResponseId) currentReport.openaiResponseId = data.openaiResponseId;
     currentReport.chat.push({ role: "assistant", content: extractText(data), cost: costFromUsage(data.usage, model) });
   } catch(err){
     currentReport.chat.push({ role: "assistant", content: "Couldn't get an answer: " + err.message, failed: true });

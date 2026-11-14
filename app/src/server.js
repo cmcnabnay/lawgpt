@@ -1021,7 +1021,7 @@ function fixDocumentFieldsInResponse(data, realNames) {
 
 app.post("/api/chat", async (req, res) => {
   try {
-    const { model, input, documentIds, allowGeneralKnowledge, passthrough, claudeSessionId } = req.body || {};
+    const { model, input, documentIds, allowGeneralKnowledge, passthrough, claudeSessionId, openaiResponseId } = req.body || {};
 
     if (!model || !input) {
       return res.status(400).json({
@@ -1181,6 +1181,55 @@ app.post("/api/chat", async (req, res) => {
       return sendClaudeCodeResult(res, result);
     }
 
+    // openaiResponseId only ever arrives from the Notes follow-up chat, and
+    // only means something to OpenAI (see the useOpenai branch below). If
+    // this request isn't going to OpenAI -- e.g. the account's OpenAI key
+    // was removed since the notes were generated, so it falls through to
+    // OpenRouter -- the client sent just the bare question expecting the
+    // server-side conversation to supply the rest. Answering that with no
+    // notes or history would be worse than useless, so tell the client to
+    // retry with the full context instead (sendNotesChatMessage does).
+    if (openaiResponseId && !useOpenai) {
+      return res.status(409).json({
+        error: { code: "session_unavailable", message: "The earlier OpenAI conversation isn't available for this request." }
+      });
+    }
+
+    if (useOpenai && openaiResponseId) {
+      // Notes follow-up continuing an earlier OpenAI response: OpenAI
+      // stores every Responses API reply (store defaults to true) and
+      // previous_response_id picks that conversation back up -- the notes'
+      // generating turn, with its attached documents/PDFs, plus every
+      // earlier follow-up. So, like a resumed Claude Code session above,
+      // only the new question is sent. The developer message is still sent
+      // because follow-ups use the looser allowGeneralKnowledge
+      // instructions, not the strict ones the notes were generated under.
+      // truncation:"auto" lets OpenAI drop the oldest turns instead of
+      // erroring once a long chat outgrows the context window.
+      const openaiRes = await fetch(OPENAI_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer " + personalApiKey
+        },
+        body: JSON.stringify({
+          model,
+          previous_response_id: openaiResponseId,
+          truncation: "auto",
+          input: [
+            { role: "developer", content: [{ type: "input_text", text: developerText }] },
+            { role: "user", content: [{ type: "input_text", text: question }] }
+          ]
+        })
+      });
+
+      const data = await openaiRes.json();
+      const realDocNames = attachedDocuments.map(doc => doc.fileName || doc.title).filter(Boolean);
+      fixDocumentFieldsInResponse(data, realDocNames);
+      if (openaiRes.ok && data.id) data.openaiResponseId = data.id;
+      return res.status(openaiRes.status).json(data);
+    }
+
     if (useOpenai) {
       // Attached documents that still have their raw PDF bytes (see
       // canvas-routes.js) get sent to OpenAI as the actual file, via
@@ -1259,6 +1308,11 @@ app.post("/api/chat", async (req, res) => {
         ...textDocuments.map(doc => doc.fileName || doc.title)
       ].filter(Boolean);
       fixDocumentFieldsInResponse(data, realDocNames);
+      // Explicit field (rather than relying on data.id) so the Notes tab can
+      // tell an OpenAI reply it can continue apart from an OpenRouter one --
+      // the frontend can't otherwise know which provider answered, since
+      // that's decided here by whether the account has an OpenAI key.
+      if (openaiRes.ok && data.id) data.openaiResponseId = data.id;
 
       return res.status(openaiRes.status).json(data);
     }
