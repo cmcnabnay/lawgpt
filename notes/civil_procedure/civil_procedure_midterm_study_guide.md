@@ -165,7 +165,7 @@
 - **Problem:** Courts fought endlessly over **fact vs. legal conclusion vs. evidence**. Twombly and Iqbal revive a version of this distinction (disregard "conclusions").
 
 ### Reading: Rules 2, 3, 7, and 8 (CB 175–77)
-**Rule 2:** One form of action, the **civil action**.
+**Rule 2:** One form of action, the **civil action**. 
 **Rule 3:** An action is **commenced by filing a complaint** with the court.
 **Rule 7(a):** The only **pleadings** allowed are the complaint, the answer (to a complaint, counterclaim, crossclaim, or third-party complaint), and a reply to an answer **only if the court orders one**. **Motions are not pleadings.** This matters for Rule 15(a)(1)(B) and Rule 12(c) ("after the pleadings are closed").
 
@@ -180,7 +180,7 @@
 **Rule:** A complaint isn't dismissed for **lack of detail** or poor form if it gives notice of the claim under Rule 8(a).
 
 **Case: Dioguardi v. Durning** (2d Cir. 1944)
-- **Facts:** A pro se immigrant filed an inartful complaint against the customs collector over the handling and sale of his tonic shipment. The district court dismissed it.
+- **Facts:** An importer filed a poorly constructed complaint against the customs collector over the handling and sale of his tonic shipment. The district court dismissed it.
 - **Issue:** Does a poorly drafted complaint that still suggests a claim satisfy Rule 8(a)?
 - **Holding:** Yes, the **2d Circuit reversed**. However poorly written, the complaint gave enough notice of the claim. The defendant's remedy is discovery and summary judgment.
   - The **high-water mark of liberal "notice pleading,"** in contrast to code pleading's technicality.
@@ -261,8 +261,6 @@
 - **Facts:** A Black homeowner was denied a home-equity loan after a low appraisal. She alleged race discrimination under the Fair Housing Act, plus fraud claims.
 - **Issue:** Did the complaint plausibly allege race discrimination?
 - **Holding:** Yes on discrimination. Identifying the **type** of discrimination (race), **who** did it (Citibank), and **when** (Feb. 2009) is enough. Twombly and Iqbal didn't reinstate fact pleading. The **fraud** claims were properly dismissed.
-  - **Posner's dissent:** There is an obvious alternative explanation (the 2009 financial crisis, tightened lending), and no comparator allegations (similarly situated white applicants), so it is not plausible.
-  - Shows that judges disagree on plausibility, so both sides are arguable.
 - **Takeaway:** Twombly and Iqbal did not bring back fact pleading, so a simple claim like discrimination needs only the type, the actor, and the timing, while fraud still requires Rule 9(b) particularity.
 
 ---
@@ -322,9 +320,6 @@
 
 ### Reading: Introductory Note on Heightened Pleading (CB 271–72)
 **Rule 9(b):** For **fraud or mistake**, the circumstances must be stated **with particularity** (who, what, when, where, how). **Malice, intent, knowledge, and other conditions of mind may be alleged generally**, but per Iqbal, not in conclusory terms.
-
-**PSLRA (securities fraud):** A "super-heightened" standard. The plaintiff must plead with particularity facts giving rise to a **strong inference of scienter**.
-- **Hierarchy**: 8(a)(2) plausibility (default) → 9(b) particularity (fraud or mistake) → PSLRA (securities fraud).
 
 ---
 
@@ -797,7 +792,7 @@ The proportionality factors are the importance of the issues, the amount in cont
 
 ## Class 15 (9/29) — Trial by Jury
 
-### Reading: U.S. Const. Amend. VII; Rules 38 and 39 (CB 474–77) — ⚠️ the Amendment text isn't in exam packet
+### Reading: U.S. Const. Amend. VII; Rules 38 and 39 (CB 474–77) 
 **Rule: Seventh Amendment.** "In Suits at **common law**, where the value in controversy shall exceed **twenty dollars**, the right of trial by jury shall be **preserved**…"
 - "**Common law**" means **law, not equity** (as of 1791 in England). Equity had **no jury**.
 - "**Preserved**" means it keeps the 1791 right rather than creating new ones. That's why courts use **historical analogy** for modern claims.
