@@ -32,6 +32,7 @@ const app = express();
 //In memory document store
 const documentStore = require("./document-store");
 const userDocumentStore = require("./user-document-store");
+const { isPdfDocument, streamJsonUserMessage } = require("./pdf-documents");
 const savedReportStore = require("./saved-report-store");
 const { scanLocalDocuments } = require("./local-scan");
 
@@ -192,16 +193,6 @@ const CLAUDE_CODE_CHAT_TOOLS_NOTE =
   "Use them whenever the question refers to the user's notes or readings. " +
   "Reply with only your final answer -- never write out tool calls or commands as text.";
 
-// True only for an attached document whose stored original bytes are a PDF.
-// fileBuffer alone isn't enough: Canvas imports and local scans only keep
-// bytes for PDFs, but email-routes.js keeps them for any attachment under
-// the size cap (a .docx included), and those must not be sent to a model
-// labeled application/pdf.
-function isPdfDocument(doc) {
-  return Boolean(doc && doc.fileBuffer) &&
-    (/pdf/i.test(doc.contentType || "") || /\.pdf$/i.test(doc.fileName || doc.title || ""));
-}
-
 // pdfFiles ({ name, buffer }[]) are sent as real PDF document blocks, which
 // lets Claude read scanned/image-only pages that text extraction returns
 // nothing for. Sending them needs stream-json input (a plain-text stdin
@@ -300,15 +291,7 @@ function runClaudeCode({ systemPrompt, userPrompt, resumeSessionId, pdfFiles = [
     });
 
     if (useStreamJson) {
-      const content = [
-        ...pdfFiles.map(file => ({
-          type: "document",
-          title: file.name,
-          source: { type: "base64", media_type: "application/pdf", data: file.buffer.toString("base64") }
-        })),
-        { type: "text", text: userPrompt || "" }
-      ];
-      child.stdin.write(JSON.stringify({ type: "user", message: { role: "user", content } }) + "\n");
+      child.stdin.write(streamJsonUserMessage(userPrompt, pdfFiles));
     } else {
       child.stdin.write(userPrompt || "");
     }

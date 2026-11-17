@@ -7045,15 +7045,22 @@ async function generateAgentReport({ course, classLabel, title, prompt, document
     "response text, in full -- not summarized, not left in a file, and not just a description of what you would " +
     "have produced. Do not create, edit, or save any files anywhere in this repository.\n\n" + prompt;
 
-  let result, failedMsg;
+  // agentSessionId is the run's id, which agent-runtime.js also uses as the
+  // Claude Code --session-id -- stored on the report as claudeSessionId so
+  // the "Sent to the agent" label opens the session popup the same way a
+  // Notes report's label does. documentIds go to the server so it can hand
+  // the agent each attached document (see agent-routes.js's
+  // resolveAttachedDocuments) instead of only naming them in this label.
+  let result, failedMsg, agentSessionId = null;
   try{
     const runRes = await fetch(PROXY_ORIGIN + "/api/agent/run", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ prompt: agentPrompt, title: agentTitle || title, source: source || null })
+      body: JSON.stringify({ prompt: agentPrompt, title: agentTitle || title, source: source || null, documentIds: documentIds || [] })
     });
     const run = await runRes.json();
     if (!runRes.ok) throw new Error((run && run.error && run.error.message) || "Couldn't start the agent.");
+    agentSessionId = run.id || null;
 
     while (true){
       await new Promise(r => setTimeout(r, 1500));
@@ -7075,13 +7082,14 @@ async function generateAgentReport({ course, classLabel, title, prompt, document
         id: null, course, classLabel, title, source: docSource,
         documentIds: documentIds || [],
         content: "Couldn't generate this report: " + failedMsg,
+        claudeSessionId: agentSessionId,
         createdAt: new Date().toISOString(),
         failed: true,
         notes: currentReport.notes || "",
         chat: []
       };
     } else {
-      currentReport = { id: null, course, classLabel, title, source: docSource, documentIds: documentIds || [], content: result, createdAt: new Date().toISOString(), notes: currentReport.notes || "", chat: [] };
+      currentReport = { id: null, course, classLabel, title, source: docSource, documentIds: documentIds || [], content: result, claudeSessionId: agentSessionId, createdAt: new Date().toISOString(), notes: currentReport.notes || "", chat: [] };
     }
     renderReportPanel();
   }

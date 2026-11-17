@@ -24,6 +24,9 @@ const os = require("os");
 const { spawn, execFileSync } = require("child_process");
 const agentStore = require("./agent-store");
 const agentRuntime = require("./agent-runtime");
+const documentStore = require("./document-store");
+const userDocumentStore = require("./user-document-store");
+const { isPdfDocument } = require("./pdf-documents");
 
 const REPO_ROOT = path.join(__dirname, "..", "..");
 
@@ -138,14 +141,62 @@ async function getOrAdoptRun(userId, id){
   return run;
 }
 
+// Turns the Complete buttons' attached documentIds into what the agent
+// actually needs to see each one:
+// - Documents already on disk under documents/<course>/ (Canvas imports,
+//   local scans) are named by repo-relative path -- the agent can Read them
+//   itself, including scanned PDFs, which Read renders as page images.
+//   They're deliberately not inlined: a whole casebook chapter PDF can run
+//   past the API's per-request PDF page limit and fail the entire run.
+// - Documents that exist only in this account's user_documents table (e.g.
+//   an emailed Lease.pdf) aren't anywhere the agent could find them, so
+//   PDFs among them go in as the actual file (pdfFiles) and anything else
+//   goes in as its extracted text.
+async function resolveAttachedDocuments(userId, documentIds) {
+  const onDisk = [];
+  const pdfFiles = [];
+  const textDocs = [];
+  for (const id of Array.isArray(documentIds) ? documentIds : []) {
+    const shared = documentStore.getDocument(id);
+    if (shared && shared.filePath) {
+      onDisk.push(path.join("documents", shared.filePath));
+      continue;
+    }
+    const doc = shared || (await userDocumentStore.getDocument(userId, id));
+    if (!doc) continue;
+    const name = doc.fileName || doc.title || "document";
+    if (isPdfDocument(doc)) {
+      pdfFiles.push({ name, buffer: doc.fileBuffer });
+    } else if (doc.text) {
+      textDocs.push({ name, text: doc.text });
+    }
+  }
+
+  const sections = [];
+  if (onDisk.length) {
+    sections.push("Attached documents in this repository -- read each of these:\n" + onDisk.map(p => `- ${p}`).join("\n"));
+  }
+  if (pdfFiles.length) {
+    sections.push("Attached as PDF files with this message (they are not saved anywhere in the repository): " +
+      pdfFiles.map(f => f.name).join(", "));
+  }
+  for (const doc of textDocs) {
+    sections.push(`Attached document (not saved anywhere in the repository): ${doc.name}\n\n${doc.text}`);
+  }
+  return { pdfFiles, note: sections.join("\n\n---\n\n") };
+}
+
 router.post("/run", async (req, res) => {
-  const { prompt, title, source } = req.body || {};
+  const { prompt, title, source, documentIds } = req.body || {};
   if (!prompt || !String(prompt).trim()) {
     return res.status(400).json({ error: { message: "prompt is required." } });
   }
+  const userId = req.session.userId;
+  const { pdfFiles, note } = await resolveAttachedDocuments(userId, documentIds);
+  const fullPrompt = note ? `${prompt}\n\n---\n\n${note}` : prompt;
   const id = crypto.randomUUID();
-  const run = await agentStore.createRun(req.session.userId, { id, title, prompt, source });
-  agentRuntime.startRun(req.session.userId, id, prompt, REPO_ROOT, run.title);
+  const run = await agentStore.createRun(userId, { id, title, prompt: fullPrompt, source });
+  agentRuntime.startRun(userId, id, fullPrompt, REPO_ROOT, run.title, pdfFiles);
   res.json(run);
 });
 
