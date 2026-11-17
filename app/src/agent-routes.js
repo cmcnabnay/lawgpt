@@ -141,49 +141,50 @@ async function getOrAdoptRun(userId, id){
   return run;
 }
 
-// Turns the Complete buttons' attached documentIds into what the agent
-// actually needs to see each one:
-// - Documents already on disk under documents/<course>/ (Canvas imports,
-//   local scans) are named by repo-relative path -- the agent can Read them
-//   itself, including scanned PDFs, which Read renders as page images.
-//   They're deliberately not inlined: a whole casebook chapter PDF can run
-//   past the API's per-request PDF page limit and fail the entire run.
+// True when a document's extracted text is empty apart from pdf-parse's
+// "-- 1 of 24 --" page separators -- i.e. a scanned/image-only PDF.
+function hasNoRealText(doc) {
+  return !String((doc && doc.text) || "").replace(/--\s*\d+\s+of\s+\d+\s*--/g, "").trim();
+}
+
+// Adds what the Complete buttons' prompt can't carry on its own. The prompt
+// (lawgpt.html's formatAttachedDocumentsForAgent) already inlines every
+// attached document's extracted text, so text isn't repeated here. What this
+// adds is the actual PDF for the ones where that text can't be trusted:
 // - Documents that exist only in this account's user_documents table (e.g.
-//   an emailed Lease.pdf) aren't anywhere the agent could find them, so
-//   PDFs among them go in as the actual file (pdfFiles) and anything else
-//   goes in as its extracted text.
+//   an emailed Lease.pdf) aren't anywhere on disk the agent could open, so
+//   their PDFs go in as the actual file (pdfFiles).
+// - Scanned PDFs already on disk under documents/<course>/ are named by
+//   repo-relative path for the agent to open with Read, which renders the
+//   pages as images. They're not inlined: a whole casebook chapter PDF can
+//   run past the API's per-request PDF page limit and fail the entire run.
 async function resolveAttachedDocuments(userId, documentIds) {
-  const onDisk = [];
+  const scannedOnDisk = [];
   const pdfFiles = [];
-  const textDocs = [];
   for (const id of Array.isArray(documentIds) ? documentIds : []) {
     const shared = documentStore.getDocument(id);
     if (shared && shared.filePath) {
-      onDisk.push(path.join("documents", shared.filePath));
+      const isPdfPath = /\.pdf$/i.test(shared.filePath);
+      if (isPdfPath && hasNoRealText(shared)) scannedOnDisk.push(path.join("documents", shared.filePath));
       continue;
     }
     const doc = shared || (await userDocumentStore.getDocument(userId, id));
-    if (!doc) continue;
-    const name = doc.fileName || doc.title || "document";
-    if (isPdfDocument(doc)) {
-      pdfFiles.push({ name, buffer: doc.fileBuffer });
-    } else if (doc.text) {
-      textDocs.push({ name, text: doc.text });
+    if (doc && isPdfDocument(doc)) {
+      pdfFiles.push({ name: doc.fileName || doc.title || "document.pdf", buffer: doc.fileBuffer });
     }
   }
 
   const sections = [];
-  if (onDisk.length) {
-    sections.push("Attached documents in this repository -- read each of these:\n" + onDisk.map(p => `- ${p}`).join("\n"));
-  }
   if (pdfFiles.length) {
-    sections.push("Attached as PDF files with this message (they are not saved anywhere in the repository): " +
-      pdfFiles.map(f => f.name).join(", "));
+    sections.push("The actual PDF file of each of these attached documents is included with this message: " +
+      pdfFiles.map(f => f.name).join(", ") +
+      ". Read the PDF itself -- it is the authoritative copy, and any extracted text for it above may be incomplete or empty (scanned pages have no extractable text).");
   }
-  for (const doc of textDocs) {
-    sections.push(`Attached document (not saved anywhere in the repository): ${doc.name}\n\n${doc.text}`);
+  if (scannedOnDisk.length) {
+    sections.push("These attached documents are scanned PDFs with no extractable text, so the text above for them is empty. Open each one with the Read tool to see its pages:\n" +
+      scannedOnDisk.map(p => `- ${p}`).join("\n"));
   }
-  return { pdfFiles, note: sections.join("\n\n---\n\n") };
+  return { pdfFiles, note: sections.join("\n\n") };
 }
 
 router.post("/run", async (req, res) => {

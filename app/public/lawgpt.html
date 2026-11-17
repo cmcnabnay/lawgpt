@@ -7061,6 +7061,12 @@ async function generateAgentReport({ course, classLabel, title, prompt, document
     const run = await runRes.json();
     if (!runRes.ok) throw new Error((run && run.error && run.error.message) || "Couldn't start the agent.");
     agentSessionId = run.id || null;
+    // Make the label clickable right away, not only once the run finishes
+    // (which can take several minutes) -- the session exists from the start.
+    if (seq === agentReportRunSeq && currentReport){
+      currentReport.claudeSessionId = agentSessionId;
+      renderReportPanel();
+    }
 
     while (true){
       await new Promise(r => setTimeout(r, 1500));
@@ -12755,16 +12761,26 @@ function appendCompleteButton(row, cls, text, courseCode){
 // Supabase-only document (e.g. one from email sync) would show up as a title
 // the agent can't actually find anywhere. Each document is capped so one
 // huge casebook can't crowd out everything else.
+//
+// A scanned/image-only PDF extracts to nothing but pdf-parse's
+// "-- 1 of 24 --" page separators. Pasting those in as "the authoritative
+// copy" told the agent the document was blank, so those get a note instead
+// -- the server (agent-routes.js's resolveAttachedDocuments) sends the
+// actual PDF with the message, or points the agent at it on disk.
 const AGENT_DOC_MAX_CHARS = 80000;
 function formatAttachedDocumentsForAgent(attached){
   if (!attached.length) return "";
   const blocks = attached.map(a => {
+    const isScan = !String(a.text || "").replace(/--\s*\d+\s+of\s+\d+\s*--/g, "").trim();
+    if (isScan){
+      return `===== DOCUMENT: "${a.title}" =====\n[No extractable text -- this is a scanned PDF. Read the actual PDF file instead; see the note at the end of this message.]`;
+    }
     const body = a.text.length > AGENT_DOC_MAX_CHARS
       ? a.text.slice(0, AGENT_DOC_MAX_CHARS) + "\n…[truncated]"
       : a.text;
     return `===== BEGIN DOCUMENT: "${a.title}" =====\n${body}\n===== END DOCUMENT: "${a.title}" =====`;
   });
-  return "\n\nThe full text of every attached document is included below. These are the authoritative copies -- some are stored only in the app's database and won't exist anywhere under documents/ on disk, so don't go looking for them there.\n\n" + blocks.join("\n\n");
+  return "\n\nThe extracted text of every attached document is included below. Some are stored only in the app's database and won't exist anywhere under documents/ on disk, so don't go looking for them there. Where an actual PDF file is also attached to this message, the PDF is the authoritative copy.\n\n" + blocks.join("\n\n");
 }
 
 function completeAssignment(cls, text, courseCode, btn){
