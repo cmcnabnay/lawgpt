@@ -28,6 +28,7 @@ const fs = require("fs");
 const os = require("os");
 const path = require("path");
 const agentStore = require("./agent-store");
+const { streamJsonUserMessage } = require("./pdf-documents");
 
 const liveRuns = new Map(); // runId -> { userId, title, output, result, turns, status, child }
 const flushTimers = new Map();
@@ -351,16 +352,26 @@ function spawnClaude(entry, userId, runId, args, cwd, prompt){
 // recent sessions since it's a real persisted session like any other.
 // `title` is kept on the live entry so GET /runs/:id can answer a poll
 // entirely from memory.
-function startRun(userId, runId, prompt, cwd, title){
+//
+// pdfFiles ({ name, buffer }[], optional) are attached documents sent as the
+// actual PDF -- the Complete buttons pass these for attached documents that
+// aren't on disk where the agent could Read them itself (e.g. an emailed
+// Lease.pdf kept only in user_documents), and so scanned PDFs with no
+// extractable text can still be read. A file can't ride along in a plain-text
+// stdin prompt, so with any PDFs the input switches to stream-json (one
+// structured user message), whose output side this already uses.
+function startRun(userId, runId, prompt, cwd, title, pdfFiles = []){
   const entry = { userId, title: title || "Agent run", output: "", result: "", turns: [{ prompt, result: "", steps: [] }], status: "running", child: null };
   liveRuns.set(runId, entry);
+  const usePdfInput = pdfFiles.length > 0;
   spawnClaude(entry, userId, runId, [
     "-p",
+    ...(usePdfInput ? ["--input-format", "stream-json"] : []),
     "--permission-mode", "auto",
     "--output-format", "stream-json",
     "--verbose",
     "--session-id", runId
-  ], cwd, prompt);
+  ], cwd, usePdfInput ? streamJsonUserMessage(prompt, pdfFiles) : prompt);
 }
 
 // Sends a follow-up message into an already-finished run's own Claude Code

@@ -32,6 +32,7 @@ const app = express();
 //In memory document store
 const documentStore = require("./document-store");
 const userDocumentStore = require("./user-document-store");
+const { isPdfDocument, streamJsonUserMessage } = require("./pdf-documents");
 const savedReportStore = require("./saved-report-store");
 const { scanLocalDocuments } = require("./local-scan");
 
@@ -192,13 +193,22 @@ const CLAUDE_CODE_CHAT_TOOLS_NOTE =
   "Use them whenever the question refers to the user's notes or readings. " +
   "Reply with only your final answer -- never write out tool calls or commands as text.";
 
-function runClaudeCode({ systemPrompt, userPrompt, resumeSessionId }) {
+// pdfFiles ({ name, buffer }[]) are sent as real PDF document blocks, which
+// lets Claude read scanned/image-only pages that text extraction returns
+// nothing for. Sending them needs stream-json input (a plain-text stdin
+// prompt can't carry a file), which in turn requires stream-json output with
+// --verbose -- so that mode is only used when there are PDFs to send, and
+// every other call keeps the original plain-text/JSON path.
+function runClaudeCode({ systemPrompt, userPrompt, resumeSessionId, pdfFiles = [] }) {
   return new Promise((resolve) => {
     const sessionId = resumeSessionId || crypto.randomUUID();
     const resumeHint = `Resume it from SSH: cd ${CLAUDE_CODE_REPO_ROOT} && claude --resume ${sessionId}`;
+    const useStreamJson = pdfFiles.length > 0;
     const args = [
       "-p",
-      "--output-format", "json",
+      ...(useStreamJson
+        ? ["--input-format", "stream-json", "--output-format", "stream-json", "--verbose"]
+        : ["--output-format", "json"]),
       "--tools", CLAUDE_CODE_CHAT_TOOLS,
       "--allowedTools", CLAUDE_CODE_CHAT_TOOLS,
       "--disallowedTools", "Read(**/.env*)",
@@ -248,7 +258,16 @@ function runClaudeCode({ systemPrompt, userPrompt, resumeSessionId }) {
       }
       let data;
       try {
-        data = JSON.parse(stdout);
+        if(useStreamJson){
+          data = stdout.trim().split("\n")
+            .map(line => { try { return JSON.parse(line); } catch {return null} })
+            .filter(Boolean)
+            .reverse()
+            .find(event => event.type == "result");
+          if(!data) throw new Error("no result event");
+        } else {
+          data = JSON.parse(stdout);
+        } 
       } catch (err) {
         resolve({ ok: false, sessionId, message: `Couldn't parse Claude Code's response. ${resumeHint}` });
         return;
@@ -271,7 +290,11 @@ function runClaudeCode({ systemPrompt, userPrompt, resumeSessionId }) {
       });
     });
 
-    child.stdin.write(userPrompt || "");
+    if (useStreamJson) {
+      child.stdin.write(streamJsonUserMessage(userPrompt, pdfFiles));
+    } else {
+      child.stdin.write(userPrompt || "");
+    }
     child.stdin.end();
   });
 }
@@ -1150,9 +1173,10 @@ app.post("/api/chat", async (req, res) => {
         "Do not refer to yourself as an AI, a language model, or an assistant anywhere in the response.";
 
     if (useClaudeCode) {
-      // Claude Code is text-only via the CLI -- no native-PDF path like the
-      // OpenAI branch below, so every attached document goes in as its
-      // already-extracted text, same as the OpenRouter branch further down.
+      // Attached documents with their original PDF bytes go to Claude Code
+      // as real PDF files (see runClaudeCode's pdfFiles), so scanned PDFs
+      // with no extractable text can still be read. Everything else goes in
+      // as its already-extracted text, same as the OpenRouter branch below.
       //
       // claudeSessionId only ever arrives here from the Notes follow-up chat
       // (see sendNotesChatMessage in lawgpt.html) -- Notes generation itself
@@ -1163,17 +1187,27 @@ app.post("/api/chat", async (req, res) => {
       // every follow-up just piled another copy of it into the same
       // conversation each turn.
       let userPrompt;
+      const pdfFiles = [];
       if (claudeSessionId) {
         userPrompt = question;
       } else {
-        const context = attachedDocuments
+        for (const doc of attachedDocuments) {
+          if (isPdfDocument(doc)) {
+            pdfFiles.push({ name: doc.fileName || doc.title, buffer: doc.fileBuffer });
+          }
+        }
+        const textDocs = attachedDocuments.filter(doc => !isPdfDocument(doc));
+        const pdfNote = pdfFiles.length
+          ? `Attached as PDF files (read these directly): ${pdfFiles.map(f => f.name).join(", ")}\n\n`
+          : "";
+        const context = pdfNote + textDocs
           .map(doc => `SOURCE: ${doc.fileName || doc.title}\n\n${doc.text || ""}`)
           .join("\n\n---\n\n");
         userPrompt =
           `Canvas course materials:\n\n${context || "(No relevant Canvas documents found.)"}\n\n` +
           `User question:\n${question}`;
       }
-      const result = await runClaudeCode({ systemPrompt: developerText, userPrompt, resumeSessionId: claudeSessionId || undefined });
+      const result = await runClaudeCode({ systemPrompt: developerText, userPrompt, resumeSessionId: claudeSessionId || undefined, pdfFiles });
       if (result.ok) {
         const realDocNames = attachedDocuments.map(doc => doc.fileName || doc.title).filter(Boolean);
         result.text = fixDocumentFieldsInText(result.text, realDocNames);
@@ -1242,7 +1276,7 @@ app.post("/api/chat", async (req, res) => {
       const textDocuments = [];
 
       for (const doc of attachedDocuments) {
-        if (doc.fileBuffer) {
+        if (isPdfDocument(doc)) {
           const filename = /\.pdf$/i.test(doc.title || "") ? doc.title : `${doc.title || "document"}.pdf`;
           attachedFileBlocks.push({
             type: "input_file",

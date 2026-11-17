@@ -24,6 +24,9 @@ const os = require("os");
 const { spawn, execFileSync } = require("child_process");
 const agentStore = require("./agent-store");
 const agentRuntime = require("./agent-runtime");
+const documentStore = require("./document-store");
+const userDocumentStore = require("./user-document-store");
+const { isPdfDocument } = require("./pdf-documents");
 
 const REPO_ROOT = path.join(__dirname, "..", "..");
 
@@ -138,14 +141,63 @@ async function getOrAdoptRun(userId, id){
   return run;
 }
 
+// True when a document's extracted text is empty apart from pdf-parse's
+// "-- 1 of 24 --" page separators -- i.e. a scanned/image-only PDF.
+function hasNoRealText(doc) {
+  return !String((doc && doc.text) || "").replace(/--\s*\d+\s+of\s+\d+\s*--/g, "").trim();
+}
+
+// Adds what the Complete buttons' prompt can't carry on its own. The prompt
+// (lawgpt.html's formatAttachedDocumentsForAgent) already inlines every
+// attached document's extracted text, so text isn't repeated here. What this
+// adds is the actual PDF for the ones where that text can't be trusted:
+// - Documents that exist only in this account's user_documents table (e.g.
+//   an emailed Lease.pdf) aren't anywhere on disk the agent could open, so
+//   their PDFs go in as the actual file (pdfFiles).
+// - Scanned PDFs already on disk under documents/<course>/ are named by
+//   repo-relative path for the agent to open with Read, which renders the
+//   pages as images. They're not inlined: a whole casebook chapter PDF can
+//   run past the API's per-request PDF page limit and fail the entire run.
+async function resolveAttachedDocuments(userId, documentIds) {
+  const scannedOnDisk = [];
+  const pdfFiles = [];
+  for (const id of Array.isArray(documentIds) ? documentIds : []) {
+    const shared = documentStore.getDocument(id);
+    if (shared && shared.filePath) {
+      const isPdfPath = /\.pdf$/i.test(shared.filePath);
+      if (isPdfPath && hasNoRealText(shared)) scannedOnDisk.push(path.join("documents", shared.filePath));
+      continue;
+    }
+    const doc = shared || (await userDocumentStore.getDocument(userId, id));
+    if (doc && isPdfDocument(doc)) {
+      pdfFiles.push({ name: doc.fileName || doc.title || "document.pdf", buffer: doc.fileBuffer });
+    }
+  }
+
+  const sections = [];
+  if (pdfFiles.length) {
+    sections.push("The actual PDF file of each of these attached documents is included with this message: " +
+      pdfFiles.map(f => f.name).join(", ") +
+      ". Read the PDF itself -- it is the authoritative copy, and any extracted text for it above may be incomplete or empty (scanned pages have no extractable text).");
+  }
+  if (scannedOnDisk.length) {
+    sections.push("These attached documents are scanned PDFs with no extractable text, so the text above for them is empty. Open each one with the Read tool to see its pages:\n" +
+      scannedOnDisk.map(p => `- ${p}`).join("\n"));
+  }
+  return { pdfFiles, note: sections.join("\n\n") };
+}
+
 router.post("/run", async (req, res) => {
-  const { prompt, title, source } = req.body || {};
+  const { prompt, title, source, documentIds } = req.body || {};
   if (!prompt || !String(prompt).trim()) {
     return res.status(400).json({ error: { message: "prompt is required." } });
   }
+  const userId = req.session.userId;
+  const { pdfFiles, note } = await resolveAttachedDocuments(userId, documentIds);
+  const fullPrompt = note ? `${prompt}\n\n---\n\n${note}` : prompt;
   const id = crypto.randomUUID();
-  const run = await agentStore.createRun(req.session.userId, { id, title, prompt, source });
-  agentRuntime.startRun(req.session.userId, id, prompt, REPO_ROOT, run.title);
+  const run = await agentStore.createRun(userId, { id, title, prompt: fullPrompt, source });
+  agentRuntime.startRun(userId, id, fullPrompt, REPO_ROOT, run.title, pdfFiles);
   res.json(run);
 });
 
