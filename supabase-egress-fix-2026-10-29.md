@@ -50,9 +50,9 @@ the app reads and writes only what it needs. It was done in four commits on
 
 #### What happened during one agent run
 
-1. The user starts a run, for example a practice problem or a Notes report
-   sent to the agent. Claude Code starts on the server and its output
-   streams into `liveRuns` (src/agent-runtime.js).
+1. The user starts a run (see "What started an agent run" below). Claude
+   Code starts on the server and its output streams into `liveRuns`
+   (src/agent-runtime.js).
 2. Every 1.5 seconds, `scheduleFlush()` (src/agent-runtime.js) called
    `updateRun()` (src/agent-store.js). That read the entire
    `users.agent_runs` array (Supabase), with every past run's full
@@ -66,6 +66,51 @@ the app reads and writes only what it needs. It was done in four commits on
    transcript the account had ever produced. A run that took a few minutes
    pulled hundreds of copies of all past transcripts. Each new run also made
    the array bigger, so every later run cost more than the one before.
+
+#### What started an agent run
+
+The Agent tab's chat box was not the only way in. Four actions started an
+agent run, and all four ended up in `startRun()` or `continueRun()`
+(src/agent-runtime.js), which share the same flush code:
+
+- **Agent tab, new chat.** `startAgentChat()` (public/lawgpt.html) calls
+  `POST /api/agent/run` (src/agent-routes.js).
+- **Agent tab, follow-up message.** `sendAgentFollowup()`
+  (public/lawgpt.html) calls `POST /api/agent/runs/:id/message`
+  (src/agent-routes.js), which continues the run.
+- **The Complete buttons on practice problems and practice quizzes.**
+  `completeAssignment()` and `completeQuiz()` (public/lawgpt.html) call
+  `generateAgentReport()` (public/lawgpt.html), which calls
+  `POST /api/agent/run` (src/agent-routes.js). The result is shown in the
+  Notes tab, but it is still an agent run.
+- **Email tab, Send to agent.** `sendEmailToAgent()` (public/lawgpt.html)
+  calls `POST /api/email/messages/:id/agent/run` (src/email-routes.js),
+  which creates the run and calls `startRun()` (src/agent-runtime.js).
+
+Steps 2 and 3 above have different triggers:
+
+- **Step 2 (the server flush) ran for every live run, from any of the four
+  actions, whether or not anyone was watching.** It is driven by Claude
+  Code's output (`spawnClaude()` calls `scheduleFlush()`, both in
+  src/agent-runtime.js), not by the browser.
+- **Step 3 (the browser poll) ran only while a page was polling.** That was
+  either the Agent tab with a running run open (`openAgentRun()` starts
+  `pollAgentRun()`, public/lawgpt.html), or the Complete buttons' own loop
+  inside `generateAgentReport()` (public/lawgpt.html). An email run that
+  nobody opened in the Agent tab paid for step 2 but not step 3. A running
+  run open in two tabs paid for step 3 twice.
+
+**The plain Notes buttons were never part of this.** The per-course Notes
+buttons (`generateCivProNotes()`, `generateContractsNotes()`,
+`generateTortsNotes()`, `generateTortsCaseNotes()` and `generateLSSNotes()`,
+public/lawgpt.html) call `generateReadingReport()` (public/lawgpt.html).
+That makes one `POST /api/chat` (src/server.js) request and waits for the
+response. `/api/chat` runs a single `claude -p` with its own session id and
+never touches `agent-store.js`. It creates no agent run, does no flushing
+and does no polling, which is why a Notes report never shows up in the Agent
+tab. The only database cost on that path is the one described under Saved
+Notes below: saving a report rewrote the whole `user_state` row once, not
+every 1.5 seconds.
 
 ### Secondary sources
 

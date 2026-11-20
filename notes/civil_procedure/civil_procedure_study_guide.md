@@ -1844,6 +1844,11 @@ Under **20(b)** the court may order **separate trials** to prevent prejudice.
   - **Dissent (Ginsburg):** Caterpillar's efficiency logic should apply; after years of litigation and a verdict, dismissal wastes resources, especially since Dataflux had conceded jurisdiction in its answer.
 - **Takeaway:** Under the time-of-filing rule, diversity is measured when the suit is filed, and a later change in a continuing party's citizenship cannot cure a defect that existed then.
 
+**Lecture wrap-up on removal:**
+- **Caterpillar:** If complete diversity is missing at removal, **dropping the nondiverse party** before judgment cures the defect.
+- **Grupo Dataflux:** Domicile is fixed **at filing**. A later **change in citizenship** can't cure a defect, which is different from dropping a party.
+- **Removal and change of citizenship:** For diversity removal, courts require complete diversity **both at filing and at removal**. A defendant can't change domicile after filing to make the case removable. Some courts say a **plaintiff's** change of domicile after filing in state court can make the case removable.
+
 ---
 
 # UNIT X — Personal Jurisdiction (Classes 30–33)
@@ -1874,11 +1879,6 @@ Under **20(b)** the court may order **separate trials** to prevent prejudice.
 - **Default, then collaterally attack** the judgment as void (riskier). If the court had PJ, the defendant loses the chance to contest the merits. A defaulting defendant who later challenges PJ **bears the burden of proof** (be2).
 
 ## Class 30 (11/3) — Historical Development of the Doctrine
-
-**Lecture wrap-up on removal:**
-- **Caterpillar:** If complete diversity is missing at removal, **dropping the nondiverse party** before judgment cures the defect.
-- **Grupo Dataflux:** Domicile is fixed **at filing**. A later **change in citizenship** can't cure a defect, which is different from dropping a party.
-- **Removal and change of citizenship:** For diversity removal, courts require complete diversity **both at filing and at removal**. A defendant can't change domicile after filing to make the case removable. Some courts say a **plaintiff's** change of domicile after filing in state court can make the case removable.
 
 ### Reading: Introduction to Personal Jurisdiction (CB 1017–19)
 **Rule: Connection principle.** "The courts of a state can adjudicate only the rights of those who have **enough of a connection to the state** to justify the exercise of the state's judicial authority over them."
@@ -1941,7 +1941,6 @@ Under **20(b)** the court may order **separate trials** to prevent prejudice.
   - The company **appeared specially**, arguing it wasn't "doing business" in Washington and had no agent there.
 - **Issue:** Did the company's activities in Washington subject it to suit there, consistent with due process? Was the notice adequate?
 - **Holding:** Yes. The salesmen's activities were "**systematic and continuous**," produced a large volume of business, and **gave rise to the very obligation sued on**. That's enough minimum contacts. Notice by service on a salesman plus registered mail to the home office was adequate. **Affirmed.**
-  - **Justice Black (separately):** "Fair play" and "substantial justice" are too vague, giving courts room to second-guess state legislatures.
 - **Takeaway:** International Shoe replaced Pennoyer's territorial-presence model with the minimum contacts and fair play test, which is the foundation of the modern specific/general framework.
 
 **Lecture summary (from Pennoyer to Shoe).** There's PJ if:
@@ -1988,11 +1987,7 @@ Under **20(b)** the court may order **separate trials** to prevent prejudice.
 - **Takeaway:** A defendant must have purposefully created contacts with the forum, and foreseeable harm there from a consumer's unilateral act isn't enough.
 
 ### Reading: *J. McIntyre Machinery, Ltd. v. Nicastro* (CB 1059–73)
-**Rule: Stream of commerce, three competing approaches.**
-- **Stream of commerce plus" / targeting:** "The defendant's transmission of goods permits the exercise of jurisdiction **only where the defendant can be said to have targeted the forum**." Predicting goods will reach the forum isn't enough. "It is the defendant's **actions, not his expectations**." Jurisdiction is "a question of **authority rather than fairness**."
-- A **single isolated sale** isn't enough under existing precedent. Jurisdiction needs a "**regular flow**" of sales into the forum, or "**something more**," such as special state-related design, advertising, advice, or marketing.
-- **Sovereign-by-sovereign analysis:** A defendant can be subject to the jurisdiction of the **United States** but **not of any particular state**.
-- The **New Jersey Supreme Court's** rule (jurisdiction if the manufacturer knew its products were distributed nationally and didn't prevent sales in New Jersey) was **rejected** by six Justices.
+**Rule: Stream of commerce:** If the sale of a manufacturer's or distributor's product "arises from the efforts of the manufacturer or distributor to serve directly or indirectly, the market for its product in other States," it is not unreasonable to subject it to suit there for injuries caused by allegedly defective merchandise
 
 **Case: J. McIntyre Machinery, Ltd. v. Nicastro** (U.S. 2011)
 - **Facts:**
@@ -2036,11 +2031,6 @@ Under **20(b)** the court may order **separate trials** to prevent prejudice.
 
 ### Reading: *Burnham v. Superior Court of California* (CB 1092–1104)
 **Rule: Tag jurisdiction.** Jurisdiction based on **personal service while the defendant is physically present** in the state satisfies due process, even if the suit is **unrelated** to the defendant's activities there and the visit is **brief**.
-- **Scalia (plurality, 4 Justices): tradition.** Tag jurisdiction is "one of the **continuing traditions** of our legal system that define the due process standard of 'traditional notions of fair play and substantial justice.'" A rule with that pedigree, still followed by every state, **is** due process. International Shoe's contacts test **replaces** presence for absent defendants; it doesn't make presence insufficient.
-- **Brennan (concurrence in the judgment, 4 Justices): fairness.** History matters but isn't decisive; every jurisdictional rule must meet **contemporary notions of due process**. Tag jurisdiction is generally fair because a **voluntary** visitor **avails himself** of the state's benefits (police, roads, economy), knowingly takes on the risk of suit, and faces little modern burden in defending.
-- **White:** The rule is so widely accepted that it can't be struck down; there's no need for case-by-case fairness challenges, at least where presence is **intentional**.
-- **Stevens:** History, fairness, and common sense all make this "a very easy case."
-- **Traditional exceptions:** No tag jurisdiction over someone brought into the state by **force or fraud**, or present as a **party or witness** in another proceeding.
 
 **Case: Burnham v. Superior Court of California** (U.S. 1990)
 - **Facts:**
@@ -2119,7 +2109,7 @@ Under **20(b)** the court may order **separate trials** to prevent prejudice.
 - **Cayman Islands website called "Best Houston Barbecue":** Likely **yes** in Texas for claims about the site's content (e.g., a Houston restaurant suing over a defamatory review).
 - **Washington seller's interactive website takes a Texas order and ships to Texas:** Likely **yes** if the seller regularly sells to Texans. That's the top of the **Zippo** sliding scale: the seller knowingly takes Texas orders and ships into Texas, and the claim arises from that sale. (*McGee v. International Life*: even **one contract** deliberately made with a forum resident can be enough.)
 
-### Reading: *Mallory v. Norfolk Southern Railway Co.* (Canvas)
+### Reading: *Mallory v. Norfolk Southern Railway Co.* 
 **Rule: Consent by registration.** A state may require an out-of-state corporation, as a **condition of registering to do business**, to **consent to general jurisdiction** on any claim, even an out-of-state plaintiff's claim unconnected to the state. Such statutes "comport with the Due Process Clause" under ***Pennsylvania Fire*** (1917).
 - **Consent is an independent basis** for PJ, alongside International Shoe's contacts-based specific and general jurisdiction. International Shoe added "an **additional road**" for **non-consenting** defendants; it didn't close the consent road (plurality).
 - **PJ is a waivable personal right.** Many arrangements count as express or implied consent: failing to appear specially, forum-selection clauses, pretrial orders, and registering.
@@ -2204,7 +2194,7 @@ Under **20(b)** the court may order **separate trials** to prevent prejudice.
   - Gilbert's only stated reason for New York: a Virginia jury might be "staggered" by a claim near **$400,000**.
 - **Issue:** Does a federal district court have inherent power to dismiss a case under forum non conveniens? If so, was dismissal an abuse of discretion?
 - **Holding:** Yes, the power exists, and dismissal was **not an abuse of discretion**. **Reversed** (reinstating the dismissal). The Court refused to "entertain a provincial fear of the provincialism of a Virginia jury." Virginia was the source of all proof, and a Virginia court would know the governing law.
-- **Takeaway:** A federal court may dismiss for forum non conveniens when the private and public interest factors strongly favor another forum, but the plaintiff's choice of forum should rarely be disturbed.
+- **Takeaway:** The plaintiff's choice of forum is presumed correct, and the defendant must show the private and public interest factors **strongly** favor another forum to overcome it. When they do, the court may dismiss for forum non conveniens. Here they did: nearly everything pointed to Virginia, and New York's only link was the plaintiff's choice, so dismissal was proper even though the plaintiff's choice ordinarily controls.
 
 ### Reading: 28 U.S.C. §§ 1404, 1406 (CB 1177–78)
 **Introductory note:** In **1948** (after Gulf Oil), Congress authorized **transfer** between federal districts "for the convenience of the parties and witnesses [and] the interest of justice." The statutes allow transfer **only within the federal system**. Sending a case to a **state or foreign court** still requires **dismissal without prejudice** (i.e., forum non conveniens).
@@ -2248,6 +2238,212 @@ Under **20(b)** the court may order **separate trials** to prevent prejudice.
   - **Private:** Key evidence and witnesses (maintenance, pilot training, the investigation, damages) were in Britain. The defendants couldn't **implead** the Scottish pilot's estate, owner, and operator in the U.S., risking inconsistent verdicts.
   - **Public:** Trial in Pennsylvania would apply Pennsylvania law to Piper and **Scottish law** to Hartzell, confusing the jury. Scotland had a **very strong interest** in the case.
 - **Takeaway:** A forum non conveniens dismissal isn't barred just because the alternative forum's law is less favorable to the plaintiff, and a foreign plaintiff's choice of a U.S. forum gets less deference.
+
+---
+
+# UNIT XII — Choice of Law and the Erie Problem (Classes 35–37)
+
+**Choice of law** asks **which law** the court applies. The **Erie problem** is **vertical** choice of law: in a **diversity** case about **state-law claims**, does the federal court apply **state** law or **federal** law? (**Horizontal** choice of law asks **which state's** law applies; see the Postscript in Class 37.)
+- **Slide example:** P (AZ) sues D (TX) in federal court in Texas over a car crash in Arizona. Texas law? Arizona law? Something else?
+
+**Rule: Rules of Decision Act (RDA), 28 U.S.C. § 1652.** "The laws of the several states, except where the Constitution or treaties of the United States or Acts of Congress otherwise require or provide, shall be regarded as **rules of decision** in civil actions in the courts of the United States, in cases where they apply."
+- Unless federal law applies, a diversity court uses **state law** as the rule of decision. The question is what counts as "state law."
+- A **rule of decision** decides **who wins**: the elements of a tort or contract claim, the duty of care, whether contributory negligence is a defense, whether consideration is required. A **procedural** rule (e.g., the deadline to answer) is **not** a rule of decision, so the FRCP governs it in federal court.
+
+**The four questions in the RDA** (CB 1232–34). Each case in this unit answers one phrase:
+
+| RDA phrase | Question | Answer |
+|---|---|---|
+| "The **laws** of the several States" | Do state **court decisions** count as "laws"? | **Swift:** no. **Erie:** yes. |
+| "in trials **at common law**" | Does the rule reach **equity** cases? | **Ruhlin:** yes, Erie applies in equity too. |
+| "except where the Constitution, treaties, or **statutes** of the United States otherwise require or provide" | Does a **Federal Rule** displace state law? | **Sibbach, Hanna, Berk:** a valid Federal Rule on point controls. |
+| "**rules of decision**" | Which state laws are **substantive** (and so bind the federal court)? | **Cohen, Hanna (twin aims), Berk:** see the Erie/Hanna roadmap. |
+
+**Erie/Hanna roadmap (state law vs. federal law in a diversity case):**
+1. **Is there a Federal Rule (or federal statute) on point?** Read it by its **plain meaning** and ask whether it "**answers the question in dispute**" with the state law (Berk; Hanna's "direct collision").
+2. **If yes:** apply the Federal Rule if it's **valid under the Rules Enabling Act**, i.e., it "**really regulates procedure**" (Sibbach). The substantive nature or purpose of the displaced state law **doesn't matter** (Berk). The Supreme Court has **never** struck down a Federal Rule under this test.
+3. **If no Federal Rule answers the question:** use the **RDA/Erie** analysis. Apply the state law if it's **substantive**:
+   - It **creates or changes liability** (Cohen), or
+   - Under Hanna's **modified outcome-determination test**: ignoring the state law would be outcome determinative **in a way that** would (a) encourage **forum shopping** and (b) cause **inequitable administration of the laws** (the "twin aims" of Erie).
+4. A Federal Rule and a state law can **both apply** when they address **different questions** (Cohen: Rule 23.1 dealt with disclosure and notice; the New Jersey statute created a liability).
+
+## Class 35 (11/17) — The Erie Problem
+
+### Reading: Introductory Notes on the Erie Problem; A Brooding Omnipresence (CB 1205–09)
+**Two historical answers** for a federal judge deciding a common-law claim in a diversity case:
+- **Swift approach (1842–1938):** the judge applies the **"general" common law**, one body of law common to all courts, using independent judgment. State decisions are persuasive guidance, not binding.
+- **Erie approach (1938–today):** the judge acts **as if she were a court of a specific state** and follows that state's case law. Each state's judge-made law is a distinct set of commands.
+
+**Erie raises the question "What is procedure?"** Federal courts apply state law as **rules of decision**, but they always follow **federal procedural** rules. So a judge must sort each issue into **substance** (rules that define claims and defenses and decide who wins) or **procedure** (rules for how courts determine and enforce those rights).
+- **Hard example:** a state's two-year statute of limitations for tort claims. Is it procedure (a filing rule) or substance (it decides whether the plaintiff recovers)? (Guaranty Trust Co. v. York treated it as substantive under its outcome-determination test.)
+
+**"A brooding omnipresence":** Holmes's phrase (Southern Pacific v. Jensen, 1917, dissenting) for the idea Erie rejected. "The common law is not a brooding omnipresence in the sky, but the articulate voice of some sovereign or quasi sovereign that can be identified." This is **legal realism**: law is what a particular sovereign's courts will actually do.
+
+### Reading: *Swift v. Tyson* (CB 1209–13)
+**Rule:** The RDA's word "**laws**" means **state statutes** and **local usages** (and rights in things with a **permanent locality**, like **real estate**). It **doesn't** include state court decisions on questions of **general law** (like commercial law or the construction of contracts). On those questions, federal courts exercise **independent judgment**; state decisions get "the most deliberate attention and respect" but are **not binding**.
+- "In the ordinary use of language, it will hardly be contended, that the decisions of courts constitute laws. They are, at most, only **evidence** of what the laws are."
+
+**Case: Swift v. Tyson** (U.S. 1842) (Story, J.)
+- **Facts:**
+  - Norton and Keith sold **Tyson** land in **Maine** that they **didn't own** (fraud). Tyson paid with a **bill of exchange** (like a postdated check) for **$1,540.30**, accepted in **New York**.
+  - Norton indorsed the bill to **Swift** to pay off a **pre-existing debt** Norton and Keith owed him. Swift had **no notice** of the fraud.
+  - Tyson refused to pay (the bill was dishonored), and Swift sued in **federal court in New York** (diversity).
+  - Under negotiable-instruments law, a **bona fide holder for valuable consideration** takes free of the fraud defense. So the case turned on one question: **is a pre-existing debt "valuable consideration"?** New York courts said **no**.
+- **Issue:** Under the RDA, must the federal court follow New York court decisions on this question of commercial law?
+- **Holding:** No. The RDA covers only state statutes and local usages, not state decisions on general commercial law. Applying the general commercial law, a **pre-existing debt is valuable consideration**, so Swift took free of Tyson's fraud defense.
+- **Takeaway:** Under Swift, federal courts in diversity cases followed state **statutes** but decided **general common law** questions for themselves. That created two bodies of law in one state (state court vs. federal court) and invited forum shopping.
+
+### Reading: Introductory Note to *Erie*; *Erie Railroad Co. v. Tompkins* (CB 1214–24)
+**Rule:** "Except in matters governed by the Federal Constitution or by acts of Congress, the law to be applied in any case is the **law of the state**. And whether the law of the state shall be declared by its Legislature in a **statute** or by its highest court in a **decision** is not a matter of federal concern. **There is no federal general common law.**"
+- **RDA reading:** "laws" includes **state court decisions** (unwritten as well as written law). Charles Warren's research showed the RDA was meant to cover both.
+- **Constitutional basis:** Congress has **no power** to declare substantive common-law rules for a state, and **no clause** of the Constitution gives that power to federal courts. The Swift doctrine was "an **unconstitutional assumption of powers** by the Courts of the United States." The Court didn't strike down the RDA itself.
+- **Why Swift failed:**
+  - **No uniformity:** state courts kept their own views, so the "general law" never unified anything.
+  - **No workable line** between "general" and "local" law.
+  - **Discrimination against citizens:** a noncitizen could choose federal court and its more favorable "general law," so the same right varied depending on which court heard it. Diversity jurisdiction was meant to **prevent** discrimination against out-of-staters, but Swift let them discriminate against in-staters.
+  - **Black & White Taxicab** (1928): a Kentucky company **reincorporated in Tennessee** just to create diversity and get the federal rule enforcing a contract that was **void under Kentucky law**. It worked.
+
+**Case: Erie Railroad Co. v. Tompkins** (U.S. 1938) (Brandeis, J.)
+- **Facts:**
+  - **Tompkins** (Pennsylvania citizen) was walking on a **footpath along the railroad's tracks** in **Hughestown, Pennsylvania**, at night when something like an **open door** projecting from a passing Erie Railroad freight train struck him.
+  - He sued in **federal court in New York** (Erie was a New York corporation), based on diversity.
+  - **Erie** argued **Pennsylvania** law applied: people on a longitudinal path along the tracks are **trespassers**, and the railroad is liable only for **wanton or willful** conduct. Pennsylvania had **no statute** on point; the rule came from Pennsylvania **case law**.
+  - The trial court refused to apply the Pennsylvania rule, and the jury awarded **$30,000**. The Second Circuit affirmed, holding that railroad liability was a question of **general law** under Swift, so it didn't need to decide what Pennsylvania law said.
+- **Issue:** Must a federal court in a diversity case follow state **common law** as declared by the state's highest court?
+- **Holding:** Yes. **Swift v. Tyson overruled.** **Reversed and remanded** to apply Pennsylvania law.
+- **Dissent (Butler, J., joined by McReynolds, J.):** No one raised a constitutional question, and the Court shouldn't overturn a century of precedent without argument. Would have reversed on **contributory negligence** instead.
+- **Concurrence (Reed, J.):** Agrees Swift should go, but only as a matter of **statutory interpretation** of "laws." No need to call it **unconstitutional**. "The line between procedural and substantive law is **hazy**, but **no one doubts federal power over procedure**."
+- **Takeaway:** A federal court in a diversity case must apply **state substantive law**, including **state court decisions**. There's no federal general common law. Erie ended **vertical** forum shopping (state vs. federal court in the same state), but horizontal forum shopping (picking among states) remained.
+
+## Class 36 (11/18) — Erie's Progeny
+
+### Reading: An Irrepressible Myth (CB 1232–34)
+- Swift and Erie were, at bottom, interpretations of a federal **statute**: the RDA, which is only **45 words** long ("closer to a haiku poem than a typical federal statute").
+- Later cases answer **four questions** about its phrases (see the table at the top of this unit): "**laws**," "**at common law**," "**except where . . . statutes of the United States otherwise require or provide**," and "**rules of decision**."
+- **Federal causes of action:** if the plaintiff sues under a federal statute (e.g., the Sherman Act), federal law is the rule of decision. If the plaintiff in a diversity case sues only under a **state** statute (e.g., the Illinois Antitrust Act), the federal court applies that state statute.
+- **The hazy line:** state law includes procedure, evidence, limitations periods, and jury rights, and no Justice has ever read the RDA to require federal courts to follow **state procedure**. Deciding what is procedure versus substance is the problem courts have wrestled with for 80+ years.
+
+### Reading: Introductory Note on *Ruhlin v. New York Life Insurance Co.* (CB 1235–36)
+**Rule:** Erie applies to suits in **equity**, not just "trials at common law." State law, including state court decisions, governs the interpretation of contracts even when the suit seeks **equitable relief**.
+- **Law vs. equity:** cases at law seek **damages**; cases in equity seek **injunctions** or relief such as **rescission**.
+- The RDA has since been **revised** ("civil actions") to make clear it covers equity too.
+
+**Case: Ruhlin v. New York Life Insurance Co.** (U.S. 1938)
+- **Facts:**
+  - **New York Life** refused to pay **Ruhlin** disability benefits under his life and disability policy, then sued in **federal court in Pennsylvania** to **rescind** the policy for misrepresentations in his application (a suit in **equity**).
+  - The outcome turned on the policy's **incontestability clause**. The Third Circuit held for New York Life, creating a **circuit split** with the Fourth and Ninth Circuits. Each circuit had applied **federal principles of equity**.
+  - The Court granted cert to resolve the split, then decided **Erie**. **One week later** it decided Ruhlin.
+- **Issue:** Does Erie apply to a suit in equity, even though the RDA (then) referred only to "trials at common law"?
+- **Holding:** Yes. Interpretation of the insurance contract "is now to be governed, even in the absence of state statute, by the decisions of the **appropriate state court**," and "the doctrine applies though the question . . . arises not in an action at law, but in a suit in **equity**." **Vacated and remanded** to apply state law. There was no longer a federal circuit split to resolve.
+  - The Court **didn't explain why** Erie reaches equity (York later did). It also left open **which state's** law applies (the law of the place of delivery, Pennsylvania, or whatever Pennsylvania's conflict rules chose). Klaxon later answered that question (Class 37 Postscript).
+- **Takeaway:** In diversity cases, federal courts apply state substantive law whether the plaintiff seeks **damages or equitable relief**. Otherwise a plaintiff would need state law for damages and a separate federal common law of contracts for equitable relief, which is exactly what the insurer wanted.
+
+### Reading: *Sibbach v. Wilson & Co.* (CB 1248–53)
+**Rule: Validity of a Federal Rule under the Rules Enabling Act.** "The test must be whether a rule **really regulates procedure**,—the judicial process for enforcing rights and duties recognized by substantive law and for justly administering remedy and redress for disregard or infraction of them."
+- A Federal Rule that is valid under the REA **applies in federal court**, even in diversity cases.
+- "Substantive rights" in the REA does **not** mean "**important**" or "**substantial**" rights. An importance test would "invite endless litigation and confusion worse confounded."
+
+**Case: Sibbach v. Wilson & Co.** (U.S. 1941)
+- **Facts:**
+  - **Sibbach** was injured in **Indiana** and sued a packing company in the **Northern District of Illinois** (diversity).
+  - The defendant moved under **Rule 35** for an order requiring her to submit to a **physical examination**. The court ordered it.
+  - **Indiana** courts allowed such orders; **Illinois** courts didn't. Neither state had a statute.
+  - Sibbach refused, and the court held her in **contempt** and ordered her **committed** (jailed) until she complied.
+  - Sibbach **conceded** Rules 35 and 37 are procedural, but argued they still affect an **important** right (bodily integrity), so they "abridge" substantive rights under the REA.
+- **Issue:** Are Rules 35 and 37 within the rulemaking power Congress delegated in the REA?
+- **Holding:** Yes, both are valid because they **really regulate procedure**. But the contempt order was **plain error**: Rule 37(b)(2)(iv) **exempts** refusal of a Rule 35 exam from contempt. The court could only use the Rule 37 sanctions (deem the condition established, bar evidence, strike pleadings, dismiss, or default). **Reversed and remanded.**
+  - **Dissent (Frankfurter, J., joined by Black, Douglas, and Murphy, JJ.):** addressed issues specific to Rule 35 (omitted).
+- **Takeaway:** A Federal Rule is valid under the REA if it **really regulates procedure**. If valid, it governs in federal court regardless of conflicting state law. Sibbach starts from the **federal rule** and asks whether it applies; Erie started from the **state rule**.
+
+### Reading: Rules Enabling Act, 28 U.S.C. § 2072 (CB 1253–54)
+**Rule § 2072(a):** "The Supreme Court shall have the power to prescribe general rules of **practice and procedure** and rules of evidence for cases in the United States district courts . . . and courts of appeals."
+
+**Rule § 2072(b):** "Such rules shall **not abridge, enlarge or modify any substantive right**. All laws in conflict with such rules shall be of no further force or effect after such rules have taken effect."
+- Congress authorized the Supreme Court to create the FRCP (enacted **1934**; the Rules took effect in **1938**, the same year as Erie).
+- The REA draws a line: the Rules may create **procedural** law but can't alter **substantive** law.
+- **The original 1934 Act** also required preserving the **jury right** when law and equity merged, and the Rules can't **extend or restrict jurisdiction** set by statute (Sibbach).
+
+### Reading: *Cohen v. Beneficial Industrial Loan Corp.* (CB 1256–63)
+**Rule:** A state law that **creates a new liability** is **substantive** and applies in federal diversity cases, even if it also prescribes a procedure (like a bond) to secure that liability. "Rules which lawyers call procedural do not always exhaust their effect by regulating procedure."
+- A **Federal Rule and a state statute can both apply** when the Rule is valid and the state statute reflects the state's substantive policy, as long as they don't conflict.
+
+**Case: Cohen v. Beneficial Industrial Loan Corp.** (U.S. 1949) (Jackson, J.)
+- **Facts:**
+  - **Cohen** brought a **shareholder derivative suit** in **federal court in New Jersey** (diversity) against Beneficial (a Delaware corporation doing business in New Jersey) and its managers, alleging an 18-year conspiracy to divert over **$100 million**.
+  - Cohen owned **100 shares** (about **0.0125%** of the stock, never worth more than **$9,000**).
+  - While the suit was pending, **New Jersey** passed a statute making a small-stake plaintiff who **loses** liable for **all of the defense's expenses, including attorney's fees**, and requiring the plaintiff to **post security** (a bond) before proceeding. The defendants asked for a **$125,000** bond.
+  - The purpose was to curb "**strike suits**": derivative suits brought for their nuisance value and settled secretly.
+  - Cohen argued the statute was **procedural** and that **Rule 23** (now **23.1**) governed derivative suits in federal court.
+- **Issue:** Must a federal court in a diversity case apply the New Jersey bond-and-expenses statute?
+- **Holding:** Yes. **Affirmed** (the statute applies).
+  - The statute is "**not merely a regulation of procedure**." It **creates a new liability** where none existed before (the plaintiff pays the defense's expenses if he loses), which goes beyond ordinary "costs." The bond just secures that liability.
+  - **No conflict with Rule 23.1:** the Rule requires a verified complaint, contemporaneous ownership, non-collusion, a demand on the corporation, and court approval of settlement. These "neither create nor exempt from liabilities, but require **complete disclosure** to the court and **notice** to the parties." Both can be followed.
+  - **Dissent (Douglas, J., joined by Frankfurter, J.):** The statute doesn't add to or subtract from the **cause of action**; it only prescribes **how** to enforce it. State rules are substantive under Erie only if they "**define, qualify or delimit the cause of action**." Rule 23.1 governs.
+  - **Dissent (Rutledge, J.):** The bond is too close to the "**incidents of litigation**" rather than its outcome. Congress, not the states, controls those in diversity cases.
+- **Takeaway:** A state law is substantive if it **determines liability**. A Federal Rule displaces state law only if the two actually **conflict**. Where the Rule addresses a different issue, both apply. (Berk later stressed that Cohen does **not** exempt every state "precondition to proceeding" from conflict with the Federal Rules.)
+
+**Note:** This is the same Cohen as the **collateral order doctrine** (Unit VI). The appealability part of the opinion appears in Chapter 7.
+
+## Class 37 (11/19) — Erie's Progeny (cont.)
+
+### Reading: *Hanna v. Plumer* (CB 1264–73)
+**Rule (two separate tracks):**
+- **(1) A Federal Rule is on point and directly conflicts with state law → the REA track.** The Federal Rule controls if it is **valid under the REA and the Constitution**. Valid means it **really regulates procedure** (Sibbach). **Erie is not the test** of a Federal Rule's validity. "The Erie rule has never been invoked to void a Federal Rule."
+- **(2) No Federal Rule on point → the RDA/Erie track ("relatively unguided Erie choice").** Apply the **modified outcome-determination test**: would applying federal law instead of state law change the outcome in a way that would undermine the "**twin aims of the Erie rule**":
+  - **(a) discouragement of forum shopping**, and
+  - **(b) avoidance of inequitable administration of the laws**?
+- **Outcome determination is not a "talisman."** Guaranty Trust Co. v. York (1945) asked whether ignoring the state law would "**significantly affect the result**" of the litigation. Read literally, **every** procedural rule is outcome determinative if a party disobeys it. York has to be read with Erie's twin aims, judged **at the time the plaintiff chooses the forum**.
+- **Constitutional power:** Article III's provision for federal courts, plus the **Necessary and Proper Clause**, lets Congress make rules for matters "**rationally capable of classification as either**" substance or procedure.
+
+**Case: Hanna v. Plumer** (U.S. 1965) (Warren, C.J.)
+- **Facts:**
+  - **Hanna** (Ohio citizen) was injured in a car accident in **South Carolina** allegedly caused by **Osgood** (a Massachusetts citizen), who **died** before the suit.
+  - Hanna sued Osgood's **executor**, **Plumer** (Massachusetts citizen), in **federal court in Massachusetts** (diversity), seeking over $10,000.
+  - Service was made by leaving the papers with Plumer's **wife at his home**, which complied with **Federal Rule 4(d)(1)** (today Rule 4(e)(2)(B)).
+  - **Massachusetts law** (ch. 197, § 9) required **in-hand service** on an executor (or acceptance of service, or notice filed in the probate registry) within **one year** of the executor's bond. Hanna didn't comply.
+  - The district court granted **summary judgment** for Plumer under the state rule, and the First Circuit affirmed, calling the conflict "substantive."
+- **Issue:** In a diversity case, is service of process governed by the state rule or by Federal Rule 4(d)(1)?
+- **Holding:** **Rule 4(d)(1) governs.** **Reversed.**
+  - **REA track:** Rule 4(d)(1) prescribes how a defendant is notified of a suit, so it **really regulates procedure** and is valid. Here the clash is "**unavoidable**": Rule 4(d)(1) says "implicitly, but with unmistakable clarity" that in-hand service isn't required.
+  - **Even without the Federal Rule**, Erie probably wouldn't require the Massachusetts rule. The choice of service method is of "**scant, if any, relevance to the choice of a forum**," and it doesn't alter the enforcement of state-created rights enough to cause **inequitable administration**. It's outcome determinative only in the sense that any procedural rule is.
+  - **Concurrence (Harlan, J.):** The majority's "**arguably procedural, ergo constitutional**" test makes the Federal Rules nearly absolute. The right question is whether the choice of rule would substantially affect "**primary decisions respecting human conduct**" that the Constitution leaves to the states. Here it wouldn't (an executor would just need to check his house and the federal courthouse before distributing the estate), so he **concurs in the judgment**.
+- **Takeaway:** When a valid Federal Rule **directly conflicts** with state law, the Federal Rule controls under the REA, and Erie isn't the test. When no Federal Rule is on point, apply state law if ignoring it would be outcome determinative in a way that encourages **forum shopping** or causes **inequitable administration of the laws**.
+
+### Reading: *Berk v. Choy* (Canvas)
+**Rule: Does a Federal Rule displace state law?**
+1. Does the Federal Rule "**answer the question in dispute**"? Read it by its **plain meaning**, like any federal law.
+2. If yes, it governs unless it "**exceeds statutory authorization or Congress's rulemaking power**," i.e., unless it fails the REA test. A Rule is valid if it "**really regulates procedure**" (Sibbach): it governs "**the manner and the means**" by which rights are enforced, not "the rights themselves, the available remedies, or the rules of decision."
+- When a Federal Rule is on point, a federal court "**bypasses Erie's inquiry altogether**." A valid Rule displaces contrary state law **even if the state law would count as substantive under Erie**.
+- **The substantive nature or purpose of the state law makes no difference** to whether a Federal Rule is valid under the REA.
+- **Rule 8 sets a ceiling:** unless the Rules single out a claim (e.g., **Rule 9**), Rule 8(a)(2)'s "short and plain statement" is the most information a plaintiff can be required to give about the merits at the outset. Rule 12(b)(6) is the only merits-based dismissal at the pleading stage, and the court can't look outside the pleadings (12(d)).
+
+**Case: Berk v. Choy** (U.S. 2026) (Barrett, J.)
+- **Facts:**
+  - **Berk**, visiting **Delaware**, fell out of bed and fractured his ankle. At **Beebe Medical Center**, employees **forced his leg into a protective boot**, twisting the fracture. **Dr. Choy** didn't order another X-ray. Two weeks later, a new X-ray showed the ankle was **severely deformed**, requiring surgery.
+  - Berk sued Choy and Beebe for **medical malpractice** under Delaware law in federal court (diversity).
+  - **Delaware § 6853** requires that a malpractice complaint be "**accompanied**" by an **affidavit of merit** signed by a **medical professional**, stating there are reasonable grounds to believe each defendant was negligent. The plaintiff can get **one 60-day extension** for good cause. Without it, the clerk **refuses to docket** the complaint, and defendants don't have to respond until the affidavit is filed.
+  - Berk got an extension but **couldn't find a doctor** to sign in time, so he filed his **medical records under seal** instead.
+  - Defendants moved for **in camera review**. Berk argued § 6853 is **displaced by the Federal Rules**. The district court **dismissed** for noncompliance, and the **Third Circuit affirmed**: the Rules are silent on affidavits, and § 6853 is substantive under Hanna's test (outcome determinative + forum shopping and inequitable administration).
+- **Issue:** Must a federal court in a diversity case apply Delaware's affidavit-of-merit requirement, or does a Federal Rule displace it?
+- **Holding:** **Rule 8 displaces § 6853**; the affidavit requirement **doesn't apply in federal court**. **Reversed and remanded.**
+  - **Same question:** Both rules address **what information a plaintiff must provide about the merits at the outset**. Rule 8 requires only **allegations**; § 6853 demands **evidence** (a third party's sworn statement). Putting the affidavit on a separate sheet of paper doesn't avoid the conflict.
+  - **Cohen distinguished:** Cohen didn't exempt all "**preconditions to proceeding**." There, the state law **created a liability**, which Rule 23 didn't address. Here, both rules address the same issue.
+  - **No rewriting the statute:** Defendants' proposed workaround (file the affidavit "early in the case," with flexible extensions, and drop the no-response provision that conflicts with Rule 12(a)) would turn § 6853 into a free-floating evidentiary requirement. The Rules already have a mechanism for putting a plaintiff to his proof: **summary judgment** under **Rule 56**, after **adequate time for discovery** (Celotex).
+  - **Rule 11 loophole rejected:** Rule 11(a)'s "unless a rule or statute specifically states otherwise, a pleading need not be . . . accompanied by an affidavit" refers to **the party's or attorney's own** verification, not affidavits from **third-party experts**.
+  - **REA:** Rule 8 **really regulates procedure** because it determines what plaintiffs must present about their claims at the outset. The Court has "rejected **every** statutory challenge to a Federal Rule" (Rules 4(f), 11, 23, 35, 38).
+- **Takeaway:** When a valid Federal Rule answers the same question as a state law, the Federal Rule governs, regardless of whether the state law is substantive. State **affidavit-of-merit** requirements for malpractice suits **don't apply** in federal court because Rule 8 sets the ceiling on what a plaintiff must provide at the outset.
+
+### Reading: Postscript on Erie and Horizontal Choice of Law (CB 1301–03)
+**Horizontal choice of law** = **which state's** law applies (the subject of a **conflict of laws** course). **Vertical** choice of law = state vs. federal law (Erie/Hanna).
+- **Slide example:** an AZ plaintiff sues a TX defendant in Texas court over a car crash. Texas law or Arizona law? States use **different approaches** to answer this.
+
+**Rule: Klaxon Co. v. Stentor Electric Manufacturing Co.** (U.S. 1941): Erie's bar on independent federal judgment "**extends to the field of conflict of laws**." A federal court in a diversity case must apply the **choice-of-law rules of the state where it sits**. "The conflict of laws rules to be applied by the federal court in Delaware must conform to those prevailing in Delaware's state courts." Any other rule "would do violence to the principle of **uniformity within a state**."
+- So a federal court in Delaware doesn't necessarily apply **Delaware** substantive law. It applies **whatever law a Delaware state court would choose**.
+
+**Rule: Allstate Insurance Co. v. Hague** (U.S. 1981): The Constitution (**Due Process** and **Full Faith and Credit**) places only **loose limits** on a state's choice of its own law.
+- **Facts:** Ralph Hague, a **Wisconsin** resident, was killed in a Wisconsin crash involving Wisconsin drivers. He had three Allstate policies (delivered in Wisconsin), each with **$15,000** of uninsured-motorist coverage. He **worked in Minnesota**. His widow sued in **Minnesota** state court to "**stack**" the policies (**$45,000**). Minnesota law allowed stacking; Wisconsin law didn't.
+- **Holding:** Minnesota's choice of its own law was **constitutional**. A divided Court **affirmed** the judgment for the plaintiff.
+- **Takeaway:** A state court can usually apply its own law if the state has **significant contacts** with the dispute, and federal diversity courts follow the forum state's choice-of-law rules (Klaxon).
 
 ---
 
@@ -2298,6 +2494,19 @@ Under **20(b)** the court may order **separate trials** to prevent prejudice.
   │         · § 1404(a) transfer (venue proper; convenience)
   │         · § 1406(a) dismiss or transfer (venue improper)
   │         · Forum non conveniens dismissal (Gulf Oil, Piper)
+  │
+  ●  2c. CHOICE OF LAW (which law governs a diversity case)
+  │     · RDA § 1652: state law = rules of decision
+  │     · No federal general common law (Erie overrules Swift);
+  │       applies in equity too (Ruhlin)
+  │     ▸ Federal Rule on point? (Hanna, Berk)
+  │         · Valid if it "really regulates procedure" (Sibbach;
+  │           REA § 2072) → Federal Rule controls
+  │     ▸ No Federal Rule on point → Erie/RDA
+  │         · Substantive if it creates liability (Cohen)
+  │         · Outcome-determinative + twin aims (Hanna)
+  │     ▸ Which state's law? Forum state's conflict rules
+  │       (Klaxon); constitutional limits are loose (Hague)
   │
   ●  3. EQUITABLE RELIEF
   │     ▸ Preliminary Injunction / TRO
@@ -2527,3 +2736,10 @@ Under **20(b)** the court may order **separate trials** to prevent prejudice.
 - **§ 1404(a):** venue **proper**; transfer for **convenience and interest of justice** to a district where the case **might have been brought** (or all parties consent).
 - **§ 1406(a):** venue **improper**; court **shall dismiss** or, in the interest of justice, **transfer**.
 - **Forum non conveniens (Gulf Oil, Piper):** an **adequate alternative forum** exists + private and public interest factors **strongly** favor it → **dismiss**. Plaintiff's choice is rarely disturbed, but gets **less deference** if the plaintiff is **foreign**. **Less favorable law** in the other forum isn't a bar unless the remedy is **no remedy at all**. Used when the better forum is **state or foreign** (transfer statutes can't send cases there).
+
+**Choice of law (Erie)**
+- **RDA § 1652:** in diversity cases, **state law** supplies the **rules of decision** (who wins), unless federal law otherwise requires. "Laws" includes **state court decisions**; there's **no federal general common law** (Erie, overruling Swift). Applies to **equity** cases too (Ruhlin).
+- **Step 1 — Federal Rule on point?** Does it "**answer the question in dispute**" (Berk), read by its plain meaning? If so, it **controls** if valid under the **REA** (§ 2072): it "**really regulates procedure**" (Sibbach). The state law's substantive nature or purpose **doesn't matter** (Berk). No Federal Rule has ever been struck down.
+- **Step 2 — No Federal Rule on point → RDA/Erie.** Apply state law if it's **substantive**: it **creates or changes liability** (Cohen), or ignoring it would be **outcome determinative** in a way that would encourage **forum shopping** and cause **inequitable administration of the laws** (Hanna's twin aims). Trivial differences (like the method of service) don't count.
+- **No conflict → apply both** (Cohen: Rule 23.1 and the state bond statute addressed different questions). But not every state "precondition to proceeding" avoids conflict (Berk: Rule 8 displaces affidavit-of-merit laws).
+- **Horizontal choice of law (Klaxon):** a diversity court applies the **choice-of-law rules of the state where it sits**. **Hague:** due process and full faith and credit only loosely limit a state's choice of its own law.

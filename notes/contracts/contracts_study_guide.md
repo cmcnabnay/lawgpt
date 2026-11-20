@@ -89,6 +89,12 @@
 
 **Rule: Option created by part performance (R2 § 45).** When an offer invites acceptance only by performance, an option contract is created once the offeree begins the invited performance (or tenders it). The offeror's duty is conditional on completion. Mere preparation to perform doesn't count. Starting the performance itself does.
 
+**Rule: Unilateral Contract:** A contract that is accepted when the requested performance is rendered, and the offeror cannot revoke the offer once the offeree has begun performance
+- **Example:** Dog owner offers to pay $100 to whoever finds his missing dog
+
+**Rule: Bilateral Contract:** A contract where both parties make mutual promises to each other. The contract forms when a deal has been made, neither side has done anything at the time of the deal.
+- **Example:** Employment agreement, employer offers to pay a salary and the worker starts on Monday
+
 **Case: Cook v. Coldwell Banker / Frank Laiben Realty** (Mo. Ct. App. 1997)
 - **Facts:** The broker announced a year-end bonus program for agents who hit commission targets, then added a requirement that agents still be employed in March of the next year to collect. Cook earned the bonus, then left for another firm. She was refused payment.
 - **Issue:** Can an employer change the terms of a bonus offer after the employee has substantially performed?
@@ -118,7 +124,10 @@
 ## Class 5 — Other Mutual Assent Issues: The UCC and Indefiniteness
 
 ### Reading: UCC §§ 2-204(1), 2-207(3)
-**Rule: UCC § 2-204(1)–(3).** A contract for sale of goods may be made in any manner sufficient to show agreement, including conduct by both parties that recognizes a contract. A contract can exist even if the moment of formation is unclear. It does not fail for indefiniteness if the parties intended to contract and there is a reasonably certain basis for a remedy.
+**Rule: UCC § 2-204.** A contract for sale of goods may be made in any manner sufficient to show agreement, including conduct by both parties that recognizes a contract.
+- (1) Agreement may be found even if the moment of its making is undetermined, agreement could be shown through words, writings, or conducts
+- (2) A valid contract may exist even if the parties cannot determine when it was made
+- (3) Open terms does not invalidate a contract
 
 **Rule: UCC § 2-207 (the "battle of the forms").**
 - (1) A definite and seasonable expression of acceptance operates as an acceptance even if it states additional or different terms, unless acceptance is expressly conditional on assent to those terms.
@@ -159,8 +168,6 @@
 - **Holding:** Consideration existed. Giving up a legal right to do something is a legal detriment, whether or not it benefited the uncle, and even if it was good for the nephew.
 - **Takeaway:** Giving up a legal right is a legal detriment that counts as consideration, even if it benefits the promisee.
 
-**Rule: Gift vs. bargain (Williston's tramp).** "If you go around the corner to the clothing store, you may buy an overcoat on my credit." Walking to the store is a condition of a gift, not a bargained-for exchange. Ask: Did the promisor want the act for its own sake? If the act was only a necessary step to collect the gift, it isn't consideration.
-
 **Case: Kirksey v. Kirksey** (Ala. 1845)
 - **Facts:** A man wrote to his widowed sister-in-law: "If you will come down and see me, I will let you have a place to raise your family." She gave up her land and moved about 60 miles. He later evicted her.
 - **Issue:** Was the sister-in-law's move consideration for the promise of a place to live, or only a condition of a gift?
@@ -179,7 +186,7 @@
 
 ## Class 7 — Consideration: Conditions of Gifts and Adequacy
 
-### Reading: CB 108–116 (Plowman) (skip note 2, p. 113)
+### Reading: CB 108–116 (Plowman) 
 
 **Rule: Bargained-for exchange.** A performance is consideration only if the promisor sought it in exchange for the promise. Past service, and acts that are only conditions of a gift, are not consideration.
 
@@ -235,7 +242,7 @@
 **Rule: Reliance by third persons (R2 § 90).** Promissory estoppel protects reasonable reliance by the promisee or by a third person, and the remedy may be limited as justice requires.
 
 **Case: Wright v. Newman** (Ga. 1996)
-- **Facts:** Newman wasn't the biological father of Wright's son. He agreed to be listed as the father on the birth certificate, gave the child his surname, and held himself out as the father for years. Wright alleged she relied by not trying to find the biological father. Newman stopped paying support.
+- **Facts:** Newman wasn't the biological father of Wright's son. He agreed to be listed as the father on the birth certificate, gave the child his surname, and held himself out as the father for years. Wright alleged she relied by not trying to find the biological father. Newman stopped paying support. Newman was the promisor, Wright was the promisee, the son was the third person.
 - **Issue:** Can a man who held himself out as a child's father be required to pay child support through promissory estoppel?
 - **Holding:** Newman could be held to a child-support obligation through promissory estoppel (Georgia's version of § 90). By voluntarily assuming the role of father, he made a promise he should have expected to induce reliance by the child (a third person, per § 90) and the mother. Enforcement was needed to avoid injustice.
 - **Takeaway:** Promissory estoppel can enforce a promise relied on by a third person, here a man's assumption of a father's role creating a child-support duty.
@@ -247,7 +254,7 @@
 **Case: Greiner v. Greiner** (Kan. 1930)
 - **Facts:** A mother promised her son Frank 80 acres if he moved back with his family. He moved, gave up his home and job, and made improvements on the land. She then refused to deed it.
 - **Issue:** Is a mother's promise of land to her son enforceable when he moved and improved the land in reliance on it?
-- **Holding:** Enforced under R2 (First) § 90. The promise was one she should reasonably have expected to induce substantial action, it did, and injustice could be avoided only by enforcement.
+- **Holding:** Enforced under Restatement (First) § 90. The promise was one she should reasonably have expected to induce substantial action, it did, and injustice could be avoided only by enforcement.
 - **Takeaway:** Promissory estoppel enforces a family promise of land when the promisee reasonably and substantially relies on it and injustice can be avoided only by enforcement.
 
 ### Reading: CB 216–225 (Harvey)
