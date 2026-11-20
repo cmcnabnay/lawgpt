@@ -4156,7 +4156,7 @@ function applyChatProviderToModelSelect(){
     models.forEach(m => {
       const opt = document.createElement("option");
       opt.value = m.id;
-      opt.textContent = m.note ? `${m.id} (${m.note})` : m.id;
+      opt.textContent = m.note ? `${m.id} ${m.note}` : m.id;
       if (m.id === chatProvider.openrouterModel) opt.selected = true;
       modelSelect.appendChild(opt);
     });
