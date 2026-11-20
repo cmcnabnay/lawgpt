@@ -360,19 +360,62 @@ function spawnClaude(entry, userId, runId, args, cwd, prompt){
 // extractable text can still be read. A file can't ride along in a plain-text
 // stdin prompt, so with any PDFs the input switches to stream-json (one
 // structured user message), whose output side this already uses.
-function startRun(userId, runId, prompt, cwd, title, pdfFiles = []){
+function startRun(userId, runId, prompt, cwd, title, pdfFiles = [], { restricted = true } = {}){
   const entry = { userId, title: title || "Agent run", output: "", result: "", turns: [{ prompt, result: "", steps: [] }], status: "running", child: null };
   liveRuns.set(runId, entry);
   const usePdfInput = pdfFiles.length > 0;
+  const fullPrompt = restricted ? prompt + RESTRICTED_PROMPT_NOTE : prompt;
   spawnClaude(entry, userId, runId, [
     "-p",
     ...(usePdfInput ? ["--input-format", "stream-json"] : []),
-    "--permission-mode", "auto",
+    ...permissionArgs(restricted),
     "--output-format", "stream-json",
     "--verbose",
     "--session-id", runId
-  ], cwd, usePdfInput ? streamJsonUserMessage(prompt, pdfFiles) : prompt);
+  ], cwd, usePdfInput ? streamJsonUserMessage(fullPrompt, pdfFiles) : fullPrompt);
 }
+
+// Non-admin accounts get a read-only agent: it runs from the repo root (so
+// repo-relative paths like documents/<course>/x.pdf in prompts still work,
+// and `claude --resume` scoping is unchanged), but can only read
+// documents/ and notes/ and answer in its response text. dontAsk denies
+// anything not on the allow list without prompting (nothing could answer a
+// prompt in -p anyway). WebFetch is blocked specifically because a request
+// to localhost:3000 passes server.js's isLocalhostRequest, which would hand
+// it the admin-only /api/db/* routes. The deny rules keep Glob/Grep (which
+// honor Read rules) from surfacing app source or secrets like app/.env, and
+// --strict-mcp-config keeps the server account's own MCP servers out.
+// Admins (restricted: false) keep the original --permission-mode auto.
+// Defaults to restricted so a caller that forgets to pass it fails closed.
+const RESTRICTED_SETTINGS = JSON.stringify({
+  permissions: {
+    // Claude Code reads files inside its cwd without asking, so everything
+    // in the repo outside documents/ and notes/ has to be denied explicitly.
+    // Root-level files are matched by extension: a bare "./*" also matches
+    // the documents/ and notes/ directories themselves and blocks them too.
+    // A new top-level file or folder with some other name needs adding here.
+    deny: [
+      "Read(./*.md)", "Read(./*.html)", "Read(./*.json)", "Read(./.gitignore)", "Read(./html_documentation)",
+      "Read(./app/**)", "Read(./.git/**)", "Read(./.claude/**)",
+      "Read(**/.env*)"
+    ]
+  }
+});
+
+function permissionArgs(restricted){
+  if (!restricted) return ["--permission-mode", "auto"];
+  return [
+    "--permission-mode", "dontAsk",
+    "--allowedTools", "Read(./documents/**)", "Read(./notes/**)", "Glob", "Grep", "WebSearch",
+    "--disallowedTools", "Bash", "Edit", "Write", "NotebookEdit", "WebFetch", "Agent",
+    "--settings", RESTRICTED_SETTINGS,
+    "--strict-mcp-config"
+  ];
+}
+
+const RESTRICTED_PROMPT_NOTE =
+  "\n\n---\n\nYou can only read files under documents/ and notes/. You cannot edit or create files, " +
+  "run commands, or fetch URLs -- put your whole answer in your response.";
 
 // Sends a follow-up message into an already-finished run's own Claude Code
 // session, so the Agent tab's chatbox can keep a conversation going instead
@@ -384,7 +427,7 @@ function startRun(userId, runId, prompt, cwd, title, pdfFiles = []){
 // Callers (agent-routes.js) are responsible for checking the run isn't
 // already live before calling this -- two overlapping `claude --resume`
 // invocations against the same session would race each other.
-async function continueRun(userId, runId, followupPrompt, cwd){
+async function continueRun(userId, runId, followupPrompt, cwd, { restricted = true } = {}){
   const stored = await agentStore.getRun(userId, runId);
   const priorOutput = (stored && stored.output) || "";
   // Runs saved before turns existed only have their first prompt/result --
@@ -405,10 +448,10 @@ async function continueRun(userId, runId, followupPrompt, cwd){
   spawnClaude(entry, userId, runId, [
     "--resume", runId,
     "-p",
-    "--permission-mode", "auto",
+    ...permissionArgs(restricted),
     "--output-format", "stream-json",
     "--verbose"
-  ], cwd, followupPrompt);
+  ], cwd, restricted ? followupPrompt + RESTRICTED_PROMPT_NOTE : followupPrompt);
 }
 
 function getLiveRun(runId){

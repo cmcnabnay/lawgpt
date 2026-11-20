@@ -30,6 +30,14 @@ const { isPdfDocument } = require("./pdf-documents");
 
 const REPO_ROOT = path.join(__dirname, "..", "..");
 
+// Non-admin accounts get a read-only agent (see agent-runtime.js's
+// permissionArgs). Role only, not isLocalhostRequest: every route here
+// already requires a login, and behind a reverse proxy every request
+// could look local.
+function isAdmin(req) {
+  return Boolean(req.session && req.session.role === "admin");
+}
+
 function requireLogin(req, res, next) {
   if (!req.session || !req.session.userId) {
     return res.status(401).json({ error: { message: "Not signed in." } });
@@ -84,7 +92,7 @@ router.get("/runs/:id", async (req, res) => {
       turns: live.turns
     });
   }
-  const run = await getOrAdoptRun(userId, req.params.id);
+  const run = await getOrAdoptRun(req, userId, req.params.id);
   if (!run) return res.status(404).json({ error: { message: "Run not found." } });
   res.json(run);
 });
@@ -99,7 +107,7 @@ router.patch("/runs/:id", async (req, res) => {
   const userId = req.session.userId;
   const title = req.body && typeof req.body.title === "string" ? req.body.title.trim() : "";
   if (!title) return res.status(400).json({ error: { message: "title is required." } });
-  const run = await getOrAdoptRun(userId, req.params.id);
+  const run = await getOrAdoptRun(req, userId, req.params.id);
   if (!run) return res.status(404).json({ error: { message: "Run not found." } });
   // A live run's polls read the title from memory, so rename it there too.
   const live = agentRuntime.getLiveRun(req.params.id);
@@ -107,9 +115,12 @@ router.patch("/runs/:id", async (req, res) => {
   res.json(await agentStore.updateRun(userId, req.params.id, { title }));
 });
 
-async function getOrAdoptRun(userId, id){
+async function getOrAdoptRun(req, userId, id){
   let run = await agentStore.getRun(userId, id);
-  if (!run) {
+  // Only admins may adopt sessions this app never tracked for them --
+  // otherwise a non-admin who learned a session id could pull in (and then
+  // resume) someone else's unrestricted session.
+  if (!run && isAdmin(req)) {
     // Not a run this app ever tracked -- but it might still be a real
     // Claude Code session id that some other part of the app (calendar
     // extraction, a Notes report, ...) spawned with its own --session-id
@@ -197,7 +208,7 @@ router.post("/run", async (req, res) => {
   const fullPrompt = note ? `${prompt}\n\n---\n\n${note}` : prompt;
   const id = crypto.randomUUID();
   const run = await agentStore.createRun(userId, { id, title, prompt: fullPrompt, source });
-  agentRuntime.startRun(userId, id, fullPrompt, REPO_ROOT, run.title, pdfFiles);
+  agentRuntime.startRun(userId, id, fullPrompt, REPO_ROOT, run.title, pdfFiles, { restricted: !isAdmin(req) });
   res.json(run);
 });
 
@@ -222,7 +233,7 @@ router.post("/runs/:id/message", async (req, res) => {
   // whatever cwd it originally ran in, not necessarily REPO_ROOT -- Claude
   // Code scopes --resume by project directory, so resuming from the wrong
   // one would fail to find it.
-  agentRuntime.continueRun(userId, req.params.id, String(message).trim(), run.cwd || REPO_ROOT);
+  agentRuntime.continueRun(userId, req.params.id, String(message).trim(), run.cwd || REPO_ROOT, { restricted: !isAdmin(req) });
   res.json({ ok: true });
 });
 
