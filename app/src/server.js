@@ -97,7 +97,6 @@ const OPENROUTER_MODEL = process.env.OPENROUTER_MODEL || "nvidia/nemotron-3-ultr
 // chat message at all; adding them to this dropdown would just make picking
 // them silently fail every request.
 const OPENROUTER_MODELS = [
-  { id: "dots-studio/dots-3-note-preview:free", note: "reliable" },
   { id: "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free", note: "often overloaded/times out" },
   { id: "nvidia/nemotron-3.5-lightning:free", note: "reliable" },
   { id: "google/gemma-4-26b-a4b-it:free", note: "often rate-limited" },
