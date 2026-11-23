@@ -107,7 +107,8 @@ const OPENROUTER_MODELS = [
   { id: "liquid/lfm-3-1.7b:free", note: "untested" },
   { id: "baidu/ernie-5.5-flash-preview:free", note: "untested" },
   { id: "particle-ai/particle-1:free", note: "untested" },
-  { id: "inclusionai/ling-3.2-flash:free", note: "untested" }
+  { id: "inclusionai/ling-3.2-flash:free", note: "untested" },
+  { id: "dots-studio/dots-3-note-preview:free", note: "untested" }
 ];
 const OPENROUTER_MODEL_IDS = new Set(OPENROUTER_MODELS.map(m => m.id));
 
