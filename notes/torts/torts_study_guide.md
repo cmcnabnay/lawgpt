@@ -573,7 +573,7 @@ Christie et al., *Cases and Materials on the Law of Torts* (6th ed.). Mr. Sander
 - **Dissent:** Using asbestos in the workplace is affirmative conduct that created the risk; that's misfeasance.
 - **Takeaway:** Misfeasance (creating a risk) carries a duty, while nonfeasance (failing to prevent harm or warn) needs a special relationship. The court decides which label fits, and take-home exposure cases split on it.
 
-### Special Relationship (Research)
+### Special Relationship
 **Rule: Special relationships (Restatement (Second) § 314A; (Third) § 40).** Recognized relationships: common carrier–passenger, innkeeper–guest, possessor of land open to the public–visitor, custodian–person in custody, employer–employee, school–student, landlord–tenant. Courts may recognize new ones by analogy. The duty covers risks arising within the scope of the relationship.
 
 **Case: Grimes v. Kennedy Krieger Institute, Inc.** (Md. 2001)
@@ -1121,6 +1121,9 @@ Christie et al., *Cases and Materials on the Law of Torts* (6th ed.). Mr. Sander
 # UNIT VI — Strict Liability & Products Liability (Weeks 11–13)
 
 ## Week 11 (CB 822–905) — Abnormally Dangerous Activities; Coase; Origins of Products Liability
+
+### Defnition
+**Strict Liability:** Liability without proof of intent or fault, also called absolute liability, though causation must still be shown
 
 ### Origins
 **Rule: Rylands strict liability (Exchequer Chamber).** A person who for his own purposes brings onto his land and keeps there anything likely to do mischief if it escapes must keep it in at his peril, and is prima facie liable for all damage that is the natural consequence of its escape.

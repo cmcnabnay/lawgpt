@@ -681,6 +681,60 @@
     flex-direction:column;
     min-height:0;
   }
+  /* Open-document tabs (see renderDocTabs) -- hidden with a single document. */
+  .doc-tabs{
+    display:flex;
+    align-items:flex-end;
+    gap:2px;
+    padding:8px 32px 0;
+    border-bottom:1px solid var(--hairline);
+    background:var(--ink-2);
+    overflow-x:auto;
+    flex:0 0 auto;
+  }
+  .doc-tabs[hidden]{ display:none; }
+  .doc-tabs::-webkit-scrollbar{ height:4px; }
+  .doc-tab{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    flex:0 0 auto;
+    max-width:240px;
+    padding:6px 6px 6px 12px;
+    margin-bottom:-1px;
+    background:var(--ink-3);
+    color:var(--text-muted);
+    border:1px solid var(--hairline);
+    border-top:2px solid transparent;
+    border-radius:var(--radius) var(--radius) 0 0;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11.5px;
+    cursor:pointer;
+    user-select:none;
+  }
+  .doc-tab:hover{ color:var(--text-light); }
+  .doc-tab.active{
+    background:var(--ink);
+    color:var(--parchment);
+    border-top-color:var(--brass);
+    border-bottom-color:var(--ink);
+  }
+  .doc-tab-label{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .doc-tab-dirty{ width:6px; height:6px; border-radius:50%; background:var(--brass); flex:0 0 auto; }
+  .doc-tab-close{
+    background:none;
+    border:none;
+    color:inherit;
+    font-size:14px;
+    line-height:1;
+    width:18px;
+    height:18px;
+    border-radius:var(--radius);
+    cursor:pointer;
+    opacity:0.6;
+    padding:0;
+  }
+  .doc-tab-close:hover{ opacity:1; background:var(--hairline); }
   .editor-toolbar{
     display:flex;
     align-items:center;
@@ -3376,6 +3430,8 @@ pre code {
     </div><!-- /chatView -->
 
     <div class="editor-view" id="editorView" style="display:none;">
+      <!-- One tab per open document; only shown once 2+ are open (see renderDocTabs). -->
+      <div class="doc-tabs" id="docTabsBar" role="tablist" hidden></div>
       <div class="editor-toolbar">
         <input id="docTitle" class="doc-title-input" value="Untitled Document" spellcheck="false">
 
@@ -7647,6 +7703,7 @@ notesReportTitleNameEl.addEventListener("blur", () => {
 // the user's edits.
 document.getElementById("notesReportOpenEditorBtn").addEventListener("click", () => {
   if (!currentReport || currentReport.loading || currentReport.failed) return;
+  prepareDocTabForLoad();
   if (currentReport.edited && currentReport.contentHtml != null){
     docEditor.commands.setContent(sanitizeImportedHtml(currentReport.contentHtml));
   } else {
@@ -7657,6 +7714,7 @@ document.getElementById("notesReportOpenEditorBtn").addEventListener("click", ()
   savedFileHandle = null;
   savedFileLang = null;
   savedFileExt = null;
+  markDocTabClean();
   syncToolbarState();
   setView("editor");
 });
@@ -7666,11 +7724,13 @@ document.getElementById("notesReportOpenEditorBtn").addEventListener("click", ()
 // (already-compiled plain text) instead of a report's HTML/markdown-lite text.
 document.getElementById("agentSendToEditorBtn").addEventListener("click", () => {
   if (!currentAgentRun || !currentAgentRun.result || !currentAgentRun.result.trim()) return;
+  prepareDocTabForLoad();
   loadFormattedTextIntoEditor(currentAgentRun.result);
   document.getElementById("docTitle").value = currentAgentRun.title || "Untitled Document";
   savedFileHandle = null;
   savedFileLang = null;
   savedFileExt = null;
+  markDocTabClean();
   syncToolbarState();
   setView("editor");
 });
@@ -14902,12 +14962,208 @@ function composeDocumentText(blocks, useAnsi){
 // hacks are needed any more.
 const docPageEl = document.getElementById("docPage");
 const docEditorMount = document.getElementById("docEditorMount");
-const docEditor = LawgptEditor.createEditor(docEditorMount, {
-  content: "<p></p>",
-  placeholder: "Start drafting…",
-  onUpdate: () => syncToolbarState(),
-  onSelectionUpdate: () => syncToolbarState(),
+
+// ---- Multiple open documents (tabs) ----
+// Each open document gets its own TipTap Editor instance, mounted in its own
+// child div of #docEditorMount (so each keeps its own undo history and
+// selection); only the active one is shown. `docEditor` and the savedFile*
+// Save-target globals always describe the ACTIVE tab -- every other piece
+// of editor code keeps using them unchanged -- and are stashed back into the
+// tab object whenever another tab is activated. The tab strip itself
+// (#docTabsBar) only appears once 2+ documents are open.
+//
+// savedFileHandle remembers where the document was last saved/opened (via
+// the File System Access API), so the Save button can write straight back to
+// that same file/folder without prompting again — like Word's Save vs. Save
+// As. savedFileLang is either a compileToSource() language key (the file is
+// one LawGPT compiled/can compile, so Save recompiles fresh source into it)
+// or the sentinel "text" (the file is being edited as plain text, so Save
+// writes the editor's text back verbatim under its original extension, held
+// in savedFileExt).
+let docEditor = null;
+let savedFileHandle = null;
+let savedFileLang = null;
+let savedFileExt = null;
+let docTabs = [];
+let activeDocTab = null;
+let docTabCounter = 0;
+const docTabsBar = document.getElementById("docTabsBar");
+const docTitleInput = document.getElementById("docTitle");
+const docLangSelect = document.getElementById("langSelect");
+const docPageWrapEl = docPageEl.closest(".doc-page-wrap");
+
+function createDocTab(){
+  const mountEl = document.createElement("div");
+  mountEl.className = "doc-tab-editor";
+  mountEl.style.display = "none";
+  docEditorMount.appendChild(mountEl);
+  const tab = {
+    id: "doc" + (++docTabCounter),
+    mountEl,
+    title: "Untitled Document",
+    savedFileHandle: null,
+    savedFileLang: null,
+    savedFileExt: null,
+    lang: docLangSelect.value,
+    scrollTop: 0,
+    dirty: false,
+  };
+  tab.editor = LawgptEditor.createEditor(mountEl, {
+    content: "<p></p>",
+    placeholder: "Start drafting…",
+    onUpdate: () => {
+      if (tab !== activeDocTab) return;
+      syncToolbarState();
+      if (!tab.dirty){ tab.dirty = true; renderDocTabs(); }
+    },
+    onSelectionUpdate: () => { if (tab === activeDocTab) syncToolbarState(); },
+  });
+  docTabs.push(tab);
+  return tab;
+}
+
+// Copies the active tab's live state (title box, Save target, compile
+// language, scroll position) back into its tab object.
+function stashActiveDocTab(){
+  if (!activeDocTab) return;
+  activeDocTab.title = docTitleInput.value;
+  activeDocTab.savedFileHandle = savedFileHandle;
+  activeDocTab.savedFileLang = savedFileLang;
+  activeDocTab.savedFileExt = savedFileExt;
+  activeDocTab.lang = docLangSelect.value;
+  if (docPageWrapEl) activeDocTab.scrollTop = docPageWrapEl.scrollTop;
+}
+
+function activateDocTab(tab){
+  if (!tab || tab === activeDocTab) return;
+  const hadPrevious = Boolean(activeDocTab);
+  stashActiveDocTab();
+  activeDocTab = tab;
+  docEditor = tab.editor;
+  docTabs.forEach(t => { t.mountEl.style.display = t === tab ? "" : "none"; });
+  docTitleInput.value = tab.title;
+  savedFileHandle = tab.savedFileHandle;
+  savedFileLang = tab.savedFileLang;
+  savedFileExt = tab.savedFileExt;
+  if (tab.lang) docLangSelect.value = tab.lang;
+  if (docPageWrapEl) docPageWrapEl.scrollTop = tab.scrollTop;
+  renderDocTabs();
+  // Everything below lives further down this script and isn't initialized
+  // yet when the very first tab is activated at startup.
+  if (hadPrevious){
+    hideTableCtxMenu();
+    if (sourcePreviewPanel.classList.contains("open")) closePreviewPanel();
+    syncToolbarState();
+  }
+}
+
+// Whether a tab is still the untouched blank document -- in which case
+// opening something reuses it rather than leaving an empty tab behind.
+function isPristineDocTab(tab){
+  const title = tab === activeDocTab ? docTitleInput.value : tab.title;
+  const handle = tab === activeDocTab ? savedFileHandle : tab.savedFileHandle;
+  return !tab.dirty && !handle && tab.editor.isEmpty && (title.trim() === "" || title === "Untitled Document");
+}
+
+// Called before loading a document into the editor (Open, New, Open in
+// Editor, Send to Editor...): activates a fresh tab for it, or reuses the
+// current one if it's still blank. `created` tells the caller whether a new
+// tab was made (e.g. so a failed import can close it again).
+function prepareDocTabForLoad(){
+  if (activeDocTab && isPristineDocTab(activeDocTab)) return { tab: activeDocTab, created: false };
+  const tab = createDocTab();
+  activateDocTab(tab);
+  return { tab, created: true };
+}
+
+// A load just replaced the active document's content programmatically, or it
+// was just saved -- that isn't an unsaved user edit.
+function markDocTabClean(tab){
+  tab = tab || activeDocTab;
+  if (!tab) return;
+  tab.dirty = false;
+  renderDocTabs();
+}
+
+// Points a tab's Save at a file -- straight into the globals if it's still
+// the active tab, otherwise into the tab object (the user switched tabs
+// while a save/convert was in flight).
+function setDocTabSaveTarget(tab, handle, lang, ext){
+  if (tab === activeDocTab){
+    savedFileHandle = handle;
+    savedFileLang = lang;
+    savedFileExt = ext;
+  } else {
+    tab.savedFileHandle = handle;
+    tab.savedFileLang = lang;
+    tab.savedFileExt = ext;
+  }
+}
+
+function closeDocTab(tab, opts){
+  opts = opts || {};
+  const idx = docTabs.indexOf(tab);
+  if (idx === -1) return;
+  const title = (tab === activeDocTab ? docTitleInput.value : tab.title) || "Untitled Document";
+  if (!opts.force && tab.dirty && !tab.editor.isEmpty
+      && !confirm(`Close "${title}"? Any unsaved changes to it will be lost.`)) return;
+  if (docTabs.length === 1){
+    // Never leave the editor with no document at all -- start a fresh one first.
+    activateDocTab(createDocTab());
+  } else if (tab === activeDocTab){
+    activateDocTab(docTabs[idx + 1] || docTabs[idx - 1]);
+  }
+  docTabs.splice(docTabs.indexOf(tab), 1);
+  tab.editor.destroy();
+  tab.mountEl.remove();
+  renderDocTabs();
+}
+
+function renderDocTabs(){
+  docTabsBar.hidden = docTabs.length < 2;
+  docTabsBar.replaceChildren();
+  if (docTabs.length < 2) return;
+  docTabs.forEach(tab => {
+    const isActive = tab === activeDocTab;
+    const title = ((isActive ? docTitleInput.value : tab.title) || "").trim() || "Untitled Document";
+    const el = document.createElement("div");
+    el.className = "doc-tab" + (isActive ? " active" : "");
+    el.setAttribute("role", "tab");
+    el.setAttribute("aria-selected", String(isActive));
+    el.title = title;
+    const label = document.createElement("span");
+    label.className = "doc-tab-label";
+    label.textContent = title;
+    el.appendChild(label);
+    if (tab.dirty){
+      const dot = document.createElement("span");
+      dot.className = "doc-tab-dirty";
+      dot.title = "Unsaved changes";
+      el.appendChild(dot);
+    }
+    const closeBtn = document.createElement("button");
+    closeBtn.type = "button";
+    closeBtn.className = "doc-tab-close";
+    closeBtn.title = "Close document";
+    closeBtn.setAttribute("aria-label", "Close " + title);
+    closeBtn.textContent = "×";
+    closeBtn.addEventListener("click", (e) => { e.stopPropagation(); closeDocTab(tab); });
+    el.appendChild(closeBtn);
+    el.addEventListener("click", () => { activateDocTab(tab); docEditor.commands.focus(); });
+    // Middle-click closes, like browser tabs.
+    el.addEventListener("auxclick", (e) => { if (e.button === 1){ e.preventDefault(); closeDocTab(tab); } });
+    docTabsBar.appendChild(el);
+    if (isActive) requestAnimationFrame(() => el.scrollIntoView({ block: "nearest", inline: "nearest" }));
+  });
+}
+
+// Renaming the active document updates its tab label live.
+docTitleInput.addEventListener("input", () => {
+  if (activeDocTab) activeDocTab.title = docTitleInput.value;
+  renderDocTabs();
 });
+
+activateDocTab(createDocTab());
 
 // ---- Generic toolbar command wiring ----
 // Maps each toolbar button's data-cmd to the equivalent TipTap chain call.
@@ -15685,19 +15941,12 @@ async function getNotesDirHandle(){
   }
 }
 
-// Remembers where the document was last saved/opened (via the File System
-// Access API), so the Save button can write straight back to that same
-// file/folder without prompting again — like Word's Save vs. Save As.
-// savedFileLang is either a compileToSource() language key (the file is one
-// LawGPT compiled/can compile, so Save recompiles fresh source into it) or
-// the sentinel "text" (the file is being edited as plain text, so Save
-// writes the editor's text back verbatim under its original extension,
-// held in savedFileExt).
-let savedFileHandle = null;
-let savedFileLang = null;
-let savedFileExt = null;
+// (savedFileHandle / savedFileLang / savedFileExt -- the active tab's Save
+// target -- are declared with the document-tab code near the top of the
+// editor section.)
 
 async function downloadDocument(triggerBtn){
+  const tab = activeDocTab;
   const lang = document.getElementById("langSelect").value;
   const btn = triggerBtn || document.getElementById("downloadDocBtn");
   const originalLabel = btn.textContent;
@@ -15757,9 +16006,8 @@ async function downloadDocument(triggerBtn){
       await writable.write(blob);
       await writable.close();
       // Remember this location so a later Save can write straight back to it.
-      savedFileHandle = handle;
-      savedFileLang = lang;
-      savedFileExt = null;
+      setDocTabSaveTarget(tab, handle, lang, null);
+      markDocTabClean(tab);
       btn.textContent = "Saved";
       setTimeout(() => { btn.textContent = originalLabel; }, 1400);
       return;
@@ -15800,6 +16048,7 @@ async function downloadDocument(triggerBtn){
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
+  markDocTabClean(tab);
   btn.textContent = "Downloaded";
   setTimeout(() => { btn.textContent = originalLabel; }, 1400);
 }
@@ -15810,6 +16059,7 @@ document.getElementById("downloadDocBtn").addEventListener("click", () => downlo
 // been saved/opened from a writable location yet, there's nowhere to write
 // back to, so it falls through to the same picker flow as Download. ----
 async function saveDocument(){
+  const tab = activeDocTab;
   const btn = document.getElementById("saveDocBtn");
   const originalLabel = btn.textContent;
 
@@ -15849,14 +16099,14 @@ async function saveDocument(){
     const writable = await savedFileHandle.createWritable();
     await writable.write(blob);
     await writable.close();
+    markDocTabClean(tab);
     btn.textContent = "Saved";
     setTimeout(() => { btn.textContent = originalLabel; }, 1400);
   } catch(err){
     // The handle went stale (file moved/deleted, permission revoked, etc.) —
     // forget it and fall back to picking a location fresh, same as Download.
-    savedFileHandle = null;
-    savedFileLang = null;
-    savedFileExt = null;
+    setDocTabSaveTarget(tab, null, null, null);
+    if (tab !== activeDocTab) return; // user moved on to another tab meanwhile
     await downloadDocument(btn);
   }
 }
@@ -15957,17 +16207,10 @@ document.getElementById("backupImportInput").addEventListener("change", async (e
   }
 });
 
-// ---- New: clear the editor back to a blank, untitled document ----
+// ---- New: open a blank, untitled document in its own tab (the current
+// document stays open in its tab; reuses the current tab if it's still blank) ----
 document.getElementById("newDocBtn").addEventListener("click", () => {
-  const hasContent = docEditor.getText().trim().length > 0;
-  if (hasContent && !confirm("Start a new document? Any unsaved changes to the current one will be lost.")){
-    return;
-  }
-  docEditor.commands.setContent("<p></p>");
-  document.getElementById("docTitle").value = "Untitled Document";
-  savedFileHandle = null;
-  savedFileLang = null;
-  savedFileExt = null;
+  prepareDocTabForLoad();
   syncToolbarState();
   docEditor.commands.focus();
 });
@@ -15985,6 +16228,14 @@ document.getElementById("openDocBtn").addEventListener("click", async () => {
       // above) once it's been linked; falls back to Documents otherwise.
       const root = await getRepoRootHandle();
       const [handle] = await window.showOpenFilePicker({ startIn: root || "documents", types: buildOpenAcceptTypes() });
+      // Already open in a tab? Just switch to it instead of opening a duplicate.
+      stashActiveDocTab();
+      for (const t of docTabs){
+        if (t.savedFileHandle && await t.savedFileHandle.isSameEntry(handle).catch(() => false)){
+          activateDocTab(t);
+          return;
+        }
+      }
       const file = await handle.getFile();
       await openDocumentFile(file, handle);
       return;
@@ -16196,6 +16447,8 @@ async function openDocumentFile(file, handle){
 
   openBtn.textContent = "Opening…";
   openBtn.disabled = true;
+  // Each opened file gets its own tab (or takes over the current one if it's still blank).
+  const { tab: loadTab, created: createdTab } = prepareDocTabForLoad();
   try{
     if (ext === "docx"){
       if (!window.mammoth) throw new Error("The .docx reader didn't load. Check your connection and reload the page.");
@@ -16287,12 +16540,12 @@ async function openDocumentFile(file, handle){
     savedFileHandle = (handle && nextSavedFileLang) ? handle : null;
     savedFileLang = savedFileHandle ? nextSavedFileLang : null;
     savedFileExt = savedFileHandle ? nextSavedFileExt : null;
+    markDocTabClean(loadTab);
   } catch(err){
     console.error("LawGPT: failed to open document.", err);
     alert("Sorry — that file couldn't be opened: " + err.message);
-    savedFileHandle = null;
-    savedFileLang = null;
-    savedFileExt = null;
+    if (createdTab) closeDocTab(loadTab, { force: true });
+    else setDocTabSaveTarget(loadTab, null, null, null);
   } finally {
     openBtn.textContent = originalLabel;
     openBtn.disabled = false;

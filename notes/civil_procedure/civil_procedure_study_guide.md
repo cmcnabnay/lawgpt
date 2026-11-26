@@ -458,6 +458,8 @@ The proportionality factors are the importance of the issues, the amount in cont
 
 **Rule 26(b)(2)(C):** The court **must** limit discovery that is unreasonably **cumulative or duplicative**, obtainable from a **more convenient, less burdensome, or less expensive source**, sought after ample opportunity to get it, or outside 26(b)(1).
 
+**Rule 26(b)(4)(D):** Ordinarily, a party may not, by interrogatories or deposition, discover facts known or opinions held by an expert who has been retained or specicially employed by another party in anticipation of litigation or to prepare for trial and who is not expected to be called as a witness at trial. 
+
 **Rule 26(b)(5): Privilege claims.**
 - **(A) Privilege log:** The withholding party must **expressly claim** the privilege and **describe** what's withheld well enough for others to assess the claim **without revealing** the privileged content.
 - **(B) Clawback procedure:** The producing party **notifies** the receiving party. The receiver must promptly **return, sequester, or destroy** the material, **may not use or disclose it** until the claim is resolved, and may present it to the court **under seal** for a ruling.
@@ -681,8 +683,6 @@ The proportionality factors are the importance of the issues, the amount in cont
 - The substantive law can **limit permissible inferences**. In an antitrust conspiracy case, evidence **equally consistent with independent, lawful conduct** doesn't create a genuine issue. The plaintiff must offer evidence that "**tends to exclude the possibility**" of independent action. An **economically implausible** theory (predatory pricing conspiracy) needs **more persuasive** evidence.
 - **Compare Twombly** (pleading) with **Matsushita** (SJ): the same "parallel conduct isn't enough" logic at different stages.
 
-**Mueller (Taylor Swift case)** (discussed in the note): SJ was **denied** on the interference-with-employment claims because they turned on dueling, **credibility-dependent** accounts of the groping incident, which is for the jury. SJ was **granted** on the slander claims, which could be resolved **as a matter of law**. The same event can produce different SJ outcomes for different claims.
-
 ### Reading: Introductory Note on the Celotex Trilogy (CB 578–81)
 - **Trilogy (1986):** **Celotex** (the movant's burden), **Anderson** (the "genuine dispute" and "reasonable jury" standard, plus the substantive evidentiary standard), and **Matsushita** (implausible inferences). Together they made SJ a **robust** pretrial screening tool instead of a disfavored one.
 
@@ -830,7 +830,7 @@ The proportionality factors are the importance of the issues, the amount in cont
 ### Reading: *Chauffeurs, Teamsters & Helpers Local 391 v. Terry* (CB 484–91)
 **Rule: The two-step test** (from Tull v. United States):
 1. **Historical analog:** Compare the statutory action to **18th-century actions in English courts before the merger of law and equity**.
-2. **Remedy:** Is the remedy sought **legal or equitable** in nature? **This step is more important.**
+2. **Remedy:** Is the remedy sought **legal or equitable** in nature? **This step is more important.** If the remedy sought is legal, there is a jury right, if the remedy sought is equitable, there is no jury right.
 
 **Case: Chauffeurs, Teamsters & Helpers v. Terry** (U.S. 1990)
 - **Facts:** Laid-off truck drivers sued their **union** for breaching its **duty of fair representation** (DFR) in handling their grievances, seeking **backpay** (compensatory damages).
@@ -844,7 +844,6 @@ The proportionality factors are the importance of the issues, the amount in cont
     - **Restitution or disgorgement:** The backpay isn't money **wrongfully held by the union**. It's wages the employer would have paid.
     - **Incidental to or intertwined with injunctive relief:** No injunction was sought.
   - **Title VII backpay is distinguished** (labeled equitable by Congress, and restitutionary when sought from the employer).
-  - **Brennan (concurring):** Drop the historical step and look only at the remedy. **Kennedy (dissent):** The trust analogy should control.
 - **Takeaway:** Whether a jury right exists turns on comparing the claim to an 18th-century action and, more importantly, on whether the remedy sought is legal or equitable, and money damages are usually legal.
 
 **7th Amendment framework:**
@@ -880,7 +879,7 @@ The proportionality factors are the importance of the issues, the amount in cont
 - Example: 9 empaneled, 3 excused, 6 deliberate, verdict 5–1. Six is enough, but with **no stipulation, the verdict must be unanimous**, so the verdict fails.
 - "**Unlike criminal juries, civil juries do not need to be unanimous**" is **wrong** under the FRCP.
 
-### Reading: Rule 47 and 28 U.S.C. § 1870 (CB 536–37) — ⚠️ § 1870 isn't in exam packet
+### Reading: Rule 47 and 28 U.S.C. § 1870 (CB 536–37) 
 **Rule 47(a): Voir dire.** The court may examine prospective jurors itself or let the parties do it. If the court does it, it must allow the parties to supplement with further questions.
 
 **Rule 47(b):** **Peremptory challenges** are governed by **28 U.S.C. § 1870**.
@@ -918,15 +917,17 @@ The proportionality factors are the importance of the issues, the amount in cont
 
 ### Reading: Rule 59 (CB 630)
 **Rule 59(a)(1)(A): New trial after a jury trial**, "for any reason for which a new trial has heretofore been granted in an action at law in federal court." Examples:
-- verdict against the **clear (great) weight of the evidence**;
-- **excessive or inadequate damages** (→ **remittitur**, with a new trial if the plaintiff refuses the reduction);
-- prejudicial errors in **instructions or evidence**;
-- misconduct by jurors or attorneys;
-- newly discovered evidence.
+- Verdict against the **clear (great) weight of the evidence**;
+- **Excessive or inadequate damages** (**remittitur**, with a new trial if the plaintiff refuses the reduction);
+- Prejudicial errors in **instructions or evidence**;
+- Misconduct by jurors or attorneys;
+- Newly discovered evidence.
 
 **Rule 59(a)(1)(B):** After a **bench** trial, for any reason a rehearing has traditionally been granted in equity.
 
-**Rule 59(b):** Motion due **within 28 days after entry of judgment**. **59(d):** The court may order a new trial **on its own** within 28 days.
+**Rule 59(b):** Motion due **within 28 days after entry of judgment**. 
+
+**Rule 59(d):** The court may order a new trial **on its own** within 28 days.
 
 **Rule 59(e):** Motion to **alter or amend a judgment**, due **within 28 days**.
 
@@ -952,7 +953,6 @@ The proportionality factors are the importance of the issues, the amount in cont
   - (2) **Rule 50(e)** is permissive.
   - If reversal rests on a **dispositive legal issue**, direct judgment. If it rests on **insufficient evidence**, consider whether the gap is **curable** (e.g., evidence was wrongly excluded). The appellee should raise new-trial grounds in the **trial court, the appellate brief, or a petition for rehearing**.
   - Here Neely raised **no** new-trial grounds below and told the 10th Circuit the trial was "fairly tried." Her excluded-evidence argument came **too late** (first raised in the Supreme Court). **Affirmed.**
-  - Lesson: **preserve** issues. Movants must make a **50(a) motion before submission** to later renew under 50(b). Verdict-winners must **raise new-trial grounds** as a fallback.
 - **Takeaway:** An appellate court that reverses a denial of JMOL may direct entry of judgment for the movant, so the verdict-winner must raise any new-trial grounds as a fallback or lose them.
 
 ---
@@ -960,16 +960,16 @@ The proportionality factors are the importance of the issues, the amount in cont
 # UNIT VI — Finality & Appeal (Classes 16 Part 2–17)
 
 **Roadmap: can the court of appeals hear this appeal NOW?** The routes, in order:
-1. **§ 1291 final decision?** Does it end the litigation on the merits, leaving nothing but execution? If so, it is appealable.
+1. **§ 1291 final decision?** Does the order being appealed end the litigation on the merits, leaving nothing but execution? If so, it is appealable.
 2. **Rule 54(b)?** Multiple claims or parties, one or more **fully** resolved, and the district court **expressly finds "no just reason for delay."**
 3. **§ 1292(a)(1)?** An order **granting, refusing, modifying, or dissolving an injunction** is appealable as of right.
 4. **§ 1292(b)?** The district judge **certifies** the question **and** the court of appeals agrees to hear it.
-5. **Rule 23(f)?** The court of appeals may permit an appeal from an order granting or denying **class certification** (Unit VIII).
+5. **Rule 23(f)?** The court of appeals may permit an appeal from an order granting or denying **class certification**.
 6. **Collateral order doctrine (Cohen)?** The order is conclusive, important and separate from the merits, and effectively unreviewable after final judgment. Judged **by category**.
 7. **Mandamus?** Only for clear abuse of discretion or usurpation of power.
 8. **Contempt?** Defy the order, be held in contempt, then appeal the contempt (Microsoft).
 
-**Standards of review** (lecture 22):
+**Standards of review**:
 - **De novo:** the appeals court decides for itself (**questions of law**).
 - **Clearly erroneous:** overturn only for clear error (**questions of fact**).
 - **Abuse of discretion:** overturn only if the trial court abused its discretion (matters **within the trial court's discretion**, e.g., leave to amend, class certification).
@@ -1049,7 +1049,7 @@ The proportionality factors are the importance of the issues, the amount in cont
 - **Takeaway:** The collateral-order doctrine allows immediate appeal of an order that conclusively decides an important issue separate from the merits and would be effectively unreviewable after final judgment.
 
 ### Reading: *Mohawk Industries v. Carpenter* (CB 688–98)
-**Rule:** The Cohen test is applied **CATEGORICALLY, to the whole class of orders**, not to the individual case. Disclosure orders adverse to the attorney-client privilege are **not** immediately appealable collateral orders.
+**Rule:** The Cohen test is applied **Categorically, to the whole class of orders**, not to the individual case. Disclosure orders adverse to the attorney-client privilege are **not** immediately appealable collateral orders.
 
 **Case: Mohawk Industries, Inc. v. Carpenter** (U.S. 2009)
 - **Facts:** An employee claimed he was fired for reporting that Mohawk employed illegal alien workers. The district court found Mohawk **waived attorney-client privilege** and ordered it to disclose communications about the employee's meeting with counsel. Mohawk sought a collateral-order appeal.
@@ -1086,7 +1086,7 @@ The proportionality factors are the importance of the issues, the amount in cont
 
 **Two doctrines under the umbrella of "res judicata":**
 
-| | **Claim preclusion** ("res judicata," "bar," "merger") | **Issue preclusion** ("collateral estoppel") |
+| | **Claim preclusion** (res judicata, bar, merger) | **Issue preclusion** (collateral estoppel) |
 |---|---|---|
 | Bars | The **whole claim**, including everything that **was or could have been** raised | Only **specific issues actually litigated and necessarily decided** |
 | Second suit | The **same claim** | Can be a **different claim** |
@@ -1096,7 +1096,7 @@ The proportionality factors are the importance of the issues, the amount in cont
 ## Class 18 (10/6) — Preclusion
 
 ### Reading: Res Judicata (CB 735–38)
-**Rule: Claim preclusion** (Petro-Hunt elements; matches lecture notes):
+**Rule: Claim preclusion**:
 1. The **parties are identical or in privity**;
 2. the prior judgment was rendered by a **court of competent jurisdiction**;
 3. the prior action ended in a **final judgment on the merits**; and
@@ -1122,7 +1122,7 @@ It bars a losing plaintiff's **second shot** and a losing defendant's **new defe
 
 - Here "final judgment on the merits" refers to **the issue**. A finally decided **jurisdictional or procedural** ruling can be issue-preclusive.
 
-**Remedy for a wrong judgment:** **Appeal it.** Don't bring a new suit (lecture notes).
+**Remedy for a wrong judgment:** **Appeal it.** Don't bring a new suit.
 
 ### Reading: *Rose v. Board of Election Commissioners* (CB 738–42)
 **Rule:** Under **28 U.S.C. § 1738**, federal courts give a **state-court judgment the same preclusive effect it would get in that state's courts**. A new legal theory arising from the **same group of operative facts** is barred if it **could have been raised** in the first suit.
@@ -1148,8 +1148,7 @@ It bars a losing plaintiff's **second shot** and a losing defendant's **new defe
   - **Overruled Vasu v. Kohlers**' paragraph 4, which allowed separate suits. That was **dicta**: Vasu actually turned on lack of **privity** between an insured and his insurer.
   - Rejected **Brunsden v. Humphrey**'s "same evidence" test, adopting **Lord Coleridge's dissent**: one act, one moment, one harm. It is "a subtlety not warranted by law" that **torn clothes and torn limbs** make two suits.
   - **Policy:** Prevent **vexatious litigation**. Otherwise a plaintiff could bring a **small** claim first (cheaper for the defendant to lose than to defend), **win**, and then use issue preclusion for a **big** second claim (lecture notes).
-  - **Dissent:** **Stability.** People relied on Vasu, so apply the new rule prospectively only.
-  - **Ironic twist:** Rush argued **issue** preclusion (offensively). The city won on **claim** preclusion. The **whole claim** has to be asserted the first time.
+  - Rush argued **issue** preclusion (offensively). The city won on **claim** preclusion. The **whole claim** has to be asserted the first time.
 - **Takeaway:** Property damage and personal injury from the same wrongful act are a single cause of action, so all damages must be sought in one suit.
 
 ### Reading: *Cromwell v. County of Sac* (CB 754–57)
@@ -2409,7 +2408,7 @@ Under **20(b)** the court may order **separate trials** to prevent prejudice.
   - **Concurrence (Harlan, J.):** The majority's "**arguably procedural, ergo constitutional**" test makes the Federal Rules nearly absolute. The right question is whether the choice of rule would substantially affect "**primary decisions respecting human conduct**" that the Constitution leaves to the states. Here it wouldn't (an executor would just need to check his house and the federal courthouse before distributing the estate), so he **concurs in the judgment**.
 - **Takeaway:** When a valid Federal Rule **directly conflicts** with state law, the Federal Rule controls under the REA, and Erie isn't the test. When no Federal Rule is on point, apply state law if ignoring it would be outcome determinative in a way that encourages **forum shopping** or causes **inequitable administration of the laws**.
 
-### Reading: *Berk v. Choy* (Canvas)
+### Reading: *Berk v. Choy*
 **Rule: Does a Federal Rule displace state law?**
 1. Does the Federal Rule "**answer the question in dispute**"? Read it by its **plain meaning**, like any federal law.
 2. If yes, it governs unless it "**exceeds statutory authorization or Congress's rulemaking power**," i.e., unless it fails the REA test. A Rule is valid if it "**really regulates procedure**" (Sibbach): it governs "**the manner and the means**" by which rights are enforced, not "the rights themselves, the available remedies, or the rules of decision."
@@ -2538,7 +2537,9 @@ Under **20(b)** the court may order **separate trials** to prevent prejudice.
   │     · Caterpillar (cure before judgment)
   │
   ●  7. ANSWER
-  │     · Rule 12(a) (21 / 60 / 14 days)
+  │     · Rule 12(a) (21 days after service;
+  │       60 if service waived or U.S. defendant;
+  │       14 after a Rule 12 motion is ruled on)
   │     · Rule 8(b) (denials; 8(b)(6) deemed admitted)
   │     · Rule 8(c) (affirmative defenses)
   │     ▸ Pre-Answer Motions

@@ -261,7 +261,7 @@
 
 **Rule: General promises under § 90.** A specific promise isn't required. A general promise, combined with conduct and the surrounding circumstances, can be a promise for § 90 purposes, and the reasonableness of reliance is usually a fact question.
 
-**Rule: Equitable vs. promissory estoppel.** It stops someone from denying a misrepresentation of existing fact. Promissory estoppel enforces a promise about the future.
+**Rule: Equitable vs. promissory estoppel.** Equitable estoppel stops someone from denying a misrepresentation of existing fact. Promissory estoppel enforces a promise about the future.
 
 **Case: Harvey v. Dow** (Me. 2008)
 - **Facts:** Parents told their daughter they'd give her land. She built a house on it, spending substantial money with her parents' knowledge and help. When the relationship broke down, they refused to deed her the land.
@@ -283,7 +283,7 @@
 - **Holding:** Enforceable under promissory estoppel. Retirement was a detrimental change in position that the employer expected and intended. It didn't matter that Katz's job was uncertain, or that he was induced to give up a job rather than a legal right.
 - **Takeaway:** An employee who retires in reasonable reliance on an employer's pension promise can enforce it through promissory estoppel.
 
-**Rule: Charitable subscriptions (R2 § 90(2)).** In many jurisdictions charitable subscriptions are binding without reliance. Massachusetts still requires consideration or reliance.
+**Rule: Charitable subscriptions (R2 § 90(2)).** In many jurisdictions charitable subscriptions are binding without reliance.
 
 **Case: King v. Trustees of Boston University** (Mass. 1995)
 - **Facts:** In 1964, Dr. Martin Luther King, Jr. wrote BU a letter saying he was depositing his papers there and that "in the event of my death, all such materials deposited with the University shall become from that date the absolute property" of BU. Coretta Scott King later sued to recover the papers.
